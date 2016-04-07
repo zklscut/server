@@ -1,2 +1,2 @@
 # server
-this is a simple server
+simple erlang server
