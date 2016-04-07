@@ -1,0 +1,1 @@
+start "game" erl -name "game@127.0.0.1"  -cookie lilith -pa ebin -s sgame start -config config/game

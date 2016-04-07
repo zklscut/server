@@ -1,0 +1,10 @@
+{
+	[
+		'*'
+	],
+	[
+		debug_info,
+		{d, debug},
+		{outdir, "../../pb_tool_ebin"}
+	]
+}.
