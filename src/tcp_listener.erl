@@ -22,13 +22,15 @@ start() ->
     start_listener().
 
 start_listener_process(LS) ->
-    case gen_tcp:accept(LS) of
-        {ok, S} ->
-            loop(S),
-            start_listener_process(LS);
-        _Other ->
-            ok
-    end.
+    spawn(fun() ->
+            case gen_tcp:accept(LS) of
+              {ok, S} ->
+                loop(S),
+                start_listener_process(LS);
+              _Other ->
+                ok
+            end
+          end).
 
 %% ====================================================================
 %% Internal functions
