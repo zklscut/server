@@ -1,0 +1,113 @@
+#!/bin/bash
+#gamectl_mode start login1
+
+ROOTDIR=`cd $(dirname $0); pwd`
+CTLFILE=$(basename $0)
+GAMECTL_BASH="$ROOTDIR/gamectl_mode"
+
+#各个节点的数目，需要根据需求手动配置
+GAME_NODE_NUM=2
+
+#执行动作参数
+ARGS=$1
+#传入节点标记
+SIGN=$2
+
+# 错误警告函数
+Warning(){
+    echo -e "\033[1;31;1m$*\033[0m" 
+}
+
+# 执行成功回显函数
+Success(){
+    echo -e "\033[32;40;1m$*\033[0m\n"
+}
+
+# 脚本说明函数
+Usage(){
+        echo -e "\033[1;32;1m
+        ++--------------------------------------------------------------------------------++
+        脚本使用说明:
+            首先进入脚本中根据需求手动配置各个节点的数目。
+        Usage:      
+                sh $0 ACTION [OPTION]
+                sh $0 [start|stop|live|debug|status|attach|restart]  [contact|misc|game|public|login|all]
+
+        Eg:     sh $0 ACTION [OPTION]
+                sh $0 start   contact  
+                sh $0 stop    all
+                sh $0 restart all
+                sh $0 start   all
+        
+        OPTION:        
+            	live:        Start an node in live [interactive] mode
+            	debug:       Start an node in debug mode, auto reload beam
+            	start:       Start an node in daemon mode
+            	status:      Get the status of the deamon node
+            	attach:      Attach an interactive Erlang shell to a running node
+            	stop:        Stop a deamon running node
+            	restart:     Restart a deamon running node
+        ++--------------------------------------------------------------------------------++
+        \033[0m\n" 
+}
+
+#contact节点
+CONTACT(){
+
+        /bin/bash ${GAMECTL_BASH} ${ARGS} contact
+}
+
+#game节点
+GAME(){
+    for i in `seq 1 ${GAME_NODE_NUM}`
+    do
+        /bin/bash ${GAMECTL_BASH} ${ARGS} game${i}
+    done
+}
+
+#public节点
+PUBLIC(){
+    /bin/bash ${GAMECTL_BASH} ${ARGS} public
+}
+
+LOGIN(){
+    /bin/bash ${GAMECTL_BASH} ${ARGS} login
+}
+
+MISC(){
+    /bin/bash ${GAMECTL_BASH} ${ARGS} misc
+}
+
+ALL(){
+	#执行顺序contact——> public——> game———> login———> misc
+	CONTACT ${ARGS} contact
+    PUBLIC	${ARGS} public
+    GAME	${ARGS} game
+    LOGIN	${ARGS} login
+    MISC	${ARGS} misc
+}
+
+case ${SIGN} in
+	"contact")
+	CONTACT ${ARGS} ${SIGN}
+	;;
+	"public")
+	PUBLIC ${ARGS} ${SIGN}
+	;;
+	"game")
+	GAME ${ARGS} ${SIGN}
+	;;
+	"login")
+	LOGIN ${ARGS} ${SIGN}
+	;;
+	"misc")
+    MISC ${ARGS} ${SIGN}
+    ;;
+	"all")
+	ALL ${ARGS}
+	;;
+	*)
+	Warning "请检查输入参数！！"
+	Usage
+	;;
+esac
