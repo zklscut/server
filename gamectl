@@ -6,7 +6,7 @@ CTLFILE=$(basename $0)
 GAMECTL_BASH="$ROOTDIR/gamectl_mode"
 
 #各个节点的数目，需要根据需求手动配置
-GAME_NODE_NUM=2
+GAME_NODE_NUM=1
 
 #执行动作参数
 ARGS=$1

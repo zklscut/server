@@ -22,7 +22,7 @@ COOKIE="sy8-mq_cookie"
 INET_MIN_PORT=17000
 INET_MAX_PORT=17100
 
-RUNAPP=server_app
+RUNAPP=sgame
 CTLAPP=server_ctl
 
 # define additional environment variables

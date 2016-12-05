@@ -12,6 +12,7 @@
 start(_, _) ->
     {ok, SupPid} = game_supervisor:start_link(),
     tcp_listener:start(),
+    lager:info("start game"),
     {ok, SupPid}.
 
 %% ====================================================================
