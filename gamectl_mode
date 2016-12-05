@@ -143,7 +143,6 @@ live ()
       -pa $EBINS \
       +C multi_time_warp \
       -s ${RUNAPP} start \
-      -s reloader start \
       -config $CONFIG \
       $ERLANG_OPTS $ARGS "$@"
 }
