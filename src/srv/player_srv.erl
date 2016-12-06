@@ -93,8 +93,9 @@ handle_cast(active_socket, State) ->
 handle_info({tcp_closed, _}, State) ->
     {stop, logout, State};
 
-handle_info({tcp, _Port, <<_PreData:24, ProtoData/binary>>}, State) ->
-    {Op, NewState} = do_proto(ProtoData, State),
+handle_info({tcp, _Port, <<PreData:24, Len:16, ProtoId:16, ProtoData/binary>>}, State) ->
+    lager:info("receive bianry ~p", [{PreData, Len, ProtoId, ProtoData}]),
+    {Op, NewState} = do_proto(ProtoId, ProtoData, State),
     do_cache_op(Op, NewState),
     active_socket_inner(maps:get(socket, State)),
     {noreply, NewState};
@@ -137,9 +138,8 @@ code_change(_OldVsn, State, _Extra) ->
 active_socket_inner(Socket) ->
     inet:setopts(Socket, [{active, once}]).
 
-do_proto(ProtoData, State) ->
+do_proto(ProtoId, ProtoData, State) ->
     try
-        {{_, ProtoId}, _} = protobuffs:decode(ProtoData, int32),
         {ProtoName, Module, Function} = b_proto_route:get(ProtoId),
         ProtoRecord = game_pb:decode(ProtoName, ProtoData),
         lager:info("receive proto ~p", [ProtoRecord]),

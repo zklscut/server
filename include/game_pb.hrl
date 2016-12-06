@@ -1,0 +1,2 @@
+-record(m__account__login__l2s, {msg_id=10001, account_name}).
+-record(m__account__login__s2l, {msg_id=10002, result}).

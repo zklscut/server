@@ -1,9 +1,11 @@
-{application, game,
-  [{description, "sync game!"},
-  {vsn,"1.0"},
-  {modules, []},
-  {registered, []},
-  {applications, []},
-  {mod, {game_app, []}},
-  {env, []}]
-}.
+{application,game,
+             [{description,"sync game!"},
+              {vsn,"1.0"},
+              {modules,[b_proto_route,ets_srv,game_app,game_pb,
+                        game_supervisor,lib_ets,mod_account,net_send,
+                        player_srv,player_supervisor,protobuffs,server_ctl,
+                        sgame,tcp_listener,tcp_supervisor,test]},
+              {registered,[]},
+              {applications,[]},
+              {mod,{game_app,[]}},
+              {env,[]}]}.

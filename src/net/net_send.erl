@@ -8,4 +8,6 @@
 
 send(Send, #{socket := Socket}) ->
     Binary = game_pb:encode(Send),
-    gen_tcp:send(Socket, Binary).
+    ProtoId = element(2, Send),
+    Len = byte_size(Binary),
+    gen_tcp:send(Socket, <<1:24, Len:16, ProtoId:16, Binary/binary>>).

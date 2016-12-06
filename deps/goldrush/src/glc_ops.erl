@@ -3,7 +3,7 @@
 
 -export([
     lt/2, lte/2,
-    eq/2, neq/2,
+    eq/2,
     gt/2, gte/2,
     wc/1,
     nf/1
@@ -21,10 +21,8 @@
 ]).
 
 -type op() ::
-    {atom(), '<', term()} |
     {atom(), '=<', term()} |
     {atom(), '=', term()} |
-    {atom(), '!=', term()} |
     {atom(), '>', term()} |
     {atom(), '>=', term()} |
     {atom(), '*'} |
@@ -56,14 +54,6 @@ eq(Key, Term) when is_atom(Key) ->
     {Key, '=', Term};
 eq(Key, Term) ->
     erlang:error(badarg, [Key, Term]).
-
-%% @doc Test that a field value is not equal to a term.
--spec neq(atom(), term()) -> op().
-neq(Key, Term) when is_atom(Key) ->
-    {Key, '!=', Term};
-neq(Key, Term) ->
-    erlang:error(badarg, [Key, Term]).
-
 
 %% @doc Test that a field value is greater than a term.
 -spec gt(atom(), term()) -> op().
