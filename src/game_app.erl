@@ -11,10 +11,11 @@
 
 start(_, _) ->
     {ok, SupPid} = game_supervisor:start_link(),
+    start_player_supervisor(),
+    start_cache_process(),
+
     start_tcp_supervisor(),
     tcp_listener:start(),
-    start_player_supervisor(),
-    
     lager:info("start game"),
     {ok, SupPid}.
 
@@ -30,4 +31,9 @@ start_tcp_supervisor() ->
 start_player_supervisor() ->
     supervisor:start_child(game_supervisor,
                            {player_supervisor, {player_supervisor, start_link,[]},
-                            transient, infinity, supervisor, [tcp_supervisor]}).
+                            transient, infinity, supervisor, [player_supervisor]}).
+
+start_cache_process() ->
+    supervisor:start_child(game_supervisor,
+                           {ets_srv, {ets_srv, start_link,[]},
+                            transient, infinity, worker, [ets_srv]}).    
