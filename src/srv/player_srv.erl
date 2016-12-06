@@ -57,7 +57,7 @@ init([Socket]) ->
     Timeout :: non_neg_integer() | infinity,
     Reason :: term().
 %% ====================================================================
-handle_call(Request, From, State) ->
+handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
 
@@ -89,10 +89,19 @@ handle_cast(active_socket, State) ->
     NewState :: term(),
     Timeout :: non_neg_integer() | infinity.
 %% ====================================================================
-handle_info(Info, State) ->
-    lager:info("handle info ~p", [Info]),
+
+handle_info({tcp_closed, _}, State) ->
+    {stop, logout, State};
+
+handle_info({tcp, _Port, <<_PreData:24, ProtoData/binary>>}, State) ->
+    {Op, NewState} = do_proto(ProtoData, State),
+    do_cache_op(Op, NewState),
     active_socket_inner(maps:get(socket, State)),
-    {noreply, State}.
+    {noreply, NewState};
+
+handle_info(Info, State) ->
+    lager:error("unhandle info ~p", [Info]),
+    {noreply, State}.    
 
 
 %% terminate/2
@@ -104,7 +113,9 @@ handle_info(Info, State) ->
             | {shutdown, term()}
             | term().
 %% ====================================================================
-terminate(Reason, State) ->
+terminate(Reason, _State) ->
+    lager:info("player terminate Reason ~p", [Reason]),
+    supervisor:terminate_child(player_supervisor, self()),
     ok.
 
 
@@ -116,7 +127,7 @@ terminate(Reason, State) ->
     OldVsn :: Vsn | {down, Vsn},
     Vsn :: term().
 %% ====================================================================
-code_change(OldVsn, State, Extra) ->
+code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
 %% ====================================================================
@@ -125,4 +136,23 @@ code_change(OldVsn, State, Extra) ->
 
 active_socket_inner(Socket) ->
     inet:setopts(Socket, [{active, once}]).
+
+do_proto(ProtoData, State) ->
+    try
+        {{_, ProtoId}, _} = protobuffs:decode(ProtoData, int32),
+        {ProtoName, Module, Function} = b_proto_route:get(ProtoId),
+        ProtoRecord = game_pb:decode(ProtoName, ProtoData),
+        lager:info("receive proto ~p", [ProtoRecord]),
+        apply(Module, Function, [ProtoRecord, State])
+    catch
+        throw:ThrowError ->
+            lager:debug("throw error ~p", [ThrowError]),
+            {ok, State};
+        What:Error ->
+            lager:error("error what ~p, Error ~p, stack", [What, Error, erlang:get_stacktrace()]),
+            {ok, State}
+    end.
+
+do_cache_op(_Op, _NewState) ->
+    ok.
 
