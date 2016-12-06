@@ -18,14 +18,15 @@
          start_listener_process/1]).
 
 start() ->
-    start_tcp_supervisor(),
     start_listener().
 
 start_listener_process(LS) ->
     spawn(fun() ->
             case gen_tcp:accept(LS) of
               {ok, S} ->
-                loop(S),
+                {ok, Pid} = supervisor:start_child(player_supervisor, [S]),
+                gen_tcp:controlling_process(S, Pid),
+                player_srv:active_socket(Pid),
                 start_listener_process(LS);
               _Other ->
                 ok
@@ -35,11 +36,6 @@ start_listener_process(LS) ->
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
-
-start_tcp_supervisor() ->
-    supervisor:start_child(game_supervisor,
-                           {tcp_supervisor, {tcp_supervisor, start_link,[]},
-                            transient, infinity, supervisor, [tcp_supervisor ]}).
 
 start_listener() ->
     {ok, MainPort} = application:get_env(main_port),
@@ -56,18 +52,5 @@ start_listener() ->
 start_servers(0,_) ->
     ok;
 start_servers(Num, LS) ->
-    spawn(fun() ->
-                  supervisor:start_child(tcp_supervisor, [LS])
-          end),
+    supervisor:start_child(tcp_supervisor, [LS]),
     start_servers(Num - 1, LS).
-
-loop(S) ->
-    inet:setopts(S, [{active, once}]),
-    receive
-        {tcp, S, Data} ->
-            io:format("data ~p ~n", [Data]),
-            gen_tcp:send(S, <<2>>),
-            loop(S);
-        {tcp_closed, S} ->
-            ok
-    end.

@@ -7,16 +7,19 @@
 %% ====================================================================
 %% API functions
 %% ====================================================================
--export([test_connect/0]).
+-export([start/0, send/2, stop/1]).
 
-test_connect() ->
-    {ok,Sock} = gen_tcp:connect("localhost", 19000,
-                                [{active, false}, {packet, 0}]),
-    gen_tcp:send(Sock, <<1>>),
-    A = gen_tcp:recv(Sock, 0),
-    io:format("rec ~p ~n", [A]),
-    gen_tcp:close(Sock),
-    A.
+start() ->
+    {ok, Sock} = gen_tcp:connect("localhost", 19000,
+                                 [{active, false}, {packet, 0}]),
+    Sock.
+
+send(Socket, Content) ->
+    gen_tcp:send(Socket, Content).
+
+stop(Socket) ->
+    gen_tcp:close(Socket).
+
 
 %% ====================================================================
 %% Internal functions
