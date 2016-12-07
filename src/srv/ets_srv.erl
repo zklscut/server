@@ -36,6 +36,7 @@ start_link() ->
 %% ====================================================================
 init([]) ->
     ets:new(?ETS_PLAYER_PID, [set, public, named_table, {keypos, 1}]),
+    ets:new(?ETS_GLOBAL_COUNTER, [set, public, named_table, {keypos, 1}]),
     {ok, #state{}}.
 
 

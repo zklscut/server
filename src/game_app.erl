@@ -13,6 +13,7 @@ start(_, _) ->
     {ok, SupPid} = game_supervisor:start_link(),
     start_player_supervisor(),
     start_cache_process(),
+    ok = lib_global_counter:init_global_id(),
 
     start_tcp_supervisor(),
     tcp_listener:start(),

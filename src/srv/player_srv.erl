@@ -114,8 +114,9 @@ handle_info(Info, State) ->
             | {shutdown, term()}
             | term().
 %% ====================================================================
-terminate(Reason, _State) ->
+terminate(Reason, State) ->
     lager:info("player terminate Reason ~p", [Reason]),
+    lib_player:handle_after_logout(State),
     supervisor:terminate_child(player_supervisor, self()),
     ok.
 

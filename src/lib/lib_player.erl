@@ -2,22 +2,23 @@
 %% @doc player_srv.
 %% 2016
 
--module(mod_account).
--export([login/2]).
+-module(lib_player).
 
--include("game_pb.hrl").
+-include("ets.hrl").
+
+-export([handle_after_login/1,
+         handle_after_logout/1]).
 
 
 %% ====================================================================
 %% API functions
 %% ====================================================================
 
-login(#m__account__login__l2s{account_name = _AccountName}, Player) ->
-    PlayerId = global_id_srv:generate_player_id(),
+handle_after_login(Player) ->
+    Player.
 
-    Return = #m__account__login__s2l{result = 1},
-    net_send:send(Return, Player),
-    {save, maps:put(id, Player)}.
+handle_after_logout(Player) ->
+    Player.
 
 
 %%%====================================================================
