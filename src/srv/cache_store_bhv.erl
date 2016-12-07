@@ -78,7 +78,7 @@ read(CacheModule, Key) ->
 
 
 write(CacheModule, {Key, Data}) ->
-    gen_server:cast(CacheModule, {write, {Key, Data}});
+    gen_server:cast(CacheModule, {write, {Key, Data}}).
 
 delete(CacheModule, Key) ->
     gen_server:cast(CacheModule, {delete, Key}).
