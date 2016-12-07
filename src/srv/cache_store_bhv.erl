@@ -160,11 +160,11 @@ handle_cast({delete, Key}, State) ->
     NewState = (State#state.module):delete(Key, State),
     NewDirtyKeyList = delete_dirty_key(Key, NewState#state.dirty_key_list),
     lib_ets:delete(?ETS_NAME(State#state.module), Key),
-    {noreply, NewState#{dirty_key_list = NewDirtyKeyList}};
+    {noreply, NewState#state{dirty_key_list = NewDirtyKeyList}};
 
 handle_cast({delete_all}, State) ->
     lib_ets:delete_all(?ETS_NAME(State#state.module)),
-    {noreply, State#{dirty_key_list = []}};
+    {noreply, State#state{dirty_key_list = []}};
 
 handle_cast(sync_db, State) ->
     {noreply, sync_db_inner(State)}.
