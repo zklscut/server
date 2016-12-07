@@ -16,7 +16,6 @@
     start_link/1,
     read/2,
     write/2,
-    add/2,
     delete/2,
     sync_db/1,
     sync_db/2,
@@ -116,7 +115,8 @@ get_all(CacheModule) ->
 init([Module, Interval]) ->
     ets:new(?ETS_NAME(Module), [set, public, named_table, {keypos, 1}]),
     erlang:send_after(Interval, Module, sync_time),
-    {ok, State}.
+    {ok, State#state{module = Module,
+                     interval = Interval}}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -153,7 +153,7 @@ handle_call(sync_db, _From, State) ->
 handle_cast({write, {Key, Data}}, State) ->
     NewDirtyKeyList = add_dirty_key(Key, State#state.dirty_key_list),
     lib_ets:update(?ETS_NAME(State#state.module), Key, Data),
-    NewState = State#{dirty_key_list = NewDirtyKeyList},
+    NewState = State#state{dirty_key_list = NewDirtyKeyList},
     {noreply, NewState};
 
 handle_cast({delete, Key}, State) ->
@@ -240,4 +240,4 @@ get_key_list_in_cache(CacheModule) ->
 sync_db_inner(State) ->
     ok = (State#state.module):sync_db(State#state.dirty_key_list),
     erlang:send_after(State#state.interval, self(), sync_time),
-    State#{dirty_key_list = []}.
+    State#state{dirty_key_list = []}.
