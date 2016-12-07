@@ -115,8 +115,8 @@ get_all(CacheModule) ->
 init([Module, Interval]) ->
     ets:new(?ETS_NAME(Module), [set, public, named_table, {keypos, 1}]),
     erlang:send_after(Interval, Module, sync_time),
-    {ok, State#state{module = Module,
-                     interval = Interval}}.
+    {ok, #state{module = Module,
+                interval = Interval}}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -224,18 +224,9 @@ add_dirty_key(Key, DirtyKeyList) ->
             [Key|DirtyKeyList]
     end.
 
-add_dirty_key_in_list(KeyList, DirtyKeyList) ->
-    FunAdd = 
-        fun(Key, CurDirtyKeyList) ->
-                add_dirty_key(Key, CurDirtyKeyList)
-        end,
-    lists:foldl(FunAdd, DirtyKeyList, KeyList).
-
 delete_dirty_key(Key, DirtyKeyList) ->
     DirtyKeyList -- [Key].
 
-get_key_list_in_cache(CacheModule) ->
-    element(1, lists:unzip(ets:tab2list(?ETS_NAME(CacheModule)))).
 
 sync_db_inner(State) ->
     ok = (State#state.module):sync_db(State#state.dirty_key_list),
