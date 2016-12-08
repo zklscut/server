@@ -7,18 +7,29 @@
 -behaviour(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
+-include("ets.hrl").
+
 %% ====================================================================
 %% API functions
 %% ====================================================================
 
 -export([start_link/1,
-         active_socket/1]).
+         active_socket/1,
+         do_cache_op/2]).
 
 start_link(Socket) ->
     gen_server:start_link(?MODULE, [Socket], []).
 
 active_socket(Pid) ->
     gen_server:cast(Pid, active_socket).
+
+do_cache_op(Op, State) ->
+    case Op of
+        save ->
+            lib_ets:update(?ETS_PLAYER, maps:get(id, State), State);
+        _ ->
+            ignore
+    end.
 
 %% ====================================================================
 %% Behavioural functions
@@ -75,8 +86,22 @@ handle_call(_Request, _From, State) ->
 %% ====================================================================
 handle_cast(active_socket, State) ->
     active_socket_inner(maps:get(socket, State)),
-    {noreply, State}.
+    {noreply, State};
 
+handle_cast(Cast, State) ->
+    try
+        handle_cast_inner(Cast, State)
+    catch
+        What:Error ->
+            lager:error("error what ~p, Error ~p, stack", 
+                [What, Error, erlang:get_stacktrace()]),
+        {noreply, State}        
+    end.
+
+handle_cast_inner({apply, {M, F, A}}, State) ->
+    {Op, NewState} = apply(M, F, A ++ [State]),
+    do_cache_op(Op, NewState),
+    {noreply, NewState}.
 
 %% handle_info/2
 %% ====================================================================
@@ -154,6 +179,5 @@ do_proto(ProtoId, ProtoData, State) ->
             {ok, State}
     end.
 
-do_cache_op(_Op, _NewState) ->
-    ok.
+
 

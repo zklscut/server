@@ -1,21 +1,28 @@
 %% @author zhangkl
-%% @doc player_srv.
+%% @doc global_op_srv.
 %% 2016
 
--module(ets_srv).
-
--include("ets.hrl").
-
+-module(global_op_srv).
 -behaviour(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 %% ====================================================================
 %% API functions
 %% ====================================================================
--export([start_link/0]).
+-export([start_link/0, player_op/2]).
 
 start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+
+player_op(PlayerId, Op) ->
+    OpPid = 
+        case lib_player:get_pid(PlayerId) of
+            undefined ->
+                self();
+            Pid ->
+                Pid
+        end,
+    gen_server:cast(OpPid, {apply, Op, PlayerId}).
 
 %% ====================================================================
 %% Behavioural functions
@@ -35,10 +42,6 @@ start_link() ->
     Timeout :: non_neg_integer() | infinity.
 %% ====================================================================
 init([]) ->
-    ets:new(?ETS_PLAYER_PID, [set, public, named_table, {keypos, 1}]),
-    ets:new(?ETS_GLOBAL_COUNTER, [set, public, named_table, {keypos, 1}]),
-    ets:new(?ETS_ROOM, [set, public, named_table, {keypos, 1}]),
-    ets:new(?ETS_PLAYER, [set, public, named_table, {keypos, 1}]),
     {ok, #state{}}.
 
 
@@ -75,9 +78,21 @@ handle_call(_Request, _From, State) ->
     NewState :: term(),
     Timeout :: non_neg_integer() | infinity.
 %% ====================================================================
-handle_cast(_Msg, State) ->
-    {noreply, State}.
 
+handle_cast(Cast, State) ->
+    try
+        handle_cast_inner(Cast, State)
+    catch
+        What:Error ->
+            lager:error("error what ~p, Error ~p, stack", 
+                [What, Error, erlang:get_stacktrace()]),
+        {noreply, State}        
+    end.
+
+handle_cast_inner({apply, {M, F, A}, PlayerId}, State) ->
+    {Op, Player} = apply(M, F, A ++ [lib_player:get_player(PlayerId)]),
+    player_srv:do_cache_op(Op, Player),
+    {noreply, State}.
 
 %% handle_info/2
 %% ====================================================================
