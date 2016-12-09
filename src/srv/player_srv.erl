@@ -15,7 +15,10 @@
 
 -export([start_link/1,
          active_socket/1,
-         do_cache_op/2]).
+         do_cache_op/2,
+         kick_player/2,
+         stop_force/1,
+         login_change_socket/2]).
 
 start_link(Socket) ->
     gen_server:start_link(?MODULE, [Socket], []).
@@ -30,6 +33,15 @@ do_cache_op(Op, State) ->
         _ ->
             ignore
     end.
+
+kick_player(Pid, Reason) ->
+    gen_server:cast(Pid, {kick, Reason}).    
+
+stop_force(Pid) ->
+    supervisor:terminate_child(player_supervisor, Pid).
+
+login_change_socket(Pid, Socket) ->
+    gen_server:cast(Pid, {login_change_socket, Socket}).
 
 %% ====================================================================
 %% Behavioural functions
@@ -101,7 +113,20 @@ handle_cast(Cast, State) ->
 handle_cast_inner({apply, {M, F, A}}, State) ->
     {Op, NewState} = apply(M, F, A ++ [State]),
     do_cache_op(Op, NewState),
+    {noreply, NewState};
+
+handle_cast_inner({kick, Reason}, State) ->
+    {stop, Reason, State};
+
+handle_cast_inner({login_change_socket, Socket}, #{socket := PreSocket} = State) ->
+    gen_tcp:controlling_process(PreSocket, spawn(fun() -> ok end)),
+    gen_tcp:controlling_process(Socket, self()),
+
+    NewState = State#{socket := Socket},
+    mod_account:handle_send_login_result(NewState),
+    active_socket_inner(Socket),
     {noreply, NewState}.
+
 
 %% handle_info/2
 %% ====================================================================

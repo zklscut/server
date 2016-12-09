@@ -39,6 +39,8 @@ init([]) ->
     ets:new(?ETS_GLOBAL_COUNTER, [set, public, named_table, {keypos, 1}]),
     ets:new(?ETS_ROOM, [set, public, named_table, {keypos, 1}]),
     ets:new(?ETS_PLAYER, [set, public, named_table, {keypos, 1}]),
+    ets:new(?ETS_ACCOUNT_PLAYER, [set, public, named_table, {keypos, 1}]),
+    
     {ok, #state{}}.
 
 
