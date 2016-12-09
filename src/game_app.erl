@@ -15,7 +15,7 @@ start(_, _) ->
     start_cache_process(),
     ok = global_id_srv:init_global_id(),
     start_room_process(),
-
+    start_global_op_process(),
     %% keep last
     start_tcp_supervisor(),
     tcp_listener:start(),
@@ -45,3 +45,8 @@ start_room_process() ->
     supervisor:start_child(game_supervisor,
                            {room_srv, {room_srv, start_link,[]},
                             transient, infinity, worker, [room_srv]}).        
+
+start_global_op_process() ->
+    supervisor:start_child(game_supervisor,
+                           {global_op_srv, {global_op_srv, start_link,[]},
+                            transient, infinity, worker, [global_op_srv]}).                

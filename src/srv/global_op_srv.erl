@@ -16,9 +16,9 @@ start_link() ->
 
 player_op(PlayerId, Op) ->
     OpPid = 
-        case lib_player:get_pid(PlayerId) of
+        case lib_player:get_player_pid(PlayerId) of
             undefined ->
-                self();
+                whereis(?MODULE);
             Pid ->
                 Pid
         end,
