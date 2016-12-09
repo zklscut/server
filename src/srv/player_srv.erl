@@ -175,7 +175,8 @@ do_proto(ProtoId, ProtoData, State) ->
             lager:debug("throw error ~p", [ThrowError]),
             {ok, State};
         What:Error ->
-            lager:error("error what ~p, Error ~p, stack", [What, Error, erlang:get_stacktrace()]),
+            lager:error("proto error what ~p, Error ~p, stack", 
+                    [What, Error, erlang:get_stacktrace()]),
             {ok, State}
     end.
 

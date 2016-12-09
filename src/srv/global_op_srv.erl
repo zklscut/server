@@ -84,8 +84,8 @@ handle_cast(Cast, State) ->
         handle_cast_inner(Cast, State)
     catch
         What:Error ->
-            lager:error("error what ~p, Error ~p, stack", 
-                [What, Error, erlang:get_stacktrace()]),
+            lager:error("global op error what ~p, Error ~p, stack", 
+                    [What, Error, erlang:get_stacktrace()]),
         {noreply, State}        
     end.
 
