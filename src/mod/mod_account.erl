@@ -13,7 +13,7 @@
 %% ====================================================================
 
 login(#m__account__login__l2s{account_name = AccountName}, 
-    #{scoket := Socket} = Player) ->
+    #{socket := Socket} = Player) ->
     {_IsCreate, NewPlayer} = create_or_get_player(AccountName, Player),
 
     PlayerId = lib_player:get_player_id(Player),
