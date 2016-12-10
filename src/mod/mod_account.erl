@@ -46,7 +46,7 @@ create_or_get_player(AccountName, #{socket := Socket}) ->
             PlayerId ->
                 {0, lib_player:get_player(PlayerId)}
         end,
-    {IsCreate, Player#{socket := Socket}}.
+    {IsCreate, Player#{socket => Socket}}.
 
 create_player(AccountName) ->
     PlayerId = global_id_srv:generate_player_id(),
