@@ -38,7 +38,7 @@ handle_send_login_result(Result, Player) ->
 %%% Internal functions
 %%%====================================================================
 
-create_or_get_player(AccountName, #{scoket := Socket}) ->
+create_or_get_player(AccountName, #{socket := Socket}) ->
     {IsCreate, Player} = 
         case lib_ets:get(?ETS_ACCOUNT_PLAYER, AccountName) of
             undefined ->
@@ -46,7 +46,7 @@ create_or_get_player(AccountName, #{scoket := Socket}) ->
             PlayerId ->
                 {0, lib_player:get_player(PlayerId)}
         end,
-    {IsCreate, Player#{scoket := Socket}}.
+    {IsCreate, Player#{socket := Socket}}.
 
 create_player(AccountName) ->
     PlayerId = global_id_srv:generate_player_id(),
