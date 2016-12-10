@@ -20,7 +20,7 @@ send(Socket) ->
 
 send_room(Socket) ->
     Encode = game_pb:encode({m__room__get_list__l2s, 13001}),
-    gen_tcp:send(Socket, <<1:24, 1:16, 10001:16, Encode/binary>>).
+    gen_tcp:send(Socket, <<1:24, 1:16, 13001:16, Encode/binary>>).
 
 recv_room(Socket) ->
     {ok, List} = gen_tcp:recv(Socket, 0),
