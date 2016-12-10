@@ -1,5 +1,5 @@
 %% @author zhangkl
-%% @doc player_srv.
+%% @doc lib_player.
 %% 2016
 
 -module(lib_player).
