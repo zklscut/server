@@ -14,6 +14,6 @@
 -record(m__room__leave_room__l2s, {msg_id=13007}).
 -record(m__room__leave_room__s2l, {msg_id=13008}).
 -record(m__room__rand_enter__l2s, {msg_id=13009}).
--record(p_chat, {player_show_base, voice, content}).
--record(m__chat__public_speak__l2s, {msg_id=14001, chat_type, voice, content}).
--record(m__chat__public_speak__s2l, {msg_id=14002, chat_type, chat}).
+-record(p_chat, {player_show_base, voice, content, length, compress, chat_type, room_id}).
+-record(m__chat__public_speak__l2s, {msg_id=14001, chat}).
+-record(m__chat__public_speak__s2l, {msg_id=14002, chat}).

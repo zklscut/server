@@ -13,5 +13,8 @@ send(Send, #{socket := Socket}) ->
     Len = byte_size(Binary),
     gen_tcp:send(Socket, <<1:24, Len:16, ProtoId:16, Binary/binary>>);
 
+send(Send, PlayerId) when is_integer(PlayerId) ->
+	global_op_srv:player_op(PlayerId, {?MODULE, send, [Send]});
+
 send(_, _) ->
     ok.

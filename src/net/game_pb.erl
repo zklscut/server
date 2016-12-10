@@ -36,13 +36,13 @@
 	 encode_p_player_show_base/1,
 	 decode_p_player_show_base/1]).
 
--record(m__chat__public_speak__s2l,
-	{msg_id, chat_type, chat}).
+-record(m__chat__public_speak__s2l, {msg_id, chat}).
 
--record(m__chat__public_speak__l2s,
-	{msg_id, chat_type, voice, content}).
+-record(m__chat__public_speak__l2s, {msg_id, chat}).
 
--record(p_chat, {player_show_base, voice, content}).
+-record(p_chat,
+	{player_show_base, voice, content, length, compress,
+	 chat_type, room_id}).
 
 -record(m__room__rand_enter__l2s, {msg_id}).
 
@@ -300,13 +300,25 @@ encode(m__room__rand_enter__l2s, _Record) ->
 					13009),
 			   int32, [])]);
 encode(p_chat, _Record) ->
-    iolist_to_binary([pack(1, required,
+    iolist_to_binary([pack(1, optional,
 			   with_default(_Record#p_chat.player_show_base, none),
 			   p_player_show_base, []),
 		      pack(2, required,
 			   with_default(_Record#p_chat.voice, none), bytes, []),
 		      pack(3, required,
 			   with_default(_Record#p_chat.content, none), string,
+			   []),
+		      pack(4, required,
+			   with_default(_Record#p_chat.length, none), int32,
+			   []),
+		      pack(5, required,
+			   with_default(_Record#p_chat.compress, none), int32,
+			   []),
+		      pack(6, required,
+			   with_default(_Record#p_chat.chat_type, none), int32,
+			   []),
+		      pack(7, optional,
+			   with_default(_Record#p_chat.room_id, none), int32,
 			   [])]);
 encode(m__chat__public_speak__l2s, _Record) ->
     iolist_to_binary([pack(1, required,
@@ -314,27 +326,15 @@ encode(m__chat__public_speak__l2s, _Record) ->
 					14001),
 			   int32, []),
 		      pack(2, required,
-			   with_default(_Record#m__chat__public_speak__l2s.chat_type,
+			   with_default(_Record#m__chat__public_speak__l2s.chat,
 					none),
-			   int32, []),
-		      pack(3, required,
-			   with_default(_Record#m__chat__public_speak__l2s.voice,
-					none),
-			   bytes, []),
-		      pack(4, required,
-			   with_default(_Record#m__chat__public_speak__l2s.content,
-					none),
-			   string, [])]);
+			   p_chat, [])]);
 encode(m__chat__public_speak__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__chat__public_speak__s2l.msg_id,
 					14002),
 			   int32, []),
 		      pack(2, required,
-			   with_default(_Record#m__chat__public_speak__s2l.chat_type,
-					none),
-			   int32, []),
-		      pack(3, required,
 			   with_default(_Record#m__chat__public_speak__s2l.chat,
 					none),
 			   p_chat, [])]).
@@ -495,20 +495,21 @@ decode(m__room__rand_enter__l2s, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__rand_enter__l2s, Decoded);
 decode(p_chat, Bytes) ->
-    Types = [{3, content, string, []},
+    Types = [{7, room_id, int32, []},
+	     {6, chat_type, int32, []}, {5, compress, int32, []},
+	     {4, length, int32, []}, {3, content, string, []},
 	     {2, voice, bytes, []},
 	     {1, player_show_base, p_player_show_base, [is_record]}],
     Decoded = decode(Bytes, Types, []),
     to_record(p_chat, Decoded);
 decode(m__chat__public_speak__l2s, Bytes) ->
-    Types = [{4, content, string, []},
-	     {3, voice, bytes, []}, {2, chat_type, int32, []},
+    Types = [{2, chat, p_chat, [is_record]},
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__chat__public_speak__l2s, Decoded);
 decode(m__chat__public_speak__s2l, Bytes) ->
-    Types = [{3, chat, p_chat, [is_record]},
-	     {2, chat_type, int32, []}, {1, msg_id, int32, []}],
+    Types = [{2, chat, p_chat, [is_record]},
+	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__chat__public_speak__s2l, Decoded).
 
