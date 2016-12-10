@@ -22,7 +22,8 @@
 get_list(#m__room__get_list__l2s{}, Player) ->
     PRoomList = [conver_to_p_room(Room) || {_, Room} <- ets:tab2list(?ETS_ROOM)],
     Return = #m__room__get_list__s2l{room_list = PRoomList},
-    net_send:send(Return, Player).
+    net_send:send(Return, Player),
+    {ok, Player}.
 
 enter_room(#m__room__enter_room__l2s{room_id = RoomId}, Player) ->
     lib_room:assert_not_have_room(Player),
