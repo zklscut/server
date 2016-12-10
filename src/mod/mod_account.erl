@@ -28,7 +28,7 @@ login(#m__account__login__l2s{account_name = AccountName},
     {save, NewPlayer}.
 
 handle_send_login_result(Player) ->
-    handle_send_login_result(Player, 1).
+    handle_send_login_result(1, Player).
 
 handle_send_login_result(Result, Player) ->
     Return = #m__account__login__s2l{result = Result},
