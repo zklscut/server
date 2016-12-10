@@ -16,7 +16,7 @@ login(#m__account__login__l2s{account_name = AccountName},
     #{socket := Socket} = Player) ->
     {_IsCreate, NewPlayer} = create_or_get_player(AccountName, Player),
 
-    PlayerId = lib_player:get_player_id(Player),
+    PlayerId = lib_player:get_player_id(NewPlayer),
     case lib_player:get_player_pid(PlayerId) of
         undefined ->
             handle_send_login_result(Player);
