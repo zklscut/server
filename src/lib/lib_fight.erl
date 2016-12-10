@@ -28,8 +28,8 @@ init(RoomId, PlayerList, State) ->
 
 init_seat(PlayerList, State) ->
     FunInitSeat = 
-        fun(PlayerId, {CurIndex, CurSeatMap) ->
-                {CurIndex + 1, maps:put(CurIndex, PlayerId)}
+        fun(PlayerId, {CurIndex, CurSeatMap}) ->
+                {CurIndex + 1, maps:put(CurIndex, PlayerId, CurSeatMap)}
         end,
     {_, SeatPlayerMap} = lists:foldl(FunInitSeat, {0, #{}}, PlayerList),
     maps:put(seat_player_map, SeatPlayerMap, State).
