@@ -110,7 +110,7 @@ handle_cast(Cast, State) ->
         {noreply, State}        
     end.
 
-handle_cast_inner({apply, {M, F, A}}, State) ->
+handle_cast_inner({apply, {M, F, A}, _}, State) ->
     {Op, NewState} = apply(M, F, A ++ [State]),
     do_cache_op(Op, NewState),
     {noreply, NewState};
