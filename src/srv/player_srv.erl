@@ -152,6 +152,7 @@ handle_info({tcp, _Port, <<PreData:24, Len:16, ProtoId:16, ProtoData/binary>>}, 
 
 handle_info(Info, State) ->
     lager:error("unhandle info ~p", [Info]),
+    active_socket_inner(maps:get(socket, State)),
     {noreply, State}.    
 
 
