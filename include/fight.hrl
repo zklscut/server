@@ -20,7 +20,7 @@
 -define(TURN_DOWN, 1).
 
 -define(MFIGHT, #{room_id => 0,
-                  player_list => [],    %% #{seat_id, player_id}
+                  seat_player_map => [],%% #{seat_id, player_id}
                   offline_list => [],   %% seat_id
                   out_player_list => [],%% 出局列表 seat_id
                   duty_list => [],      %% #{seat_id, 职责}
