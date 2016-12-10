@@ -19,7 +19,7 @@ login(#m__account__login__l2s{account_name = AccountName},
     PlayerId = lib_player:get_player_id(NewPlayer),
     case lib_player:get_player_pid(PlayerId) of
         undefined ->
-            handle_send_login_result(Player);
+            handle_send_login_result(NewPlayer);
         Pid ->
             player_srv:login_change_socket(Pid, Socket),
             player_srv:stop_force(self())
