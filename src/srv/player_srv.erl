@@ -187,7 +187,9 @@ code_change(_OldVsn, State, _Extra) ->
 %% ====================================================================
 
 active_socket_inner(Socket) ->
-    inet:setopts(Socket, [{active, once}]).
+    ActiveResult = inet:setopts(Socket, [{active, once}]),
+    lager:info("active result ~p", [ActiveResult]),
+    ActiveResult.
 
 do_proto(ProtoId, ProtoData, State) ->
     try
