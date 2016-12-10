@@ -1,15 +1,19 @@
--record(p_role_show_base, {role_name}).
+-record(p_player_show_base, {player_id, nick_name}).
 -record(m__account__login__l2s, {msg_id=10001, account_name}).
 -record(m__account__login__s2l, {msg_id=10002, result}).
 -record(m__player__info__l2s, {msg_id=12001}).
 -record(m__player__info__s2l, {msg_id=12002, player_id}).
+-record(m__player__errcode__s2l, {msg_id=12004, errcode}).
 -record(m__room__get_list__l2s, {msg_id=13001}).
 -record(p_room, {room_id, cur_player_num, max_player_num, owner, room_name, room_status}).
 -record(m__room__get_list__s2l, {msg_id=13002, room_list}).
 -record(m__room__enter_room__l2s, {msg_id=13003, room_id}).
 -record(m__room__enter_room__s2l, {msg_id=13004, room_info, member_list}).
 -record(m__room__create_room__l2s, {msg_id=13005, max_player_num, room_name}).
--record(m__room__create_room__s2l, {msg_id=13006}).
+-record(m__room__create_room__s2l, {msg_id=13006, room_info}).
 -record(m__room__leave_room__l2s, {msg_id=13007}).
 -record(m__room__leave_room__s2l, {msg_id=13008}).
 -record(m__room__rand_enter__l2s, {msg_id=13009}).
+-record(p_chat, {player_show_base, voice, content}).
+-record(m__chat__public_speak__l2s, {msg_id=14001, chat_type, voice, content}).
+-record(m__chat__public_speak__s2l, {msg_id=14002, chat_type, chat}).
