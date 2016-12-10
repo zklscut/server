@@ -1,12 +1,13 @@
 % @Author: anchen
 % @Date:   2016-12-06 14:52:58
 % @Last Modified by:   anchen
-% @Last Modified time: 2016-12-09 09:50:44
+% @Last Modified time: 2016-12-10 11:20:23
 
 -module(net_send).
 -export([send/2]).
 
 send(Send, #{socket := Socket}) ->
+    lager:info("send ~p", [Send]),
     Binary = game_pb:encode(Send),
     ProtoId = element(2, Send),
     Len = byte_size(Binary),
