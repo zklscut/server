@@ -137,7 +137,7 @@ handle_cast_inner({leave_room, RoomId, PlayerId}, State) ->
                 end,
             NewRoom = Room#{player_list := NewPlayerList,
                             owner := Owner},
-            lib_room:update(RoomId, NewRoom)
+            lib_room:update_room(RoomId, NewRoom)
     end,
     global_op_srv:player_op(PlayerId, {mod_room, handle_leave_room, []}),
     {noreply, State}.
