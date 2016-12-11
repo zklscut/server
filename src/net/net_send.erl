@@ -6,8 +6,9 @@
 -module(net_send).
 -export([send/2]).
 
-send(Send, #{socket := Socket}) ->
-    lager:info("send ~p", [Send]),
+send(Send, #{socket := Socket,
+			 id := PlayerId}) ->
+    lager:info("send ~p", [{PlayerId, Send}]),
     Binary = game_pb:encode(Send),
     ProtoId = element(2, Send),
     Len = byte_size(Binary),
