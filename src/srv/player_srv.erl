@@ -111,7 +111,13 @@ handle_cast(Cast, State) ->
     end.
 
 handle_cast_inner({apply, {M, F, A}, _PlayerId}, State) ->
-    {Op, NewState} = apply(M, F, A ++ [State]),
+    {Op, NewState} = 
+        case apply(M, F, A ++ [State]) of
+            {OpResult, StateResult} ->
+                {OpResult, StateResult};
+            _ ->
+                {ok, State}
+        end,
     do_cache_op(Op, NewState),
     {noreply, NewState};
 

@@ -81,7 +81,7 @@ get_player_room_player_list(Player) ->
         undefined ->
             [];
         Room ->
-            maps:get(player_list, Room)
+            maps:get(player_list, Room) -- [lib_player:get_player_id(Player)]
     end.
 
 %%%====================================================================

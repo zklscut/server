@@ -90,8 +90,14 @@ handle_cast(Cast, State) ->
     end.
 
 handle_cast_inner({apply, {M, F, A}, PlayerId}, State) ->
-    {Op, Player} = apply(M, F, A ++ [lib_player:get_player(PlayerId)]),
-    player_srv:do_cache_op(Op, Player),
+    {Op, NewPlayer} = 
+        case apply(M, F, A ++ [lib_player:get_player(PlayerId)]) of
+            {OpResult, PlayerResult} ->
+                {OpResult, PlayerResult};
+            _ ->
+                {ok, ignore}
+        end,
+    player_srv:do_cache_op(Op, NewPlayer),
     {noreply, State}.
 
 %% handle_info/2
