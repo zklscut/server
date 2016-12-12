@@ -28,7 +28,7 @@ init(RoomId, PlayerList, State) ->
     State1 = State#{room_id := RoomId},
     State2 = init_seat(PlayerList, State1),
     State3 = init_duty(PlayerList, State2),
-    State.
+    State3.
 
 %%%====================================================================
 %%% Internal functions
@@ -40,7 +40,7 @@ init_seat(PlayerList, State) ->
                 {CurIndex + 1, maps:put(CurIndex, PlayerId, CurSeatMap), 
                                maps:put(PlayerId, CurIndex, CurPlayerMap)}
         end,
-    {_, SeatPlayerMap, PlayerSeatMap} = lists:foldl(FunInitSeat, {0, #{}, #{}}, PlayerList),
+    {_, SeatPlayerMap, PlayerSeatMap} = lists:foldl(FunInitSeat, {1, #{}, #{}}, PlayerList),
     State#{seat_player_map := SeatPlayerMap,
            player_seat_map := PlayerSeatMap}.
 

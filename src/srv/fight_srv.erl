@@ -4,14 +4,24 @@
 
 -module(fight_srv).
 -behaviour(gen_fsm).
--export([init/1, state_name/2, state_name/3, handle_event/3, handle_sync_event/4, handle_info/3, terminate/3, code_change/4]).
+-export([init/1, 
+        ?GAME_STATE_SPECIAL_NIGHT/2, 
+        state_name/3, 
+        handle_event/3, 
+        handle_sync_event/4, 
+        handle_info/3, 
+        terminate/3, 
+        code_change/4]).
+
+-include("fight.hrl").
 
 %% ====================================================================
 %% API functions
 %% ====================================================================
--export([]).
+-export([start_link/2]).
 
-
+start_link(RoomId, PlayerList) ->
+    gen_fsm:start(?MODULE, [RoomId, PlayerList, ?MFIGHT], []).
 
 %% ====================================================================
 %% Behavioural functions
@@ -32,27 +42,33 @@
     Timeout :: non_neg_integer() | infinity,
     Reason :: term().
 %% ====================================================================
-init([]) ->
-    {ok, state_name, #state{}}.
+init([RoomId, PlayerList, State]) ->
+    lib_room:update_fight_pid(RoomId, self()),
+    NewState = lib_fight:init(RoomId, PlayerList, State),
+
+    %%TODO notice player duty
+    send_event_inner(wait_op),
+    {ok, ?GAME_STATE_SPECIAL_NIGHT, NewState}.
 
 
-%% state_name/2
-%% ====================================================================
-%% @doc <a href="http://www.erlang.org/doc/man/gen_fsm.html#Module:StateName-2">gen_fsm:StateName/2</a>
--spec state_name(Event :: timeout | term(), StateData :: term()) -> Result when
-    Result :: {next_state, NextStateName, NewStateData}
-            | {next_state, NextStateName, NewStateData, Timeout}
-            | {next_state, NextStateName, NewStateData, hibernate}
-            | {stop, Reason, NewStateData},
-    NextStateName :: atom(),
-    NewStateData :: term(),
-    Timeout :: non_neg_integer() | infinity,
-    Reason :: term().
-%% ====================================================================
-% @todo implement actual state
-state_name(Event, StateData) ->
-    {next_state, state_name, StateData}.
+?GAME_STATE_SPECIAL_NIGHT(wait_op, State) ->
+    %%TODO select special
+    %%send player to op
+    %% config timeout
+    %% log op seat
+    start_fight_fsm_event_timer(?TIMER_TIMEOUT, 30000),
+    {next_state, state_name, State};
 
+?GAME_STATE_SPECIAL_NIGHT({player_op, PlayerId, Op}, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    %%TODO assert op 
+    %% op
+    %% decide next or continuce
+    {next_state, state_name, State};
+
+?GAME_STATE_SPECIAL_NIGHT(?TIMER_TIMEOUT, State) ->
+    %%TODO send special 
+    {next_state, state_name, State}.
 
 %% state_name/3
 %% ====================================================================
@@ -162,4 +178,42 @@ code_change(OldVsn, StateName, StateData, Extra) ->
 %% Internal functions
 %% ====================================================================
 
+send_event_inner(Event) ->
+    send_event_inner(Event, 0).
 
+send_event_inner(Event, Time) ->
+    gen_fsm:send_event_after(Time, Event).
+
+%%启动一个gen_fsm定时器并将ref保存在进程字典
+start_fight_fsm_event_timer(Event, Time) ->
+    TimerRef = gen_fsm:send_event_after(Time, Event),
+    put(Event, TimerRef).
+
+%%取消一个gen_fsm定时器删除进程字典
+cancel_fight_fsm_event_timer(Event) ->
+    TimerRef = get(Event),
+    case TimerRef of
+        undefined ->
+            ignore;
+        _ ->
+            gen_fsm:cancel_timer(TimerRef),
+            erase(Event)
+    end.
+
+send_event_to_fsm(Event, Player) ->
+    PlayerFightProcess = lib_room:get_fight_pid_by_player(Player),
+    case PlayerFightProcess of
+        undefined ->
+            ignore;
+        _ ->
+            gen_fsm:send_event(PlayerFightProcess, Event)
+    end.
+
+send_event_to_all_state(Event, PlayerId) ->
+    PlayerFightProcess = lib_room:get_fight_pid_by_player(Player),
+    case PlayerFightProcess of
+        undefined ->
+            ignore;
+        _ ->
+            gen_fsm:send_all_state_event(PlayerFightProcess, Event)
+    end.

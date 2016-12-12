@@ -4,6 +4,9 @@
 
 -module(test).
 
+-include("fight.hrl").
+
+-compile(export_all).
 %% ====================================================================
 %% API functions
 %% ====================================================================
@@ -35,7 +38,8 @@ recv(Socket) ->
     <<_:24, Len:16, ProtoId:16, Binary/binary>> = list_to_binary(List),
     {Len, ProtoId, game_pb:decode(m__account__login__s2l, Binary)}.
 
-
+test() ->
+    lib_fight:init(1, lists:seq(1, 18), ?MFIGHT).
 
 %% ====================================================================
 %% Internal functions

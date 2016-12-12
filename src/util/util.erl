@@ -15,7 +15,7 @@
 
 %%产生一个From 到To之间的一个随机数
 rand(From, To)->
-    InitSeed = now(),
+    InitSeed = erlang:timestamp(),
     {SeedA,SeedB,SeedC} = InitSeed,
     NewSeed = {SeedA * SeedA ,SeedB * SeedB, SeedC * SeedC},
     random:seed(NewSeed),
