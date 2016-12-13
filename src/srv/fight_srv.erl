@@ -29,205 +29,106 @@ start_link(RoomId, PlayerList) ->
 %% ====================================================================
 -record(state, {}).
 
-% -define(MFIGHT, #{room_id => 0,
-%                   seat_player_map => #{},%% #{seat_id, player_id}
-%                   player_seat_map => #{},%% #{player_id, seat_id}
-%                   offline_list => [],   %% seat_id
-%                   out_player_list => [],%% 出局列表 seat_id
-%                   seat_duty_map => #{}, %% #{seat_id, 职责}
-%                   duty_seat_map => #{}, %% #{duty_id, [seat_id]}
-%                   left_op_list => [],   %% 剩余操作seat_id 按照顺序排好
-%                   op => 0,              %% 当前进行的操作
-%                   game_state =>  0,     %% 第几天晚上
-%                   game_round =>  1,     %% 第几轮
-%                   last_op_data => #{}   %% 上一轮操作的数据, 杀了几号, 投了几号等等
-%                   }).
-
-%% init/1
-%% ====================================================================
-%% @doc <a href="http://www.erlang.org/doc/man/gen_fsm.html#Module:init-1">gen_fsm:init/1</a>
--spec init(Args :: term()) -> Result when
-    Result :: {ok, StateName, StateData}
-            | {ok, StateName, StateData, Timeout}
-            | {ok, StateName, StateData, hibernate}
-            | {stop, Reason}
-            | ignore,
-    StateName :: atom(),
-    StateData :: term(),
-    Timeout :: non_neg_integer() | infinity,
-    Reason :: term().
-%% ====================================================================
 init([RoomId, PlayerList, State]) ->
     lib_room:update_fight_pid(RoomId, self()),
     NewState = lib_fight:init(RoomId, PlayerList, State),
     notice_duty(NewState),
     send_event_inner(start),
-    {ok, ?GAME_STATE_SPECIAL_NIGHT, NewState}.
-
-notice_duty(State) ->
-    SeatDutyMap = maps:get(seat_duty_map, State),
-    FunNotice = 
-        fun(SeatId) ->
-            Duty = maps:get(SeatId, SeatDutyMap),
-            Send = #m__fight__notice_duty__s2l{duty = Duty},
-            lib_fight:send_to_seat(Send, SeatId, State)
-        end,
-    lists:foreach(FunNotice, maps:keys(SeatDutyMap)).
-
-?GAME_STATE_SPECIAL_NIGHT(start, State) ->
-    StateAfterInit = lib_fight:init_special_night(State),
-    StateAfterStatus = update_fight_status(?GAME_STATE_SPECIAL_NIGHT, StateAfterInit),
-    send_event_inner(new_op),
-    {ok, ?GAME_STATE_SPECIAL_NIGHT, StateAfterStatus};
-
-?GAME_STATE_SPECIAL_NIGHT(new_op, State) ->
-    case get_turn_op_list(State) of
-        undefined ->
-            send_event_inner(start),
-            {next_state, ?GAME_STATE_LANGREN_NIGHT, State};        
-        TurnList ->
-            notice_player_op(TurnList, State),
-            StateAfterWaitOp = maps:put(wait_op_list, TurnList, State),
-            %start_fight_fsm_event_timer(?TIMER_TIMEOUT, 30000),
-            {next_state, ?GAME_STATE_SPECIAL_NIGHT, StateAfterWaitOp}
-    end;
-
-?GAME_STATE_SPECIAL_NIGHT({player_op, PlayerId, Op}, State) ->
-    try
-        assert_op_in_wait(PlayerId, State),
-        SeatId = lib_fight:get_seat_id_by_player_id(PlayerId),
-        StateAfterLogOp = do_log_op(SeatId, Op, State),
-        {IsWaitOver, StateAfterWaitOp} = 
-            do_remove_wait_op(SeatId, StateAfterLogOp),
-        case IsWaitOver of
-            true ->
-                %cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-                StateAfterDoOp = do_player_op(StateAfterWaitOp),
-                StateAfterLeftOp = do_remove_left_op(StateAfterDoOp),
-                send_event_inner(new_op),
-                {next_state, ?GAME_STATE_SPECIAL_NIGHT, StateAfterLeftOp};
-            false ->
-                {next_state, ?GAME_STATE_SPECIAL_NIGHT, StateAfterWaitOp}
-        end
-    catch 
-        throw:ErrCode ->
-            net_send:send_errcode(ErrCode, PlayerId),
-            State
-    end
-    {next_state, state_name, State};
-
-?GAME_STATE_SPECIAL_NIGHT(?TIMER_TIMEOUT, State) ->
-    %%TODO send special 
-    {next_state, state_name, State}.
+    {ok, state_daozei, NewState}.
 
 
-
-%% state_name/3
 %% ====================================================================
-%% @doc <a href="http://www.erlang.org/doc/man/gen_fsm.html#Module:StateName-3">gen_fsm:StateName/3</a>
--spec state_name(Event :: term(), From :: {pid(), Tag :: term()}, StateData :: term()) -> Result when
-    Result :: {reply, Reply, NextStateName, NewStateData}
-            | {reply, Reply, NextStateName, NewStateData, Timeout}
-            | {reply, Reply, NextStateName, NewStateData, hibernate}
-            | {next_state, NextStateName, NewStateData}
-            | {next_state, NextStateName, NewStateData, Timeout}
-            | {next_state, NextStateName, NewStateData, hibernate}
-            | {stop, Reason, Reply, NewStateData}
-            | {stop, Reason, NewStateData},
-    Reply :: term(),
-    NextStateName :: atom(),
-    NewStateData :: atom(),
-    Timeout :: non_neg_integer() | infinity,
-    Reason :: normal | term().
+%% state_daozei
 %% ====================================================================
+state_daozei(start, State) ->
+    do_duty_state_start(?DUTY_DAOZEI, state_daozei, State).
+
+state_daozei(wait_op, State) ->
+    start_fight_fsm_event_timer(?TIMER_TIMEOUT, 30000),
+    NewState = do_duty_state_wait_op(?DUTY_DAOZEI, State),
+    {next_state, state_daozei, NewState};
+
+state_daozei({player_op, PlayerId, Op}, State) ->
+    do_receive_player_op(PlayerId, Op, state_daozei, State);
+
+state_daozei(timeout, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    {ok, state_daozei, State};
+
+state_daozei(op_over, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    NewState = lib_fight:do_daozei_op(State),
+    {ok, get_next_game_state(state_daoze), NewState}.
+            
+%% ====================================================================
+%% state_qiubite
+%% ====================================================================
+state_qiubite(start, State) ->
+    do_duty_state_start(?DUTY_QIUBITE, state_qiubite, State).
+
+state_qiubite(wait_op, State) ->
+    start_fight_fsm_event_timer(?TIMER_TIMEOUT, 30000),
+    NewState = do_duty_state_wait_op(?DUTY_QIUBITE, State),
+    {next_state, state_qiubite, NewState};
+
+state_qiubite({player_op, PlayerId, Op}, State) ->
+    do_receive_player_op(PlayerId, Op, state_qiubite, State);
+
+state_qiubite(timeout, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    {ok, state_qiubite, State};
+
+state_qiubite(op_over, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    NewState = lib_fight:do_qiubite_op(State),
+    {ok, get_next_game_state(state_qiubite), NewState}.
+
+%% ====================================================================
+%% state_hunxuer
+%% ====================================================================
+state_hunxuer(start, State) ->
+    do_duty_state_start(?DUTY_HUNXUEER, state_hunxuer, State).
+
+state_hunxuer(wait_op, State) ->
+    start_fight_fsm_event_timer(?TIMER_TIMEOUT, 30000),
+    NewState = do_duty_state_wait_op(?DUTY_HUNXUEER, State),
+    {next_state, state_hunxuer, NewState};
+
+state_hunxuer({player_op, PlayerId, Op}, State) ->
+    do_receive_player_op(PlayerId, Op, state_hunxuer, State);
+
+state_hunxuer(timeout, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    {ok, state_hunxuer, State};
+
+state_hunxuer(op_over, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    NewState = lib_fight:do_hunxuer_op(State),
+    {ok, get_next_game_state(state_hunxuer), NewState}.
+
 state_name(Event, From, StateData) ->
     Reply = ok,
     {reply, Reply, state_name, StateData}.
 
-
-%% handle_event/3
-%% ====================================================================
-%% @doc <a href="http://www.erlang.org/doc/man/gen_fsm.html#Module:handle_event-3">gen_fsm:handle_event/3</a>
--spec handle_event(Event :: term(), StateName :: atom(), StateData :: term()) -> Result when
-    Result :: {next_state, NextStateName, NewStateData}
-            | {next_state, NextStateName, NewStateData, Timeout}
-            | {next_state, NextStateName, NewStateData, hibernate}
-            | {stop, Reason, NewStateData},
-    NextStateName :: atom(),
-    NewStateData :: term(),
-    Timeout :: non_neg_integer() | infinity,
-    Reason :: term().
-%% ====================================================================
 handle_event(Event, StateName, StateData) ->
     {next_state, StateName, StateData}.
 
-
-%% handle_sync_event/4
-%% ====================================================================
-%% @doc <a href="http://www.erlang.org/doc/man/gen_fsm.html#Module:handle_sync_event-4">gen_fsm:handle_sync_event/4</a>
--spec handle_sync_event(Event :: term(), From :: {pid(), Tag :: term()}, StateName :: atom(), StateData :: term()) -> Result when
-    Result :: {reply, Reply, NextStateName, NewStateData}
-            | {reply, Reply, NextStateName, NewStateData, Timeout}
-            | {reply, Reply, NextStateName, NewStateData, hibernate}
-            | {next_state, NextStateName, NewStateData}
-            | {next_state, NextStateName, NewStateData, Timeout}
-            | {next_state, NextStateName, NewStateData, hibernate}
-            | {stop, Reason, Reply, NewStateData}
-            | {stop, Reason, NewStateData},
-    Reply :: term(),
-    NextStateName :: atom(),
-    NewStateData :: term(),
-    Timeout :: non_neg_integer() | infinity,
-    Reason :: term().
-%% ====================================================================
 handle_sync_event(Event, From, StateName, StateData) ->
     Reply = ok,
     {reply, Reply, StateName, StateData}.
 
-
-%% handle_info/3
-%% ====================================================================
-%% @doc <a href="http://www.erlang.org/doc/man/gen_fsm.html#Module:handle_info-3">gen_fsm:handle_info/3</a>
--spec handle_info(Info :: term(), StateName :: atom(), StateData :: term()) -> Result when
-    Result :: {next_state, NextStateName, NewStateData}
-            | {next_state, NextStateName, NewStateData, Timeout}
-            | {next_state, NextStateName, NewStateData, hibernate}
-            | {stop, Reason, NewStateData},
-    NextStateName :: atom(),
-    NewStateData :: term(),
-    Timeout :: non_neg_integer() | infinity,
-    Reason :: normal | term().
-%% ====================================================================
 handle_info(Info, StateName, StateData) ->
     {next_state, StateName, StateData}.
 
-
-%% terminate/3
-%% ====================================================================
-%% @doc <a href="http://www.erlang.org/doc/man/gen_fsm.html#Module:terminate-3">gen_fsm:terminate/3</a>
--spec terminate(Reason, StateName :: atom(), StateData :: term()) -> Result :: term() when
-    Reason :: normal
-            | shutdown
-            | {shutdown, term()}
-            | term().
-%% ====================================================================
 terminate(Reason, StateName, StatData) ->
     ok.
 
-
-%% code_change/4
-%% ====================================================================
-%% @doc <a href="http://www.erlang.org/doc/man/gen_fsm.html#Module:code_change-4">gen_fsm:code_change/4</a>
--spec code_change(OldVsn, StateName :: atom(), StateData :: term(), Extra :: term()) -> {ok, NextStateName :: atom(), NewStateData :: term()} when
-    OldVsn :: Vsn | {down, Vsn},
-    Vsn :: term().
-%% ====================================================================
 code_change(OldVsn, StateName, StateData, Extra) ->
     {ok, StateName, StateData}.
 
 
 %% ====================================================================
-%% Internal functions
+%% gen_fsm Internal functions
 %% ====================================================================
 
 send_event_inner(Event) ->
@@ -270,13 +171,73 @@ send_event_to_all_state(Event, PlayerId) ->
             gen_fsm:send_all_state_event(PlayerFightProcess, Event)
     end.
 
-get_turn_op_list(State) ->
-    case maps:get(left_op_list, State) of
+%% ====================================================================
+%% Internal functions
+%% ====================================================================
+
+notice_duty(State) ->
+    SeatDutyMap = maps:get(seat_duty_map, State),
+    FunNotice = 
+        fun(SeatId) ->
+            Duty = maps:get(SeatId, SeatDutyMap),
+            Send = #m__fight__notice_duty__s2l{duty = Duty},
+            lib_fight:send_to_seat(Send, SeatId, State)
+        end,
+    lists:foreach(FunNotice, maps:keys(SeatDutyMap)).
+
+do_duty_state_start(Duty, GameState, State) ->
+    SeatIdList = lib_fight:get_duty_seat(Duty),
+    case SeatIdList of
         [] ->
-            undefined;
-        LeftOpList ->
-            hd(LeftOpList)
+            send_event_inner(start),
+            {ok, get_next_game_state(GameState), State};
+        _ ->
+            send_event_inner(wait_op),
+            {ok, GameState, State}
     end.
+
+do_duty_state_wait_op(Duty, State) ->
+    SeatIdList = lib_fight:get_duty_seat(Duty),
+    notice_player_op(Duty, SeatIdList, State),
+    do_set_wait_op(SeatIdList, State).
+
+do_receive_player_op(PlayerId, Op, StateName, State) ->
+    try
+        assert_op_in_wait(PlayerId, State),
+        SeatId = lib_fight:get_seat_id_by_player_id(PlayerId),
+        StateAfterLogOp = do_log_op(SeatId, Op, State),
+        {IsWaitOver, StateAfterWaitOp} = do_remove_wait_op(SeatId, StateAfterLogOp),
+        case IsWaitOver of
+            true ->
+                send_event_inner(op_over);
+            false ->
+                ignore
+        end,
+        {next_state, StateName, StateAfterWaitOp}
+    catch 
+        throw:ErrCode ->
+            net_send:send_errcode(ErrCode, PlayerId),
+            {next_state, StateName, State}
+    end.
+
+get_next_game_state(GameState) ->
+    case GameState of
+        state_daozei ->
+            state_qiubite;
+        state_qiubite ->
+            state_hunxueer
+    end.
+
+notice_player_op(Op, SeatList, State) ->
+    Send = #m__fight__notice_op__s2l{op = Op},
+    FunNotice = 
+        fun(SeatId) ->
+            lib_fight:send_to_seat(Send, SeatId, State)
+        end,
+    lists:foreach(FunNotice, TurSeatListnList).
+
+do_set_wait_op(SeatIdList, State) ->
+    maps:put(wait_op_list, SeatIdList, State).
 
 assert_op_in_wait(PlayerId, State) ->
     WaitOpList = maps:get(wait_op_list, State),
@@ -288,30 +249,6 @@ assert_op_in_wait(PlayerId, State) ->
             ok
     end.
 
-notice_player_op(TurnList, State) ->
-    notice_player_op(duty, TurnList, State).
-
-notice_player_op(SendOp, TurnList, State) ->
-    FunNotice = 
-        fun(SeatId) ->
-            Op = 
-                case SendOp of
-                    speak ->
-                        0;
-                    duty ->
-                        lib_fight:get_duty_by_seat(SeatId, State)
-                end,
-            Send = #m__fight__notice_op__s2l{op = Op},
-            lib_fight:send_to_seat(Send, SeatId, State)
-        end,
-    lists:foreach(FunNotice, TurnList).
-
-get_fight_status(State) ->
-    maps:get(status, State).
-
-update_fight_status(Status, State) ->
-    maps:put(status, Status, State).
-
 do_log_op(SeatId, Op, State) ->
     LastOpData = maps:get(last_op_data, State),
     NewLastOpData = maps:put(SeatId, Op, LastOpData),
@@ -321,10 +258,6 @@ do_remove_wait_op(SeatId, State) ->
     WaitOpList = maps:get(wait_op_list, State),
     NewWaitOpList = WaitOpList -- [SeatId],
     {NewWaitOpList == [], maps:put(wait_op_list, NewWaitOpList, State)}.
-
-do_remove_left_op(State) ->
-    LeftOpList = maps:get(left_op_list, State),
-    maps:put(left_op_list, tl(LeftOpList), State).
 
 do_player_op(State) ->
     Status = get_fight_status(State),

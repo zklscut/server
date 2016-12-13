@@ -23,12 +23,6 @@
 -define(TURN_UP, 0).
 -define(TURN_DOWN, 1).
 
--define(GAME_STATE_SPECIAL_NIGHT, special_night).  %%特殊身份选择
--define(GAME_STATE_LANGREN_NIGHT, langren_night).  %%狼人杀人
--define(GAME_STATE_SHENMIN_NIGHT, shenmin_night).  %%神民操作
--define(GAME_STATE_JINGZHANG_XUANJU, jingzhang_xuanju).  %%选举警长
--define(GAME_STATE_SPEAK, speak).  %%开始发言
-
 -define(TIMER_TIMEOUT, timeout).
 
 -define(MFIGHT, #{room_id => 0,

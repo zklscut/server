@@ -10,7 +10,8 @@
          get_player_id_by_seat/2,
          get_seat_id_by_player_id/2,
          get_duty_by_seat/2,
-         update_duty/4]).
+         update_duty/4,
+         get_duty_seat/2]).
 
 -include("fight.hrl").
 
@@ -68,6 +69,10 @@ update_duty(SeatId, PreDuty, Duty, State) ->
                                   Duty := NewNewDutySeatList},
     State#{duty_seat_map := NewDutySeatMap,
            seat_duty_map := NewSeatDutyMap}.                                  
+
+get_duty_seat(Duty, State) ->
+    DutySeatMap = maps:get(duty_seat_map, State),
+    maps:get(Duty, DutySeatMap, []).
 
 %%%====================================================================
 %%% Internal functions
