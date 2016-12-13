@@ -3,7 +3,14 @@
 %% 2016
 
 -module(lib_fight).
--export([init/3]).
+-export([init/3,
+         init_special_night/1,
+         send_to_all_player/2,
+         send_to_seat/3,
+         get_player_id_by_seat/2,
+         get_seat_id_by_player_id/2,
+         get_duty_by_seat/2,
+         update_duty/4]).
 
 -include("fight.hrl").
 
@@ -29,6 +36,38 @@ init(RoomId, PlayerList, State) ->
     State2 = init_seat(PlayerList, State1),
     State3 = init_duty(PlayerList, State2),
     State3.
+
+init_special_night(State) ->
+    %%TODO sort by pre
+    LeftOpList = [SeatId || {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, State)),
+                    lists:member(DutyId, ?DUTY_LIST_SPECIAL)],
+    maps:put(left_op_list, LeftOpList, State).
+
+
+send_to_all_player(Send, State) ->
+    [net_send:send(Send, PlayerId) || PlayerId <- maps:keys(maps:get(player_seat_map, State))].
+
+send_to_seat(Send, SeatId, State) ->
+    net_send:send(Send, get_player_id_by_seat(SeatId, State)).
+
+get_player_id_by_seat(SeatId, State) ->
+    maps:get(SeatId, maps:get(seat_player_map, State)).
+
+get_seat_id_by_player_id(PlayerId, State) ->
+    maps:get(SeatId, maps:get(player_seat_map, State)).    
+
+get_duty_by_seat(SeatId, State) ->
+    maps:get(SeatId, maps:get(seat_duty_map, State)).    
+
+update_duty(SeatId, PreDuty, Duty, State) ->
+    NewSeatDutyMap = maps:put(SeatId, Duty, maps:get(seat_duty_map, State)),
+    DutySeatMap = maps:get(duty_seat_map, State),
+    NewPreDutySeatList = maps:get(PreDuty, DutySeatMap) -- [SeatId],
+    NewNewDutySeatList = maps:get(Duty, DutySeatMap) ++ [SeatId],
+    NewDutySeatMap = DutySeatMap#{PreDuty := NewPreDutySeatList,
+                                  Duty := NewNewDutySeatList},
+    State#{duty_seat_map := NewDutySeatMap,
+           seat_duty_map := NewSeatDutyMap}.                                  
 
 %%%====================================================================
 %%% Internal functions
@@ -63,3 +102,5 @@ init_duty(PlayerList, State) ->
     {DutySeatMap, SeatDutyMap} = lists:foldl(FunInitDuty, {#{}, #{}}, SeatDutyList),
     State#{seat_duty_map := SeatDutyMap,
            duty_seat_map := DutySeatMap}.
+
+

@@ -25,6 +25,9 @@ handle_after_login(#{id := PlayerId} = Player) ->
 
 handle_after_logout(#{id := PlayerId} = Player) ->
     lib_ets:delete(?ETS_PLAYER_PID, PlayerId),
+    Player;
+
+handle_after_logout(Player) ->
     Player.
 
 get_player_pid(PlayerId) ->

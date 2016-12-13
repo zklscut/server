@@ -1,10 +1,11 @@
 % @Author: anchen
 % @Date:   2016-12-06 14:52:58
 % @Last Modified by:   anchen
-% @Last Modified time: 2016-12-10 11:20:23
+% @Last Modified time: 2016-12-13 11:46:08
 
 -module(net_send).
--export([send/2]).
+-export([send/2,
+         send_errcode/2]).
 
 send(Send, #{socket := Socket,
 			 id := PlayerId}) ->
@@ -19,3 +20,9 @@ send(Send, PlayerId) when is_integer(PlayerId) ->
 
 send(_, _) ->
     ok.
+
+send_errcode(ErrCode, PlayerId) when is_integer(PlayerId) ->
+    global_op_srv:player_op(PlayerId, {?MODULE, send_errcode, [ErrCode]});    
+
+send_errcode(ErrCode, Player) ->
+    mod_player:send_errcode(ErrCode, Player).

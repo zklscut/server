@@ -207,6 +207,7 @@ do_proto(ProtoId, ProtoData, State) ->
     catch
         throw:ThrowError ->
             lager:debug("throw error ~p", [ThrowError]),
+            net_send:send_errcode(ThrowError, State),
             {ok, State};
         What:Error ->
             lager:error("proto error what ~p, Error ~p, stack", 
