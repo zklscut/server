@@ -15,7 +15,10 @@
 
 -export([start_link/1,
          active_socket/1,
-         do_cache_op/2]).
+         do_cache_op/2,
+         kick_player/2,
+         stop_force/1,
+         login_change_socket/2]).
 
 start_link(Socket) ->
     gen_server:start_link(?MODULE, [Socket], []).
@@ -30,6 +33,15 @@ do_cache_op(Op, State) ->
         _ ->
             ignore
     end.
+
+kick_player(Pid, Reason) ->
+    gen_server:cast(Pid, {kick, Reason}).    
+
+stop_force(Pid) ->
+    supervisor:terminate_child(player_supervisor, Pid).
+
+login_change_socket(Pid, Socket) ->
+    gen_server:cast(Pid, {login_change_socket, Socket}).
 
 %% ====================================================================
 %% Behavioural functions
@@ -98,10 +110,29 @@ handle_cast(Cast, State) ->
         {noreply, State}        
     end.
 
-handle_cast_inner({apply, {M, F, A}}, State) ->
-    {Op, NewState} = apply(M, F, A ++ [State]),
+handle_cast_inner({apply, {M, F, A}, _PlayerId}, State) ->
+    {Op, NewState} = 
+        case apply(M, F, A ++ [State]) of
+            {OpResult, StateResult} ->
+                {OpResult, StateResult};
+            _ ->
+                {ok, State}
+        end,
     do_cache_op(Op, NewState),
+    {noreply, NewState};
+
+handle_cast_inner({kick, Reason}, State) ->
+    {stop, Reason, State};
+
+handle_cast_inner({login_change_socket, Socket}, #{socket := PreSocket} = State) ->
+    gen_tcp:controlling_process(PreSocket, spawn(fun() -> ok end)),
+    gen_tcp:controlling_process(Socket, self()),
+
+    NewState = State#{socket := Socket},
+    mod_account:handle_send_login_result(NewState),
+    active_socket_inner(Socket),
     {noreply, NewState}.
+
 
 %% handle_info/2
 %% ====================================================================
@@ -127,6 +158,7 @@ handle_info({tcp, _Port, <<PreData:24, Len:16, ProtoId:16, ProtoData/binary>>}, 
 
 handle_info(Info, State) ->
     lager:error("unhandle info ~p", [Info]),
+    active_socket_inner(maps:get(socket, State)),
     {noreply, State}.    
 
 
@@ -162,7 +194,9 @@ code_change(_OldVsn, State, _Extra) ->
 %% ====================================================================
 
 active_socket_inner(Socket) ->
-    inet:setopts(Socket, [{active, once}]).
+    ActiveResult = inet:setopts(Socket, [{active, once}]),
+    lager:info("active result ~p", [ActiveResult]),
+    ActiveResult.
 
 do_proto(ProtoId, ProtoData, State) ->
     try
@@ -173,9 +207,11 @@ do_proto(ProtoId, ProtoData, State) ->
     catch
         throw:ThrowError ->
             lager:debug("throw error ~p", [ThrowError]),
+            net_send:send_errcode(ThrowError, State),
             {ok, State};
         What:Error ->
-            lager:error("error what ~p, Error ~p, stack", [What, Error, erlang:get_stacktrace()]),
+            lager:error("proto error what ~p, Error ~p, stack", 
+                    [What, Error, erlang:get_stacktrace()]),
             {ok, State}
     end.
 

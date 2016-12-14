@@ -16,9 +16,9 @@ start_link() ->
 
 player_op(PlayerId, Op) ->
     OpPid = 
-        case lib_player:get_pid(PlayerId) of
+        case lib_player:get_player_pid(PlayerId) of
             undefined ->
-                self();
+                whereis(?MODULE);
             Pid ->
                 Pid
         end,
@@ -84,14 +84,20 @@ handle_cast(Cast, State) ->
         handle_cast_inner(Cast, State)
     catch
         What:Error ->
-            lager:error("error what ~p, Error ~p, stack", 
-                [What, Error, erlang:get_stacktrace()]),
+            lager:error("global op error what ~p, Error ~p, stack", 
+                    [What, Error, erlang:get_stacktrace()]),
         {noreply, State}        
     end.
 
 handle_cast_inner({apply, {M, F, A}, PlayerId}, State) ->
-    {Op, Player} = apply(M, F, A ++ [lib_player:get_player(PlayerId)]),
-    player_srv:do_cache_op(Op, Player),
+    {Op, NewPlayer} = 
+        case apply(M, F, A ++ [lib_player:get_player(PlayerId)]) of
+            {OpResult, PlayerResult} ->
+                {OpResult, PlayerResult};
+            _ ->
+                {ok, ignore}
+        end,
+    player_srv:do_cache_op(Op, NewPlayer),
     {noreply, State}.
 
 %% handle_info/2

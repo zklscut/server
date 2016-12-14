@@ -1,5 +1,5 @@
 %% @author zhangkl
-%% @doc player_srv.
+%% @doc lib_player.
 %% 2016
 
 -module(lib_player).
@@ -25,6 +25,9 @@ handle_after_login(#{id := PlayerId} = Player) ->
 
 handle_after_logout(#{id := PlayerId} = Player) ->
     lib_ets:delete(?ETS_PLAYER_PID, PlayerId),
+    Player;
+
+handle_after_logout(Player) ->
     Player.
 
 get_player_pid(PlayerId) ->

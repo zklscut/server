@@ -1,7 +1,11 @@
 -module(game_pb).
 
 -export([encode/1, encode/2, decode/2,
-	 encode_m__room__rand_enter__l2s/1,
+	 encode_m__chat__public_speak__s2l/1,
+	 decode_m__chat__public_speak__s2l/1,
+	 encode_m__chat__public_speak__l2s/1,
+	 decode_m__chat__public_speak__l2s/1, encode_p_chat/1,
+	 decode_p_chat/1, encode_m__room__rand_enter__l2s/1,
 	 decode_m__room__rand_enter__l2s/1,
 	 encode_m__room__leave_room__s2l/1,
 	 decode_m__room__leave_room__s2l/1,
@@ -19,6 +23,8 @@
 	 decode_m__room__get_list__s2l/1, encode_p_room/1,
 	 decode_p_room/1, encode_m__room__get_list__l2s/1,
 	 decode_m__room__get_list__l2s/1,
+	 encode_m__player__errcode__s2l/1,
+	 decode_m__player__errcode__s2l/1,
 	 encode_m__player__info__s2l/1,
 	 decode_m__player__info__s2l/1,
 	 encode_m__player__info__l2s/1,
@@ -27,7 +33,16 @@
 	 decode_m__account__login__s2l/1,
 	 encode_m__account__login__l2s/1,
 	 decode_m__account__login__l2s/1,
-	 encode_p_role_show_base/1, decode_p_role_show_base/1]).
+	 encode_p_player_show_base/1,
+	 decode_p_player_show_base/1]).
+
+-record(m__chat__public_speak__s2l, {msg_id, chat}).
+
+-record(m__chat__public_speak__l2s, {msg_id, chat}).
+
+-record(p_chat,
+	{player_show_base, voice, content, length, compress,
+	 chat_type, room_id}).
 
 -record(m__room__rand_enter__l2s, {msg_id}).
 
@@ -35,7 +50,7 @@
 
 -record(m__room__leave_room__l2s, {msg_id}).
 
--record(m__room__create_room__s2l, {msg_id}).
+-record(m__room__create_room__s2l, {msg_id, room_info}).
 
 -record(m__room__create_room__l2s,
 	{msg_id, max_player_num, room_name}).
@@ -53,6 +68,8 @@
 
 -record(m__room__get_list__l2s, {msg_id}).
 
+-record(m__player__errcode__s2l, {msg_id, errcode}).
+
 -record(m__player__info__s2l, {msg_id, player_id}).
 
 -record(m__player__info__l2s, {msg_id}).
@@ -61,10 +78,21 @@
 
 -record(m__account__login__l2s, {msg_id, account_name}).
 
--record(p_role_show_base, {role_name}).
+-record(p_player_show_base, {player_id, nick_name}).
 
 encode(Record) ->
     encode(erlang:element(1, Record), Record).
+
+encode_m__chat__public_speak__s2l(Record)
+    when is_record(Record, m__chat__public_speak__s2l) ->
+    encode(m__chat__public_speak__s2l, Record).
+
+encode_m__chat__public_speak__l2s(Record)
+    when is_record(Record, m__chat__public_speak__l2s) ->
+    encode(m__chat__public_speak__l2s, Record).
+
+encode_p_chat(Record) when is_record(Record, p_chat) ->
+    encode(p_chat, Record).
 
 encode_m__room__rand_enter__l2s(Record)
     when is_record(Record, m__room__rand_enter__l2s) ->
@@ -105,6 +133,10 @@ encode_m__room__get_list__l2s(Record)
     when is_record(Record, m__room__get_list__l2s) ->
     encode(m__room__get_list__l2s, Record).
 
+encode_m__player__errcode__s2l(Record)
+    when is_record(Record, m__player__errcode__s2l) ->
+    encode(m__player__errcode__s2l, Record).
+
 encode_m__player__info__s2l(Record)
     when is_record(Record, m__player__info__s2l) ->
     encode(m__player__info__s2l, Record).
@@ -121,13 +153,17 @@ encode_m__account__login__l2s(Record)
     when is_record(Record, m__account__login__l2s) ->
     encode(m__account__login__l2s, Record).
 
-encode_p_role_show_base(Record)
-    when is_record(Record, p_role_show_base) ->
-    encode(p_role_show_base, Record).
+encode_p_player_show_base(Record)
+    when is_record(Record, p_player_show_base) ->
+    encode(p_player_show_base, Record).
 
-encode(p_role_show_base, _Record) ->
+encode(p_player_show_base, _Record) ->
     iolist_to_binary([pack(1, required,
-			   with_default(_Record#p_role_show_base.role_name,
+			   with_default(_Record#p_player_show_base.player_id,
+					none),
+			   uint32, []),
+		      pack(2, required,
+			   with_default(_Record#p_player_show_base.nick_name,
 					none),
 			   string, [])]);
 encode(m__account__login__l2s, _Record) ->
@@ -162,6 +198,15 @@ encode(m__player__info__s2l, _Record) ->
 			   with_default(_Record#m__player__info__s2l.player_id,
 					none),
 			   uint32, [])]);
+encode(m__player__errcode__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__player__errcode__s2l.msg_id,
+					12004),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__player__errcode__s2l.errcode,
+					none),
+			   int32, [])]);
 encode(m__room__get_list__l2s, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__room__get_list__l2s.msg_id,
@@ -179,7 +224,7 @@ encode(p_room, _Record) ->
 			   int32, []),
 		      pack(4, required,
 			   with_default(_Record#p_room.owner, none),
-			   p_role_show_base, []),
+			   p_player_show_base, []),
 		      pack(5, required,
 			   with_default(_Record#p_room.room_name, none), string,
 			   []),
@@ -216,7 +261,7 @@ encode(m__room__enter_room__s2l, _Record) ->
 		      pack(3, repeated,
 			   with_default(_Record#m__room__enter_room__s2l.member_list,
 					none),
-			   p_role_show_base, [])]);
+			   p_player_show_base, [])]);
 encode(m__room__create_room__l2s, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__room__create_room__l2s.msg_id,
@@ -234,7 +279,11 @@ encode(m__room__create_room__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__room__create_room__s2l.msg_id,
 					13006),
-			   int32, [])]);
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__room__create_room__s2l.room_info,
+					none),
+			   p_room, [])]);
 encode(m__room__leave_room__l2s, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__room__leave_room__l2s.msg_id,
@@ -249,7 +298,46 @@ encode(m__room__rand_enter__l2s, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__room__rand_enter__l2s.msg_id,
 					13009),
-			   int32, [])]).
+			   int32, [])]);
+encode(p_chat, _Record) ->
+    iolist_to_binary([pack(1, optional,
+			   with_default(_Record#p_chat.player_show_base, none),
+			   p_player_show_base, []),
+		      pack(2, required,
+			   with_default(_Record#p_chat.voice, none), bytes, []),
+		      pack(3, required,
+			   with_default(_Record#p_chat.content, none), string,
+			   []),
+		      pack(4, required,
+			   with_default(_Record#p_chat.length, none), int32,
+			   []),
+		      pack(5, required,
+			   with_default(_Record#p_chat.compress, none), int32,
+			   []),
+		      pack(6, required,
+			   with_default(_Record#p_chat.chat_type, none), int32,
+			   []),
+		      pack(7, optional,
+			   with_default(_Record#p_chat.room_id, none), int32,
+			   [])]);
+encode(m__chat__public_speak__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__chat__public_speak__l2s.msg_id,
+					14001),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__chat__public_speak__l2s.chat,
+					none),
+			   p_chat, [])]);
+encode(m__chat__public_speak__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__chat__public_speak__s2l.msg_id,
+					14002),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__chat__public_speak__s2l.chat,
+					none),
+			   p_chat, [])]).
 
 with_default(undefined, none) -> undefined;
 with_default(undefined, Default) -> Default;
@@ -269,6 +357,14 @@ pack(FNum, _, Data, _, _) when is_tuple(Data) ->
     protobuffs:encode(FNum, encode(RecName, Data), bytes);
 pack(FNum, _, Data, Type, _) ->
     protobuffs:encode(FNum, Data, Type).
+
+decode_m__chat__public_speak__s2l(Bytes) ->
+    decode(m__chat__public_speak__s2l, Bytes).
+
+decode_m__chat__public_speak__l2s(Bytes) ->
+    decode(m__chat__public_speak__l2s, Bytes).
+
+decode_p_chat(Bytes) -> decode(p_chat, Bytes).
 
 decode_m__room__rand_enter__l2s(Bytes) ->
     decode(m__room__rand_enter__l2s, Bytes).
@@ -299,6 +395,9 @@ decode_p_room(Bytes) -> decode(p_room, Bytes).
 decode_m__room__get_list__l2s(Bytes) ->
     decode(m__room__get_list__l2s, Bytes).
 
+decode_m__player__errcode__s2l(Bytes) ->
+    decode(m__player__errcode__s2l, Bytes).
+
 decode_m__player__info__s2l(Bytes) ->
     decode(m__player__info__s2l, Bytes).
 
@@ -311,13 +410,14 @@ decode_m__account__login__s2l(Bytes) ->
 decode_m__account__login__l2s(Bytes) ->
     decode(m__account__login__l2s, Bytes).
 
-decode_p_role_show_base(Bytes) ->
-    decode(p_role_show_base, Bytes).
+decode_p_player_show_base(Bytes) ->
+    decode(p_player_show_base, Bytes).
 
-decode(p_role_show_base, Bytes) ->
-    Types = [{1, role_name, string, []}],
+decode(p_player_show_base, Bytes) ->
+    Types = [{2, nick_name, string, []},
+	     {1, player_id, uint32, []}],
     Decoded = decode(Bytes, Types, []),
-    to_record(p_role_show_base, Decoded);
+    to_record(p_player_show_base, Decoded);
 decode(m__account__login__l2s, Bytes) ->
     Types = [{2, account_name, string, []},
 	     {1, msg_id, int32, []}],
@@ -337,6 +437,11 @@ decode(m__player__info__s2l, Bytes) ->
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__player__info__s2l, Decoded);
+decode(m__player__errcode__s2l, Bytes) ->
+    Types = [{2, errcode, int32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__player__errcode__s2l, Decoded);
 decode(m__room__get_list__l2s, Bytes) ->
     Types = [{1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
@@ -344,7 +449,7 @@ decode(m__room__get_list__l2s, Bytes) ->
 decode(p_room, Bytes) ->
     Types = [{6, room_status, string, []},
 	     {5, room_name, string, []},
-	     {4, owner, p_role_show_base, [is_record]},
+	     {4, owner, p_player_show_base, [is_record]},
 	     {3, max_player_num, int32, []},
 	     {2, cur_player_num, int32, []},
 	     {1, room_id, int32, []}],
@@ -361,7 +466,7 @@ decode(m__room__enter_room__l2s, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__enter_room__l2s, Decoded);
 decode(m__room__enter_room__s2l, Bytes) ->
-    Types = [{3, member_list, p_role_show_base,
+    Types = [{3, member_list, p_player_show_base,
 	      [is_record, repeated]},
 	     {2, room_info, p_room, [is_record]},
 	     {1, msg_id, int32, []}],
@@ -373,7 +478,8 @@ decode(m__room__create_room__l2s, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__create_room__l2s, Decoded);
 decode(m__room__create_room__s2l, Bytes) ->
-    Types = [{1, msg_id, int32, []}],
+    Types = [{2, room_info, p_room, [is_record]},
+	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__create_room__s2l, Decoded);
 decode(m__room__leave_room__l2s, Bytes) ->
@@ -387,7 +493,25 @@ decode(m__room__leave_room__s2l, Bytes) ->
 decode(m__room__rand_enter__l2s, Bytes) ->
     Types = [{1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
-    to_record(m__room__rand_enter__l2s, Decoded).
+    to_record(m__room__rand_enter__l2s, Decoded);
+decode(p_chat, Bytes) ->
+    Types = [{7, room_id, int32, []},
+	     {6, chat_type, int32, []}, {5, compress, int32, []},
+	     {4, length, int32, []}, {3, content, string, []},
+	     {2, voice, bytes, []},
+	     {1, player_show_base, p_player_show_base, [is_record]}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(p_chat, Decoded);
+decode(m__chat__public_speak__l2s, Bytes) ->
+    Types = [{2, chat, p_chat, [is_record]},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__chat__public_speak__l2s, Decoded);
+decode(m__chat__public_speak__s2l, Bytes) ->
+    Types = [{2, chat, p_chat, [is_record]},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__chat__public_speak__s2l, Decoded).
 
 decode(<<>>, _, Acc) -> Acc;
 decode(<<Bytes/binary>>, Types, Acc) ->
@@ -427,12 +551,13 @@ unpack_value(<<Binary/binary>>, string) ->
     binary_to_list(Binary);
 unpack_value(Value, _) -> Value.
 
-to_record(p_role_show_base, DecodedTuples) ->
+to_record(p_player_show_base, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
-			set_record_field(record_info(fields, p_role_show_base),
+			set_record_field(record_info(fields,
+						     p_player_show_base),
 					 Record, Name, Val)
 		end,
-		#p_role_show_base{}, DecodedTuples);
+		#p_player_show_base{}, DecodedTuples);
 to_record(m__account__login__l2s, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields,
@@ -461,6 +586,13 @@ to_record(m__player__info__s2l, DecodedTuples) ->
 					 Record, Name, Val)
 		end,
 		#m__player__info__s2l{}, DecodedTuples);
+to_record(m__player__errcode__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__player__errcode__s2l),
+					 Record, Name, Val)
+		end,
+		#m__player__errcode__s2l{}, DecodedTuples);
 to_record(m__room__get_list__l2s, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields,
@@ -529,7 +661,27 @@ to_record(m__room__rand_enter__l2s, DecodedTuples) ->
 						     m__room__rand_enter__l2s),
 					 Record, Name, Val)
 		end,
-		#m__room__rand_enter__l2s{}, DecodedTuples).
+		#m__room__rand_enter__l2s{}, DecodedTuples);
+to_record(p_chat, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields, p_chat), Record,
+					 Name, Val)
+		end,
+		#p_chat{}, DecodedTuples);
+to_record(m__chat__public_speak__l2s, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__chat__public_speak__l2s),
+					 Record, Name, Val)
+		end,
+		#m__chat__public_speak__l2s{}, DecodedTuples);
+to_record(m__chat__public_speak__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__chat__public_speak__s2l),
+					 Record, Name, Val)
+		end,
+		#m__chat__public_speak__s2l{}, DecodedTuples).
 
 set_record_field(Fields, Record, Field, Value) ->
     Index = list_index(Field, Fields),

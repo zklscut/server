@@ -89,8 +89,8 @@ handle_cast(Cast, State) ->
         throw:{ErrCode, PlayerId} ->
             global_op_srv:player_op(PlayerId, {mod_player, send_errcode, ErrCode});
         What:Error ->
-            lager:error("error what ~p, Error ~p, stack", 
-                [What, Error, erlang:get_stacktrace()]),
+            lager:error("room srv error what ~p, Error ~p, stack", 
+                    [What, Error, erlang:get_stacktrace()]),
         {noreply, State}        
     end.
 
@@ -137,7 +137,7 @@ handle_cast_inner({leave_room, RoomId, PlayerId}, State) ->
                 end,
             NewRoom = Room#{player_list := NewPlayerList,
                             owner := Owner},
-            lib_room:update(RoomId, NewRoom)
+            lib_room:update_room(RoomId, NewRoom)
     end,
     global_op_srv:player_op(PlayerId, {mod_room, handle_leave_room, []}),
     {noreply, State}.

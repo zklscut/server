@@ -12,7 +12,10 @@
          assert_room_not_full/1,
          assert_room_exist/1,
          assert_have_room/1,
-         is_room_owner/2]).
+         is_room_owner/2,
+         get_player_room_player_list/1,
+         update_fight_pid/2,
+         get_fight_pid_by_player/1]).
 
 -include("game_pb.hrl").
 -include("ets.hrl").
@@ -74,6 +77,20 @@ assert_have_room(Player) ->
 is_room_owner(PlayerId, Room) ->
     #{owner := OwnerShow} = Room,
     OwnerShow#p_player_show_base.player_id == PlayerId.
+
+get_player_room_player_list(Player) ->
+    case get_room(get_player_room_id(Player)) of
+        undefined ->
+            [];
+        Room ->
+            maps:get(player_list, Room) -- [lib_player:get_player_id(Player)]
+    end.
+
+update_fight_pid(RoomId, Pid) ->
+    update_room(RoomId, maps:put(fight_pid, Pid, get_room(RoomId))).
+
+get_fight_pid_by_player(Player) ->
+    maps:get(fight_pid, get_room(get_player_room_id(Player))).
 
 %%%====================================================================
 %%% Internal functions
