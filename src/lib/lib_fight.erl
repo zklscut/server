@@ -62,7 +62,7 @@ get_player_id_by_seat(SeatId, State) ->
     maps:get(SeatId, maps:get(seat_player_map, State)).
 
 get_seat_id_by_player_id(PlayerId, State) ->
-    maps:get(SeatId, maps:get(player_seat_map, State)).    
+    maps:get(PlayerId, maps:get(player_seat_map, State)).    
 
 get_duty_by_seat(SeatId, State) ->
     maps:get(SeatId, maps:get(seat_duty_map, State)).    
@@ -100,7 +100,7 @@ do_qiubite_op(State) ->
             false ->
                 ?DUTY_NONE
         end,
-    StateAfterDuty = update_duty(OpSeatId, ?DUTY_QIUBITE, NewDuty, StateAfterLover),
+    StateAfterDuty = update_duty(SeatId, ?DUTY_QIUBITE, NewDuty, StateAfterLover),
     clear_last_op(StateAfterDuty).
 
 do_shouwei_op(State) ->
@@ -138,14 +138,14 @@ do_nvwu_op(State) ->
 
 do_langren_op(State) ->
     LastOpData = get_last_op(State),
-    KillSeat = rand_target_in_op(LastOpData)
+    KillSeat = rand_target_in_op(LastOpData),
     StateAfterLangren = maps:put(langren, KillSeat, State),
-    clear_last_op(StateAfterNvwu). 
+    clear_last_op(StateAfterLangren). 
 
 do_yuyanjia_op(State) ->
     LastOpData = get_last_op(State),
-    [{SeatId, [SelectSeatId]}] = maps:to_list(LastOpData),
-    SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId),
+    [{_SeatId, [SelectSeatId]}] = maps:to_list(LastOpData),
+    _SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId),
     %%notice player select duty
     clear_last_op(State).
 
@@ -201,5 +201,5 @@ rand_target_in_op(OpData) ->
         end,
     CountSelectList = lists:foldl(FunCout, [], maps:to_list(OpData)),
     {_, MaxSelectNum} = lists:last(lists:keysort(2, CountSelectList)),
-    RandSeatList = [CurSeatId || {CurSeatId, CurSelectNum}, CurSelectNum == MaxSelectNum],
+    RandSeatList = [CurSeatId || {CurSeatId, CurSelectNum} <- CountSelectList, CurSelectNum == MaxSelectNum],
     util:rand_in_list(RandSeatList).

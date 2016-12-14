@@ -22,6 +22,7 @@
 
 -include("fight.hrl").
 -include("errcode.hrl").
+-include("game_pb.hrl").
 
 %% ====================================================================
 %% API functions
@@ -46,7 +47,7 @@ init([RoomId, PlayerList, State]) ->
 %% state_daozei
 %% ====================================================================
 state_daozei(start, State) ->
-    do_duty_state_start(?DUTY_DAOZEI, state_daozei, State).
+    do_duty_state_start(?DUTY_DAOZEI, state_daozei, State);
 
 state_daozei(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, 30000),
@@ -69,7 +70,7 @@ state_daozei(op_over, State) ->
 %% state_qiubite
 %% ====================================================================
 state_qiubite(start, State) ->
-    do_duty_state_start(?DUTY_QIUBITE, state_qiubite, State).
+    do_duty_state_start(?DUTY_QIUBITE, state_qiubite, State);
 
 state_qiubite(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, 30000),
@@ -89,33 +90,33 @@ state_qiubite(op_over, State) ->
     {ok, get_next_game_state(state_qiubite), NewState}.
 
 %% ====================================================================
-%% state_hunxuer
+%% state_hunxueer
 %% ====================================================================
-state_hunxuer(start, State) ->
-    do_duty_state_start(?DUTY_HUNXUEER, state_hunxuer, State).
+state_hunxueer(start, State) ->
+    do_duty_state_start(?DUTY_HUNXUEER, state_hunxueer, State);
 
-state_hunxuer(wait_op, State) ->
+state_hunxueer(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, 30000),
     NewState = do_duty_state_wait_op(?DUTY_HUNXUEER, State),
-    {next_state, state_hunxuer, NewState};
+    {next_state, state_hunxueer, NewState};
 
-state_hunxuer({player_op, PlayerId, Op}, State) ->
-    do_receive_player_op(PlayerId, Op, state_hunxuer, State);
+state_hunxueer({player_op, PlayerId, Op}, State) ->
+    do_receive_player_op(PlayerId, Op, state_hunxueer, State);
 
-state_hunxuer(timeout, State) ->
+state_hunxueer(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    {ok, state_hunxuer, State};
+    {ok, state_hunxueer, State};
 
-state_hunxuer(op_over, State) ->
+state_hunxueer(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_hunxuer_op(State),
-    {ok, get_next_game_state(state_hunxuer), NewState}.
+    {ok, get_next_game_state(state_hunxueer), NewState}.
 
 %% ====================================================================
 %% state_shouwei
 %% ====================================================================
 state_shouwei(start, State) ->
-    do_duty_state_start(?DUTY_SHOUWEI, state_shouwei, State).
+    do_duty_state_start(?DUTY_SHOUWEI, state_shouwei, State);
 
 state_shouwei(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, 30000),
@@ -138,7 +139,7 @@ state_shouwei(op_over, State) ->
 %% state_langren
 %% ====================================================================
 state_langren(start, State) ->
-    do_duty_state_start(?DUTY_LANGREN, state_langren, State).
+    do_duty_state_start(?DUTY_LANGREN, state_langren, State);
 
 state_langren(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, 30000),
@@ -161,7 +162,7 @@ state_langren(op_over, State) ->
 %% state_nvwu
 %% ====================================================================
 state_nvwu(start, State) ->
-    do_duty_state_start(?DUTY_NVWU, state_nvwu, State).
+    do_duty_state_start(?DUTY_NVWU, state_nvwu, State);
 
 state_nvwu(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, 30000),
@@ -184,7 +185,7 @@ state_nvwu(op_over, State) ->
 %% state_yuyanjia
 %% ====================================================================
 state_yuyanjia(start, State) ->
-    do_duty_state_start(?DUTY_YUYANJIA, state_yuyanjia, State).
+    do_duty_state_start(?DUTY_YUYANJIA, state_yuyanjia, State);
 
 state_yuyanjia(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, 30000),
@@ -204,24 +205,24 @@ state_yuyanjia(op_over, State) ->
     {ok, get_next_game_state(state_yuyanjia), NewState}.
 
 
-state_name(Event, From, StateData) ->
+state_name(_Event, _From, StateData) ->
     Reply = ok,
     {reply, Reply, state_name, StateData}.
 
-handle_event(Event, StateName, StateData) ->
+handle_event(_Event, StateName, StateData) ->
     {next_state, StateName, StateData}.
 
-handle_sync_event(Event, From, StateName, StateData) ->
+handle_sync_event(_Event, _From, StateName, StateData) ->
     Reply = ok,
     {reply, Reply, StateName, StateData}.
 
-handle_info(Info, StateName, StateData) ->
+handle_info(_Info, StateName, StateData) ->
     {next_state, StateName, StateData}.
 
-terminate(Reason, StateName, StatData) ->
+terminate(_Reason, _StateName, _StatData) ->
     ok.
 
-code_change(OldVsn, StateName, StateData, Extra) ->
+code_change(_OldVsn, StateName, StateData, _Extra) ->
     {ok, StateName, StateData}.
 
 
@@ -329,7 +330,7 @@ get_next_game_state(GameState) ->
         state_shouwei ->
             state_langren;
         state_langren ->
-            state_nvwu ->
+            state_nvwu;
         state_nvwu ->
             state_yuyanjia;
         state_yuyanjia ->
@@ -350,7 +351,7 @@ notice_player_op(Op, SeatList, State) ->
         fun(SeatId) ->
             lib_fight:send_to_seat(Send, SeatId, State)
         end,
-    lists:foreach(FunNotice, TurSeatListnList).
+    lists:foreach(FunNotice, SeatList).
 
 do_set_wait_op(SeatIdList, State) ->
     maps:put(wait_op_list, SeatIdList, State).
@@ -358,7 +359,7 @@ do_set_wait_op(SeatIdList, State) ->
 assert_op_in_wait(PlayerId, State) ->
     WaitOpList = maps:get(wait_op_list, State),
     SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
-    case lists:member(PlayerId, WaitOpList) of
+    case lists:member(SeatId, WaitOpList) of
         false ->
             throw(?ERROR);
         true ->
