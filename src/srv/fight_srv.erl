@@ -27,10 +27,19 @@
 %% ====================================================================
 %% API functions
 %% ====================================================================
--export([start_link/2]).
+-export([start_link/2,
+         player_op/3,
+         print_state/1]).
 
 start_link(RoomId, PlayerList) ->
     gen_fsm:start(?MODULE, [RoomId, PlayerList, ?MFIGHT], []).
+
+player_op(Pid, PlayerId, Op) ->
+    gen_fsm:send_event(Pid, {player_op, PlayerId, Op}).
+
+print_state(Pid) ->
+    gen_fsm:send_all_state_event(Pid, print_state).
+
 
 %% ====================================================================
 %% Behavioural functions
@@ -59,12 +68,13 @@ state_daozei({player_op, PlayerId, Op}, State) ->
 
 state_daozei(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    {ok, state_daozei, State};
+    {next_state, state_daozei, State};
 
 state_daozei(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_daozei_op(State),
-    {ok, get_next_game_state(state_daozei), NewState}.
+    send_event_inner(start),
+    {next_state, get_next_game_state(state_daozei), NewState}.
             
 %% ====================================================================
 %% state_qiubite
@@ -82,12 +92,13 @@ state_qiubite({player_op, PlayerId, Op}, State) ->
 
 state_qiubite(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    {ok, state_qiubite, State};
+    {next_state, state_qiubite, State};
 
 state_qiubite(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_qiubite_op(State),
-    {ok, get_next_game_state(state_qiubite), NewState}.
+    send_event_inner(start),
+    {next_state, get_next_game_state(state_qiubite), NewState}.
 
 %% ====================================================================
 %% state_hunxueer
@@ -105,12 +116,13 @@ state_hunxueer({player_op, PlayerId, Op}, State) ->
 
 state_hunxueer(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    {ok, state_hunxueer, State};
+    {next_state, state_hunxueer, State};
 
 state_hunxueer(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_hunxuer_op(State),
-    {ok, get_next_game_state(state_hunxueer), NewState}.
+    send_event_inner(start),
+    {next_state, get_next_game_state(state_hunxueer), NewState}.
 
 %% ====================================================================
 %% state_shouwei
@@ -128,12 +140,13 @@ state_shouwei({player_op, PlayerId, Op}, State) ->
 
 state_shouwei(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    {ok, state_shouwei, State};
+    {next_state, state_shouwei, State};
 
 state_shouwei(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_shouwei_op(State),
-    {ok, get_next_game_state(state_shouwei), NewState}.
+    send_event_inner(start),
+    {next_state, get_next_game_state(state_shouwei), NewState}.
             
 %% ====================================================================
 %% state_langren
@@ -151,12 +164,13 @@ state_langren({player_op, PlayerId, Op}, State) ->
 
 state_langren(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    {ok, state_langren, State};
+    {next_state, state_langren, State};
 
 state_langren(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_langren_op(State),
-    {ok, get_next_game_state(state_langren), NewState}.
+    send_event_inner(start),
+    {next_state, get_next_game_state(state_langren), NewState}.
                  
 %% ====================================================================
 %% state_nvwu
@@ -174,12 +188,13 @@ state_nvwu({player_op, PlayerId, Op}, State) ->
 
 state_nvwu(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    {ok, state_nvwu, State};
+    {next_state, state_nvwu, State};
 
 state_nvwu(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_nvwu_op(State),
-    {ok, get_next_game_state(state_nvwu), NewState}.
+    send_event_inner(start),
+    {next_state, get_next_game_state(state_nvwu), NewState}.
             
 %% ====================================================================
 %% state_yuyanjia
@@ -197,19 +212,22 @@ state_yuyanjia({player_op, PlayerId, Op}, State) ->
 
 state_yuyanjia(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    {ok, state_yuyanjia, State};
+    {next_state, state_yuyanjia, State};
 
 state_yuyanjia(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_yuyanjia_op(State),
-    {ok, get_next_game_state(state_yuyanjia), NewState}.
+    send_event_inner(start),
+    {next_state, get_next_game_state(state_yuyanjia), NewState}.
 
 
 state_name(_Event, _From, StateData) ->
-    Reply = ok,
+    Reply = next_state,
     {reply, Reply, state_name, StateData}.
 
-handle_event(_Event, StateName, StateData) ->
+handle_event(print_state, StateName, StateData) ->
+    lager:info("state name ~p", [StateName]),
+    lager:info("state data ~p", [StateData]),
     {next_state, StateName, StateData}.
 
 handle_sync_event(_Event, _From, StateName, StateData) ->
@@ -285,25 +303,25 @@ notice_duty(State) ->
     lists:foreach(FunNotice, maps:keys(SeatDutyMap)).
 
 do_duty_state_start(Duty, GameState, State) ->
-    SeatIdList = lib_fight:get_duty_seat(Duty),
+    SeatIdList = lib_fight:get_duty_seat(Duty, State),
     case SeatIdList of
         [] ->
             send_event_inner(start),
-            {ok, get_next_game_state(GameState), State};
+            {next_state, get_next_game_state(GameState), State};
         _ ->
             send_event_inner(wait_op),
-            {ok, GameState, State}
+            {next_state, GameState, State}
     end.
 
 do_duty_state_wait_op(Duty, State) ->
-    SeatIdList = lib_fight:get_duty_seat(Duty),
+    SeatIdList = lib_fight:get_duty_seat(Duty, State),
     notice_player_op(Duty, SeatIdList, State),
     do_set_wait_op(SeatIdList, State).
 
 do_receive_player_op(PlayerId, Op, StateName, State) ->
     try
         assert_op_in_wait(PlayerId, State),
-        SeatId = lib_fight:get_seat_id_by_player_id(PlayerId),
+        SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
         StateAfterLogOp = do_log_op(SeatId, Op, State),
         {IsWaitOver, StateAfterWaitOp} = do_remove_wait_op(SeatId, StateAfterLogOp),
         case IsWaitOver of
@@ -363,7 +381,7 @@ assert_op_in_wait(PlayerId, State) ->
         false ->
             throw(?ERROR);
         true ->
-            ok
+            next_state
     end.
 
 do_log_op(SeatId, Op, State) ->

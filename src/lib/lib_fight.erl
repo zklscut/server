@@ -75,7 +75,7 @@ update_duty(SeatId, PreDuty, Duty, State) ->
     NewSeatDutyMap = maps:put(SeatId, Duty, maps:get(seat_duty_map, State)),
     DutySeatMap = maps:get(duty_seat_map, State),
     NewPreDutySeatList = maps:get(PreDuty, DutySeatMap) -- [SeatId],
-    NewNewDutySeatList = maps:get(Duty, DutySeatMap) ++ [SeatId],
+    NewNewDutySeatList = maps:get(Duty, DutySeatMap, []) ++ [SeatId],
     NewDutySeatMap = DutySeatMap#{PreDuty := NewPreDutySeatList,
                                   Duty := NewNewDutySeatList},
     State#{duty_seat_map := NewDutySeatMap,
@@ -91,8 +91,8 @@ do_qiubite_op(State) ->
     LastOpData = get_last_op(State),
     [{SeatId, [Seat1, Seat2]}] = maps:to_list(LastOpData),
     StateAfterLover = maps:put(lover, [Seat1, Seat2], State),
-    Duty1 = lib_fight:get_duty_by_seat(Seat1),
-    Duty2 = lib_fight:get_duty_by_seat(Seat2),
+    Duty1 = lib_fight:get_duty_by_seat(Seat1, State),
+    Duty2 = lib_fight:get_duty_by_seat(Seat2, State),
     NewDuty = 
         case Duty1 == Duty2 of
             true ->
@@ -112,7 +112,7 @@ do_shouwei_op(State) ->
 do_hunxuer_op(State) ->
     LastOpData = get_last_op(State),
     [{_, [SelectSeatId]}] = maps:to_list(LastOpData),
-    SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId),
+    SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId, State),
     HunxueerOp =
         case SelectDuty of
             ?DUTY_LANGREN ->
@@ -145,7 +145,7 @@ do_langren_op(State) ->
 do_yuyanjia_op(State) ->
     LastOpData = get_last_op(State),
     [{_SeatId, [SelectSeatId]}] = maps:to_list(LastOpData),
-    _SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId),
+    _SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId, State),
     %%notice player select duty
     clear_last_op(State).
 
@@ -166,11 +166,8 @@ init_seat(PlayerList, State) ->
 init_duty(PlayerList, State) ->
     PlayerNum = length(PlayerList),
     RandSeatList = util:rand_list(lists:seq(1, PlayerNum)),
-    FunInitDutyConfig = 
-        fun({CurDuty, Num}, CurList) ->
-                lists:duplicate(Num, CurDuty) ++ CurList
-        end,
-    BDutyList = lists:foldl(FunInitDutyConfig, [], b_duty:get(PlayerNum)),
+    
+    {BDutyList, DaozeiList} = get_duty_list_with_daozei(PlayerNum),
     SeatDutyList = lists:zip(RandSeatList, BDutyList),
 
     FunInitDuty =
@@ -181,8 +178,44 @@ init_duty(PlayerList, State) ->
         end,
     {DutySeatMap, SeatDutyMap} = lists:foldl(FunInitDuty, {#{}, #{}}, SeatDutyList),
     State#{seat_duty_map := SeatDutyMap,
-           duty_seat_map := DutySeatMap}.
+           duty_seat_map := DutySeatMap,
+           daozei := DaozeiList}.
 
+get_duty_list_with_daozei(PlayerNum) ->
+    BDutyList = b_duty:get(PlayerNum),
+    FunInitDutyConfig = 
+        fun({CurDuty, Num}, CurList) ->
+                lists:duplicate(Num, CurDuty) ++ CurList
+        end,
+    DutyIdList = lists:foldl(FunInitDutyConfig, [], BDutyList),
+    case lists:member(?DUTY_DAOZEI, DutyIdList) of
+        true ->
+            generate_daozei_duty_list(DutyIdList);
+        false ->
+            {DutyIdList, []}
+    end.
+
+generate_daozei_duty_list(DutyIdList) ->
+    generate_daozei_duty_list(DutyIdList, []).
+
+generate_daozei_duty_list(DutyIdList, []) ->
+    generate_daozei_duty_list(DutyIdList, util:rand_in_list(DutyIdList, 2));
+
+generate_daozei_duty_list(DutyIdList, [?DUTY_LANGREN, ?DUTY_LANGREN]) ->
+    generate_daozei_duty_list(DutyIdList, util:rand_in_list(DutyIdList, 2));    
+
+generate_daozei_duty_list(DutyIdList, RandList) ->
+    FunCheckSpecial = 
+        fun(Duty) ->
+            lists:member(Duty, ?DUTY_LIST_SPECIAL)
+        end,
+    case lists:any(FunCheckSpecial, RandList) of
+        true ->
+            generate_daozei_duty_list(DutyIdList, util:rand_in_list(DutyIdList, 2));
+        false ->
+            {DutyIdList -- RandList, RandList}
+    end.
+     
 get_last_op(State) ->
     maps:get(last_op_data, State).
 
@@ -192,7 +225,7 @@ clear_last_op(State) ->
 rand_target_in_op(OpData) ->
     FunCout = 
         fun({_, [SeatId]}, CurList) ->
-            case lists:keyfind(SeatId) of
+            case lists:keyfind(SeatId, 1, CurList) of
                 {_, SelectNum} ->
                     lists:keyreplace(SeatId, 1, CurList, {SeatId, SelectNum + 1});
                 false ->
