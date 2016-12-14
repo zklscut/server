@@ -91,17 +91,8 @@ do_qiubite_op(State) ->
     LastOpData = get_last_op(State),
     [{SeatId, [Seat1, Seat2]}] = maps:to_list(LastOpData),
     StateAfterLover = maps:put(lover, [Seat1, Seat2], State),
-    Duty1 = lib_fight:get_duty_by_seat(Seat1, State),
-    Duty2 = lib_fight:get_duty_by_seat(Seat2, State),
-    NewDuty = 
-        case Duty1 == Duty2 of
-            true ->
-                Duty1;
-            false ->
-                ?DUTY_NONE
-        end,
-    StateAfterDuty = update_duty(SeatId, ?DUTY_QIUBITE, NewDuty, StateAfterLover),
-    clear_last_op(StateAfterDuty).
+    %%TODO notice lover 
+    clear_last_op(StateAfterLover).
 
 do_shouwei_op(State) ->
     LastOpData = get_last_op(State),
@@ -121,7 +112,6 @@ do_hunxuer_op(State) ->
                 0
         end,                
     StateAfterHunxueer = maps:put(hunxuer, HunxueerOp, State),
-    %%TODO notice hunxuer result
     clear_last_op(StateAfterHunxueer).
 
 do_nvwu_op(State) ->
