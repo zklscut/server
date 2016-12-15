@@ -21,6 +21,7 @@
          do_yuyanjia_op/1]).
 
 -include("fight.hrl").
+-include("game_pb.hrl").
 
 % -define(MFIGHT, #{room_id => 0,
 %                   seat_player_map => #{},%% #{seat_id, player_id}
@@ -44,13 +45,6 @@ init(RoomId, PlayerList, State) ->
     State2 = init_seat(PlayerList, State1),
     State3 = init_duty(PlayerList, State2),
     State3.
-
-init_special_night(State) ->
-    %%TODO sort by pre
-    LeftOpList = [SeatId || {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, State)),
-                    lists:member(DutyId, ?DUTY_LIST_SPECIAL)],
-    maps:put(left_op_list, LeftOpList, State).
-
 
 send_to_all_player(Send, State) ->
     [net_send:send(Send, PlayerId) || PlayerId <- maps:keys(maps:get(player_seat_map, State))].
@@ -91,7 +85,7 @@ do_qiubite_op(State) ->
     LastOpData = get_last_op(State),
     [{SeatId, [Seat1, Seat2]}] = maps:to_list(LastOpData),
     StateAfterLover = maps:put(lover, [Seat1, Seat2], State),
-    %%TODO notice lover 
+    notice_lover(Seat1, Seat2, State),
     clear_last_op(StateAfterLover).
 
 do_shouwei_op(State) ->
@@ -226,3 +220,9 @@ rand_target_in_op(OpData) ->
     {_, MaxSelectNum} = lists:last(lists:keysort(2, CountSelectList)),
     RandSeatList = [CurSeatId || {CurSeatId, CurSelectNum} <- CountSelectList, CurSelectNum == MaxSelectNum],
     util:rand_in_list(RandSeatList).
+
+notice_lover(Seat1, Seat2, State) ->
+    Send = #m__fight__notice_lover__s2l{lover_list = [Seat1, Seat2]},
+    send_to_seat(Send, Seat1, State),    
+    send_to_seat(Send, Seat2, State).
+    
