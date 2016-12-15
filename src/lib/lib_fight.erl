@@ -12,6 +12,7 @@
          get_duty_by_seat/2,
          update_duty/4,
          get_duty_seat/2,
+         get_alive_seat_list/1,
          do_daozei_op/1,
          do_qiubite_op/1,
          do_hunxuer_op/1,
@@ -22,19 +23,6 @@
 
 -include("fight.hrl").
 -include("game_pb.hrl").
-
-% -define(MFIGHT, #{room_id => 0,
-%                   seat_player_map => #{},%% #{seat_id, player_id}
-%                   offline_list => [],   %% seat_id
-%                   out_player_list => [],%% 出局列表 seat_id
-%                   seat_duty_map => #{}, %% #{seat_id, 职责}
-%                   duty_seat_map => #{}, %% #{duty_id, [seat_id]}
-%                   left_op_list => [],   %% 剩余操作seat_id 按照顺序排好
-%                   op => 0,              %% 当前进行的操作
-%                   game_state =>  0,     %% 第几天晚上
-%                   game_round =>  1,     %% 第几轮
-%                   last_op_data => #{}   %% 上一轮操作的数据, 杀了几号, 投了几号等等
-%                   }).
 
 %% ====================================================================
 %% API functions
@@ -62,8 +50,23 @@ get_duty_by_seat(SeatId, State) ->
     maps:get(SeatId, maps:get(seat_duty_map, State)).    
 
 get_duty_seat(Duty, State) ->
+    get_duty_seat(true, Duty, State).
+
+get_duty_seat(IsAlive, Duty, State)
     DutySeatMap = maps:get(duty_seat_map, State),
-    maps:get(Duty, DutySeatMap, []).
+    AllDutySeat = maps:get(Duty, DutySeatMap, []),
+    case IsAlive of
+        true ->
+            filter_out_seat(AllDutySeat, State);
+        false ->
+            AllDutySeat
+    end.
+
+get_alive_seat_list(State) ->
+    filter_out_seat(maps:keys(maps:get(seat_player_map, State)), State).
+
+filter_out_seat(SeatList, State) ->
+    [SeatId || SeatId <- SeatList, not lists:member(SeatId, maps:get(out_seat_list, State))].
 
 update_duty(SeatId, PreDuty, Duty, State) ->
     NewSeatDutyMap = maps:put(SeatId, Duty, maps:get(seat_duty_map, State)),

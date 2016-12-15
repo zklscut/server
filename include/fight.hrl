@@ -29,7 +29,7 @@
                   seat_player_map => #{},%% #{seat_id, player_id}
                   player_seat_map => #{},%% #{player_id, seat_id}
                   offline_list => [],   %% seat_id
-                  out_player_list => [],%% 出局列表 seat_id
+                  out_seat_list => [],%% 出局列表 seat_id
                   seat_duty_map => #{}, %% #{seat_id, 职责}
                   duty_seat_map => #{}, %% #{duty_id, [seat_id]}
                   left_op_list => [],   %% 剩余操作seat_id 按照顺序排好

@@ -220,6 +220,37 @@ state_yuyanjia(op_over, State) ->
     send_event_inner(start),
     {next_state, get_next_game_state(state_yuyanjia), NewState}.
 
+%% ====================================================================
+%% state_jingzhang
+%% ====================================================================
+
+state_jingzhang(start, State) ->
+    send_event_inner(wait_jingxuan),
+    {next_state, state_jingzhang, State};
+
+state_jingzhang(wait_jingxuan, State) ->
+    start_fight_fsm_event_timer(?TIMER_TIMEOUT, 30000),
+    StateAfterWait = do_set_wait_op(lib_fight:get_alive_seat_list(State), State),
+    notice_player_jingxuan(State),
+    {next_state, state_jingzhang, StateAfterWait};
+
+state_jingzhang(timeout, State) ->
+    send_event_inner(op_over),
+    {next_state, state_jingzhang, State};
+
+state_jingzhang
+
+state_jingzhang(op_over, State) ->
+    {IsDraw, XuanJuResult, NewState} = lib_fight:do_jingzhang_op(State),
+    notice_xuanju_result(XuanJuResult, NewState),
+    case IsDraw of
+        true ->
+            send_event_inner(start),
+            {next_state, state_jingzhang, NewState};
+        false ->
+            send_event_inner(start),
+            {next_state, get_nex_state(state_jingzhang), State}
+    end.
 
 state_name(_Event, _From, StateData) ->
     Reply = next_state,
@@ -393,3 +424,11 @@ do_remove_wait_op(SeatId, State) ->
     WaitOpList = maps:get(wait_op_list, State),
     NewWaitOpList = WaitOpList -- [SeatId],
     {NewWaitOpList == [], maps:put(wait_op_list, NewWaitOpList, State)}.
+
+notice_player_jingxuan(State) ->
+    SeatIdList = lib_fight:get_alive_seat_list(State),
+    Send = #m__fight__jingxuan__l2s{},
+    [net_send:send(Send, lib_fight:get_player_id_by_seat(SeatId)) || SeatId <- SeatIdList].
+
+notice_xuanju_result(XuanJuResult, State) ->
+    ok.
