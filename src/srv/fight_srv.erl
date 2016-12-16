@@ -434,7 +434,11 @@ get_next_game_state(GameState) ->
     end.
 
 notice_player_op(Op, SeatList, State) ->
-    Send = #m__fight__notice_op__s2l{op = Op},
+    notice_player_op(Op, [], SeatList, State).
+
+notice_player_op(Op, AttachData, SeatList, State) ->
+    Send = #m__fight__notice_op__s2l{op = Op，
+                                     attach_data = AttachData},
     FunNotice = 
         fun(SeatId) ->
             lib_fight:send_to_seat(Send, SeatId, State)
@@ -467,6 +471,18 @@ do_remove_wait_op(SeatId, State) ->
 notice_jingxuan_jingzhang(State) ->
     notice_player_op(?OP_PART_JINGZHANG}, lib_fight:get_alive_seat_list(State), State).
 
+notice_xuanju_result(XaunJuType, IsDraw, XuanJuResult, State) ->
+    PResutList = [#p_xuanju_result{seat_id = SeatId, 
+                                   select_list = SelectList} || {SeatId, SelectList} <- XuanJuResult],
+    Send = #m__fight__xuanju_result__s2l{xuanju_type = XaunJuType,
+                                         result_list = PResutList,
+                                         is_draw = IsDraw},
+    lib_fight:send_to_all_player(Send, State).
 
-notice_xuanju_result(XuanJuResult, State) ->
-    ok.
+notice_xuanju_jingzhang(State) ->
+    PartXuanjuList = maps:get(part_jingzhang, State),
+    notice_player_op(?OP_XUANJU_JINGZHANG, PartXuanjuList, 
+        lib_fight:get_alive_seat_list(State) -- PartXuanjuList, State).
+
+notice_xuanju_jingzhang_result(IsDraw, XuanjuResult, State) ->
+    notice_xuanju_result(?XUANJU_TYPE_JINGZHANG, IsDraw, XuanJuResult, State).

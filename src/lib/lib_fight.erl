@@ -20,7 +20,8 @@
          do_langren_op/1,
          do_nvwu_op/1,
          do_yuyanjia_op/1,
-         do_part_jingzhang_op/1]).
+         do_part_jingzhang_op/1,
+         do_xuanju_jingzhang_op/1]).
 
 -include("fight.hrl").
 -include("game_pb.hrl").
@@ -145,6 +146,28 @@ do_part_jingzhang_op(State) ->
     PartList = maps:keys(LastOpData),
     clear_last_op(maps:put(part_jingzhang, PartList, State)).
 
+do_xuanju_jingzhang_op(State) ->
+    LastOpData = get_last_op(State),
+    {IsDarw, ResultList, ResultSeatId} = count_xuanju_result(LastOpData),
+    DrawCnt = maps:get(xuanju_draw_cnt, State),
+    {DrawResult, NewState} = 
+        case IsDarw of
+            false ->
+                {false, State#{xuanju_draw_cnt := 0,
+                               jingzhang := ResultSeatId}};
+            true ->
+                case DrawCnt > 0 of
+                    true ->
+                        {fasle, State#{xuanju_draw_cnt := 0,
+                                       jingzhang := 0}};
+                    false ->
+                        {true , State#{xuanju_draw_cnt := 1,
+                                       jingzhang := 0}}
+                end
+        end,
+
+    {DrawResult, ResultList, clear_last_op(NewState)}.
+
 %%%====================================================================
 %%% Internal functions
 %%%====================================================================
@@ -238,3 +261,18 @@ notice_lover(Seat1, Seat2, State) ->
     send_to_seat(Send, Seat1, State),    
     send_to_seat(Send, Seat2, State).
     
+count_xuanju_result(OpData) ->
+    FunCout = 
+        fun({SelectSeat, [SeatId]}, CurList) ->
+            case lists:keyfind(SeatId, 1, CurList) of
+                {_, CurSelectSeat, SelectNum} ->
+                    lists:keyreplace(SeatId, 1, CurList, {SeatId, CurSelectSeat ++ [SelectSeat], SelectNum + 1});
+                false ->
+                    [{SeatId, [SelectSeat], 1}] ++ CurList
+            end
+        end,
+    CountSelectList = lists:foldl(FunCout, [], maps:to_list(OpData)),
+    {ResultSeat, _, MaxSelectNum} = lists:last(lists:keysort(3, CountSelectList)),
+    IsDraw = length([CurSeatId || {CurSeatId, _, CurSelectNum} <- CountSelectList, CurSelectNum == MaxSelectNum]) > 1,
+    {IsDraw, [{CurSeatId, CurSelectSeat} || {CurSeatId, CurSelectSeat, _} <- CountSelectList], ResultSeat}.
+
