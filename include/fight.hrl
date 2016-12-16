@@ -23,7 +23,12 @@
 -define(TURN_UP, 0).
 -define(TURN_DOWN, 1).
 
+-define(OP_PART_JINGZHANG, 1001). %%參選警長
+-define(OP_XUANJU_JINGZHANG, 1002). %%選舉警長
+
 -define(TIMER_TIMEOUT, timeout).
+
+-define(JINXXUAN_TIMER_TIMEOUT, jingxuan_timeout).
 
 -define(MFIGHT, #{room_id => 0,
                   seat_player_map => #{},%% #{seat_id, player_id}
@@ -43,6 +48,7 @@
                   langren => 0,         %% 狼人操作
                   hunxuer => 0,         %% 混血儿是否帮狼人
                   daozei => [],         %% 盗贼可选择的
+                  part_jingzhang => [], %% 參與選舉警長
                   last_op_data => #{}   %% 上一轮操作的数据, 杀了几号, 投了几号等等
                   }).
 

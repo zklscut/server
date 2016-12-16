@@ -19,7 +19,8 @@
          do_shouwei_op/1,
          do_langren_op/1,
          do_nvwu_op/1,
-         do_yuyanjia_op/1]).
+         do_yuyanjia_op/1,
+         do_part_jingzhang_op/1]).
 
 -include("fight.hrl").
 -include("game_pb.hrl").
@@ -131,10 +132,18 @@ do_langren_op(State) ->
 
 do_yuyanjia_op(State) ->
     LastOpData = get_last_op(State),
-    [{_SeatId, [SelectSeatId]}] = maps:to_list(LastOpData),
-    _SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId, State),
-    %%notice player select duty
+    [{SeatId, [SelectSeatId]}] = maps:to_list(LastOpData),
+    SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId, State),
+    
+    Send = #m__fight__notice_yuyanjia_result__s2l{seat_id = SelectSeatId,
+                                                  duty = SelectDuty},
+    send_to_seat(Send, SeatId, State),
     clear_last_op(State).
+
+do_part_jingzhang_op(State) ->
+    LastOpData = get_last_op(State),
+    PartList = maps:keys(LastOpData),
+    clear_last_op(maps:put(part_jingzhang, PartList, State)).
 
 %%%====================================================================
 %%% Internal functions
