@@ -18,7 +18,14 @@
          state_shouwei/2,
          state_langren/2,
          state_nvwu/2,
-         state_yuyanjia/2]).
+         state_yuyanjia/2,
+         state_part_jingzhang/2,
+         state_xuanju_jingzhang/2,
+         state_jingzhang/2,
+         state_fayan/2,
+         state_toupiao/2,
+         state_day/2,
+         state_over/2]).
 
 -include("fight.hrl").
 -include("errcode.hrl").
@@ -231,11 +238,11 @@ state_part_jingzhang(start, State) ->
 state_part_jingzhang(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, 30000),
     notice_jingxuan_jingzhang(State),
-    StateAfterWait = do_set_wait_op(lib_fight:get_alive_seat_list(State), State)
+    StateAfterWait = do_set_wait_op(lib_fight:get_alive_seat_list(State), State),
     {next_state, state_part_jingzhang, StateAfterWait};
 
 state_part_jingzhang({player_op, PlayerId, Op}, State) ->
-    do_receive_player_op(PlayerId, Op, state_part_jingzhang, State).
+    do_receive_player_op(PlayerId, Op, state_part_jingzhang, State);
 
 state_part_jingzhang(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -265,7 +272,7 @@ state_xuanju_jingzhang(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, 30000),
     notice_xuanju_jingzhang(State),
     WaitList = lib_fight:get_alive_seat_list(State) -- maps:get(part_jingzhang, State),
-    StateAfterWait = do_set_wait_op(WaitList, State)
+    StateAfterWait = do_set_wait_op(WaitList, State),
     {next_state, state_xuanju_jingzhang, StateAfterWait};    
     
 state_xuanju_jingzhang({player_op, PlayerId, Op}, State) ->
@@ -279,7 +286,7 @@ state_xuanju_jingzhang(timeout, State) ->
 state_xuanju_jingzhang(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     {IsDraw, XuanjuResult, NewState} = lib_fight:do_xuanju_jingzhang_op(State),
-    notice_xuanju_jingzhang_result(IsDraw, XuanjuResult, NewState)
+    notice_xuanju_jingzhang_result(IsDraw, XuanjuResult, NewState),
     case IsDraw of
         true ->
             send_event_inner(wait_op),
@@ -365,13 +372,13 @@ state_fayan(op_over, State) ->
 %% ====================================================================
 state_toupiao(start, State) ->
     send_event_inner(wait_op),
-    {next_state, state_toupiao, State}.
+    {next_state, state_toupiao, State};
 
 state_toupiao(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, 30000),
     notice_toupiao(State),
     WaitList = lib_fight:get_alive_seat_list(State),
-    StateAfterWait = do_set_wait_op(WaitList, State)
+    StateAfterWait = do_set_wait_op(WaitList, State),
     {next_state, state_toupiao, StateAfterWait};    
     
 state_toupiao({player_op, PlayerId, Op}, State) ->
@@ -385,7 +392,7 @@ state_toupiao(timeout, State) ->
 state_toupiao(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     {IsDraw, TouPiaoResult, MaxSelectList, NewState} = lib_fight:do_toupiao_op(State),
-    notice_state_toupiao_result(IsDraw, TouPiaoResult, NewState)
+    notice_state_toupiao_result(IsDraw, TouPiaoResult, NewState),
     case IsDraw of
         true ->
             notice_toupiao(MaxSelectList, NewState),
@@ -401,7 +408,7 @@ state_toupiao(op_over, State) ->
 %% state_day
 %% ====================================================================
 state_day(start, State) ->
-    {IsOver, Winner} = 
+    {IsOver, _Winner} = 
         get_and_notice_fight_result(State),
     case IsOver of
         true ->
@@ -570,7 +577,7 @@ notice_player_op(Op, SeatList, State) ->
     notice_player_op(Op, [], SeatList, State).
 
 notice_player_op(Op, AttachData, SeatList, State) ->
-    Send = #m__fight__notice_op__s2l{op = Op，
+    Send = #m__fight__notice_op__s2l{op = Op,
                                      attach_data = AttachData},
     FunNotice = 
         fun(SeatId) ->
@@ -602,7 +609,7 @@ do_remove_wait_op(SeatId, State) ->
     {NewWaitOpList == [], maps:put(wait_op_list, NewWaitOpList, State)}.
 
 notice_jingxuan_jingzhang(State) ->
-    notice_player_op(?OP_PART_JINGZHANG}, lib_fight:get_alive_seat_list(State), State).
+    notice_player_op(?OP_PART_JINGZHANG, lib_fight:get_alive_seat_list(State), State).
 
 notice_xuanju_result(XaunJuType, IsDraw, XuanJuResult, State) ->
     PResutList = [#p_xuanju_result{seat_id = SeatId, 
@@ -618,17 +625,26 @@ notice_xuanju_jingzhang(State) ->
         lib_fight:get_alive_seat_list(State) -- PartXuanjuList, State).
 
 notice_xuanju_jingzhang_result(IsDraw, XuanjuResult, State) ->
-    notice_xuanju_result(?XUANJU_TYPE_JINGZHANG, IsDraw, XuanJuResult, State).
+    notice_xuanju_result(?XUANJU_TYPE_JINGZHANG, IsDraw, XuanjuResult, State).
 
 notice_toupiao(State) ->
-    notice_toupiao([], State);
+    notice_toupiao([], State).
 
 notice_toupiao(MaxSelectList, State) ->
     AliveList = lib_fight:get_alive_seat_list(State),
     notice_player_op(?OP_TOUPIAO, MaxSelectList, AliveList -- MaxSelectList, State).
 
-notice_night_result(State) ->
+notice_night_result(_State) ->
     ok.
 
-get_and_notice_fight_result(State) ->
+get_and_notice_fight_result(_State) ->
+    ok.
+
+clear_night_op(State) ->
+    State.
+
+notice_state_toupiao_result(IsDraw, TouPiaoResult, State) ->
+    notice_xuanju_result(?XUANJU_TYPE_QUZHU, IsDraw, TouPiaoResult, State).  
+
+notice_toupiao_out(_SeatId, _State) ->  
     ok.

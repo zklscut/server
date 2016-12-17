@@ -4,7 +4,6 @@
 
 -module(lib_fight).
 -export([init/3,
-         init_special_night/1,
          send_to_all_player/2,
          send_to_seat/3,
          get_player_id_by_seat/2,
@@ -57,7 +56,7 @@ get_duty_by_seat(SeatId, State) ->
 get_duty_seat(Duty, State) ->
     get_duty_seat(true, Duty, State).
 
-get_duty_seat(IsAlive, Duty, State)
+get_duty_seat(IsAlive, Duty, State) ->
     DutySeatMap = maps:get(duty_seat_map, State),
     AllDutySeat = maps:get(Duty, DutySeatMap, []),
     case IsAlive of
@@ -91,7 +90,7 @@ do_daozei_op(State) ->
 
 do_qiubite_op(State) ->
     LastOpData = get_last_op(State),
-    [{SeatId, [Seat1, Seat2]}] = maps:to_list(LastOpData),
+    [{_SeatId, [Seat1, Seat2]}] = maps:to_list(LastOpData),
     StateAfterLover = maps:put(lover, [Seat1, Seat2], State),
     notice_lover(Seat1, Seat2, State),
     clear_last_op(StateAfterLover).
@@ -146,7 +145,7 @@ do_nvwu_op(State) ->
                         [LangrenKill]
                 end
         end,
-    StateAfterUpdateDie = maps:put(die, DieList),
+    StateAfterUpdateDie = maps:put(die, DieList, StateAfterNvwu),
     clear_last_op(StateAfterUpdateDie).        
 
 do_langren_op(State) ->
@@ -173,13 +172,13 @@ do_part_jingzhang_op(State) ->
 
 do_xuanju_jingzhang_op(State) ->
     LastOpData = get_last_op(State),
-    {IsDarw, ResultList, MaxSeatList} = count_xuanju_result(LastOpData),
+    {IsDraw, ResultList, MaxSeatList} = count_xuanju_result(LastOpData),
     DrawCnt = maps:get(xuanju_draw_cnt, State),
     {DrawResult, NewState} = 
-        case IsDarw of
+        case IsDraw of
             false ->
                 {false, State#{xuanju_draw_cnt := 0,
-                               jingzhang := hd(ResultSeatId)}};
+                               jingzhang := hd(MaxSeatList)}};
             true ->
                 case DrawCnt > 0 of
                     true ->
@@ -208,13 +207,14 @@ do_fayan_op(State) ->
     clear_last_op(NewState).
 
 do_toupiao_op(State) ->
-    {IsDarw, ResultList, MaxSeatList} = count_xuanju_result(LastOpData),
+    LastOpData = get_last_op(State),
+    {IsDraw, ResultList, MaxSeatList} = count_xuanju_result(LastOpData),
     DrawCnt = maps:get(xuanju_draw_cnt, State),
     {DrawResult, NewState} = 
-        case IsDarw of
+        case IsDraw of
             false ->
                 {false, State#{xuanju_draw_cnt := 0,
-                               quzhu := hd(ResultSeatId)}};
+                               quzhu := hd(MaxSeatList)}};
             true ->
                 case DrawCnt > 0 of
                     true ->
@@ -225,7 +225,7 @@ do_toupiao_op(State) ->
                                        quzhu := 0}}
                 end
         end,
-    {IsDraw, ResultList, MaxSeatList, NewState}.
+    {DrawResult, ResultList, MaxSeatList, NewState}.
 
 %%%====================================================================
 %%% Internal functions
