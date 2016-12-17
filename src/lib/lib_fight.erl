@@ -22,7 +22,9 @@
          do_yuyanjia_op/1,
          do_part_jingzhang_op/1,
          do_xuanju_jingzhang_op/1,
-         do_jingzhang_op/1]).
+         do_jingzhang_op/1,
+         do_fayan_op/1,
+         do_toupiao_op/1]).
 
 -include("fight.hrl").
 -include("game_pb.hrl").
@@ -171,13 +173,13 @@ do_part_jingzhang_op(State) ->
 
 do_xuanju_jingzhang_op(State) ->
     LastOpData = get_last_op(State),
-    {IsDarw, ResultList, ResultSeatId} = count_xuanju_result(LastOpData),
+    {IsDarw, ResultList, MaxSeatList} = count_xuanju_result(LastOpData),
     DrawCnt = maps:get(xuanju_draw_cnt, State),
     {DrawResult, NewState} = 
         case IsDarw of
             false ->
                 {false, State#{xuanju_draw_cnt := 0,
-                               jingzhang := ResultSeatId}};
+                               jingzhang := hd(ResultSeatId)}};
             true ->
                 case DrawCnt > 0 of
                     true ->
@@ -198,6 +200,32 @@ do_jingzhang_op(State) ->
     FayanTrun = generate_fayan_turn(SeatId, IsFirst, Turn, State),
     StateAfterFayanTurn = maps:put(fayan_turn, FayanTrun, StateAfterJingzhang),
     clear_last_op(StateAfterFayanTurn).
+
+do_fayan_op(State) ->
+    FanyanTurn = maps:get(fayan_turn, State),
+    NewFanyanTurn = tl(FanyanTurn),
+    NewState = maps:put(fayan_turn, NewFanyanTurn, State),
+    clear_last_op(NewState).
+
+do_toupiao_op(State) ->
+    {IsDarw, ResultList, MaxSeatList} = count_xuanju_result(LastOpData),
+    DrawCnt = maps:get(xuanju_draw_cnt, State),
+    {DrawResult, NewState} = 
+        case IsDarw of
+            false ->
+                {false, State#{xuanju_draw_cnt := 0,
+                               quzhu := hd(ResultSeatId)}};
+            true ->
+                case DrawCnt > 0 of
+                    true ->
+                        {fasle, State#{xuanju_draw_cnt := 0,
+                                       quzhu := 0}};
+                    false ->
+                        {true , State#{xuanju_draw_cnt := 1,
+                                       quzhu := 0}}
+                end
+        end,
+    {IsDraw, ResultList, MaxSeatList, NewState}.
 
 %%%====================================================================
 %%% Internal functions
@@ -303,9 +331,10 @@ count_xuanju_result(OpData) ->
             end
         end,
     CountSelectList = lists:foldl(FunCout, [], maps:to_list(OpData)),
-    {ResultSeat, _, MaxSelectNum} = lists:last(lists:keysort(3, CountSelectList)),
-    IsDraw = length([CurSeatId || {CurSeatId, _, CurSelectNum} <- CountSelectList, CurSelectNum == MaxSelectNum]) > 1,
-    {IsDraw, [{CurSeatId, CurSelectSeat} || {CurSeatId, CurSelectSeat, _} <- CountSelectList], ResultSeat}.
+    {_, _, MaxSelectNum} = lists:last(lists:keysort(3, CountSelectList)),
+    MaxSeatList = [CurSeatId || {CurSeatId, _, CurSelectNum} <- CountSelectList, CurSelectNum == MaxSelectNum],
+    IsDraw = length(MaxSeatList) > 1,
+    {IsDraw, [{CurSeatId, CurSelectSeat} || {CurSeatId, CurSelectSeat, _} <- CountSelectList], MaxSeatList}.
 
 generate_fayan_turn(SeatId, IsFirst, Turn, State) ->
     AliveList = get_alive_seat_list(State),

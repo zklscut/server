@@ -293,6 +293,7 @@ state_xuanju_jingzhang(op_over, State) ->
 %% state_jingzhang
 %% ====================================================================
 state_jingzhang(start, State) ->
+    notice_night_result(State),
     case maps:get(jingzhang, State, 0) of
         0 ->
             send_event_inner(start),
@@ -345,6 +346,7 @@ state_fayan(wait_op, State) ->
     {next_state, state_fayan, StateAfterWait};
 
 state_fayan({player_op, PlayerId, Op}, State) ->
+    %%TODO 转发发言
     do_receive_player_op(PlayerId, Op, state_fayan, State);
 
 state_fayan(op_over, State) ->
@@ -382,13 +384,15 @@ state_toupiao(timeout, State) ->
 
 state_toupiao(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    {IsDraw, TouPiaoResult, NewState} = lib_fight:do_toupiao_op(State),
+    {IsDraw, TouPiaoResult, MaxSelectList, NewState} = lib_fight:do_toupiao_op(State),
     notice_state_toupiao_result(IsDraw, TouPiaoResult, NewState)
     case IsDraw of
         true ->
-            send_event_inner(wait_op),
-            {next_state, state_toupiao, NewState};
+            notice_toupiao(MaxSelectList, NewState),
+            StateAfterWait = do_set_wait_op(lib_fight:get_alive_seat_list(State) -- MaxSelectList, NewState),
+            {next_state, state_toupiao, StateAfterWait};
         false ->   
+            notice_toupiao_out(hd(MaxSelectList), NewState),
             send_event_inner(start),
             {next_state, get_next_game_state(state_toupiao), NewState}
     end.  
@@ -397,9 +401,8 @@ state_toupiao(op_over, State) ->
 %% state_day
 %% ====================================================================
 state_day(start, State) ->
-    notice_night_result(State),
     {IsOver, Winner} = 
-        get_fight_result(State),
+        get_and_notice_fight_result(State),
     case IsOver of
         true ->
             send_event_inner(start),
@@ -618,5 +621,14 @@ notice_xuanju_jingzhang_result(IsDraw, XuanjuResult, State) ->
     notice_xuanju_result(?XUANJU_TYPE_JINGZHANG, IsDraw, XuanJuResult, State).
 
 notice_toupiao(State) ->
+    notice_toupiao([], State);
+
+notice_toupiao(MaxSelectList, State) ->
     AliveList = lib_fight:get_alive_seat_list(State),
-    notice_player_op(?OP_TOUPIAO, AliveList, AliveList, State).
+    notice_player_op(?OP_TOUPIAO, MaxSelectList, AliveList -- MaxSelectList, State).
+
+notice_night_result(State) ->
+    ok.
+
+get_and_notice_fight_result(State) ->
+    ok.
