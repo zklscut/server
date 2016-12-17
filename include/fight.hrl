@@ -28,6 +28,7 @@
 -define(OP_JINGZHANG_ZHIDING, 1003). %%警长指定
 -define(OP_FAYAN, 1004). %%发言
 -define(OP_TOUPIAO, 1005). %%发言
+-define(OP_QUZHU, 1006). %%被驱逐
 
 -define(XUANJU_TYPE_JINGZHANG, 1).
 -define(XUANJU_TYPE_QUZHU, 2).
@@ -56,11 +57,11 @@
                   daozei => [],         %% 盗贼可选择的
                   part_jingzhang => [], %% 參與選舉警長
                   xuanju_draw_cnt => 0, %% 选举平局次数
-                  jingzhang => 0,
-                  jingzhang_op => 0,
-                  fayan_turn => [],
-                  die => [],
-                  quzhu => 0,
+                  jingzhang => 0,       %% 选举的警长
+                  jingzhang_op => 0,    %% 警长操作
+                  fayan_turn => [],     %% 发言顺序
+                  die => [],            %% 死亡玩家
+                  quzhu => 0,           %% 驱逐的玩家
                   last_op_data => #{}   %% 上一轮操作的数据, 杀了几号, 投了几号等等
                   }).
 
