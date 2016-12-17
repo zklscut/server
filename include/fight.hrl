@@ -23,13 +23,25 @@
 -define(TURN_UP, 0).
 -define(TURN_DOWN, 1).
 
+-define(OP_PART_JINGZHANG, 1001). %%參選警長
+-define(OP_XUANJU_JINGZHANG, 1002). %%選舉警長
+-define(OP_JINGZHANG_ZHIDING, 1003). %%警长指定
+-define(OP_FAYAN, 1004). %%发言
+-define(OP_TOUPIAO, 1005). %%发言
+-define(OP_QUZHU, 1006). %%被驱逐
+
+-define(XUANJU_TYPE_JINGZHANG, 1).
+-define(XUANJU_TYPE_QUZHU, 2).
+
 -define(TIMER_TIMEOUT, timeout).
+
+-define(JINXXUAN_TIMER_TIMEOUT, jingxuan_timeout).
 
 -define(MFIGHT, #{room_id => 0,
                   seat_player_map => #{},%% #{seat_id, player_id}
                   player_seat_map => #{},%% #{player_id, seat_id}
                   offline_list => [],   %% seat_id
-                  out_player_list => [],%% 出局列表 seat_id
+                  out_seat_list => [],%% 出局列表 seat_id
                   seat_duty_map => #{}, %% #{seat_id, 职责}
                   duty_seat_map => #{}, %% #{duty_id, [seat_id]}
                   left_op_list => [],   %% 剩余操作seat_id 按照顺序排好
@@ -42,6 +54,14 @@
                   nvwu => {0, 0},       %% 女巫操作
                   langren => 0,         %% 狼人操作
                   hunxuer => 0,         %% 混血儿是否帮狼人
+                  daozei => [],         %% 盗贼可选择的
+                  part_jingzhang => [], %% 參與選舉警長
+                  xuanju_draw_cnt => 0, %% 选举平局次数
+                  jingzhang => 0,       %% 选举的警长
+                  jingzhang_op => 0,    %% 警长操作
+                  fayan_turn => [],     %% 发言顺序
+                  die => [],            %% 死亡玩家
+                  quzhu => 0,           %% 驱逐的玩家
                   last_op_data => #{}   %% 上一轮操作的数据, 杀了几号, 投了几号等等
                   }).
 
