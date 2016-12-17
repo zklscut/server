@@ -319,7 +319,7 @@ state_jingzhang(timeout, State) ->
 
 state_jingzhang(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    NewState = lib_fight:do_ingzhang_op(State),
+    NewState = lib_fight:do_jingzhang_op(State),
     send_event_inner(start),
     {next_state, get_next_game_state(state_jingzhang), NewState}.
 

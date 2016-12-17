@@ -21,7 +21,8 @@
          do_nvwu_op/1,
          do_yuyanjia_op/1,
          do_part_jingzhang_op/1,
-         do_xuanju_jingzhang_op/1]).
+         do_xuanju_jingzhang_op/1,
+         do_jingzhang_op/1]).
 
 -include("fight.hrl").
 -include("game_pb.hrl").
@@ -123,12 +124,34 @@ do_nvwu_op(State) ->
             _ ->
                 maps:put(nvwu, {SelectSeatId, IsUseDuYao}, State)
         end,
-    clear_last_op(StateAfterNvwu).        
+    LangrenKill = maps:get(langren, State),
+    DieList = 
+        case SelectSeatId of
+            0 ->
+                [LangrenKill];
+            LangrenKill ->
+                case IsUseDuYao of
+                    1 ->
+                        [LangrenKill];
+                    0 ->
+                        []
+                end;
+            _ ->
+                case IsUseDuYao of
+                    1 ->
+                        [LangrenKill, SelectSeatId];
+                    0 ->
+                        [LangrenKill]
+                end
+        end,
+    StateAfterUpdateDie = maps:put(die, DieList),
+    clear_last_op(StateAfterUpdateDie).        
 
 do_langren_op(State) ->
     LastOpData = get_last_op(State),
     KillSeat = rand_target_in_op(LastOpData),
     StateAfterLangren = maps:put(langren, KillSeat, State),
+
     clear_last_op(StateAfterLangren). 
 
 do_yuyanjia_op(State) ->
@@ -167,6 +190,14 @@ do_xuanju_jingzhang_op(State) ->
         end,
 
     {DrawResult, ResultList, clear_last_op(NewState)}.
+
+do_jingzhang_op(State) ->
+    LastOpData = get_last_op(State),
+    [{SeatId, [IsFirst, Turn]}] = maps:to_list(LastOpData),
+    StateAfterJingzhang = maps:put(jingzhang_op, {IsFirst, Turn}, State),
+    FayanTrun = generate_fayan_turn(SeatId, IsFirst, Turn, State),
+    StateAfterFayanTurn = maps:put(fayan_turn, FayanTrun, StateAfterJingzhang),
+    clear_last_op(StateAfterFayanTurn).
 
 %%%====================================================================
 %%% Internal functions
@@ -276,3 +307,28 @@ count_xuanju_result(OpData) ->
     IsDraw = length([CurSeatId || {CurSeatId, _, CurSelectNum} <- CountSelectList, CurSelectNum == MaxSelectNum]) > 1,
     {IsDraw, [{CurSeatId, CurSelectSeat} || {CurSeatId, CurSelectSeat, _} <- CountSelectList], ResultSeat}.
 
+generate_fayan_turn(SeatId, IsFirst, Turn, State) ->
+    AliveList = get_alive_seat_list(State),
+    Die = 
+        case maps:get(die, State) of
+            [] ->
+                maps:get(langren, State);
+            DieList ->
+                hd(DieList)
+        end,
+    InitTrunList = 
+        case Turn of
+            ?TURN_DOWN ->
+                lists:sort(AliveList);
+            _ ->
+                list:reverse(lits:sort(AliveList))
+        end,
+    {PreList, TailList} = util:part_list(Die, InitTrunList),
+    TurnList = TailList ++ PreList,
+    case IsFirst of
+        true ->
+            [SeatId] ++ (TurnList -- [SeatId]);
+        false ->
+            TurnList
+    end.
+    

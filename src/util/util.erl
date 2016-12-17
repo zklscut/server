@@ -6,7 +6,9 @@
 -export([rand/2,
          rand_list/1,
          rand_in_list/1,
-         rand_in_list/2]).
+         rand_in_list/2,
+         index_of_list/2,
+         part_list/2]).
 
 
 %% ====================================================================
@@ -58,6 +60,30 @@ rand_in_list(List, GetAccount) ->
         throw:Data ->
             Data
     end.
+
+index_of_list(Elem, List) ->
+    Pred = fun(A, CurNth) ->
+                   case A of
+                       Elem ->
+                           throw(CurNth);
+                       _ ->
+                           CurNth + 1
+                   end
+           end,
+    try
+        lists:foldl(Pred, 1, List),
+        undefined
+    catch
+        throw:Nth ->
+            Nth;
+        _:_ ->
+            undefined
+    end.
+
+part_list(Elem, List) ->
+    Index = index_of_list(Elem, List),
+    lists:split(Index, List).
+
 
 %%%====================================================================
 %%% Internal functions

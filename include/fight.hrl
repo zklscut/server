@@ -59,6 +59,7 @@
                   jingzhang => 0,
                   jingzhang_op => 0,
                   fayan_turn => [],
+                  die => [],
                   last_op_data => #{}   %% 上一轮操作的数据, 杀了几号, 投了几号等等
                   }).
 
