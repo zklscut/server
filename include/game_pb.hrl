@@ -17,3 +17,13 @@
 -record(p_chat, {player_show_base, voice, content, length, compress, chat_type, room_id}).
 -record(m__chat__public_speak__l2s, {msg_id=14001, chat}).
 -record(m__chat__public_speak__s2l, {msg_id=14002, chat}).
+-record(m__fight__game_state_change__s2l, {msg_id=15001, game_status}).
+-record(m__fight__notice_duty__s2l, {msg_id=15002, duty}).
+-record(m__fight__notice_op__s2l, {msg_id=15003, op, attach_data}).
+-record(m__fight__notice_op__l2s, {msg_id=15004, op, op_list}).
+-record(m__fight__speak__l2s, {msg_id=15005, chat}).
+-record(m__fight__speak__s2l, {msg_id=15006, chat}).
+-record(m__fight__notice_lover__s2l, {msg_id=15007, lover_list}).
+-record(m__fight__notice_yuyanjia_result__s2l, {msg_id=15008, seat_id, duty}).
+-record(p_xuanju_result, {seat_id, select_list}).
+-record(m__fight__xuanju_result__s2l, {msg_id=15009, xuanju_type, result_list, is_draw}).

@@ -35,14 +35,14 @@
 %% API functions
 %% ====================================================================
 -export([start_link/2,
-         player_op/3,
+         player_op/4,
          print_state/1]).
 
 start_link(RoomId, PlayerList) ->
     gen_fsm:start(?MODULE, [RoomId, PlayerList, ?MFIGHT], []).
 
-player_op(Pid, PlayerId, Op) ->
-    gen_fsm:send_event(Pid, {player_op, PlayerId, Op}).
+player_op(Pid, PlayerId, Op, OpList) ->
+    gen_fsm:send_event(Pid, {player_op, PlayerId, Op, OpList}).
 
 print_state(Pid) ->
     gen_fsm:send_all_state_event(Pid, print_state).

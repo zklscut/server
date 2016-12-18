@@ -17,4 +17,13 @@ get(13008) -> {m__room__leave_room__s2l, mod_room, leave_room};
 get(13009) -> {m__room__rand_enter__l2s, mod_room, rand_enter}; 
 get(14001) -> {m__chat__public_speak__l2s, mod_chat, public_speak}; 
 get(14002) -> {m__chat__public_speak__s2l, mod_chat, public_speak}; 
+get(15001) -> {m__fight__game_state_change__s2l, mod_fight, game_state_change}; 
+get(15002) -> {m__fight__notice_duty__s2l, mod_fight, notice_duty}; 
+get(15003) -> {m__fight__notice_op__s2l, mod_fight, notice_op}; 
+get(15004) -> {m__fight__notice_op__l2s, mod_fight, notice_op}; 
+get(15005) -> {m__fight__speak__l2s, mod_fight, speak}; 
+get(15006) -> {m__fight__speak__s2l, mod_fight, speak}; 
+get(15007) -> {m__fight__notice_lover__s2l, mod_fight, notice_lover}; 
+get(15008) -> {m__fight__notice_yuyanjia_result__s2l, mod_fight, notice_yuyanjia_result}; 
+get(15009) -> {m__fight__xuanju_result__s2l, mod_fight, xuanju_result}; 
 get(_) -> undefined. 
