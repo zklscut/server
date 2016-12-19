@@ -646,10 +646,12 @@ notice_toupiao(MaxSelectList, State) ->
     AliveList = lib_fight:get_alive_seat_list(State),
     notice_player_op(?OP_TOUPIAO, MaxSelectList, AliveList -- MaxSelectList, State).
 
-notice_night_result(_State) ->
-    ok.
+notice_night_result(State) ->
+    Send = #m__fight__night_result__s2l{die_list = maps:get(die, State)},
+    lib_fight:send_to_all_player(Send, State).
 
 get_and_notice_fight_result(_State) ->
+    %%TODO fight result
     ok.
 
 clear_night_op(State) ->
