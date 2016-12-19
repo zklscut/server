@@ -53,7 +53,7 @@ print_state(Pid) ->
 %% ====================================================================
 
 init([RoomId, PlayerList, State]) ->
-%    lib_room:update_fight_pid(RoomId, self()),
+    lib_room:update_fight_pid(RoomId, self()),
     NewState = lib_fight:init(RoomId, PlayerList, State),
     notice_game_status_change(start, NewState),
     notice_duty(NewState),
