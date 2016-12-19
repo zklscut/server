@@ -13,6 +13,7 @@
 -define(DUTY_BAICHI, 10).   %%白痴
 -define(DUTY_PINGMIN, 11).  %%平民
 -define(DUTY_NONE, 12).     %%第三方,需要杀光所有人
+-define(DUTY_BAILANG, 13).  %%白狼
 
 -define(DUTY_TYPE_SPECIAL, 1).  %%特殊身份
 -define(DUTY_TYPE_SHENMIN, 2).  %%神民
@@ -27,7 +28,7 @@
 -define(OP_XUANJU_JINGZHANG, 1002). %%選舉警長
 -define(OP_JINGZHANG_ZHIDING, 1003). %%警长指定
 -define(OP_FAYAN, 1004). %%发言
--define(OP_TOUPIAO, 1005). %%发言
+-define(OP_TOUPIAO, 1005). %%投票驱逐
 -define(OP_QUZHU, 1006). %%被驱逐
 
 -define(XUANJU_TYPE_JINGZHANG, 1).
@@ -36,6 +37,10 @@
 -define(TIMER_TIMEOUT, timeout).
 
 -define(JINXXUAN_TIMER_TIMEOUT, jingxuan_timeout).
+
+-define(NVWU_NONE, 0).
+-define(NVWU_DUYAO, 1).
+-define(NVWU_JIEYAO, 2).
 
 -define(MFIGHT, #{room_id => 0,
                   seat_player_map => #{},%% #{seat_id, player_id}
@@ -52,6 +57,7 @@
                   lover => [],          %% 情侣
                   shouwei => 0,         %% 守卫的id
                   nvwu => {0, 0},       %% 女巫操作
+                  nvwu_left => [1, 2],  %% 女巫剩余的药
                   langren => 0,         %% 狼人操作
                   hunxuer => 0,         %% 混血儿是否帮狼人
                   daozei => [],         %% 盗贼可选择的

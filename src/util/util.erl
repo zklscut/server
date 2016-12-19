@@ -8,7 +8,8 @@
          rand_in_list/1,
          rand_in_list/2,
          index_of_list/2,
-         part_list/2]).
+         part_list/2,
+         conver_bool_to_int/1]).
 
 
 %% ====================================================================
@@ -83,6 +84,14 @@ index_of_list(Elem, List) ->
 part_list(Elem, List) ->
     Index = index_of_list(Elem, List),
     lists:split(Index, List).
+
+conver_bool_to_int(Bool) ->
+    case Bool of
+        true ->
+            1;
+        false ->
+            0
+    end.
 
 
 %%%====================================================================
