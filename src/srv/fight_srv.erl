@@ -675,7 +675,7 @@ get_fight_result(State) ->
                 ignore
         end,
 
-        case lib_fight:get_duty_seat(?DUTY_PINGMIN, State) ->
+        case lib_fight:get_duty_seat(?DUTY_PINGMIN, State) of
             [] ->
                 throw({true, AllLangren});
             _ ->
