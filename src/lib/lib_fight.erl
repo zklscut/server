@@ -11,6 +11,8 @@
          get_duty_by_seat/2,
          update_duty/4,
          get_duty_seat/2,
+         get_duty_seat/3,
+         get_all_seat/1,
          get_alive_seat_list/1,
          do_daozei_op/1,
          do_qiubite_op/1,
@@ -68,8 +70,11 @@ get_duty_seat(IsAlive, Duty, State) ->
             AllDutySeat
     end.
 
+get_all_seat(State) ->
+    maps:keys(maps:get(seat_player_map, State)).
+
 get_alive_seat_list(State) ->
-    filter_out_seat(maps:keys(maps:get(seat_player_map, State)), State).
+    filter_out_seat(get_all_seat(State), State).
 
 filter_out_seat(SeatList, State) ->
     [SeatId || SeatId <- SeatList, not lists:member(SeatId, maps:get(out_seat_list, State))].
