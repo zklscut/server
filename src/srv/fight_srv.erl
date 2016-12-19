@@ -582,6 +582,9 @@ get_next_game_state(GameState) ->
             state_shouwei
     end.
 
+notice_player_op(?DUTY_DAOZEI, SeatList, State) ->
+    notice_player_op(?DUTY_DAOZEI, maps:get(daozei, State), SeatList, State);
+
 notice_player_op(Op, SeatList, State) ->
     notice_player_op(Op, [], SeatList, State).
 
