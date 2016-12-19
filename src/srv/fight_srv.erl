@@ -663,7 +663,7 @@ get_fight_result(State) ->
     try
         case LangrenAlive of
             [] ->
-                throw({true, AllSeat -- LangrenAlive};
+                throw({true, AllSeat -- LangrenAlive});
             _ ->
                 ignore
         end,
