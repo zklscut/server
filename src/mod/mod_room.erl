@@ -70,7 +70,7 @@ handle_leave_room(Player) ->
 
 start_fight(#m__room__start_fight__l2s{}, Player) ->
     RoomId = lib_room:get_player_room_id(Player),
-    PlayerList = get_player_room_player_list(Player),
+    PlayerList = lib_room:get_player_room_player_list(Player),
     fight_srv:start_link(RoomId, PlayerList),
     {ok, Player}.
 
