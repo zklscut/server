@@ -9,7 +9,8 @@
          create_room/2,
          handle_create_room/2,
          leave_room/2,
-         handle_leave_room/1]).
+         handle_leave_room/1,
+         start_fight/2]).
 
 -include("game_pb.hrl").
 -include("ets.hrl").
@@ -66,6 +67,12 @@ handle_leave_room(Player) ->
     Return = #m__room__leave_room__s2l{},
     net_send:send(Return, Player),
     {save, lib_room:update_player_room_id(0, Player)}.
+
+start_fight(#m__room__start_fight__l2s{}, Player) ->
+    RoomId = lib_room:get_player_room_id(Player),
+    PlayerList = get_player_room_player_list(Player),
+    fight_srv:start_link(RoomId, PlayerList),
+    {ok, Player}.
 
 %%%====================================================================
 %%% Internal functions
