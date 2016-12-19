@@ -53,8 +53,9 @@ print_state(Pid) ->
 %% ====================================================================
 
 init([RoomId, PlayerList, State]) ->
-    lib_room:update_fight_pid(RoomId, self()),
+%    lib_room:update_fight_pid(RoomId, self()),
     NewState = lib_fight:init(RoomId, PlayerList, State),
+    notice_game_status_change(start, NewState),
     notice_duty(NewState),
     send_event_inner(start),
     {ok, state_daozei, NewState}.
@@ -70,8 +71,8 @@ state_daozei(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_DAOZEI, State),
     {next_state, state_daozei, NewState};
 
-state_daozei({player_op, PlayerId, Op}, State) ->
-    do_receive_player_op(PlayerId, Op, state_daozei, State);
+state_daozei({player_op, PlayerId, _Op, OpList}, State) ->
+    do_receive_player_op(PlayerId, OpList, state_daozei, State);
 
 state_daozei(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -94,8 +95,8 @@ state_qiubite(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_QIUBITE, State),
     {next_state, state_qiubite, NewState};
 
-state_qiubite({player_op, PlayerId, Op}, State) ->
-    do_receive_player_op(PlayerId, Op, state_qiubite, State);
+state_qiubite({player_op, PlayerId, _Op, OpList}, State) ->
+    do_receive_player_op(PlayerId, OpList, state_qiubite, State);
 
 state_qiubite(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -118,8 +119,8 @@ state_hunxueer(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_HUNXUEER, State),
     {next_state, state_hunxueer, NewState};
 
-state_hunxueer({player_op, PlayerId, Op}, State) ->
-    do_receive_player_op(PlayerId, Op, state_hunxueer, State);
+state_hunxueer({player_op, PlayerId, _Op, OpList}, State) ->
+    do_receive_player_op(PlayerId, OpList, state_hunxueer, State);
 
 state_hunxueer(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -142,8 +143,8 @@ state_shouwei(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_SHOUWEI, State),
     {next_state, state_shouwei, NewState};
 
-state_shouwei({player_op, PlayerId, Op}, State) ->
-    do_receive_player_op(PlayerId, Op, state_shouwei, State);
+state_shouwei({player_op, PlayerId, _Op, OpList}, State) ->
+    do_receive_player_op(PlayerId, OpList, state_shouwei, State);
 
 state_shouwei(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -166,8 +167,8 @@ state_langren(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_LANGREN, State),
     {next_state, state_langren, NewState};
 
-state_langren({player_op, PlayerId, Op}, State) ->
-    do_receive_player_op(PlayerId, Op, state_langren, State);
+state_langren({player_op, PlayerId, _Op, OpList}, State) ->
+    do_receive_player_op(PlayerId, OpList, state_langren, State);
 
 state_langren(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -190,8 +191,8 @@ state_nvwu(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_NVWU, State),
     {next_state, state_nvwu, NewState};
 
-state_nvwu({player_op, PlayerId, Op}, State) ->
-    do_receive_player_op(PlayerId, Op, state_nvwu, State);
+state_nvwu({player_op, PlayerId, _Op, OpList}, State) ->
+    do_receive_player_op(PlayerId, OpList, state_nvwu, State);
 
 state_nvwu(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -214,8 +215,8 @@ state_yuyanjia(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_YUYANJIA, State),
     {next_state, state_yuyanjia, NewState};
 
-state_yuyanjia({player_op, PlayerId, Op}, State) ->
-    do_receive_player_op(PlayerId, Op, state_yuyanjia, State);
+state_yuyanjia({player_op, PlayerId, _Op, OpList}, State) ->
+    do_receive_player_op(PlayerId, OpList, state_yuyanjia, State);
 
 state_yuyanjia(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -232,6 +233,7 @@ state_yuyanjia(op_over, State) ->
 %% ====================================================================
 
 state_part_jingzhang(start, State) ->
+    notice_game_status_change(state_part_jingzhang, State),
     send_event_inner(wait_op),
     {next_state, state_part_jingzhang, State};
 
@@ -241,8 +243,8 @@ state_part_jingzhang(wait_op, State) ->
     StateAfterWait = do_set_wait_op(lib_fight:get_alive_seat_list(State), State),
     {next_state, state_part_jingzhang, StateAfterWait};
 
-state_part_jingzhang({player_op, PlayerId, Op}, State) ->
-    do_receive_player_op(PlayerId, Op, state_part_jingzhang, State);
+state_part_jingzhang({player_op, PlayerId, _Op, OpList}, State) ->
+    do_receive_player_op(PlayerId, OpList, state_part_jingzhang, State);
 
 state_part_jingzhang(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -264,6 +266,7 @@ state_xuanju_jingzhang(start, State) ->
             send_event_inner(start),
             {next_state, get_next_game_state(state_xuanju_jingzhang), State};
         _ ->
+            notice_game_status_change(state_xuanju_jingzhang, State),
             send_event_inner(wait_op),
             {next_state, state_xuanju_jingzhang, State}
     end;
@@ -275,8 +278,9 @@ state_xuanju_jingzhang(wait_op, State) ->
     StateAfterWait = do_set_wait_op(WaitList, State),
     {next_state, state_xuanju_jingzhang, StateAfterWait};    
     
-state_xuanju_jingzhang({player_op, PlayerId, Op}, State) ->
-    do_receive_player_op(PlayerId, Op, state_part_jingzhang, State);
+state_xuanju_jingzhang({player_op, PlayerId, _Op, OpList}, State) ->
+    do_receive_player_op(PlayerId, OpList, state_xuanju_jingzhang, State);
+
 
 state_xuanju_jingzhang(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -304,10 +308,11 @@ state_jingzhang(start, State) ->
     case maps:get(jingzhang, State, 0) of
         0 ->
             send_event_inner(start),
-            {next_state, get_next_game_state(state_xuanju_jingzhang), State};
+            {next_state, get_next_game_state(state_jingzhang), State};
         _ ->
+            notice_game_status_change(state_jingzhang, State),
             send_event_inner(wait_op),
-            {next_state, state_xuanju_jingzhang, State}
+            {next_state, state_jingzhang, State}
     end;
 
 state_jingzhang(wait_op, State) ->
@@ -317,8 +322,8 @@ state_jingzhang(wait_op, State) ->
     StateAfterWait = do_set_wait_op([JingZhang], State),
     {next_state, state_jingzhang, StateAfterWait}; 
 
-state_jingzhang({player_op, PlayerId, Op}, State) ->
-    do_receive_player_op(PlayerId, Op, state_jingzhang, State);
+state_jingzhang({player_op, PlayerId, _Op, OpList}, State) ->
+    do_receive_player_op(PlayerId, OpList, state_jingzhang, State);
 
 state_jingzhang(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -341,6 +346,7 @@ state_fayan(start, State) ->
             send_event_inner(start),
             {next_state, get_next_game_state(state_fayan), State};
         _ ->
+            notice_game_status_change(state_fayan, State),
             send_event_inner(wait_op),
             {next_state, state_fayan, State}
     end;
@@ -352,9 +358,9 @@ state_fayan(wait_op, State) ->
     StateAfterWait = do_set_wait_op([Fayan], State),
     {next_state, state_fayan, StateAfterWait};
 
-state_fayan({player_op, PlayerId, Op}, State) ->
+state_fayan({player_op, PlayerId, _Op, OpList}, State) ->
     %%TODO 转发发言
-    do_receive_player_op(PlayerId, Op, state_fayan, State);
+    do_receive_player_op(PlayerId, OpList, state_fayan, State);
 
 state_fayan(op_over, State) ->
     StateAfterFayan = lib_fight:do_fayan_op(State),
@@ -371,6 +377,7 @@ state_fayan(op_over, State) ->
 %% state_toupiao
 %% ====================================================================
 state_toupiao(start, State) ->
+    notice_game_status_change(state_toupiao, State),
     send_event_inner(wait_op),
     {next_state, state_toupiao, State};
 
@@ -381,8 +388,8 @@ state_toupiao(wait_op, State) ->
     StateAfterWait = do_set_wait_op(WaitList, State),
     {next_state, state_toupiao, StateAfterWait};    
     
-state_toupiao({player_op, PlayerId, Op}, State) ->
-    do_receive_player_op(PlayerId, Op, state_toupiao, State);
+state_toupiao({player_op, PlayerId, _Op, OpList}, State) ->
+    do_receive_player_op(PlayerId, OpList, state_toupiao, State);
 
 state_toupiao(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -408,6 +415,7 @@ state_toupiao(op_over, State) ->
 %% state_day
 %% ====================================================================
 state_day(start, State) ->
+    notice_game_status_change(state_day, State),
     {IsOver, _Winner} = 
         get_and_notice_fight_result(State),
     case IsOver of
@@ -515,6 +523,7 @@ do_duty_state_start(Duty, GameState, State) ->
             send_event_inner(start),
             {next_state, get_next_game_state(GameState), State};
         _ ->
+            notice_game_status_change(GameState, State),
             send_event_inner(wait_op),
             {next_state, GameState, State}
     end.
@@ -616,7 +625,7 @@ notice_xuanju_result(XaunJuType, IsDraw, XuanJuResult, State) ->
                                    select_list = SelectList} || {SeatId, SelectList} <- XuanJuResult],
     Send = #m__fight__xuanju_result__s2l{xuanju_type = XaunJuType,
                                          result_list = PResutList,
-                                         is_draw = IsDraw},
+                                         is_draw = util:conver_bool_to_int(IsDraw)},
     lib_fight:send_to_all_player(Send, State).
 
 notice_xuanju_jingzhang(State) ->
@@ -658,5 +667,45 @@ clear_night_op(State) ->
 notice_state_toupiao_result(IsDraw, TouPiaoResult, State) ->
     notice_xuanju_result(?XUANJU_TYPE_QUZHU, IsDraw, TouPiaoResult, State).  
 
+notice_toupiao_out(0, _State) ->
+    ignore;
+
 notice_toupiao_out(SeatId, State) ->  
     notice_player_op(?OP_QUZHU, [SeatId], State).
+
+notice_game_status_change(Status, State) ->
+    StatusId = get_status_id(Status),
+    Send = #m__fight__game_state_change__s2l{game_status = StatusId},
+    lib_fight:send_to_all_player(Send, State).
+
+get_status_id(Status) ->
+    case Status of
+        start ->
+            0;
+        state_daozei ->
+            1;
+        state_qiubite ->
+            2;
+        state_hunxueer ->
+            3;
+        state_shouwei ->
+            4;
+        state_langren ->
+            5;
+        state_nvwu ->
+            6;
+        state_yuyanjia ->
+            7;
+        state_part_jingzhang ->
+            8;
+        state_xuanju_jingzhang ->
+            9;
+        state_jingzhang ->
+            10;
+        state_fayan ->
+            11;
+        state_toupiao ->
+            12;
+        state_day ->
+            13
+    end.

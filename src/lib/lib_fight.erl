@@ -53,9 +53,11 @@ get_seat_id_by_player_id(PlayerId, State) ->
 get_duty_by_seat(SeatId, State) ->
     maps:get(SeatId, maps:get(seat_duty_map, State)).    
 
+get_duty_seat(?DUTY_LANGREN, State) ->
+    get_duty_seat(true, ?DUTY_LANGREN, State) ++ get_duty_seat(true, ?DUTY_BAILANG, State);
 get_duty_seat(Duty, State) ->
     get_duty_seat(true, Duty, State).
-
+    
 get_duty_seat(IsAlive, Duty, State) ->
     DutySeatMap = maps:get(duty_seat_map, State),
     AllDutySeat = maps:get(Duty, DutySeatMap, []),
@@ -75,10 +77,10 @@ filter_out_seat(SeatList, State) ->
 update_duty(SeatId, PreDuty, Duty, State) ->
     NewSeatDutyMap = maps:put(SeatId, Duty, maps:get(seat_duty_map, State)),
     DutySeatMap = maps:get(duty_seat_map, State),
-    NewPreDutySeatList = maps:get(PreDuty, DutySeatMap) -- [SeatId],
+    NewPreDutySeatList = maps:get(PreDuty, DutySeatMap, []) -- [SeatId],
     NewNewDutySeatList = maps:get(Duty, DutySeatMap, []) ++ [SeatId],
-    NewDutySeatMap = DutySeatMap#{PreDuty := NewPreDutySeatList,
-                                  Duty := NewNewDutySeatList},
+    NewDutySeatMap = DutySeatMap#{PreDuty => NewPreDutySeatList,
+                                  Duty => NewNewDutySeatList},
     State#{duty_seat_map := NewDutySeatMap,
            seat_duty_map := NewSeatDutyMap}.                                  
 
@@ -117,35 +119,10 @@ do_hunxuer_op(State) ->
 
 do_nvwu_op(State) ->
     LastOpData = get_last_op(State),
-    [{_, [SelectSeatId, IsUseDuYao]}] = maps:to_list(LastOpData),
-    StateAfterNvwu = 
-        case SelectSeatId of
-            0 ->
-                State;
-            _ ->
-                maps:put(nvwu, {SelectSeatId, IsUseDuYao}, State)
-        end,
-    LangrenKill = maps:get(langren, State),
-    DieList = 
-        case SelectSeatId of
-            0 ->
-                [LangrenKill];
-            LangrenKill ->
-                case IsUseDuYao of
-                    1 ->
-                        [LangrenKill];
-                    0 ->
-                        []
-                end;
-            _ ->
-                case IsUseDuYao of
-                    1 ->
-                        [LangrenKill, SelectSeatId];
-                    0 ->
-                        [LangrenKill]
-                end
-        end,
-    StateAfterUpdateDie = maps:put(die, DieList, StateAfterNvwu),
+    [{_, [SelectSeatId, UseYao]}] = maps:to_list(LastOpData),
+    StateAfterNvwu = maps:put(nvwu, {SelectSeatId, UseYao}, State),
+    StateAfterDelete = maps:put(nvwu_left, maps:get(nvwu_left, State) -- [UseYao], StateAfterNvwu),
+    StateAfterUpdateDie = do_set_die_list(StateAfterDelete),
     clear_last_op(StateAfterUpdateDie).        
 
 do_langren_op(State) ->
@@ -331,10 +308,15 @@ count_xuanju_result(OpData) ->
             end
         end,
     CountSelectList = lists:foldl(FunCout, [], maps:to_list(OpData)),
-    {_, _, MaxSelectNum} = lists:last(lists:keysort(3, CountSelectList)),
-    MaxSeatList = [CurSeatId || {CurSeatId, _, CurSelectNum} <- CountSelectList, CurSelectNum == MaxSelectNum],
-    IsDraw = length(MaxSeatList) > 1,
-    {IsDraw, [{CurSeatId, CurSelectSeat} || {CurSeatId, CurSelectSeat, _} <- CountSelectList], MaxSeatList}.
+    case CountSelectList of
+        [] ->
+            {false, [], [0]};
+        _ ->
+            {_, _, MaxSelectNum} = lists:last(lists:keysort(3, CountSelectList)),
+            MaxSeatList = [CurSeatId || {CurSeatId, _, CurSelectNum} <- CountSelectList, CurSelectNum == MaxSelectNum],
+            IsDraw = length(MaxSeatList) > 1,
+            {IsDraw, [{CurSeatId, CurSelectSeat} || {CurSeatId, CurSelectSeat, _} <- CountSelectList], MaxSeatList}
+    end.
 
 generate_fayan_turn(SeatId, IsFirst, Turn, State) ->
     AliveList = get_alive_seat_list(State),
@@ -360,4 +342,28 @@ generate_fayan_turn(SeatId, IsFirst, Turn, State) ->
         false ->
             TurnList
     end.
-    
+
+do_set_die_list(State) ->
+    {NvwuSelect, NvwuOp} = maps:get(nvwu, State),
+    LangrenKill = maps:get(langren, State),
+    ShowWeiDef = maps:get(shouwei, State),
+    KillList = 
+        case NvwuOp of
+            ?NVWU_DUYAO ->
+                [LangrenKill, NvwuSelect];
+            _ ->
+                [LangrenKill]
+        end,
+    SaveList = 
+        case NvwuOp of
+            ?NVWU_JIEYAO ->
+                [ShowWeiDef, NvwuSelect];
+            _ ->
+                [ShowWeiDef]
+        end,
+    DieList = KillList -- SaveList,
+    maps:put(die, DieList, State).
+
+
+
+

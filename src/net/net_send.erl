@@ -1,7 +1,7 @@
 % @Author: anchen
 % @Date:   2016-12-06 14:52:58
 % @Last Modified by:   anchen
-% @Last Modified time: 2016-12-13 11:46:08
+% @Last Modified time: 2016-12-19 09:44:59
 
 -module(net_send).
 -export([send/2,
@@ -16,6 +16,7 @@ send(Send, #{socket := Socket,
     gen_tcp:send(Socket, <<1:24, Len:16, ProtoId:16, Binary/binary>>);
 
 send(Send, PlayerId) when is_integer(PlayerId) ->
+    lager:info("send ~p", [{PlayerId, Send}]),
 	global_op_srv:player_op(PlayerId, {?MODULE, send, [Send]});
 
 send(_, _) ->
