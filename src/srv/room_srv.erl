@@ -104,6 +104,7 @@ handle_cast_inner({enter_room, RoomId, PlayerId}, State) ->
     lib_room:update_room(RoomId, NewRoom),
 
     global_op_srv:player_op(PlayerId, {mod_room, handle_enter_room, [NewRoom]}),
+    mod_room:notice_team_change(NewRoom),
     {noreply, State};
 
 handle_cast_inner({create_room, MaxPlayerNum, RoomName, Player}, State) ->
@@ -137,9 +138,11 @@ handle_cast_inner({leave_room, RoomId, PlayerId}, State) ->
                 end,
             NewRoom = Room#{player_list := NewPlayerList,
                             owner := Owner},
+            mod_room:notice_team_change(NewRoom),
             lib_room:update_room(RoomId, NewRoom)
     end,
     global_op_srv:player_op(PlayerId, {mod_room, handle_leave_room, []}),
+
     {noreply, State}.
 
 %% handle_info/2
