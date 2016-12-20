@@ -359,7 +359,6 @@ state_fayan(wait_op, State) ->
     {next_state, state_fayan, StateAfterWait};
 
 state_fayan({player_op, PlayerId, Op, OpList}, State) ->
-    %%TODO 转发发言
     do_receive_player_op(PlayerId, Op, OpList, state_fayan, State);
 
 state_fayan(op_over, State) ->
@@ -534,9 +533,10 @@ do_duty_state_wait_op(Duty, State) ->
     notice_player_op(Duty, SeatIdList, State),
     do_set_wait_op(SeatIdList, State).
 
-do_receive_player_op(PlayerId, _Op, OpList, StateName, State) ->
+do_receive_player_op(PlayerId, Op, OpList, StateName, State) ->
     try
         assert_op_in_wait(PlayerId, State),
+        assert_op_legal(Op, StateName),
         SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
         StateAfterLogOp = do_log_op(SeatId, OpList, State),
         {IsWaitOver, StateAfterWaitOp} = do_remove_wait_op(SeatId, StateAfterLogOp),
@@ -585,9 +585,9 @@ get_next_game_state(GameState) ->
 
 notice_player_op(?DUTY_DAOZEI, SeatList, State) ->
     notice_player_op(?DUTY_DAOZEI, maps:get(daozei, State), SeatList, State);
-
+    
 notice_player_op(Op, SeatList, State) ->
-    notice_player_op(Op, [], SeatList, State).
+    notice_player_op(Op, SeatList, SeatList, State).
 
 notice_player_op(Op, AttachData, SeatList, State) ->
     Send = #m__fight__notice_op__s2l{op = Op,
@@ -609,6 +609,44 @@ assert_op_in_wait(PlayerId, State) ->
             throw(?ERROR);
         true ->
             next_state
+    end.
+
+assert_op_legal(Op, StateName) ->
+    case lists:member(Op, get_state_legal_op(StateName)) of
+        true ->
+            ok;
+        false ->
+            throw(?ERROR)
+    end.
+
+get_state_legal_op(StateName) ->
+    case GameState of
+        state_daozei ->
+            [?DUTY_DAOZEI];
+        state_qiubite ->
+            [?DUTY_QIUBITE];
+        state_hunxueer ->
+            [?DUTY_HUNXUEER];
+        state_shouwei ->
+            [?DUTY_SHOUWEI];
+        state_langren ->
+            [?DUTY_LANGREN];
+        state_nvwu ->
+            [?DUTY_NVWU];
+        state_yuyanjia ->
+            [?DUTY_YUYANJIA];
+        state_part_jingzhang ->
+            [?OP_PART_JINGZHANG];
+        state_xuanju_jingzhang ->
+            [?OP_XUANJU_JINGZHANG];
+        state_jingzhang ->
+            [?OP_JINGZHANG_ZHIDING];
+        state_fayan ->
+            [?OP_FAYAN];
+        state_toupiao ->
+            [?OP_TOUPIAO];
+        state_day ->
+            []
     end.
 
 do_log_op(SeatId, Op, State) ->

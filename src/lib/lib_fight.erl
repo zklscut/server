@@ -183,6 +183,7 @@ do_jingzhang_op(State) ->
     clear_last_op(StateAfterFayanTurn).
 
 do_fayan_op(State) ->
+    %%转发语音 文字
     FanyanTurn = maps:get(fayan_turn, State),
     NewFanyanTurn = tl(FanyanTurn),
     NewState = maps:put(fayan_turn, NewFanyanTurn, State),
