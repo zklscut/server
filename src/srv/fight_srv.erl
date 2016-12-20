@@ -619,7 +619,7 @@ assert_op_legal(Op, StateName) ->
             throw(?ERROR)
     end.
 
-get_state_legal_op(StateName) ->
+get_state_legal_op(GameState) ->
     case GameState of
         state_daozei ->
             [?DUTY_DAOZEI];
