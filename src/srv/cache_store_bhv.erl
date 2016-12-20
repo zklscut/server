@@ -13,13 +13,11 @@
 -behaviour(gen_server).
 %% API
 -export([
-    start_link/1,
+    start_link/2,
     read/2,
     write/2,
-    delete/2,
     sync_db/1,
     sync_db/2,
-    delete_all/1,
     get_all/1
     ]).
 
@@ -40,14 +38,14 @@
 
 behaviour_info(callbacks) -> 
     [
-        {write, 2},
+        {init, 0},
         {sync_db, 1}
     ];
 
 behaviour_info(_) -> 
    undefined.
 
--define(ETS_NAME(NAME), list_to_atom(lists:concat(["cache_store_", atom_to_list(NAME)]))).
+-define(ETS_NAME(MODULE), list_to_atom(lists:concat(["ets_", atom_to_list(MODULE)]))).
 
 %%%===================================================================
 %%% API
@@ -61,40 +59,29 @@ behaviour_info(_) ->
 %% @spec start_link() -> {ok, Pid} | ignore | {error, Error}
 %% @end
 %%--------------------------------------------------------------------
-start_link(Module) ->
-    gen_server:start_link({local, Module}, ?MODULE, [Module], []).
+start_link(Module, Interval) ->
+    supervisor:start_child(game_supervisor,
+                           {Module, 
+                           {gen_server, start_link, [{local, Module}, ?MODULE, [Module, Interval], []]},
+                            transient, infinity, worker, [Module]}).
 
-read(CacheModule, Key) ->
-    CacheResult = cache:get_value(?ETS_NAME(CacheModule), Key) , 
-    case CacheResult of
-        undefined ->
-            CacheData = apply(CacheModule, read, [Key, #state{}]),
-            cache:update(?ETS_NAME(CacheModule), Key, CacheData),
-            CacheData;
-        _ ->
-            CacheResult
-    end.
+read(Module, Key) ->
+    lib_ets:get(?ETS_NAME(Module), Key).
 
+write(Module, {Key, Data}) ->
+    lib_ets:update(?ETS_NAME(Module), Key, Data),
+    gen_server:cast(Module, {write, Key}).
 
-write(CacheModule, {Key, Data}) ->
-    gen_server:cast(CacheModule, {write, {Key, Data}}).
+sync_db(Module) ->
+    sync_db(async, Module).
 
-delete(CacheModule, Key) ->
-    gen_server:cast(CacheModule, {delete, Key}).
+sync_db(async, Module) ->
+    gen_server:cast(Module, sync_db);
+sync_db(sync, Module) ->
+    gen_server:call(Module, sync_db).
 
-sync_db(CacheModule) ->
-    sync_db(async, CacheModule).
-
-sync_db(async, CacheModule) ->
-    gen_server:cast(CacheModule, sync_db);
-sync_db(sync, CacheModule) ->
-    gen_server:call(CacheModule, sync_db).
-
-delete_all(CacheModule) ->
-    gen_server:cast(CacheModule, {delete_all}).
-
-get_all(CacheModule) ->
-    ets:tab2list(?ETS_NAME(CacheModule)).
+get_all(Module) ->
+    ets:tab2list(?ETS_NAME(Module)).
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -115,6 +102,7 @@ get_all(CacheModule) ->
 init([Module, Interval]) ->
     ets:new(?ETS_NAME(Module), [set, public, named_table, {keypos, 1}]),
     erlang:send_after(Interval, Module, sync_time),
+    Module:init(),
     {ok, #state{module = Module,
                 interval = Interval}}.
 
@@ -132,9 +120,6 @@ init([Module, Interval]) ->
 %%                                   {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
-handle_call({read, Key}, _From, State) ->
-    Reply = (State#state.module):read(Key, State),
-    {reply, Reply, State};
 
 handle_call(sync_db, _From, State) ->
     {reply, ok, sync_db_inner(State)}.
@@ -150,21 +135,10 @@ handle_call(sync_db, _From, State) ->
 %% @end
 %%--------------------------------------------------------------------
 
-handle_cast({write, {Key, Data}}, State) ->
+handle_cast({write, Key}, State) ->
     NewDirtyKeyList = add_dirty_key(Key, State#state.dirty_key_list),
-    lib_ets:update(?ETS_NAME(State#state.module), Key, Data),
     NewState = State#state{dirty_key_list = NewDirtyKeyList},
     {noreply, NewState};
-
-handle_cast({delete, Key}, State) ->
-    NewState = (State#state.module):delete(Key, State),
-    NewDirtyKeyList = delete_dirty_key(Key, NewState#state.dirty_key_list),
-    lib_ets:delete(?ETS_NAME(State#state.module), Key),
-    {noreply, NewState#state{dirty_key_list = NewDirtyKeyList}};
-
-handle_cast({delete_all}, State) ->
-    lib_ets:delete_all(?ETS_NAME(State#state.module)),
-    {noreply, State#state{dirty_key_list = []}};
 
 handle_cast(sync_db, State) ->
     {noreply, sync_db_inner(State)}.
@@ -223,10 +197,6 @@ add_dirty_key(Key, DirtyKeyList) ->
         false ->
             [Key|DirtyKeyList]
     end.
-
-delete_dirty_key(Key, DirtyKeyList) ->
-    DirtyKeyList -- [Key].
-
 
 sync_db_inner(State) ->
     ok = (State#state.module):sync_db(State#state.dirty_key_list),

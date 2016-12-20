@@ -29,7 +29,7 @@ active_socket(Pid) ->
 do_cache_op(Op, State) ->
     case Op of
         save ->
-            lib_ets:update(?ETS_PLAYER, maps:get(id, State), State);
+            lib_player:update_player(State);
         _ ->
             ignore
     end.
