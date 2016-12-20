@@ -75,7 +75,7 @@ start_fight(#m__room__start_fight__l2s{}, Player) ->
     fight_srv:start_link(RoomId, PlayerList),
     {ok, Player}.
 
-notice_team_change(Team) ->
+notice_team_change(Room) ->
     #{player_list := PlayerList} = Room,
     MemberList = [lib_player:get_player_show_base(PlayerId) || PlayerId <- PlayerList],
 
