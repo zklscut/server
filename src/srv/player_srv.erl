@@ -173,7 +173,8 @@ handle_info(Info, State) ->
 %% ====================================================================
 terminate(Reason, State) ->
     lager:info("player terminate Reason ~p", [Reason]),
-    lib_player:handle_after_logout(State),
+    NewState = lib_player:handle_after_logout(State),
+    lib_player:update_player(NewState),
     supervisor:terminate_child(player_supervisor, self()),
     ok.
 
