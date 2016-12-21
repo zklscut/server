@@ -29,7 +29,7 @@ active_socket(Pid) ->
 do_cache_op(Op, State) ->
     case Op of
         save ->
-            lib_ets:update(?ETS_PLAYER, maps:get(id, State), State);
+            lib_player:update_player(State);
         _ ->
             ignore
     end.
@@ -173,7 +173,8 @@ handle_info(Info, State) ->
 %% ====================================================================
 terminate(Reason, State) ->
     lager:info("player terminate Reason ~p", [Reason]),
-    lib_player:handle_after_logout(State),
+    NewState = lib_player:handle_after_logout(State),
+    lib_player:update_player(NewState),
     supervisor:terminate_child(player_supervisor, self()),
     ok.
 

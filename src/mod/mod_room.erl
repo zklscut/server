@@ -10,7 +10,8 @@
          handle_create_room/2,
          leave_room/2,
          handle_leave_room/1,
-         start_fight/2]).
+         start_fight/2,
+         notice_team_change/1]).
 
 -include("game_pb.hrl").
 -include("ets.hrl").
@@ -74,6 +75,15 @@ start_fight(#m__room__start_fight__l2s{}, Player) ->
     fight_srv:start_link(RoomId, PlayerList),
     {ok, Player}.
 
+notice_team_change(Room) ->
+    #{player_list := PlayerList} = Room,
+    MemberList = [lib_player:get_player_show_base(PlayerId) || PlayerId <- PlayerList],
+
+    Send = #m__room__notice_member_change__s2l{room_info = conver_to_p_room(Room),
+                                                 member_list = MemberList},
+    [net_send:send(Send, PlayerId) || PlayerId <- PlayerList].
+
+
 %%%====================================================================
 %%% Internal functions
 %%%====================================================================
@@ -90,3 +100,4 @@ conver_to_p_room(#{room_id := RoomId,
             owner = Owner,
             room_name = RoomName,
             room_status = RoomStatus}.
+
