@@ -484,23 +484,23 @@ cancel_fight_fsm_event_timer(Event) ->
             erase(Event)
     end.
 
-send_event_to_fsm(Event, Player) ->
-    PlayerFightProcess = lib_room:get_fight_pid_by_player(Player),
-    case PlayerFightProcess of
-        undefined ->
-            ignore;
-        _ ->
-            gen_fsm:send_event(PlayerFightProcess, Event)
-    end.
+% send_event_to_fsm(Event, Player) ->
+%     PlayerFightProcess = lib_room:get_fight_pid_by_player(Player),
+%     case PlayerFightProcess of
+%         undefined ->
+%             ignore;
+%         _ ->
+%             gen_fsm:send_event(PlayerFightProcess, Event)
+%     end.
 
-send_event_to_all_state(Event, Player) ->
-    PlayerFightProcess = lib_room:get_fight_pid_by_player(Player),
-    case PlayerFightProcess of
-        undefined ->
-            ignore;
-        _ ->
-            gen_fsm:send_all_state_event(PlayerFightProcess, Event)
-    end.
+% send_event_to_all_state(Event, Player) ->
+%     PlayerFightProcess = lib_room:get_fight_pid_by_player(Player),
+%     case PlayerFightProcess of
+%         undefined ->
+%             ignore;
+%         _ ->
+%             gen_fsm:send_all_state_event(PlayerFightProcess, Event)
+%     end.
 
 %% ====================================================================
 %% Internal functions
@@ -511,7 +511,8 @@ notice_duty(State) ->
     FunNotice = 
         fun(SeatId) ->
             Duty = maps:get(SeatId, SeatDutyMap),
-            Send = #m__fight__notice_duty__s2l{duty = Duty},
+            Send = #m__fight__notice_duty__s2l{duty = Duty,
+                                               seat_id = SeatId},
             lib_fight:send_to_seat(Send, SeatId, State)
         end,
     lists:foreach(FunNotice, maps:keys(SeatDutyMap)).
