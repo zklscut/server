@@ -132,7 +132,7 @@ do_nvwu_op(State) ->
 
 do_langren_op(State) ->
     LastOpData = get_last_op(State),
-    KillSeat = rand_target_in_op(LastOpData),
+    KillSeat = rand_target_in_op(filter_last_op(LastOpData)),
     StateAfterLangren = maps:put(langren, KillSeat, State),
 
     clear_last_op(StateAfterLangren). 
@@ -149,7 +149,7 @@ do_yuyanjia_op(State) ->
 
 do_part_jingzhang_op(State) ->
     LastOpData = get_last_op(State),
-    PartList = maps:keys(LastOpData),
+    PartList = maps:keys(filter_last_op(LastOpData)),
     clear_last_op(maps:put(part_jingzhang, PartList, State)).
 
 do_xuanju_jingzhang_op(State) ->
@@ -280,6 +280,18 @@ generate_daozei_duty_list(DutyIdList, RandList) ->
 get_last_op(State) ->
     maps:get(last_op_data, State).
 
+filter_last_op(OpMap) ->
+    FunRemove = 
+        fun(Key, CurMap) ->
+            case maps:get(Key, CurMap) of
+                [0] ->
+                    maps:remove(Key, CurMap);
+                _ ->
+                    CurMap
+            end
+        end,
+    lists:foldl(FunRemove, OpMap, maps:keys(OpMap)).
+
 clear_last_op(State) ->
     maps:put(last_op_data, #{}, State).
 
@@ -296,7 +308,12 @@ rand_target_in_op(OpData) ->
     CountSelectList = lists:foldl(FunCout, [], maps:to_list(OpData)),
     {_, MaxSelectNum} = lists:last(lists:keysort(2, CountSelectList)),
     RandSeatList = [CurSeatId || {CurSeatId, CurSelectNum} <- CountSelectList, CurSelectNum == MaxSelectNum],
-    util:rand_in_list(RandSeatList).
+    case RandSeatList of
+        [] ->
+            0;
+        _ ->
+            util:rand_in_list(RandSeatList)
+    end.
 
 notice_lover(Seat1, Seat2, State) ->
     Send = #m__fight__notice_lover__s2l{lover_list = [Seat1, Seat2]},
@@ -313,7 +330,7 @@ count_xuanju_result(OpData) ->
                     [{SeatId, [SelectSeat], 1}] ++ CurList
             end
         end,
-    CountSelectList = lists:foldl(FunCout, [], maps:to_list(OpData)),
+    CountSelectList = lists:foldl(FunCout, [], maps:to_list(filter_last_op(OpData))),
     case CountSelectList of
         [] ->
             {false, [], [0]};

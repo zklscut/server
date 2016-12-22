@@ -586,6 +586,9 @@ get_next_game_state(GameState) ->
 notice_player_op(?DUTY_DAOZEI, SeatList, State) ->
     notice_player_op(?DUTY_DAOZEI, maps:get(daozei, State), SeatList, State);
     
+notice_player_op(?DUTY_NVWU, SeatList, State) ->
+    notice_player_op(?DUTY_NVWU, [maps:get(langren, State)], SeatList, State);
+
 notice_player_op(Op, SeatList, State) ->
     notice_player_op(Op, SeatList, SeatList, State).
 
