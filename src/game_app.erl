@@ -61,4 +61,4 @@ start_game_db() ->
         application:get_env(db_user), 
         application:get_env(db_pwd),
         application:get_env(db_host),
-        3306, game, utf8).
+        3306, "game", utf8).
