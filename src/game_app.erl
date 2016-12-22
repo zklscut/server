@@ -4,6 +4,8 @@
 
 -module(game_app).
 
+-include("db.hrl").
+
 %% ====================================================================
 %% API functions
 %% ====================================================================
@@ -60,4 +62,4 @@ start_game_db() ->
     {ok, DBUser} = application:get_env(db_user),
     {ok, DBPwd} = application:get_env(db_pwd),
     {ok, DBHost} = application:get_env(db_host),
-    emysql:add_pool(game_pool, 10, DBUser, DBPwd, DBHost, 3306, "game", utf8).
+    emysql:add_pool(?DB_WRITE, 10, DBUser, DBPwd, DBHost, 3306, "game", utf8).

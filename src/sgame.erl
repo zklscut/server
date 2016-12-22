@@ -16,8 +16,7 @@ start() ->
     application:start(sasl),
     application:start(lager),
     crypto:start(),
-    Result = application:start(emysql),
-    io:format("start emysql res ~p~n",[Result]),
+    application:start(emysql),
     application:start(game).
 
 stop() ->
