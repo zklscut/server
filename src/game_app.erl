@@ -17,6 +17,7 @@ start(_, _) ->
     start_room_process(),
     start_global_op_process(),
     start_cache_store_server(),
+    start_game_db(),
     %% keep last
     start_tcp_supervisor(),
     tcp_listener:start(),
@@ -54,3 +55,10 @@ start_global_op_process() ->
 
 start_cache_store_server() ->
     cache_store_bhv:start_link(cache_store_player, 10000).
+
+start_game_db() ->
+    emysql:add_pool(game_pool, 10, 
+        application:get_env(db_user), 
+        application:get_env(db_pwd),
+        application:get_env(db_host),
+        3306, game, utf8).
