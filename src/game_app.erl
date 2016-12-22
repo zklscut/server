@@ -13,13 +13,14 @@
 
 start(_, _) ->
     {ok, SupPid} = game_supervisor:start_link(),
+    start_game_db(),
     start_player_supervisor(),
     start_cache_process(),
     ok = global_id_srv:init_global_id(),
     start_room_process(),
     start_global_op_process(),
     start_cache_store_server(),
-    start_game_db(),
+    
     %% keep last
     start_tcp_supervisor(),
     tcp_listener:start(),
