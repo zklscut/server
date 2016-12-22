@@ -41,7 +41,8 @@ sync_db(DirtyKeyList) ->
         end,
     ReplaceData = lists:map(FunGet, DirtyKeyList),
     ReplaceSql = db:make_batch_replace_sql(player, ["id", "account_name", "nick_name", "data"], ReplaceData),
-    db:execute(ReplaceSql).
+    db:execute(ReplaceSql),
+    ok.
 
 %%%====================================================================
 %%% Internal functions
