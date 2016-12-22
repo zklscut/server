@@ -36,7 +36,7 @@ sync_db(DirtyKeyList) ->
             #{id := Id,
               account_name := AccountName,
               nick_name := NickName,
-              data => Data},
+              data := Data},
             [Id, AccountName, NickName, term_to_binary(Data)]
         end,
     ReplaceData = lists:map(FunGet, DirtyKeyList),

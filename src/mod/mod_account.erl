@@ -51,5 +51,9 @@ create_or_get_player(AccountName, #{socket := Socket}) ->
 create_player(AccountName) ->
     PlayerId = global_id_srv:generate_player_id(),
     lib_ets:update(?ETS_ACCOUNT_PLAYER, AccountName, PlayerId),
-    #{id => PlayerId,
-      account_name => AccountName}.
+    CreatePlayer = #{id => PlayerId,
+                     account_name => AccountName,
+                     nick_name => PlayerId,
+                     data => #{}},
+    lib_player:update_player(CreatePlayer),
+    CreatePlayer.
