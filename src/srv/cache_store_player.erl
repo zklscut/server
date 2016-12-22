@@ -23,7 +23,7 @@ init() ->
             Player = #{id => Id,
                        account_name => AccountName,
                        nick_name => binary_to_list(NickName),
-                       data => bianry_to_term(Data)},
+                       data => binary_to_term(Data)},
             lib_ets:update(ets_cache_store_player, Id, Player),
             lib_ets:update(?ETS_ACCOUNT_PLAYER, AccountName, Id)
         end,
@@ -36,7 +36,7 @@ sync_db(DirtyKeyList) ->
             #{id := Id,
               account_name := AccountName,
               nick_name := NickName,
-              data := Data},
+              data := Data} = Player,
             [Id, AccountName, NickName, term_to_binary(Data)]
         end,
     ReplaceData = lists:map(FunGet, DirtyKeyList),
