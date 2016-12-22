@@ -15,7 +15,8 @@ start() ->
     application:start(goldrush),
     application:start(sasl),
     application:start(lager),
-    application:start(emysql),
+    Result = application:start(emysql),
+    io:format("start emysql res ~p~n",[Result]),
     application:start(game).
 
 stop() ->
