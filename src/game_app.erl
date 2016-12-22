@@ -57,8 +57,7 @@ start_cache_store_server() ->
     cache_store_bhv:start_link(cache_store_player, 10000).
 
 start_game_db() ->
-    emysql:add_pool(game_pool, 10, 
-        application:get_env(db_user), 
-        application:get_env(db_pwd),
-        application:get_env(db_host),
-        3306, "game", utf8).
+    {ok, DBUser} = application:get_env(db_user),
+    {ok, DBPwd} = application:get_env(db_pwd),
+    {ok, DBHost} = application:get_env(db_host),
+    emysql:add_pool(game_pool, 10, DBUser, DBPwd, DBHost, 3306, "game", utf8).
