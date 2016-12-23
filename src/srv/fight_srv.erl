@@ -234,6 +234,7 @@ state_part_jingzhang(start, State) ->
     {next_state, state_part_jingzhang, State};
 
 state_part_jingzhang(wait_op, State) ->
+    start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_wait:get(?OP_PART_JINGZHANG)),
     notice_jingxuan_jingzhang(State),
     StateAfterWait = do_set_wait_op(lib_fight:get_alive_seat_list(State), State),
     {next_state, state_part_jingzhang, StateAfterWait};
@@ -267,6 +268,7 @@ state_xuanju_jingzhang(start, State) ->
     end;
 
 state_xuanju_jingzhang(wait_op, State) ->
+    start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_wait:get(?OP_XUANJU_JINGZHANG)),
     notice_xuanju_jingzhang(State),
     WaitList = lib_fight:get_alive_seat_list(State) -- maps:get(part_jingzhang, State),
     StateAfterWait = do_set_wait_op(WaitList, State),
@@ -311,6 +313,7 @@ state_jingzhang(start, State) ->
     end;
 
 state_jingzhang(wait_op, State) ->
+    start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_wait:get(?OP_JINGZHANG_ZHIDING)),
     JingZhang = maps:get(jingzhang, State),
     notice_player_op(?OP_JINGZHANG_ZHIDING, [JingZhang], State),
     StateAfterWait = do_set_wait_op([JingZhang], State),
@@ -346,6 +349,7 @@ state_fayan(start, State) ->
     end;
 
 state_fayan(wait_op, State) ->
+    start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_wait:get(?OP_FAYAN)),
     Fayan = hd(maps:get(fayan_turn, State)),
     notice_player_op(?OP_FAYAN, [Fayan], State),
     StateAfterWait = do_set_wait_op([Fayan], State),
@@ -374,6 +378,7 @@ state_toupiao(start, State) ->
     {next_state, state_toupiao, State};
 
 state_toupiao(wait_op, State) ->
+    start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_wait:get(?OP_TOUPIAO)),
     notice_toupiao(State),
     WaitList = lib_fight:get_alive_seat_list(State),
     StateAfterWait = do_set_wait_op(WaitList, State),
