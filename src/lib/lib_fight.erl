@@ -24,6 +24,7 @@
          do_part_jingzhang_op/1,
          do_xuanju_jingzhang_op/1,
          do_jingzhang_op/1,
+         do_no_jingzhang_op/1,
          do_fayan_op/1,
          do_toupiao_op/1]).
 
@@ -178,12 +179,20 @@ do_jingzhang_op(State) ->
     LastOpData = get_last_op(State),
     [{SeatId, [IsFirst, Turn]}] = maps:to_list(LastOpData),
     StateAfterJingzhang = maps:put(jingzhang_op, {IsFirst, Turn}, State),
-    FayanTrun = generate_fayan_turn(SeatId, IsFirst, Turn, State),
-    StateAfterFayanTurn = maps:put(fayan_turn, FayanTrun, StateAfterJingzhang),
+    FayanTurn = generate_fayan_turn(SeatId, IsFirst, Turn, State),
+    StateAfterFayanTurn = maps:put(fayan_turn, FayanTurn, StateAfterJingzhang),
+    clear_last_op(StateAfterFayanTurn).
+
+do_no_jingzhang_op(State) ->
+    FayanTurn = generate_fayan_turn(0, false, ?TURN_DOWN, State),
+    StateAfterFayanTurn = maps:put(fayan_turn, FayanTurn, State),
     clear_last_op(StateAfterFayanTurn).
 
 do_fayan_op(State) ->
-    %%转发语音 文字
+    LastOpData = get_last_op(State),
+    [{SeatId, [Chat]}] = maps:to_list(LastOpData),
+    send_chat(Chat, SeatId, State),
+
     FanyanTurn = maps:get(fayan_turn, State),
     NewFanyanTurn = tl(FanyanTurn),
     NewState = maps:put(fayan_turn, NewFanyanTurn, State),
@@ -346,7 +355,7 @@ generate_fayan_turn(SeatId, IsFirst, Turn, State) ->
     Die = 
         case maps:get(die, State) of
             [] ->
-                maps:get(langren, State);
+                util:rand_in_list(AliveList);
             DieList ->
                 hd(DieList)
         end,
@@ -387,6 +396,9 @@ do_set_die_list(State) ->
     DieList = KillList -- SaveList,
     maps:put(die, DieList, State).
 
-
+send_chat(PChat, SeatId, State) ->
+    Player = lib_player:get_player(get_player_id_by_seat(SeatId, State)),
+    Send = #m__fight__speak__s2l{chat = mod_chat:get_p_chat(PChat, Player)},
+    send_to_all_player(Send, State).
 
 
