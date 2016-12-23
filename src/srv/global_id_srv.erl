@@ -30,7 +30,9 @@ generate_room_id() ->
 %%%====================================================================
 
 init_player_id() ->
-    lib_ets:update(?ETS_GLOBAL_COUNTER, player, 0).
+    Sql = db:make_select_sql(player, ["max(id)"], [], [], []),
+    MaxPlayerId = db:get_one(Sql),
+    lib_ets:update(?ETS_GLOBAL_COUNTER, player, MaxPlayerId).
 
 init_room_id() ->
     lib_ets:update(?ETS_GLOBAL_COUNTER, room, 0).    
