@@ -20,6 +20,7 @@
          state_nvwu/2,
          state_yuyanjia/2,
          state_part_jingzhang/2,
+         state_part_fayan/2,
          state_xuanju_jingzhang/2,
          state_jingzhang/2,
          state_fayan/2,
@@ -254,6 +255,42 @@ state_part_jingzhang(op_over, State) ->
     {next_state, get_next_game_state(state_part_jingzhang), NewState}. 
 
 %% ====================================================================
+%% state_part_fayan
+%% ====================================================================
+
+state_part_fayan(start, State) ->
+    case maps:get(part_jingzhang, State) of
+        [] ->
+            send_event_inner(start),
+            {next_state, get_next_game_state(state_part_fayan), State};
+        _ ->
+            notice_game_status_change(state_part_fayan, State),
+            send_event_inner(wait_op),
+            {next_state, state_part_fayan, State}
+    end;
+
+state_part_fayan(wait_op, State) ->
+    start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_wait:get(?OP_PART_FAYAN)),
+    Fayan = hd(maps:get(fayan_turn, State)),
+    notice_player_op(?OP_PART_FAYAN, [Fayan], State),
+    StateAfterWait = do_set_wait_op([Fayan], State),
+    {next_state, state_part_fayan, StateAfterWait};
+
+state_part_fayan({player_op, PlayerId, Op, OpList}, State) ->
+    do_receive_player_op(PlayerId, Op, OpList, state_part_fayan, State);
+
+state_part_fayan(op_over, State) ->
+    StateAfterFayan = lib_fight:do_fayan_op(State),
+    case maps:get(fayan_turn, StateAfterFayan) of
+        [] ->
+            send_event_inner(start),
+            {next_state, get_next_game_state(state_part_fayan), StateAfterFayan};
+        _ ->
+            send_event_inner(wait_op),
+            {next_state, state_part_fayan, StateAfterFayan}
+    end.
+
+%% ====================================================================
 %% state_xuanju_jingzhang
 %% ====================================================================
 state_xuanju_jingzhang(start, State) ->
@@ -277,11 +314,10 @@ state_xuanju_jingzhang(wait_op, State) ->
 state_xuanju_jingzhang({player_op, PlayerId, Op, OpList}, State) ->
     do_receive_player_op(PlayerId, Op, OpList, state_xuanju_jingzhang, State);
 
-
 state_xuanju_jingzhang(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     send_event_inner(op_over),
-    {next_state, state_part_jingzhang, State};
+    {next_state, state_xuanju_jingzhang, State};
 
 state_xuanju_jingzhang(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -574,6 +610,8 @@ get_next_game_state(GameState) ->
         state_yuyanjia ->
             state_part_jingzhang;
         state_part_jingzhang ->
+            state_part_fayan;
+        state_part_fayan ->
             state_xuanju_jingzhang;
         state_xuanju_jingzhang ->
             state_jingzhang;
@@ -644,6 +682,8 @@ get_state_legal_op(GameState) ->
             [?DUTY_YUYANJIA];
         state_part_jingzhang ->
             [?OP_PART_JINGZHANG];
+        state_part_fayan ->
+            [?OP_PART_FAYAN];
         state_xuanju_jingzhang ->
             [?OP_XUANJU_JINGZHANG];
         state_jingzhang ->
@@ -781,6 +821,8 @@ get_status_id(Status) ->
             7;
         state_part_jingzhang ->
             8;
+        state_part_fayan ->
+            14;
         state_xuanju_jingzhang ->
             9;
         state_jingzhang ->

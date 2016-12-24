@@ -151,7 +151,8 @@ do_yuyanjia_op(State) ->
 do_part_jingzhang_op(State) ->
     LastOpData = get_last_op(State),
     PartList = maps:keys(filter_last_op(LastOpData)),
-    clear_last_op(maps:put(part_jingzhang, PartList, State)).
+    StateAfterFayan = maps:put(fayan_turn, PartList, State),
+    clear_last_op(maps:put(part_jingzhang, PartList, StateAfterFayan)).
 
 do_xuanju_jingzhang_op(State) ->
     LastOpData = get_last_op(State),

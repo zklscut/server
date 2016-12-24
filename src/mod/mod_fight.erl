@@ -3,7 +3,8 @@
 %% 2016
 
 -module(mod_fight).
--export([notice_op/2]).
+-export([notice_op/2,
+		 speak/2]).
 
 -include("game_pb.hrl").
 
