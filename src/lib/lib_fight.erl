@@ -165,7 +165,7 @@ do_xuanju_jingzhang_op(State) ->
             true ->
                 case DrawCnt > 0 of
                     true ->
-                        {fasle, State#{xuanju_draw_cnt := 0,
+                        {false, State#{xuanju_draw_cnt := 0,
                                        jingzhang := 0}};
                     false ->
                         {true , State#{xuanju_draw_cnt := 1,
@@ -210,7 +210,7 @@ do_toupiao_op(State) ->
             true ->
                 case DrawCnt > 0 of
                     true ->
-                        {fasle, State#{xuanju_draw_cnt := 0,
+                        {false, State#{xuanju_draw_cnt := 0,
                                        quzhu := 0}};
                     false ->
                         {true , State#{xuanju_draw_cnt := 1,
