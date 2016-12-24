@@ -683,7 +683,7 @@ get_state_legal_op(GameState) ->
         state_part_jingzhang ->
             [?OP_PART_JINGZHANG];
         state_part_fayan ->
-            [?OP_PART_FAYAN];
+            [?OP_PART_FAYAN, ?OP_FAYAN];
         state_xuanju_jingzhang ->
             [?OP_XUANJU_JINGZHANG];
         state_jingzhang ->
