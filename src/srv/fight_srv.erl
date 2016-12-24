@@ -279,6 +279,11 @@ state_part_fayan(wait_op, State) ->
 state_part_fayan({player_op, PlayerId, Op, OpList}, State) ->
     do_receive_player_op(PlayerId, Op, OpList, state_part_fayan, State);
 
+state_part_fayan(timeout, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    send_event_inner(op_over),
+    {next_state, state_part_fayan, State};
+
 state_part_fayan(op_over, State) ->
     StateAfterFayan = lib_fight:do_fayan_op(State),
     case maps:get(fayan_turn, StateAfterFayan) of
@@ -393,6 +398,11 @@ state_fayan(wait_op, State) ->
 
 state_fayan({player_op, PlayerId, Op, OpList}, State) ->
     do_receive_player_op(PlayerId, Op, OpList, state_fayan, State);
+
+state_fayan(timeout, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    send_event_inner(op_over),
+    {next_state, state_fayan, State};
 
 state_fayan(op_over, State) ->
     StateAfterFayan = lib_fight:do_fayan_op(State),

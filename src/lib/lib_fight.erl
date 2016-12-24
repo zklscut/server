@@ -191,13 +191,20 @@ do_no_jingzhang_op(State) ->
 
 do_fayan_op(State) ->
     LastOpData = get_last_op(State),
-    [{SeatId, [Chat]}] = maps:to_list(LastOpData),
-    send_chat(Chat, SeatId, State),
+    FanyanData = maps:to_list(LastOpData),
+    case FanyanData of
+        [] ->
+            ignore;
+        _ ->
+            [{SeatId, [Chat]}] = FanyanData,
+            send_chat(Chat, SeatId, State)
+    end,
 
     FanyanTurn = maps:get(fayan_turn, State),
     NewFanyanTurn = tl(FanyanTurn),
     NewState = maps:put(fayan_turn, NewFanyanTurn, State),
     clear_last_op(NewState).
+    
 
 do_toupiao_op(State) ->
     LastOpData = get_last_op(State),
