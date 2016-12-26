@@ -392,9 +392,9 @@ generate_fayan_turn(SeatId, IsFirst, Turn, State) ->
     TurnList = TailList ++ PreList,
     ResultList = 
         case IsFirst of
-            true ->
+            1 ->
                 [SeatId] ++ (TurnList -- [SeatId]);
-            false ->
+            0 ->
                 TurnList
         end,
     ResultList -- maps:get(die, State).
