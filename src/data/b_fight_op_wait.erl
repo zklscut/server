@@ -1,4 +1,4 @@
--module(b_fight_wait).
+-module(b_fight_op_wait).
 -export([get/1]).
 
 get(1) ->
@@ -38,5 +38,11 @@ get(1005) ->
 get(1006) ->
     30000;    
 get(1007) ->
+    5000;
+get(1008) ->
+    30000;
+get(1009) ->
+    5000;
+get(1010) ->
     5000;
 get(_) -> 0. 

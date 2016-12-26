@@ -63,4 +63,5 @@ start_game_db() ->
     {ok, DBUser} = application:get_env(db_user),
     {ok, DBPwd} = application:get_env(db_pwd),
     {ok, DBHost} = application:get_env(db_host),
-    emysql:add_pool(?DB_WRITE, 10, DBUser, DBPwd, DBHost, 3306, "game", utf8).
+    {ok, DBName} = application:get_env(db_name),
+    emysql:add_pool(?DB_WRITE, 10, DBUser, DBPwd, DBHost, 3306, DBName, utf8).

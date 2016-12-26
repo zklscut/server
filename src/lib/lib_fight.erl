@@ -26,6 +26,8 @@
          do_jingzhang_op/1,
          do_no_jingzhang_op/1,
          do_fayan_op/1,
+         do_send_fayan/3,
+         do_guipiao_op/1,
          do_toupiao_op/1]).
 
 -include("fight.hrl").
@@ -190,21 +192,26 @@ do_no_jingzhang_op(State) ->
     clear_last_op(StateAfterFayanTurn).
 
 do_fayan_op(State) ->
-    LastOpData = get_last_op(State),
-    FanyanData = maps:to_list(LastOpData),
-    case FanyanData of
-        [] ->
-            ignore;
-        _ ->
-            [{SeatId, [Chat]}] = FanyanData,
-            send_chat(Chat, SeatId, State)
-    end,
-
     FanyanTurn = maps:get(fayan_turn, State),
     NewFanyanTurn = tl(FanyanTurn),
     NewState = maps:put(fayan_turn, NewFanyanTurn, State),
     clear_last_op(NewState).
     
+do_send_fayan(PlayerId, Chat, State) ->
+    Player = lib_player:get_player(PlayerId),
+    Send = #m__fight__speak__s2l{chat = mod_chat:get_p_chat(Chat, Player)},
+    send_to_all_player(Send, State).
+
+do_guipiao_op(State) ->
+    LastOpData = get_last_op(State),
+    case maps:to_list(LastOpData) of
+        [] ->
+            ignore;
+        [{_, GuiPiaoList}] ->
+            Send = #m__fight__guipiao__s2l{guipiao_list = GuiPiaoList},
+            send_to_all_player(Send, State)
+    end,
+    clear_last_op(State).
 
 do_toupiao_op(State) ->
     LastOpData = get_last_op(State),
@@ -360,12 +367,19 @@ count_xuanju_result(OpData) ->
 
 generate_fayan_turn(SeatId, IsFirst, Turn, State) ->
     AliveList = get_alive_seat_list(State),
-    Die = 
+    Part = 
         case maps:get(die, State) of
             [] ->
                 util:rand_in_list(AliveList);
+            [Die] ->
+                Die;
             DieList ->
-                hd(DieList)
+                case SeatId of
+                    0 ->
+                        hd(lists:sort(DieList));
+                    _ ->
+                        SeatId
+                end
         end,
     InitTrunList = 
         case Turn of
@@ -374,14 +388,16 @@ generate_fayan_turn(SeatId, IsFirst, Turn, State) ->
             _ ->
                 list:reverse(lits:sort(AliveList))
         end,
-    {PreList, TailList} = util:part_list(Die, InitTrunList),
+    {PreList, TailList} = util:part_list(Part, InitTrunList),
     TurnList = TailList ++ PreList,
-    case IsFirst of
-        true ->
-            [SeatId] ++ (TurnList -- [SeatId]);
-        false ->
-            TurnList
-    end.
+    ResultList = 
+        case IsFirst of
+            true ->
+                [SeatId] ++ (TurnList -- [SeatId]);
+            false ->
+                TurnList
+        end,
+    ResultList -- maps:get(die, State).
 
 do_set_die_list(State) ->
     {NvwuSelect, NvwuOp} = maps:get(nvwu, State),
@@ -403,10 +419,3 @@ do_set_die_list(State) ->
         end,
     DieList = KillList -- SaveList,
     maps:put(die, DieList, State).
-
-send_chat(PChat, SeatId, State) ->
-    Player = lib_player:get_player(get_player_id_by_seat(SeatId, State)),
-    Send = #m__fight__speak__s2l{chat = mod_chat:get_p_chat(PChat, Player)},
-    send_to_all_player(Send, State).
-
-
