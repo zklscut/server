@@ -24,7 +24,10 @@
          do_part_jingzhang_op/1,
          do_xuanju_jingzhang_op/1,
          do_jingzhang_op/1,
+         do_no_jingzhang_op/1,
          do_fayan_op/1,
+         do_send_fayan/3,
+         do_guipiao_op/1,
          do_toupiao_op/1]).
 
 -include("fight.hrl").
@@ -132,7 +135,7 @@ do_nvwu_op(State) ->
 
 do_langren_op(State) ->
     LastOpData = get_last_op(State),
-    KillSeat = rand_target_in_op(LastOpData),
+    KillSeat = rand_target_in_op(filter_last_op(LastOpData)),
     StateAfterLangren = maps:put(langren, KillSeat, State),
 
     clear_last_op(StateAfterLangren). 
@@ -149,8 +152,9 @@ do_yuyanjia_op(State) ->
 
 do_part_jingzhang_op(State) ->
     LastOpData = get_last_op(State),
-    PartList = maps:keys(LastOpData),
-    clear_last_op(maps:put(part_jingzhang, PartList, State)).
+    PartList = maps:keys(filter_last_op(LastOpData)),
+    StateAfterFayan = maps:put(fayan_turn, PartList, State),
+    clear_last_op(maps:put(part_jingzhang, PartList, StateAfterFayan)).
 
 do_xuanju_jingzhang_op(State) ->
     LastOpData = get_last_op(State),
@@ -164,7 +168,7 @@ do_xuanju_jingzhang_op(State) ->
             true ->
                 case DrawCnt > 0 of
                     true ->
-                        {fasle, State#{xuanju_draw_cnt := 0,
+                        {false, State#{xuanju_draw_cnt := 0,
                                        jingzhang := 0}};
                     false ->
                         {true , State#{xuanju_draw_cnt := 1,
@@ -178,16 +182,36 @@ do_jingzhang_op(State) ->
     LastOpData = get_last_op(State),
     [{SeatId, [IsFirst, Turn]}] = maps:to_list(LastOpData),
     StateAfterJingzhang = maps:put(jingzhang_op, {IsFirst, Turn}, State),
-    FayanTrun = generate_fayan_turn(SeatId, IsFirst, Turn, State),
-    StateAfterFayanTurn = maps:put(fayan_turn, FayanTrun, StateAfterJingzhang),
+    FayanTurn = generate_fayan_turn(SeatId, IsFirst, Turn, State),
+    StateAfterFayanTurn = maps:put(fayan_turn, FayanTurn, StateAfterJingzhang),
+    clear_last_op(StateAfterFayanTurn).
+
+do_no_jingzhang_op(State) ->
+    FayanTurn = generate_fayan_turn(0, false, ?TURN_DOWN, State),
+    StateAfterFayanTurn = maps:put(fayan_turn, FayanTurn, State),
     clear_last_op(StateAfterFayanTurn).
 
 do_fayan_op(State) ->
-    %%转发语音 文字
     FanyanTurn = maps:get(fayan_turn, State),
     NewFanyanTurn = tl(FanyanTurn),
     NewState = maps:put(fayan_turn, NewFanyanTurn, State),
     clear_last_op(NewState).
+    
+do_send_fayan(PlayerId, Chat, State) ->
+    Player = lib_player:get_player(PlayerId),
+    Send = #m__fight__speak__s2l{chat = mod_chat:get_p_chat(Chat, Player)},
+    send_to_all_player(Send, State).
+
+do_guipiao_op(State) ->
+    LastOpData = get_last_op(State),
+    case maps:to_list(LastOpData) of
+        [] ->
+            ignore;
+        [{_, GuiPiaoList}] ->
+            Send = #m__fight__guipiao__s2l{guipiao_list = GuiPiaoList},
+            send_to_all_player(Send, State)
+    end,
+    clear_last_op(State).
 
 do_toupiao_op(State) ->
     LastOpData = get_last_op(State),
@@ -201,7 +225,7 @@ do_toupiao_op(State) ->
             true ->
                 case DrawCnt > 0 of
                     true ->
-                        {fasle, State#{xuanju_draw_cnt := 0,
+                        {false, State#{xuanju_draw_cnt := 0,
                                        quzhu := 0}};
                     false ->
                         {true , State#{xuanju_draw_cnt := 1,
@@ -280,6 +304,18 @@ generate_daozei_duty_list(DutyIdList, RandList) ->
 get_last_op(State) ->
     maps:get(last_op_data, State).
 
+filter_last_op(OpMap) ->
+    FunRemove = 
+        fun(Key, CurMap) ->
+            case maps:get(Key, CurMap) of
+                [0] ->
+                    maps:remove(Key, CurMap);
+                _ ->
+                    CurMap
+            end
+        end,
+    lists:foldl(FunRemove, OpMap, maps:keys(OpMap)).
+
 clear_last_op(State) ->
     maps:put(last_op_data, #{}, State).
 
@@ -296,7 +332,12 @@ rand_target_in_op(OpData) ->
     CountSelectList = lists:foldl(FunCout, [], maps:to_list(OpData)),
     {_, MaxSelectNum} = lists:last(lists:keysort(2, CountSelectList)),
     RandSeatList = [CurSeatId || {CurSeatId, CurSelectNum} <- CountSelectList, CurSelectNum == MaxSelectNum],
-    util:rand_in_list(RandSeatList).
+    case RandSeatList of
+        [] ->
+            0;
+        _ ->
+            util:rand_in_list(RandSeatList)
+    end.
 
 notice_lover(Seat1, Seat2, State) ->
     Send = #m__fight__notice_lover__s2l{lover_list = [Seat1, Seat2]},
@@ -313,7 +354,7 @@ count_xuanju_result(OpData) ->
                     [{SeatId, [SelectSeat], 1}] ++ CurList
             end
         end,
-    CountSelectList = lists:foldl(FunCout, [], maps:to_list(OpData)),
+    CountSelectList = lists:foldl(FunCout, [], maps:to_list(filter_last_op(OpData))),
     case CountSelectList of
         [] ->
             {false, [], [0]};
@@ -326,12 +367,19 @@ count_xuanju_result(OpData) ->
 
 generate_fayan_turn(SeatId, IsFirst, Turn, State) ->
     AliveList = get_alive_seat_list(State),
-    Die = 
+    Part = 
         case maps:get(die, State) of
             [] ->
-                maps:get(langren, State);
+                util:rand_in_list(AliveList);
+            [Die] ->
+                Die;
             DieList ->
-                hd(DieList)
+                case SeatId of
+                    0 ->
+                        hd(lists:sort(DieList));
+                    _ ->
+                        SeatId
+                end
         end,
     InitTrunList = 
         case Turn of
@@ -340,14 +388,16 @@ generate_fayan_turn(SeatId, IsFirst, Turn, State) ->
             _ ->
                 list:reverse(lits:sort(AliveList))
         end,
-    {PreList, TailList} = util:part_list(Die, InitTrunList),
+    {PreList, TailList} = util:part_list(Part, InitTrunList),
     TurnList = TailList ++ PreList,
-    case IsFirst of
-        true ->
-            [SeatId] ++ (TurnList -- [SeatId]);
-        false ->
-            TurnList
-    end.
+    ResultList = 
+        case IsFirst of
+            true ->
+                [SeatId] ++ (TurnList -- [SeatId]);
+            false ->
+                TurnList
+        end,
+    ResultList -- maps:get(die, State).
 
 do_set_die_list(State) ->
     {NvwuSelect, NvwuOp} = maps:get(nvwu, State),
@@ -369,7 +419,3 @@ do_set_die_list(State) ->
         end,
     DieList = KillList -- SaveList,
     maps:put(die, DieList, State).
-
-
-
-

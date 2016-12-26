@@ -15,6 +15,8 @@ get(13006) -> {m__room__create_room__s2l, mod_room, create_room};
 get(13007) -> {m__room__leave_room__l2s, mod_room, leave_room}; 
 get(13008) -> {m__room__leave_room__s2l, mod_room, leave_room}; 
 get(13009) -> {m__room__rand_enter__l2s, mod_room, rand_enter}; 
+get(13011) -> {m__room__start_fight__l2s, mod_room, start_fight}; 
+get(13012) -> {m__room__notice_member_change__s2l, mod_room, notice_member_change}; 
 get(14001) -> {m__chat__public_speak__l2s, mod_chat, public_speak}; 
 get(14002) -> {m__chat__public_speak__s2l, mod_chat, public_speak}; 
 get(15001) -> {m__fight__game_state_change__s2l, mod_fight, game_state_change}; 
@@ -26,4 +28,6 @@ get(15006) -> {m__fight__speak__s2l, mod_fight, speak};
 get(15007) -> {m__fight__notice_lover__s2l, mod_fight, notice_lover}; 
 get(15008) -> {m__fight__notice_yuyanjia_result__s2l, mod_fight, notice_yuyanjia_result}; 
 get(15009) -> {m__fight__xuanju_result__s2l, mod_fight, xuanju_result}; 
+get(15010) -> {m__fight__night_result__s2l, mod_fight, night_result}; 
+get(15011) -> {m__fight__result__s2l, mod_fight, result}; 
 get(_) -> undefined. 

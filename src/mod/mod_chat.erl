@@ -3,7 +3,8 @@
 %% 2016
 
 -module(mod_chat).
--export([public_speak/2]).
+-export([public_speak/2,
+         get_p_chat/2]).
 
 -include("game_pb.hrl").
 -include("chat.hrl").
@@ -28,6 +29,10 @@ public_speak(#m__chat__public_speak__l2s{chat = Chat}, Player) ->
     		ignore
     end,
     {ok, Player}.
+
+get_p_chat(PChat, Player) ->
+    PChat#p_chat{room_id = lib_room:get_player_room_id(Player),
+                 player_show_base = lib_player:get_player_show_base(Player)}.
 
 %%%====================================================================
 %%% Internal functions

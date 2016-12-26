@@ -30,6 +30,10 @@
 -define(OP_FAYAN, 1004). %%发言
 -define(OP_TOUPIAO, 1005). %%投票驱逐
 -define(OP_QUZHU, 1006). %%被驱逐
+-define(OP_PART_FAYAN, 1007). %%竞选发言
+-define(OP_GUIPIAO, 1008). %%归票
+-define(OP_DEATH_FAYAN, 1009). %%死亡发言
+-define(OP_QUZHU_FAYAN, 1010). %%驱逐发言
 
 -define(XUANJU_TYPE_JINGZHANG, 1).
 -define(XUANJU_TYPE_QUZHU, 2).

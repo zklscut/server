@@ -88,6 +88,8 @@ handle_cast(Cast, State) ->
     catch
         throw:{ErrCode, PlayerId} ->
             global_op_srv:player_op(PlayerId, {mod_player, send_errcode, ErrCode});
+        throw:ErrCode ->
+            lager:info("room srv errcode ~p", [ErrCode]);
         What:Error ->
             lager:error("room srv error what ~p, Error ~p, stack", 
                     [What, Error, erlang:get_stacktrace()]),

@@ -15,11 +15,14 @@ start() ->
     application:start(goldrush),
     application:start(sasl),
     application:start(lager),
+    crypto:start(),
+    application:start(emysql),
     application:start(game).
 
 stop() ->
-    application:start(game),
-    application:start(lager).
+    application:stop(game),
+    application:stop(emysql),
+    application:stop(lager).
 
 %% ====================================================================
 %% Internal functions

@@ -243,7 +243,8 @@ config_ok(#pool{pool_id=PoolId,size=Size,user=User,password=Password,host=Host,p
        is_integer(ConnectTimeout) orelse ConnectTimeout == infinity,
        is_boolean(Warnings) ->
     encoding_ok(Encoding);
-config_ok(_BadOptions) ->
+config_ok(BadOptions) ->
+    lager:info("bad options ~p", [BadOptions]),
     erlang:error(badarg).
 
 encoding_ok(Enc) when is_atom(Enc) ->  ok; 

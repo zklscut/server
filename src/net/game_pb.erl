@@ -1,6 +1,10 @@
 -module(game_pb).
 
 -export([encode/1, encode/2, decode/2,
+	 encode_m__fight__result__s2l/1,
+	 decode_m__fight__result__s2l/1, encode_p_duty/1,
+	 decode_p_duty/1, encode_m__fight__night_result__s2l/1,
+	 decode_m__fight__night_result__s2l/1,
 	 encode_m__fight__xuanju_result__s2l/1,
 	 decode_m__fight__xuanju_result__s2l/1,
 	 encode_p_xuanju_result/1, decode_p_xuanju_result/1,
@@ -24,7 +28,12 @@
 	 decode_m__chat__public_speak__s2l/1,
 	 encode_m__chat__public_speak__l2s/1,
 	 decode_m__chat__public_speak__l2s/1, encode_p_chat/1,
-	 decode_p_chat/1, encode_m__room__rand_enter__l2s/1,
+	 decode_p_chat/1,
+	 encode_m__room__notice_member_change__s2l/1,
+	 decode_m__room__notice_member_change__s2l/1,
+	 encode_m__room__start_fight__l2s/1,
+	 decode_m__room__start_fight__l2s/1,
+	 encode_m__room__rand_enter__l2s/1,
 	 decode_m__room__rand_enter__l2s/1,
 	 encode_m__room__leave_room__s2l/1,
 	 decode_m__room__leave_room__s2l/1,
@@ -55,6 +64,14 @@
 	 encode_p_player_show_base/1,
 	 decode_p_player_show_base/1]).
 
+-record(m__fight__result__s2l,
+	{msg_id, winner, duty_list}).
+
+-record(p_duty, {seat_id, duty_id}).
+
+-record(m__fight__night_result__s2l,
+	{msg_id, die_list}).
+
 -record(m__fight__xuanju_result__s2l,
 	{msg_id, xuanju_type, result_list, is_draw}).
 
@@ -76,7 +93,8 @@
 -record(m__fight__notice_op__s2l,
 	{msg_id, op, attach_data}).
 
--record(m__fight__notice_duty__s2l, {msg_id, duty}).
+-record(m__fight__notice_duty__s2l,
+	{msg_id, duty, seat_id}).
 
 -record(m__fight__game_state_change__s2l,
 	{msg_id, game_status}).
@@ -88,6 +106,11 @@
 -record(p_chat,
 	{player_show_base, voice, content, length, compress,
 	 chat_type, room_id}).
+
+-record(m__room__notice_member_change__s2l,
+	{msg_id, room_info, member_list}).
+
+-record(m__room__start_fight__l2s, {msg_id}).
 
 -record(m__room__rand_enter__l2s, {msg_id}).
 
@@ -127,6 +150,17 @@
 
 encode(Record) ->
     encode(erlang:element(1, Record), Record).
+
+encode_m__fight__result__s2l(Record)
+    when is_record(Record, m__fight__result__s2l) ->
+    encode(m__fight__result__s2l, Record).
+
+encode_p_duty(Record) when is_record(Record, p_duty) ->
+    encode(p_duty, Record).
+
+encode_m__fight__night_result__s2l(Record)
+    when is_record(Record, m__fight__night_result__s2l) ->
+    encode(m__fight__night_result__s2l, Record).
 
 encode_m__fight__xuanju_result__s2l(Record)
     when is_record(Record, m__fight__xuanju_result__s2l) ->
@@ -180,6 +214,15 @@ encode_m__chat__public_speak__l2s(Record)
 
 encode_p_chat(Record) when is_record(Record, p_chat) ->
     encode(p_chat, Record).
+
+encode_m__room__notice_member_change__s2l(Record)
+    when is_record(Record,
+		   m__room__notice_member_change__s2l) ->
+    encode(m__room__notice_member_change__s2l, Record).
+
+encode_m__room__start_fight__l2s(Record)
+    when is_record(Record, m__room__start_fight__l2s) ->
+    encode(m__room__start_fight__l2s, Record).
 
 encode_m__room__rand_enter__l2s(Record)
     when is_record(Record, m__room__rand_enter__l2s) ->
@@ -386,6 +429,24 @@ encode(m__room__rand_enter__l2s, _Record) ->
 			   with_default(_Record#m__room__rand_enter__l2s.msg_id,
 					13009),
 			   int32, [])]);
+encode(m__room__start_fight__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__room__start_fight__l2s.msg_id,
+					13011),
+			   int32, [])]);
+encode(m__room__notice_member_change__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__room__notice_member_change__s2l.msg_id,
+					13012),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__room__notice_member_change__s2l.room_info,
+					none),
+			   p_room, []),
+		      pack(3, repeated,
+			   with_default(_Record#m__room__notice_member_change__s2l.member_list,
+					none),
+			   p_player_show_base, [])]);
 encode(p_chat, _Record) ->
     iolist_to_binary([pack(1, optional,
 			   with_default(_Record#p_chat.player_show_base, none),
@@ -441,6 +502,10 @@ encode(m__fight__notice_duty__s2l, _Record) ->
 			   int32, []),
 		      pack(2, required,
 			   with_default(_Record#m__fight__notice_duty__s2l.duty,
+					none),
+			   int32, []),
+		      pack(3, required,
+			   with_default(_Record#m__fight__notice_duty__s2l.seat_id,
 					none),
 			   int32, [])]);
 encode(m__fight__notice_op__s2l, _Record) ->
@@ -534,7 +599,36 @@ encode(m__fight__xuanju_result__s2l, _Record) ->
 		      pack(4, required,
 			   with_default(_Record#m__fight__xuanju_result__s2l.is_draw,
 					none),
-			   int32, [])]).
+			   int32, [])]);
+encode(m__fight__night_result__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__night_result__s2l.msg_id,
+					15010),
+			   int32, []),
+		      pack(2, repeated,
+			   with_default(_Record#m__fight__night_result__s2l.die_list,
+					none),
+			   int32, [])]);
+encode(p_duty, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#p_duty.seat_id, none), int32,
+			   []),
+		      pack(2, required,
+			   with_default(_Record#p_duty.duty_id, none), int32,
+			   [])]);
+encode(m__fight__result__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__result__s2l.msg_id,
+					15011),
+			   int32, []),
+		      pack(2, repeated,
+			   with_default(_Record#m__fight__result__s2l.winner,
+					none),
+			   int32, []),
+		      pack(3, required,
+			   with_default(_Record#m__fight__result__s2l.duty_list,
+					none),
+			   p_duty, [])]).
 
 with_default(undefined, none) -> undefined;
 with_default(undefined, Default) -> Default;
@@ -554,6 +648,14 @@ pack(FNum, _, Data, _, _) when is_tuple(Data) ->
     protobuffs:encode(FNum, encode(RecName, Data), bytes);
 pack(FNum, _, Data, Type, _) ->
     protobuffs:encode(FNum, Data, Type).
+
+decode_m__fight__result__s2l(Bytes) ->
+    decode(m__fight__result__s2l, Bytes).
+
+decode_p_duty(Bytes) -> decode(p_duty, Bytes).
+
+decode_m__fight__night_result__s2l(Bytes) ->
+    decode(m__fight__night_result__s2l, Bytes).
 
 decode_m__fight__xuanju_result__s2l(Bytes) ->
     decode(m__fight__xuanju_result__s2l, Bytes).
@@ -592,6 +694,12 @@ decode_m__chat__public_speak__l2s(Bytes) ->
     decode(m__chat__public_speak__l2s, Bytes).
 
 decode_p_chat(Bytes) -> decode(p_chat, Bytes).
+
+decode_m__room__notice_member_change__s2l(Bytes) ->
+    decode(m__room__notice_member_change__s2l, Bytes).
+
+decode_m__room__start_fight__l2s(Bytes) ->
+    decode(m__room__start_fight__l2s, Bytes).
 
 decode_m__room__rand_enter__l2s(Bytes) ->
     decode(m__room__rand_enter__l2s, Bytes).
@@ -721,6 +829,17 @@ decode(m__room__rand_enter__l2s, Bytes) ->
     Types = [{1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__rand_enter__l2s, Decoded);
+decode(m__room__start_fight__l2s, Bytes) ->
+    Types = [{1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__room__start_fight__l2s, Decoded);
+decode(m__room__notice_member_change__s2l, Bytes) ->
+    Types = [{3, member_list, p_player_show_base,
+	      [is_record, repeated]},
+	     {2, room_info, p_room, [is_record]},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__room__notice_member_change__s2l, Decoded);
 decode(p_chat, Bytes) ->
     Types = [{7, room_id, int32, []},
 	     {6, chat_type, int32, []}, {5, compress, int32, []},
@@ -745,7 +864,8 @@ decode(m__fight__game_state_change__s2l, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__game_state_change__s2l, Decoded);
 decode(m__fight__notice_duty__s2l, Bytes) ->
-    Types = [{2, duty, int32, []}, {1, msg_id, int32, []}],
+    Types = [{3, seat_id, int32, []}, {2, duty, int32, []},
+	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__notice_duty__s2l, Decoded);
 decode(m__fight__notice_op__s2l, Bytes) ->
@@ -790,7 +910,22 @@ decode(m__fight__xuanju_result__s2l, Bytes) ->
 	      [is_record, repeated]},
 	     {2, xuanju_type, int32, []}, {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
-    to_record(m__fight__xuanju_result__s2l, Decoded).
+    to_record(m__fight__xuanju_result__s2l, Decoded);
+decode(m__fight__night_result__s2l, Bytes) ->
+    Types = [{2, die_list, int32, [repeated]},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__night_result__s2l, Decoded);
+decode(p_duty, Bytes) ->
+    Types = [{2, duty_id, int32, []},
+	     {1, seat_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(p_duty, Decoded);
+decode(m__fight__result__s2l, Bytes) ->
+    Types = [{3, duty_list, p_duty, [is_record]},
+	     {2, winner, int32, [repeated]}, {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__result__s2l, Decoded).
 
 decode(<<>>, _, Acc) -> Acc;
 decode(<<Bytes/binary>>, Types, Acc) ->
@@ -941,6 +1076,21 @@ to_record(m__room__rand_enter__l2s, DecodedTuples) ->
 					 Record, Name, Val)
 		end,
 		#m__room__rand_enter__l2s{}, DecodedTuples);
+to_record(m__room__start_fight__l2s, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__room__start_fight__l2s),
+					 Record, Name, Val)
+		end,
+		#m__room__start_fight__l2s{}, DecodedTuples);
+to_record(m__room__notice_member_change__s2l,
+	  DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__room__notice_member_change__s2l),
+					 Record, Name, Val)
+		end,
+		#m__room__notice_member_change__s2l{}, DecodedTuples);
 to_record(p_chat, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields, p_chat), Record,
@@ -1033,7 +1183,27 @@ to_record(m__fight__xuanju_result__s2l,
 						     m__fight__xuanju_result__s2l),
 					 Record, Name, Val)
 		end,
-		#m__fight__xuanju_result__s2l{}, DecodedTuples).
+		#m__fight__xuanju_result__s2l{}, DecodedTuples);
+to_record(m__fight__night_result__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__night_result__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__night_result__s2l{}, DecodedTuples);
+to_record(p_duty, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields, p_duty), Record,
+					 Name, Val)
+		end,
+		#p_duty{}, DecodedTuples);
+to_record(m__fight__result__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__result__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__result__s2l{}, DecodedTuples).
 
 set_record_field(Fields, Record, Field, Value) ->
     Index = list_index(Field, Fields),
