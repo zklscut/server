@@ -414,7 +414,7 @@ state_jingzhang(start, State) ->
 state_jingzhang(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_JINGZHANG_ZHIDING)),
     JingZhang = maps:get(jingzhang, State),
-    notice_player_op(?OP_JINGZHANG_ZHIDING, [JingZhang], State),
+    notice_player_op(?OP_JINGZHANG_ZHIDING, maps:get(die, State), [JingZhang], State),
     StateAfterWait = do_set_wait_op([JingZhang], State),
     {next_state, state_jingzhang, StateAfterWait}; 
 
