@@ -100,9 +100,9 @@ do_daozei_op(State) ->
 
 do_qiubite_op(State) ->
     LastOpData = get_last_op(State),
-    [{_SeatId, [Seat1, Seat2]}] = maps:to_list(LastOpData),
+    [{SeatId, [Seat1, Seat2]}] = maps:to_list(LastOpData),
     StateAfterLover = maps:put(lover, [Seat1, Seat2], State),
-    notice_lover(Seat1, Seat2, State),
+    notice_lover(Seat1, Seat2, SeatId, State),
     clear_last_op(StateAfterLover).
 
 do_shouwei_op(State) ->
@@ -113,7 +113,7 @@ do_shouwei_op(State) ->
 
 do_hunxuer_op(State) ->
     LastOpData = get_last_op(State),
-    [{_, [SelectSeatId]}] = maps:to_list(LastOpData),
+    [{SeatId, [SelectSeatId]}] = maps:to_list(LastOpData),
     SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId, State),
     HunxueerOp =
         case SelectDuty of
@@ -123,6 +123,10 @@ do_hunxuer_op(State) ->
                 0
         end,                
     StateAfterHunxueer = maps:put(hunxuer, HunxueerOp, State),
+
+    Send = #m__fight__notice_hunxuer__s2l{select_seat = SelectSeatId},
+    send_to_seat(Send, SeatId, State),
+
     clear_last_op(StateAfterHunxueer).
 
 do_nvwu_op(State) ->
@@ -187,7 +191,7 @@ do_jingzhang_op(State) ->
     clear_last_op(StateAfterFayanTurn).
 
 do_no_jingzhang_op(State) ->
-    FayanTurn = generate_fayan_turn(0, false, ?TURN_DOWN, State),
+    FayanTurn = generate_fayan_turn(0, 0, ?TURN_DOWN, State),
     StateAfterFayanTurn = maps:put(fayan_turn, FayanTurn, State),
     clear_last_op(StateAfterFayanTurn).
 
@@ -339,10 +343,11 @@ rand_target_in_op(OpData) ->
             util:rand_in_list(RandSeatList)
     end.
 
-notice_lover(Seat1, Seat2, State) ->
+notice_lover(Seat1, Seat2, QiubiteSeat, State) ->
     Send = #m__fight__notice_lover__s2l{lover_list = [Seat1, Seat2]},
     send_to_seat(Send, Seat1, State),    
-    send_to_seat(Send, Seat2, State).
+    send_to_seat(Send, Seat2, State),
+    send_to_seat(Send, QiubiteSeat, State).
     
 count_xuanju_result(OpData) ->
     FunCout = 
@@ -392,9 +397,9 @@ generate_fayan_turn(SeatId, IsFirst, Turn, State) ->
     TurnList = TailList ++ PreList,
     ResultList = 
         case IsFirst of
-            true ->
+            1 ->
                 [SeatId] ++ (TurnList -- [SeatId]);
-            false ->
+            0 ->
                 TurnList
         end,
     ResultList -- maps:get(die, State).
