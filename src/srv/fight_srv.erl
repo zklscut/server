@@ -272,7 +272,6 @@ state_part_fayan({player_op, PlayerId, Op, [0]}, State) ->
     do_receive_player_op(PlayerId, Op, [0], state_part_fayan, State);
 
 state_part_fayan({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
-    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     do_receive_fayan(PlayerId, Chat, State),
     {next_state, state_part_fayan, State};
 
@@ -348,7 +347,6 @@ state_night_death({player_op, PlayerId, Op, [0]}, State) ->
     do_receive_player_op(PlayerId, Op, [0], state_night_death, State);
 
 state_night_death({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
-    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     do_receive_fayan(PlayerId, Chat, State),
     {next_state, state_night_death, State};
 
@@ -409,7 +407,6 @@ state_fayan({player_op, PlayerId, Op, [0]}, State) ->
     do_receive_player_op(PlayerId, Op, [0], state_fayan, State);
 
 state_fayan({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
-    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     do_receive_fayan(PlayerId, Chat, State),
     {next_state, state_fayan, State};
 
@@ -507,7 +504,6 @@ state_toupiao_death({player_op, PlayerId, Op, [0]}, State) ->
     do_receive_player_op(PlayerId, Op, [0], state_toupiao_death, State);
 
 state_toupiao_death({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
-    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     do_receive_fayan(PlayerId, Chat, State),
     {next_state, state_toupiao_death, State};
 
@@ -711,7 +707,7 @@ do_receive_fayan(PlayerId, Chat, State) ->
     catch
         throw:ErrCode ->
             net_send:send_errcode(ErrCode, PlayerId)
-    end.        
+    end.       
 
 notice_player_op(?DUTY_DAOZEI, SeatList, State) ->
     notice_player_op(?DUTY_DAOZEI, maps:get(daozei, State), SeatList, State);
@@ -935,7 +931,7 @@ get_state_legal_op(GameState) ->
         state_xuanju_jingzhang ->
             [?OP_XUANJU_JINGZHANG];
         state_night_death ->
-            [?OP_FAYAN];
+            [?OP_FAYAN, ?OP_DEATH_FAYAN];
         state_jingzhang ->
             [?OP_JINGZHANG_ZHIDING];
         state_guipiao ->
@@ -945,7 +941,7 @@ get_state_legal_op(GameState) ->
         state_toupiao ->
             [?OP_TOUPIAO];
         state_toupiao_death ->
-            [?OP_FAYAN];
+            [?OP_FAYAN, ?OP_QUZHU_FAYAN];
         state_day ->
             []
     end.
