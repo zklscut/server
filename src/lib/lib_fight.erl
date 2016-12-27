@@ -347,7 +347,6 @@ notice_lover(Seat1, Seat2, QiubiteSeat, State) ->
     Send = #m__fight__notice_lover__s2l{lover_list = [Seat1, Seat2]},
     send_to_seat(Send, Seat1, State),    
     send_to_seat(Send, Seat2, State),
-    send_to_seat(Send, Seat2, State),
     send_to_seat(Send, QiubiteSeat, State).
     
 count_xuanju_result(OpData) ->

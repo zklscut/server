@@ -262,23 +262,10 @@ state_part_jingzhang(op_over, State) ->
 %% ====================================================================
 
 state_part_fayan(start, State) ->
-    case maps:get(part_jingzhang, State) of
-        [] ->
-            send_event_inner(start),
-            {next_state, get_next_game_state(state_part_fayan), State};
-        _ ->
-            notice_game_status_change(state_part_fayan, State),
-            send_event_inner(wait_op),
-            {next_state, state_part_fayan, State}
-    end;
+    do_fayan_state_start(maps:get(part_jingzhang, State), state_part_fayan, State);
 
 state_part_fayan(wait_op, State) ->
-    start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_PART_FAYAN)),
-    Fayan = hd(maps:get(fayan_turn, State)),
-    notice_start_fayan(Fayan, State),
-    notice_player_op(?OP_PART_FAYAN, [Fayan], State),
-    StateAfterWait = do_set_wait_op([Fayan], State),
-    {next_state, state_part_fayan, StateAfterWait};
+    do_fayan_state_wait_op(?OP_PART_FAYAN, state_part_fayan, State);
 
 state_part_fayan({player_op, PlayerId, Op, [0]}, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -290,21 +277,10 @@ state_part_fayan({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
     {next_state, state_part_fayan, State};
 
 state_part_fayan(timeout, State) ->
-    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    notice_stop_fayan(hd(maps:get(wait_op_list, State)), State),
-    send_event_inner(op_over),
-    {next_state, state_part_fayan, State};
+    do_fayan_state_timeout(state_part_fayan, State);
 
 state_part_fayan(op_over, State) ->
-    StateAfterFayan = lib_fight:do_fayan_op(State),
-    case maps:get(fayan_turn, StateAfterFayan) of
-        [] ->
-            send_event_inner(start, b_fight_state_wait:get(state_part_fayan)),
-            {next_state, get_next_game_state(state_part_fayan), StateAfterFayan};
-        _ ->
-            send_event_inner(wait_op),
-            {next_state, state_part_fayan, StateAfterFayan}
-    end.
+    do_fayan_state_op_over(state_part_fayan, State).
 
 %% ====================================================================
 %% state_xuanju_jingzhang
@@ -356,23 +332,16 @@ state_xuanju_jingzhang(op_over, State) ->
 state_night_death(start, State) ->
     notice_night_result(State),
     DieList = maps:get(die, State) ,
-    case maps:get(game_round, State) == 1 andalso DieList =/= [] of
-        true ->
-            notice_game_status_change(state_night_death, State),
-            send_event_inner(wait_op),
-            {next_state, state_night_death, maps:put(fayan_turn, DieList, State)};
-        false ->
+    case maps:get(game_round, State) of
+        1 ->
+            do_fayan_state_start(DieList, state_night_death, State);
+        _ ->
             send_event_inner(start),
             {next_state, get_next_game_state(state_night_death), State}
     end;
 
 state_night_death(wait_op, State) ->
-    start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_FAYAN)),
-    Fayan = hd(maps:get(fayan_turn, State)),
-    notice_start_fayan(Fayan, State),
-    notice_player_op(?OP_DEATH_FAYAN, [Fayan], State),
-    StateAfterWait = do_set_wait_op([Fayan], State),
-    {next_state, state_night_death, StateAfterWait};
+    do_fayan_state_wait_op(?OP_DEATH_FAYAN, state_night_death, State);
 
 state_night_death({player_op, PlayerId, Op, [0]}, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -384,21 +353,10 @@ state_night_death({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
     {next_state, state_night_death, State};
 
 state_night_death(timeout, State) ->
-    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    notice_stop_fayan(hd(maps:get(wait_op_list, State)), State),
-    send_event_inner(op_over),
-    {next_state, state_night_death, State};
+    do_fayan_state_timeout(state_night_death, State);
 
 state_night_death(op_over, State) ->
-    StateAfterFayan = lib_fight:do_fayan_op(State),
-    case maps:get(fayan_turn, StateAfterFayan) of
-        [] ->
-            send_event_inner(start, b_fight_state_wait:get(state_night_death)),
-            {next_state, get_next_game_state(state_night_death), StateAfterFayan};
-        _ ->
-            send_event_inner(wait_op),
-            {next_state, state_night_death, StateAfterFayan}
-    end.
+    do_fayan_state_op_over(state_night_death, State).    
 
 %% ====================================================================
 %% state_jingzhang
@@ -441,23 +399,10 @@ state_jingzhang(op_over, State) ->
 %% ====================================================================
 
 state_fayan(start, State) ->
-    case maps:get(fayan_turn, State) of
-        [] ->
-            send_event_inner(start),
-            {next_state, get_next_game_state(state_fayan), State};
-        _ ->
-            notice_game_status_change(state_fayan, State),
-            send_event_inner(wait_op),
-            {next_state, state_fayan, State}
-    end;
+    do_fayan_state_start(maps:get(fayan_turn, State), state_fayan, State);
 
 state_fayan(wait_op, State) ->
-    start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_FAYAN)),
-    Fayan = hd(maps:get(fayan_turn, State)),
-    notice_start_fayan(Fayan, State),
-    notice_player_op(?OP_FAYAN, [Fayan], State),
-    StateAfterWait = do_set_wait_op([Fayan], State),
-    {next_state, state_fayan, StateAfterWait};
+    do_fayan_state_wait_op(?OP_FAYAN, state_fayan, State);
 
 state_fayan({player_op, PlayerId, Op, [0]}, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -469,22 +414,11 @@ state_fayan({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
     {next_state, state_fayan, State};
 
 state_fayan(timeout, State) ->
-    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    notice_stop_fayan(hd(maps:get(wait_op_list, State)), State),
-    send_event_inner(op_over),
-    {next_state, state_fayan, State};
+    do_fayan_state_timeout(state_fayan, State);
 
 state_fayan(op_over, State) ->
-    StateAfterFayan = lib_fight:do_fayan_op(State),
-    case maps:get(fayan_turn, StateAfterFayan) of
-        [] ->
-            send_event_inner(start, b_fight_state_wait:get(state_fayan)),
-            {next_state, get_next_game_state(state_fayan), StateAfterFayan};
-        _ ->
-            send_event_inner(wait_op),
-            {next_state, state_fayan, StateAfterFayan}
-    end.
-
+    do_fayan_state_op_over(state_fayan, State).
+    
 %% ====================================================================
 %% state_guipiao
 %% ====================================================================
@@ -563,24 +497,10 @@ state_toupiao(op_over, State) ->
 %% ====================================================================
 
 state_toupiao_death(start, State) ->
-    case maps:get(quzhu, State) of
-        0 ->
-            send_event_inner(start),
-            {next_state, get_next_game_state(state_toupiao_death), State};
-        QuZhu ->
-            notice_game_status_change(state_toupiao_death, State),
-            NewState = maps:put(fayan_turn, [QuZhu], State),
-            send_event_inner(wait_op),
-            {next_state, state_toupiao_death, NewState}
-    end;
+    do_fayan_state_start([maps:get(quzhu, State)], state_toupiao_death, State);
 
 state_toupiao_death(wait_op, State) ->
-    start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_FAYAN)),
-    Fayan = hd(maps:get(fayan_turn, State)),
-    notice_start_fayan(Fayan, State),
-    notice_player_op(?OP_QUZHU_FAYAN, [Fayan], State),
-    StateAfterWait = do_set_wait_op([Fayan], State),
-    {next_state, state_toupiao_death, StateAfterWait};
+    do_fayan_state_wait_op(?OP_QUZHU_FAYAN, state_toupiao_death, State);
 
 state_toupiao_death({player_op, PlayerId, Op, [0]}, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -592,21 +512,10 @@ state_toupiao_death({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
     {next_state, state_toupiao_death, State};
 
 state_toupiao_death(timeout, State) ->
-    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    notice_stop_fayan(hd(maps:get(wait_op_list, State)), State),
-    send_event_inner(op_over),
-    {next_state, state_toupiao_death, State};
+    do_fayan_state_timeout(state_toupiao_death, State);
 
 state_toupiao_death(op_over, State) ->
-    StateAfterFayan = lib_fight:do_fayan_op(State),
-    case maps:get(fayan_turn, StateAfterFayan) of
-        [] ->
-            send_event_inner(start, b_fight_state_wait:get(state_toupiao_death)),
-            {next_state, get_next_game_state(state_toupiao_death), StateAfterFayan};
-        _ ->
-            send_event_inner(wait_op),
-            {next_state, state_toupiao_death, StateAfterFayan}
-    end.
+    do_fayan_state_op_over(state_toupiao_death, State).
 
 %% ====================================================================
 %% state_day
@@ -758,6 +667,43 @@ do_receive_player_op(PlayerId, Op, OpList, StateName, State) ->
             {next_state, StateName, State}
     end.
 
+do_fayan_state_start(FayanList, StateName, State) ->
+    case FayanList == [0] orelse FayanList == [] of
+        true ->
+            send_event_inner(start),
+            {next_state, get_next_game_state(StateName), State};
+        false ->
+            notice_game_status_change(StateName, State),
+            NewState = maps:put(fayan_turn, FayanList, State),
+            send_event_inner(wait_op),
+            {next_state, StateName, NewState}
+    end.
+
+do_fayan_state_wait_op(Op, StateName, State) ->
+    start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_FAYAN)),
+    Fayan = hd(maps:get(fayan_turn, State)),
+    notice_start_fayan(Fayan, State),
+    notice_player_op(Op, [Fayan], State),
+    StateAfterWait = do_set_wait_op([Fayan], State),
+    {next_state, StateName, StateAfterWait}.
+
+do_fayan_state_timeout(StateName, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    notice_stop_fayan(hd(maps:get(wait_op_list, State)), State),
+    send_event_inner(op_over),
+    {next_state, StateName, State}.
+
+do_fayan_state_op_over(StateName, State) ->
+    StateAfterFayan = lib_fight:do_fayan_op(State),
+    case maps:get(fayan_turn, StateAfterFayan) of
+        [] ->
+            send_event_inner(start, b_fight_state_wait:get(StateName)),
+            {next_state, get_next_game_state(StateName), StateAfterFayan};
+        _ ->
+            send_event_inner(wait_op),
+            {next_state, StateName, StateAfterFayan}
+    end.
+
 do_receive_fayan(PlayerId, Chat, State) ->
     try
         assert_op_in_wait(PlayerId, State),
@@ -766,7 +712,6 @@ do_receive_fayan(PlayerId, Chat, State) ->
         throw:ErrCode ->
             net_send:send_errcode(ErrCode, PlayerId)
     end.        
-
 
 notice_player_op(?DUTY_DAOZEI, SeatList, State) ->
     notice_player_op(?DUTY_DAOZEI, maps:get(daozei, State), SeatList, State);
