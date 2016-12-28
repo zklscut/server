@@ -141,8 +141,8 @@ do_langren_op(State) ->
     LastOpData = get_last_op(State),
     KillSeat = rand_target_in_op(filter_last_op(LastOpData)),
     StateAfterLangren = maps:put(langren, KillSeat, State),
-
-    clear_last_op(StateAfterLangren). 
+    StateAfterUpdateDie = do_set_die_list(StateAfterDelete),
+    clear_last_op(StateAfterUpdateDie). 
 
 do_yuyanjia_op(State) ->
     LastOpData = get_last_op(State),
