@@ -196,7 +196,7 @@ do_jingzhang_op(State) ->
     LastOpData = get_last_op(State),
     [{SeatId, [IsFirst, Turn]}] = 
         case maps:to_list(LastOpData) of
-            _ ->
+            [] ->
                 [{0, [0, ?TURN_DOWN]}];
             OpList ->
                 OpList
