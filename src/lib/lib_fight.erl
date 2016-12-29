@@ -232,7 +232,7 @@ do_guipiao_op(State) ->
                 OpList
         end,
     Send = #m__fight__guipiao__s2l{guipiao_list = GuiPiaoList},
-    send_to_all_player(Send, State)
+    send_to_all_player(Send, State),
     clear_last_op(State).
 
 do_toupiao_op(State) ->
