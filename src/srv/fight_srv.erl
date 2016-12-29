@@ -81,8 +81,15 @@ state_daozei({player_op, PlayerId, Op, OpList}, State) ->
     do_receive_player_op(PlayerId, Op, OpList, state_daozei, State);
 
 state_daozei(timeout, State) ->
-    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    {next_state, state_daozei, State};
+    DaozeiList = maps:get(daozei, State),
+    Op = 
+        case lists:member(?DUTY_LANGREN, DaozeiList) of
+            true ->
+                ?DUTY_LANGREN;
+            false ->
+                util:rand_in_list(DaozeiList)
+        end,
+    do_duty_op_timeout([Op], state_daozei, State);
 
 state_daozei(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -104,9 +111,10 @@ state_qiubite({player_op, PlayerId, Op, OpList}, State) ->
     do_receive_player_op(PlayerId, Op, OpList, state_qiubite, State);
 
 state_qiubite(timeout, State) ->
-    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    {next_state, state_qiubite, State};
-
+    RandLover = util:rand_in_list(lib_fight:get_alive_seat_list(State) -- 
+                                  lib_fight:get_duty_seat(?DUTY_QIUBITE, State), 2),
+    do_duty_op_timeout(RandLover, state_qiubite, State);    
+    
 state_qiubite(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_qiubite_op(State),
@@ -127,8 +135,9 @@ state_hunxueer({player_op, PlayerId, Op, OpList}, State) ->
     do_receive_player_op(PlayerId, Op, OpList, state_hunxueer, State);
 
 state_hunxueer(timeout, State) ->
-    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    {next_state, state_hunxueer, State};
+    RandTarger = util:rand_in_list(lib_fight:get_alive_seat_list(State) -- 
+                                  lib_fight:get_duty_seat(?DUTY_HUNXUEER, State), 1),
+    do_duty_op_timeout(RandTarger, state_hunxueer, State);    
 
 state_hunxueer(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -150,8 +159,7 @@ state_shouwei({player_op, PlayerId, Op, OpList}, State) ->
     do_receive_player_op(PlayerId, Op, OpList, state_shouwei, State);
 
 state_shouwei(timeout, State) ->
-    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    {next_state, state_shouwei, State};
+    do_duty_op_timeout([0], state_shouwei, State);
 
 state_shouwei(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -174,6 +182,7 @@ state_langren({player_op, PlayerId, Op, OpList}, State) ->
 
 state_langren(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    send_event_inner(op_over),
     {next_state, state_langren, State};
 
 state_langren(op_over, State) ->
@@ -196,8 +205,7 @@ state_nvwu({player_op, PlayerId, Op, OpList}, State) ->
     do_receive_player_op(PlayerId, Op, OpList, state_nvwu, State);
 
 state_nvwu(timeout, State) ->
-    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    {next_state, state_nvwu, State};
+    do_duty_op_timeout([0, 0], state_nvwu, State);
 
 state_nvwu(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -220,6 +228,7 @@ state_yuyanjia({player_op, PlayerId, Op, OpList}, State) ->
 
 state_yuyanjia(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    send_event_inner(op_over),
     {next_state, state_yuyanjia, State};
 
 state_yuyanjia(op_over, State) ->
@@ -642,6 +651,14 @@ do_duty_state_wait_op(Duty, State) ->
     SeatIdList = lib_fight:get_duty_seat(Duty, State),
     notice_player_op(Duty, SeatIdList, State),
     do_set_wait_op(SeatIdList, State).
+
+do_duty_op_timeout(OpList, StateName, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    SeatId = hd(maps:get(wait_op_list, State)),
+    StateAfterLogOp = do_log_op(SeatId, OpList, State),
+    {_, StateAfterWaitOp} = do_remove_wait_op(SeatId, StateAfterLogOp),
+    send_event_inner(op_over),
+    {next_state, StateName, StateAfterWaitOp}.
 
 do_receive_player_op(PlayerId, Op, OpList, StateName, State) ->
     try

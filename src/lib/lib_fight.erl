@@ -139,20 +139,30 @@ do_nvwu_op(State) ->
 
 do_langren_op(State) ->
     LastOpData = get_last_op(State),
-    KillSeat = rand_target_in_op(filter_last_op(LastOpData)),
+    KillSeat = 
+        case maps:to_list(LastOpData) of
+            [] ->
+                0;
+            _ ->
+                rand_target_in_op(filter_last_op(LastOpData))
+        end,
     StateAfterLangren = maps:put(langren, KillSeat, State),
     StateAfterUpdateDie = do_set_die_list(StateAfterLangren),
     clear_last_op(StateAfterUpdateDie). 
 
 do_yuyanjia_op(State) ->
     LastOpData = get_last_op(State),
-    [{SeatId, [SelectSeatId]}] = maps:to_list(LastOpData),
-    SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId, State),
+    case maps:to_list(LastOpData) of
+        [] ->
+            clear_last_op(State);
+        [{SeatId, [SelectSeatId]}]  ->
+            SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId, State),
     
-    Send = #m__fight__notice_yuyanjia_result__s2l{seat_id = SelectSeatId,
-                                                  duty = SelectDuty},
-    send_to_seat(Send, SeatId, State),
-    clear_last_op(State).
+            Send = #m__fight__notice_yuyanjia_result__s2l{seat_id = SelectSeatId,
+                                                          duty = SelectDuty},
+            send_to_seat(Send, SeatId, State),
+            clear_last_op(State)
+    end.
 
 do_part_jingzhang_op(State) ->
     LastOpData = get_last_op(State),
@@ -184,7 +194,13 @@ do_xuanju_jingzhang_op(State) ->
 
 do_jingzhang_op(State) ->
     LastOpData = get_last_op(State),
-    [{SeatId, [IsFirst, Turn]}] = maps:to_list(LastOpData),
+    [{SeatId, [IsFirst, Turn]}] = 
+        case maps:to_list(LastOpData) of
+            _ ->
+                [{0, [0, ?TURN_DOWN]}];
+            OpList ->
+                OpList
+        end,
     StateAfterJingzhang = maps:put(jingzhang_op, {IsFirst, Turn}, State),
     FayanTurn = generate_fayan_turn(SeatId, IsFirst, Turn, State),
     StateAfterFayanTurn = maps:put(fayan_turn, FayanTurn, StateAfterJingzhang),
@@ -208,13 +224,15 @@ do_send_fayan(PlayerId, Chat, State) ->
 
 do_guipiao_op(State) ->
     LastOpData = get_last_op(State),
-    case maps:to_list(LastOpData) of
-        [] ->
-            ignore;
-        [{_, GuiPiaoList}] ->
-            Send = #m__fight__guipiao__s2l{guipiao_list = GuiPiaoList},
-            send_to_all_player(Send, State)
-    end,
+    GuiPiaoList = 
+        case maps:to_list(LastOpData) of
+            [] ->
+                [];
+            [{_, OpList}] ->
+                OpList
+        end,
+    Send = #m__fight__guipiao__s2l{guipiao_list = GuiPiaoList},
+    send_to_all_player(Send, State)
     clear_last_op(State).
 
 do_toupiao_op(State) ->
@@ -422,5 +440,5 @@ do_set_die_list(State) ->
             _ ->
                 [ShowWeiDef]
         end,
-    DieList = KillList -- SaveList,
+    DieList = [Die || Die <- (KillList -- SaveList), Die =/= 0],
     maps:put(die, DieList, State).
