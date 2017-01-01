@@ -6,7 +6,7 @@
 -behaviour(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--export([enter_room/2, create_room/3, leave_room/1]).
+-export([enter_room/2, create_room/4, leave_room/1]).
 
 -include("room.hrl").
 
@@ -21,8 +21,8 @@ start_link() ->
 enter_room(RoomId, Player) ->
     gen_server:cast(?MODULE, {enter_room, RoomId, lib_player:get_player_id(Player)}).
 
-create_room(MaxPlayerNum, RoomName, Player) ->
-    gen_server:cast(?MODULE, {create_room, MaxPlayerNum, RoomName, Player}).
+create_room(MaxPlayerNum, RoomName, DutyList, Player) ->
+    gen_server:cast(?MODULE, {create_room, MaxPlayerNum, RoomName, DutyList, Player}).
 
 leave_room(Player) ->
     RoomId = maps:get(room_id, Player, 0),
@@ -109,7 +109,7 @@ handle_cast_inner({enter_room, RoomId, PlayerId}, State) ->
     mod_room:notice_team_change(NewRoom),
     {noreply, State};
 
-handle_cast_inner({create_room, MaxPlayerNum, RoomName, Player}, State) ->
+handle_cast_inner({create_room, MaxPlayerNum, RoomName, DutyList, Player}, State) ->
     PlayerId = lib_player:get_player_id(Player),
     RoomId = global_id_srv:generate_room_id(),
     Room = ?MROOM#{room_id => RoomId,
@@ -117,7 +117,8 @@ handle_cast_inner({create_room, MaxPlayerNum, RoomName, Player}, State) ->
                    player_list => [PlayerId],
                    max_player_num => MaxPlayerNum,
                    room_name => RoomName,
-                   room_status => "0"},
+                   room_status => "0",
+                   duty_list => DutyList},
     lib_room:update_room(RoomId, Room),
     global_op_srv:player_op(PlayerId, {mod_room, handle_create_room, [Room]}),
     {noreply, State};        

@@ -46,9 +46,10 @@ handle_enter_room(Room, Player) ->
     {save, NewPlayer}.
 
 create_room(#m__room__create_room__l2s{max_player_num = MaxPlayerNum,
-                                       room_name = RoomName}, Player) ->
+                                       room_name = RoomName,
+                                       duty_list = DutyList}, Player) ->
     lib_room:assert_not_have_room(Player),
-    room_srv:create_room(MaxPlayerNum, RoomName, Player),
+    room_srv:create_room(MaxPlayerNum, RoomName, DutyList, Player),
     {ok, Player}.
 
 handle_create_room(Room, Player) ->
@@ -69,9 +70,10 @@ handle_leave_room(Player) ->
     net_send:send(Return, Player),
     {save, lib_room:update_player_room_id(0, Player)}.
 
-start_fight(#m__room__start_fight__l2s{duty_list = DutyList}, Player) ->
+start_fight(#m__room__start_fight__l2s{}, Player) ->
     RoomId = lib_room:get_player_room_id(Player),
     PlayerList = lib_room:get_player_room_player_list(Player),
+    DutyList = lib_room:get_room_duty_list(RoomId),
     fight_srv:start_link(RoomId, PlayerList, DutyList),
     {ok, Player}.
 
@@ -93,11 +95,13 @@ conver_to_p_room(#{room_id := RoomId,
                    player_list := PlayerList,
                    max_player_num := MaxPlayerNum,
                    room_name := RoomName,
-                   room_status := RoomStatus}) ->
+                   room_status := RoomStatus,
+                   duty_list := DutyList}) ->
     #p_room{room_id = RoomId,
             cur_player_num = length(PlayerList),
             max_player_num = MaxPlayerNum,
             owner = Owner,
             room_name = RoomName,
-            room_status = RoomStatus}.
+            room_status = RoomStatus,
+            duty_list = DutyList}.
 
