@@ -69,10 +69,10 @@ handle_leave_room(Player) ->
     net_send:send(Return, Player),
     {save, lib_room:update_player_room_id(0, Player)}.
 
-start_fight(#m__room__start_fight__l2s{}, Player) ->
+start_fight(#m__room__start_fight__l2s{duty_list = DutyList}, Player) ->
     RoomId = lib_room:get_player_room_id(Player),
     PlayerList = lib_room:get_player_room_player_list(Player),
-    fight_srv:start_link(RoomId, PlayerList),
+    fight_srv:start_link(RoomId, PlayerList, DutyList),
     {ok, Player}.
 
 notice_team_change(Room) ->

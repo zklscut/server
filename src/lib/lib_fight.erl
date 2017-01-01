@@ -3,7 +3,7 @@
 %% 2016
 
 -module(lib_fight).
--export([init/3,
+-export([init/4,
          send_to_all_player/2,
          send_to_seat/3,
          get_player_id_by_seat/2,
@@ -37,10 +37,10 @@
 %% API functions
 %% ====================================================================
 
-init(RoomId, PlayerList, State) ->
+init(RoomId, PlayerList, DutyList, State) ->
     State1 = State#{room_id := RoomId},
     State2 = init_seat(PlayerList, State1),
-    State3 = init_duty(PlayerList, State2),
+    State3 = init_duty(PlayerList, DutyList, State2),
     State3.
 
 send_to_all_player(Send, State) ->
@@ -270,11 +270,11 @@ init_seat(PlayerList, State) ->
     State#{seat_player_map := SeatPlayerMap,
            player_seat_map := PlayerSeatMap}.
 
-init_duty(PlayerList, State) ->
+init_duty(PlayerList, DutyList, State) ->
     PlayerNum = length(PlayerList),
     RandSeatList = util:rand_list(lists:seq(1, PlayerNum)),
     
-    {BDutyList, DaozeiList} = get_duty_list_with_daozei(PlayerNum),
+    {BDutyList, DaozeiList} = get_duty_list_with_daozei(DutyList),
     SeatDutyList = lists:zip(RandSeatList, BDutyList),
 
     FunInitDuty =
@@ -288,18 +288,12 @@ init_duty(PlayerList, State) ->
            duty_seat_map := DutySeatMap,
            daozei := DaozeiList}.
 
-get_duty_list_with_daozei(PlayerNum) ->
-    BDutyList = b_duty:get(PlayerNum),
-    FunInitDutyConfig = 
-        fun({CurDuty, Num}, CurList) ->
-                lists:duplicate(Num, CurDuty) ++ CurList
-        end,
-    DutyIdList = lists:foldl(FunInitDutyConfig, [], BDutyList),
-    case lists:member(?DUTY_DAOZEI, DutyIdList) of
+get_duty_list_with_daozei(DutyList) ->
+    case lists:member(?DUTY_DAOZEI, DutyList) of
         true ->
-            generate_daozei_duty_list(DutyIdList);
+            generate_daozei_duty_list(DutyList ++ [?DUTY_PINGMIN]);
         false ->
-            {DutyIdList, []}
+            {DutyList, []}
     end.
 
 generate_daozei_duty_list(DutyIdList) ->

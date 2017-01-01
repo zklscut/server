@@ -38,13 +38,13 @@
 %% ====================================================================
 %% API functions
 %% ====================================================================
--export([start_link/2,
+-export([start_link/3,
          player_op/4,
          player_speak/3,
          print_state/1]).
 
-start_link(RoomId, PlayerList) ->
-    gen_fsm:start(?MODULE, [RoomId, PlayerList, ?MFIGHT], []).
+start_link(RoomId, PlayerList, DutyList) ->
+    gen_fsm:start(?MODULE, [RoomId, PlayerList, DutyList, ?MFIGHT], []).
 
 player_op(Pid, PlayerId, Op, OpList) ->
     gen_fsm:send_event(Pid, {player_op, PlayerId, Op, OpList}).
@@ -59,9 +59,9 @@ print_state(Pid) ->
 %% Behavioural functions
 %% ====================================================================
 
-init([RoomId, PlayerList, State]) ->
+init([RoomId, PlayerList, DutyList, State]) ->
     lib_room:update_fight_pid(RoomId, self()),
-    NewState = lib_fight:init(RoomId, PlayerList, State),
+    NewState = lib_fight:init(RoomId, PlayerList, DutyList, State),
     notice_game_status_change(start, NewState),
     notice_duty(NewState),
     send_event_inner(start, b_fight_state_wait:get(start)),
