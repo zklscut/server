@@ -321,7 +321,7 @@ state_xuanju_jingzhang(timeout, State) ->
 
 state_xuanju_jingzhang(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    {IsDraw, XuanjuResult, NewState} = lib_fight:do_xuanju_jingzhang_op(State),
+    {IsDraw, XuanjuResult, NewState} = lib_fight:do_xuanju_jingzhang_op(State#{xuanju_draw_cnt = 1}),
     notice_xuanju_jingzhang_result(IsDraw, maps:get(jingzhang, NewState), XuanjuResult, NewState),
     case IsDraw of
         true ->
@@ -664,6 +664,7 @@ do_receive_player_op(PlayerId, Op, OpList, StateName, State) ->
     try
         assert_op_in_wait(PlayerId, State),
         assert_op_legal(Op, StateName),
+        assert_op_fit(Op, OpList, State),
         SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
         StateAfterLogOp = do_log_op(SeatId, OpList, State),
         {IsWaitOver, StateAfterWaitOp} = do_remove_wait_op(SeatId, StateAfterLogOp),
@@ -730,7 +731,7 @@ notice_player_op(?DUTY_DAOZEI, SeatList, State) ->
     notice_player_op(?DUTY_DAOZEI, maps:get(daozei, State), SeatList, State);
     
 notice_player_op(?DUTY_NVWU, SeatList, State) ->
-    notice_player_op(?DUTY_NVWU, [maps:get(langren, State)], SeatList, State);
+    notice_player_op(?DUTY_NVWU, [lists:sum(nvwu_left, State)] ++ [maps:get(langren, State)], SeatList, State);
 
 notice_player_op(Op, SeatList, State) ->
     notice_player_op(Op, SeatList, SeatList, State).
@@ -764,6 +765,26 @@ assert_op_legal(Op, StateName) ->
         false ->
             throw(?ERROR)
     end.
+
+assert_op_fit(?DUTY_NVWU, [_, UseYao], State) ->
+    case lists:member(UseYao, maps:get(nvwu_left, State)) == true orelse UseYao == 0 of
+        true ->
+            ok;
+        false ->
+            throw(?ERROR)
+    end;
+
+assert_op_fit(?OP_XUANJU_JINGZHANG, [SeatId], State) ->
+    PartList = maps:get(part_jingzhang, State),
+    case lists:member(SeatId, PartList) of
+        true ->
+            ok;
+        false ->
+            throw(?ERROR)
+    end;
+
+assert_op_fit(_, _, _) ->
+    ok.
 
 do_log_op(SeatId, Op, State) ->
     LastOpData = maps:get(last_op_data, State),
