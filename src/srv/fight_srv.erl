@@ -321,7 +321,7 @@ state_xuanju_jingzhang(timeout, State) ->
 
 state_xuanju_jingzhang(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    {IsDraw, XuanjuResult, NewState} = lib_fight:do_xuanju_jingzhang_op(State#{xuanju_draw_cnt = 1}),
+    {IsDraw, XuanjuResult, NewState} = lib_fight:do_xuanju_jingzhang_op(State#{xuanju_draw_cnt := 1}),
     notice_xuanju_jingzhang_result(IsDraw, maps:get(jingzhang, NewState), XuanjuResult, NewState),
     case IsDraw of
         true ->
@@ -732,6 +732,9 @@ notice_player_op(?DUTY_DAOZEI, SeatList, State) ->
     
 notice_player_op(?DUTY_NVWU, SeatList, State) ->
     notice_player_op(?DUTY_NVWU, [lists:sum(nvwu_left, State)] ++ [maps:get(langren, State)], SeatList, State);
+
+notice_player_op(?OP_XUANJU_JINGZHANG, SeatList, State) ->
+    notice_player_op(?OP_XUANJU_JINGZHANG, maps:get(part_jingzhang, State), SeatList, State);
 
 notice_player_op(Op, SeatList, State) ->
     notice_player_op(Op, SeatList, SeatList, State).
