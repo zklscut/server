@@ -239,7 +239,7 @@ state_yuyanjia(op_over, State) ->
         case maps:get(game_round, State) of
             1 ->
                 get_next_game_state(state_yuyanjia);
-            0 ->
+            _ ->
                 state_night_death
         end,
     {next_state, NextState, NewState}.
