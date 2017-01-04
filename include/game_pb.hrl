@@ -5,11 +5,11 @@
 -record(m__player__info__s2l, {msg_id=12002, player_id}).
 -record(m__player__errcode__s2l, {msg_id=12004, errcode}).
 -record(m__room__get_list__l2s, {msg_id=13001}).
--record(p_room, {room_id, cur_player_num, max_player_num, owner, room_name, room_status}).
+-record(p_room, {room_id, cur_player_num, max_player_num, owner, room_name, room_status, duty_list}).
 -record(m__room__get_list__s2l, {msg_id=13002, room_list}).
 -record(m__room__enter_room__l2s, {msg_id=13003, room_id}).
 -record(m__room__enter_room__s2l, {msg_id=13004, room_info, member_list}).
--record(m__room__create_room__l2s, {msg_id=13005, max_player_num, room_name}).
+-record(m__room__create_room__l2s, {msg_id=13005, max_player_num, room_name, duty_list}).
 -record(m__room__create_room__s2l, {msg_id=13006, room_info}).
 -record(m__room__leave_room__l2s, {msg_id=13007}).
 -record(m__room__leave_room__s2l, {msg_id=13008}).
@@ -28,7 +28,12 @@
 -record(m__fight__notice_lover__s2l, {msg_id=15007, lover_list}).
 -record(m__fight__notice_yuyanjia_result__s2l, {msg_id=15008, seat_id, duty}).
 -record(p_xuanju_result, {seat_id, select_list}).
--record(m__fight__xuanju_result__s2l, {msg_id=15009, xuanju_type, result_list, is_draw}).
+-record(m__fight__xuanju_result__s2l, {msg_id=15009, xuanju_type, result_list, is_draw, result_id}).
 -record(m__fight__night_result__s2l, {msg_id=15010, die_list}).
 -record(p_duty, {seat_id, duty_id}).
--record(m__fight__result__s2l, {msg_id=15011, winner, duty_list}).
+-record(m__fight__result__s2l, {msg_id=15011, winner, duty_list, lover, hunxuer}).
+-record(m__fight__guipiao__s2l, {msg_id=15012, guipiao_list}).
+-record(m__fight__notice_fayan__s2l, {msg_id=15013, seat_id}).
+-record(m__fight__stop_fayan__s2l, {msg_id=15014, seat_id}).
+-record(m__fight__notice_hunxuer__s2l, {msg_id=15015, select_seat}).
+-record(m__fight__notice_part_jingzhang__s2l, {msg_id=15016, seat_list}).
