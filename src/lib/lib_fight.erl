@@ -407,7 +407,7 @@ generate_fayan_turn(SeatId, IsFirst, Turn, State) ->
             ?TURN_DOWN ->
                 lists:sort(AliveList);
             _ ->
-                list:reverse(lits:sort(AliveList))
+                lists:reverse(lists:sort(AliveList))
         end,
     {PreList, TailList} = util:part_list(Part, InitTrunList),
     TurnList = TailList ++ PreList,
