@@ -517,7 +517,7 @@ state_toupiao(op_over, State) ->
                     false ->
                         get_next_game_state(state_toupiao)
                 end,
-            {next_state, get_next_game_state(state_toupiao), NewState}
+            {next_state, NextState, NewState}
     end.  
 
 %% ====================================================================
