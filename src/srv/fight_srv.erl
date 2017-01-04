@@ -211,7 +211,15 @@ state_nvwu(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_nvwu_op(State),
     send_event_inner(start, b_fight_state_wait:get(state_nvwu)),
-    {next_state, get_next_game_state(state_nvwu), NewState}.
+
+    NextState = 
+        case is_over(NewState) of
+            true ->
+                state_day;
+            false ->
+                get_next_game_state(state_nvwu)
+        end,
+    {next_state, NextState, NewState}.
             
 %% ====================================================================
 %% state_yuyanjia
@@ -502,6 +510,13 @@ state_toupiao(op_over, State) ->
         false ->   
             notice_toupiao_out(maps:get(quzhu, NewState), NewState),
             send_event_inner(start, b_fight_state_wait:get(state_toupiao)),
+            NextState = 
+                case is_over(NewState) of
+                    true ->
+                        state_day;
+                    false ->
+                        get_next_game_state(state_toupiao)
+                end,
             {next_state, get_next_game_state(state_toupiao), NewState}
     end.  
 
@@ -923,6 +938,11 @@ notice_start_fayan(SeatId, State) ->
 notice_stop_fayan(SeatId, State) ->
     Send = #m__fight__stop_fayan__s2l{seat_id = SeatId},
     lib_fight:send_to_seat(Send, SeatId, State).
+
+is_over(State) ->
+    NewState = out_die_player(State),
+    {IsOver, _Winner} = get_fight_result(NewState),
+    IsOver.
 
 get_next_game_state(GameState) ->
     case GameState of

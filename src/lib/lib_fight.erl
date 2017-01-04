@@ -168,6 +168,10 @@ do_part_jingzhang_op(State) ->
     LastOpData = get_last_op(State),
     PartList = maps:keys(filter_last_op(LastOpData)),
     StateAfterFayan = maps:put(fayan_turn, PartList, State),
+
+    Send = #m__fight__notice_part_jingzhang__s2l{seat_list = PartList},
+    send_to_all_player(Send, State),
+
     clear_last_op(maps:put(part_jingzhang, PartList, StateAfterFayan)).
 
 do_xuanju_jingzhang_op(State) ->
