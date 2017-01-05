@@ -28,7 +28,8 @@
          do_fayan_op/1,
          do_send_fayan/3,
          do_guipiao_op/1,
-         do_toupiao_op/1]).
+         do_toupiao_op/1,
+         do_skill/4]).
 
 -include("fight.hrl").
 -include("game_pb.hrl").
@@ -259,6 +260,23 @@ do_toupiao_op(State) ->
                 end
         end,
     {DrawResult, ResultList, MaxSeatList, NewState}.
+
+do_skill(PlayerId, Op, OpList, State) ->
+    SeatId = get_seat_id_by_player_id(PlayerId, State),
+    Send = #m__fight__notice_skill__s2l{seat_id = SeatId,
+                                        op = Op,
+                                        op_list = OpList},
+    send_to_all_player(Send, State),
+    do_skill_inner(SeatId, Op, OpList, State).
+    
+do_skill_inner(SeatId, ?DUTY_BAICHI, [], State) ->
+    maps:put(baichi, SeatId, State);
+
+do_skill_inner(SeatId, ?DUTY_LIEREN, [SelectSeat], State) ->
+    maps:put(die, maps:get(die, State) ++ [SelectSeat], State);
+
+do_skill_inner(SeatId, ?DUTY_BAILANG, [SelectSeat], State) ->
+    maps:put(die, maps:get(die, State) ++ [SelectSeat, SeatId], State).
 
 %%%====================================================================
 %%% Internal functions
