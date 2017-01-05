@@ -211,21 +211,19 @@ state_nvwu(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_nvwu_op(State),
     send_event_inner(start, b_fight_state_wait:get(state_nvwu)),
-
-    NextState = 
-        case is_over(NewState) of
-            true ->
-                state_day;
-            false ->
-                get_next_game_state(state_nvwu)
-        end,
-    {next_state, NextState, NewState}.
+    {next_state, get_next_game_state(state_nvwu), NewState}.
             
 %% ====================================================================
 %% state_yuyanjia
 %% ====================================================================
 state_yuyanjia(start, State) ->
-    do_duty_state_start(?DUTY_YUYANJIA, state_yuyanjia, State);
+    case is_over(State) of
+        true ->
+            send_event_inner(start),
+            {next_state, state_day, State};
+        false ->
+            do_duty_state_start(?DUTY_YUYANJIA, state_yuyanjia, State)
+    end;
 
 state_yuyanjia(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_YUYANJIA, State),
@@ -243,23 +241,22 @@ state_yuyanjia(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_yuyanjia_op(State),
     send_event_inner(start, b_fight_state_wait:get(state_yuyanjia)),
-    NextState = 
-        case maps:get(game_round, State) of
-            1 ->
-                get_next_game_state(state_yuyanjia);
-            _ ->
-                state_night_death
-        end,
-    {next_state, NextState, NewState}.
+    {next_state, get_next_game_state(state_yuyanjia), NewState}.
 
 %% ====================================================================
 %% state_part_jingzhang
 %% ====================================================================
 
 state_part_jingzhang(start, State) ->
-    notice_game_status_change(state_part_jingzhang, State),
-    send_event_inner(wait_op),
-    {next_state, state_part_jingzhang, State};
+    case maps:get(game_round, State) of
+        1 ->
+            notice_game_status_change(state_part_jingzhang, State),
+            send_event_inner(wait_op),
+            {next_state, state_part_jingzhang, State};
+        _ ->
+            send_event_inner(start),
+            {next_state, state_night_death, State}
+    end.
 
 state_part_jingzhang(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_PART_JINGZHANG)),
