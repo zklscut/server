@@ -272,7 +272,7 @@ do_skill(PlayerId, Op, OpList, State) ->
 do_skill_inner(SeatId, ?DUTY_BAICHI, [], State) ->
     maps:put(baichi, SeatId, State);
 
-do_skill_inner(SeatId, ?DUTY_LIEREN, [SelectSeat], State) ->
+do_skill_inner(_SeatId, ?DUTY_LIEREN, [SelectSeat], State) ->
     maps:put(die, maps:get(die, State) ++ [SelectSeat], State);
 
 do_skill_inner(SeatId, ?DUTY_BAILANG, [SelectSeat], State) ->
