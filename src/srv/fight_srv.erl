@@ -762,8 +762,16 @@ do_skill_state_start(StateName, State) ->
             state_toupiao_skill ->
                 maps:get(quzhu, State)
         end,
-    DutyId = lib_fight:get_duty_by_seat(SeatId, State),
-    case lists:member(DutyId, AllowDuty) of
+    IsHaveSkill = 
+        case SeatId of
+            0 ->
+                false;
+            _ ->
+                DutyId = lib_fight:get_duty_by_seat(SeatId, State),
+                lists:member(DutyId, AllowDuty)
+        end,
+    
+    case IsHaveSkill of
         true ->
             send_event_inner(wait_op),
             {next_state, StateName, maps:put(skill_seat, SeatId, State)};
