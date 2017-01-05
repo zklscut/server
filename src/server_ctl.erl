@@ -1,7 +1,7 @@
 % @Author: anchen
 % @Date:   2016-12-05 19:33:38
 % @Last Modified by:   anchen
-% @Last Modified time: 2016-12-05 19:47:25
+% @Last Modified time: 2017-01-05 15:20:08
 
 
 
@@ -67,6 +67,10 @@ process(["restart"]) ->
     init:restart(),
     ?STATUS_SUCCESS;
 process(["usage"]) ->
+    ?STATUS_SUCCESS;
+process(["reload"]) ->
+    Result = hot_reload:reload_all(),
+    lager:info("reload result ~p", [Result]),
     ?STATUS_SUCCESS;
 process(_) ->
     ?STATUS_USAGE.
