@@ -256,7 +256,7 @@ state_part_jingzhang(start, State) ->
         _ ->
             send_event_inner(start),
             {next_state, state_night_death, State}
-    end.
+    end;
 
 state_part_jingzhang(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_PART_JINGZHANG)),
