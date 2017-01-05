@@ -9,15 +9,13 @@
 %% Include files
 %% ====================================================================
 
--include("logger.hrl").
-
 %% ====================================================================
 %% API functions
 %% ====================================================================
 %% @doc reload file or files list
 l(Module) when is_atom(Module) -> l_a(Module);
 l(Module) when is_list(Module) -> l_l(Module);
-l(_) -> ?ERR(load, "error cmd", []).
+l(_) -> lager:error("error cmd", []).
 
 l_a(Module) ->
 	code:soft_purge(Module) andalso code:load_file(Module).
@@ -54,7 +52,7 @@ reload_all() ->
                 throw:ignore ->
                     {CurSucessList, CurFailList};
                 T:R ->
-                    ?DEBUG(reload_all, "Type:~p, Reason:~p", [T, R])
+                    lager:info("Type:~p, Reason:~p", [T, R])
             end
     end,
 
