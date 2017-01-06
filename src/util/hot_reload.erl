@@ -57,10 +57,6 @@ reload_all() ->
     end,
 
     ReloadResult = lists:foldl(FunReload, {[],[]}, ModuleList),
-    crontab:reload(),
-    spawn(fun() ->
-                  lib_clean_cache:clean_cache_in_list()
-          end),
     ReloadResult.
 
 %% ====================================================================
