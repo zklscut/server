@@ -775,7 +775,7 @@ do_skill_state_start(StateName, State) ->
                 false;
             _ ->
                 DutyId = lib_fight:get_duty_by_seat(SeatId, State),
-                lists:member(DutyId, AllowDuty)
+                lists:member(DutyId, AllowDuty) orelse (SeatId == maps:get(jingzhang, State))
         end,
     
     case IsHaveSkill of
@@ -802,10 +802,8 @@ do_skill_state_timeout(StateName, State) ->
 do_skill_state_op(PlayerId, Op, OpList, StateName, State) ->
     try
         assert_op_in_wait(PlayerId, State),
-        assert_skill_legal(Op, StateName),
-        cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+        assert_skill_legal(PlayerId, Op, StateName, State),
         NewState = lib_fight:do_skill(PlayerId, Op, OpList, State),
-        send_event_inner(op_over),
         {next_state, StateName, NewState}
     catch
         throw:ErrCode ->
@@ -825,13 +823,20 @@ get_allow_skill(StateName) ->
             [?DUTY_LIEREN, ?DUTY_BAICHI]
     end.
 
-assert_skill_legal(Op, StateName) ->
+assert_skill_legal(PlayerId, Op, StateName, State) ->
     AllowDuty = get_allow_skill(StateName),
     case lists:member(Op, AllowDuty) of
         true ->
             ok;
         false ->
-            throw(?ERROR)
+            SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
+            case maps:get(jingzhang, State) == SeatId andalso 
+                    Op == ?OP_CHANGE_JINGZHANG of
+                true ->
+                    ok;
+                false ->
+                    throw(?ERROR)
+            end
     end.
 
 do_fayan_state_start(FayanList, StateName, State) ->
@@ -1021,19 +1026,27 @@ get_fight_result(State) ->
     end.
 
 clear_night_op(State) ->
+    JingZhang = maps:get(jingzhang, State),
+    NewJingZhang = 
+        case lists:member(JingZhang, maps:get(out_seat_list, State)) of
+            true ->
+                0;
+            false ->
+                JingZhang
+        end,
     State#{wait_op_list => [],   %% 等待中的操作
            shouwei => 0,         %% 守卫的id
            nvwu => {0, 0},       %% 女巫操作
            langren => 0,         %% 狼人操作
            part_jingzhang => [], %% 參與選舉警長
            xuanju_draw_cnt => 0, %% 选举平局次数
-           jingzhang => 0,       %% 选举的警长
            jingzhang_op => 0,    %% 警长操作
            fayan_turn => [],     %% 发言顺序
            die => [],            %% 死亡玩家
            quzhu => 0,           %% 驱逐的玩家
            last_op_data => #{},  %% 上一轮操作的数据, 杀了几号, 投了几号等等}.
-           game_round => maps:get(game_round, State) + 1
+           game_round => maps:get(game_round, State) + 1,
+           jingzhang => NewJingZhang
            }.
 
 notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, State) ->
@@ -1155,7 +1168,7 @@ get_state_legal_op(GameState) ->
         state_toupiao_skill ->
             [?OP_TOUPIAO_SKILL];
         state_toupiao_death ->
-            [?OP_FAYAN, ?OP_QUZHU_FAYAN];
+            [?OP_FAYAN, ?OP_QUZHU_FAYAN, ?OP];
         state_day ->
             []
     end.

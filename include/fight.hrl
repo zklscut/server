@@ -36,6 +36,7 @@
 -define(OP_QUZHU_FAYAN, 1010). %%驱逐发言
 -define(OP_NIGHT_SKILL, 1011). %%夜晚死亡技能
 -define(OP_TOUPIAO_SKILL, 1012). %%投票死亡技能
+-define(OP_CHANGE_JINGZHANG, 1013). %%转移警长
 
 -define(XUANJU_TYPE_JINGZHANG, 1).
 -define(XUANJU_TYPE_QUZHU, 2).
