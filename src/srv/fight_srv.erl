@@ -766,7 +766,7 @@ do_skill_state_start(StateName, State) ->
     AllowDuty = get_allow_skill(StateName),
     SeatId = 
         case StateName of
-            state_night_skil ->
+            state_night_skill ->
                 maps:get(langren, State);
             state_toupiao_skill ->
                 maps:get(quzhu, State)
