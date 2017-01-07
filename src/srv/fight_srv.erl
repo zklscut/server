@@ -789,10 +789,21 @@ do_skill_state_start(StateName, State) ->
 
 do_skill_state_wait(Op, StateName, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(Op)), 
-    SkillSeat = [maps:get(skill_seat, State)],
-    notice_player_op(Op, SkillSeat, State),
-    StateAfterWait = do_set_wait_op(SkillSeat, State),
-    {next_state, StateName, StateAfterWait}.
+    SkillSeat = maps:get(skill_seat, State),
+    
+    StateAfterWait = do_set_wait_op([SkillSeat], State),
+
+    %%主动发送的技能
+    NewState = 
+        case lib_fight:get_duty_by_seat(SkillSeat, State) of
+            ?DUTY_BAICHI ->
+                lib_fight:do_skill(lib_fight:get_player_id_by_seat(SkillSeat, State), 
+                    ?DUTY_BAICHI, [], StateAfterWait);
+            _ ->
+                notice_player_op(Op, [SkillSeat], State),
+                StateAfterWait
+        end,
+    {next_state, StateName, NewState}.
 
 do_skill_state_timeout(StateName, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -1168,7 +1179,7 @@ get_state_legal_op(GameState) ->
         state_toupiao_skill ->
             [?OP_TOUPIAO_SKILL];
         state_toupiao_death ->
-            [?OP_FAYAN, ?OP_QUZHU_FAYAN, ?OP];
+            [?OP_FAYAN, ?OP_QUZHU_FAYAN];
         state_day ->
             []
     end.
