@@ -814,7 +814,7 @@ do_skill_state_op(PlayerId, Op, OpList, StateName, State) ->
     end.       
 
 do_skill_state_op_over(StateName, State) ->
-    send_event_inner(op_over, b_fight_state_wait:get(StateName)),
+    send_event_inner(start, b_fight_state_wait:get(StateName)),
     {next_state, get_next_game_state(StateName), State}.
 
 get_allow_skill(StateName) ->
