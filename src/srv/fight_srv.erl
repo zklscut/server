@@ -372,7 +372,6 @@ state_night_skill(op_over, State) ->
 %% ====================================================================
 
 state_night_death(start, State) ->
-    
     DieList = maps:get(die, State) ,
     case maps:get(game_round, State) of
         1 ->
@@ -456,7 +455,7 @@ state_fayan({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
             send_event_inner(start),
             {next_state, state_day, NewState};
         _ ->
-            {next_state, state_fayan, State};
+            {next_state, state_fayan, State}
     end;
     
 state_fayan({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
@@ -466,7 +465,7 @@ state_fayan({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
             send_event_inner(start),
             {next_state, state_day, NewState};
         _ ->
-            {next_state, state_fayan, State};
+            {next_state, state_fayan, State}
     end;
 
 state_fayan({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
@@ -564,7 +563,6 @@ state_toupiao(op_over, State) ->
 %% ====================================================================
 
 state_toupiao_skill(start, State) ->
-    notice_night_result(State),
     do_skill_state_start(state_toupiao_skill, State);
 
 state_toupiao_skill(wait_op, State) ->
@@ -766,7 +764,7 @@ do_skill_state_start(StateName, State) ->
     AllowDuty = get_allow_skill(StateName),
     SeatId = 
         case StateName of
-            state_night_skil ->
+            state_night_skill ->
                 maps:get(langren, State);
             state_toupiao_skill ->
                 maps:get(quzhu, State)
