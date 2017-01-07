@@ -30,4 +30,9 @@ get(15008) -> {m__fight__notice_yuyanjia_result__s2l, mod_fight, notice_yuyanjia
 get(15009) -> {m__fight__xuanju_result__s2l, mod_fight, xuanju_result}; 
 get(15010) -> {m__fight__night_result__s2l, mod_fight, night_result}; 
 get(15011) -> {m__fight__result__s2l, mod_fight, result}; 
+get(15012) -> {m__fight__guipiao__s2l, mod_fight, guipiao}; 
+get(15013) -> {m__fight__notice_fayan__s2l, mod_fight, notice_fayan}; 
+get(15014) -> {m__fight__stop_fayan__s2l, mod_fight, stop_fayan}; 
+get(15015) -> {m__fight__notice_hunxuer__s2l, mod_fight, notice_hunxuer}; 
+get(15016) -> {m__fight__notice_part_jingzhang__s2l, mod_fight, notice_part_jingzhang}; 
 get(_) -> undefined. 

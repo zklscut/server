@@ -50,7 +50,7 @@ get_player_show_base(Player) ->
                         nick_name = integer_to_list(PlayerId)}.
 
 get_player_id(Player) ->
-    maps:get(id, Player).
+    maps:get(id, Player, 0).
 
 %%%====================================================================
 %%% Internal functions

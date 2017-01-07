@@ -23,6 +23,8 @@ get(state_part_fayan) ->
     1000;
 get(state_xuanju_jingzhang) ->
     1000;
+get(state_night_skill) ->
+    1000;
 get(state_night_death) ->
     1000;
 get(state_jingzhang) ->
@@ -32,6 +34,8 @@ get(state_fayan) ->
 get(state_guipiao) ->
     1000;
 get(state_toupiao) ->
+    1000;
+get(state_toupiao_skill) ->
     1000;
 get(state_toupiao_death) ->
     1000;

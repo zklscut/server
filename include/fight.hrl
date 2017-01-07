@@ -34,6 +34,8 @@
 -define(OP_GUIPIAO, 1008). %%归票
 -define(OP_DEATH_FAYAN, 1009). %%死亡发言
 -define(OP_QUZHU_FAYAN, 1010). %%驱逐发言
+-define(OP_NIGHT_SKILL, 1011). %%夜晚死亡技能
+-define(OP_TOUPIAO_SKILL, 1012). %%投票死亡技能
 
 -define(XUANJU_TYPE_JINGZHANG, 1).
 -define(XUANJU_TYPE_QUZHU, 2).
@@ -72,6 +74,8 @@
                   fayan_turn => [],     %% 发言顺序
                   die => [],            %% 死亡玩家
                   quzhu => 0,           %% 驱逐的玩家
+                  skill_seat => 0,      %% 发动技能列表
+                  baichi => 0,          %% 白痴id
                   last_op_data => #{}   %% 上一轮操作的数据, 杀了几号, 投了几号等等
                   }).
 

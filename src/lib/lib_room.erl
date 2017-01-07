@@ -15,7 +15,8 @@
          is_room_owner/2,
          get_player_room_player_list/1,
          update_fight_pid/2,
-         get_fight_pid_by_player/1]).
+         get_fight_pid_by_player/1,
+         get_room_duty_list/1]).
 
 -include("game_pb.hrl").
 -include("ets.hrl").
@@ -91,6 +92,9 @@ update_fight_pid(RoomId, Pid) ->
 
 get_fight_pid_by_player(Player) ->
     maps:get(fight_pid, get_room(get_player_room_id(Player))).
+
+get_room_duty_list(RoomId) ->
+    maps:get(duty_list, get_room(RoomId)).
 
 %%%====================================================================
 %%% Internal functions

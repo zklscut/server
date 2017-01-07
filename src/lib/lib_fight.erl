@@ -3,7 +3,7 @@
 %% 2016
 
 -module(lib_fight).
--export([init/3,
+-export([init/4,
          send_to_all_player/2,
          send_to_seat/3,
          get_player_id_by_seat/2,
@@ -28,7 +28,8 @@
          do_fayan_op/1,
          do_send_fayan/3,
          do_guipiao_op/1,
-         do_toupiao_op/1]).
+         do_toupiao_op/1,
+         do_skill/4]).
 
 -include("fight.hrl").
 -include("game_pb.hrl").
@@ -37,10 +38,10 @@
 %% API functions
 %% ====================================================================
 
-init(RoomId, PlayerList, State) ->
+init(RoomId, PlayerList, DutyList, State) ->
     State1 = State#{room_id := RoomId},
     State2 = init_seat(PlayerList, State1),
-    State3 = init_duty(PlayerList, State2),
+    State3 = init_duty(PlayerList, DutyList, State2),
     State3.
 
 send_to_all_player(Send, State) ->
@@ -139,25 +140,39 @@ do_nvwu_op(State) ->
 
 do_langren_op(State) ->
     LastOpData = get_last_op(State),
-    KillSeat = rand_target_in_op(filter_last_op(LastOpData)),
+    KillSeat = 
+        case maps:to_list(LastOpData) of
+            [] ->
+                0;
+            _ ->
+                rand_target_in_op(filter_last_op(LastOpData))
+        end,
     StateAfterLangren = maps:put(langren, KillSeat, State),
-
-    clear_last_op(StateAfterLangren). 
+    StateAfterUpdateDie = do_set_die_list(StateAfterLangren),
+    clear_last_op(StateAfterUpdateDie). 
 
 do_yuyanjia_op(State) ->
     LastOpData = get_last_op(State),
-    [{SeatId, [SelectSeatId]}] = maps:to_list(LastOpData),
-    SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId, State),
+    case maps:to_list(LastOpData) of
+        [] ->
+            clear_last_op(State);
+        [{SeatId, [SelectSeatId]}]  ->
+            SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId, State),
     
-    Send = #m__fight__notice_yuyanjia_result__s2l{seat_id = SelectSeatId,
-                                                  duty = SelectDuty},
-    send_to_seat(Send, SeatId, State),
-    clear_last_op(State).
+            Send = #m__fight__notice_yuyanjia_result__s2l{seat_id = SelectSeatId,
+                                                          duty = SelectDuty},
+            send_to_seat(Send, SeatId, State),
+            clear_last_op(State)
+    end.
 
 do_part_jingzhang_op(State) ->
     LastOpData = get_last_op(State),
     PartList = maps:keys(filter_last_op(LastOpData)),
     StateAfterFayan = maps:put(fayan_turn, PartList, State),
+
+    Send = #m__fight__notice_part_jingzhang__s2l{seat_list = PartList},
+    send_to_all_player(Send, State),
+
     clear_last_op(maps:put(part_jingzhang, PartList, StateAfterFayan)).
 
 do_xuanju_jingzhang_op(State) ->
@@ -184,7 +199,13 @@ do_xuanju_jingzhang_op(State) ->
 
 do_jingzhang_op(State) ->
     LastOpData = get_last_op(State),
-    [{SeatId, [IsFirst, Turn]}] = maps:to_list(LastOpData),
+    [{SeatId, [IsFirst, Turn]}] = 
+        case maps:to_list(LastOpData) of
+            [] ->
+                [{0, [0, ?TURN_DOWN]}];
+            OpList ->
+                OpList
+        end,
     StateAfterJingzhang = maps:put(jingzhang_op, {IsFirst, Turn}, State),
     FayanTurn = generate_fayan_turn(SeatId, IsFirst, Turn, State),
     StateAfterFayanTurn = maps:put(fayan_turn, FayanTurn, StateAfterJingzhang),
@@ -208,13 +229,15 @@ do_send_fayan(PlayerId, Chat, State) ->
 
 do_guipiao_op(State) ->
     LastOpData = get_last_op(State),
-    case maps:to_list(LastOpData) of
-        [] ->
-            ignore;
-        [{_, GuiPiaoList}] ->
-            Send = #m__fight__guipiao__s2l{guipiao_list = GuiPiaoList},
-            send_to_all_player(Send, State)
-    end,
+    GuiPiaoList = 
+        case maps:to_list(LastOpData) of
+            [] ->
+                [];
+            [{_, OpList}] ->
+                OpList
+        end,
+    Send = #m__fight__guipiao__s2l{guipiao_list = GuiPiaoList},
+    send_to_all_player(Send, State),
     clear_last_op(State).
 
 do_toupiao_op(State) ->
@@ -238,6 +261,26 @@ do_toupiao_op(State) ->
         end,
     {DrawResult, ResultList, MaxSeatList, NewState}.
 
+do_skill(PlayerId, Op, OpList, State) ->
+    SeatId = get_seat_id_by_player_id(PlayerId, State),
+    Send = #m__fight__notice_skill__s2l{seat_id = SeatId,
+                                        op = Op,
+                                        op_list = OpList},
+    send_to_all_player(Send, State),
+    do_skill_inner(SeatId, Op, OpList, State).
+    
+do_skill_inner(SeatId, ?DUTY_BAICHI, [], State) ->
+    maps:put(baichi, SeatId, State);
+
+do_skill_inner(_SeatId, ?DUTY_LIEREN, [SelectSeat], State) ->
+    maps:put(die, maps:get(die, State) ++ [SelectSeat], State);
+
+do_skill_inner(SeatId, ?DUTY_BAILANG, [SelectSeat], State) ->
+    maps:put(die, maps:get(die, State) ++ [SelectSeat, SeatId], State);
+
+do_skill_inner(SeatId, ?DUTY_LANGREN, _, State) ->
+    maps:put(die, maps:get(die, State) ++ [SeatId], State).
+
 %%%====================================================================
 %%% Internal functions
 %%%====================================================================
@@ -252,11 +295,11 @@ init_seat(PlayerList, State) ->
     State#{seat_player_map := SeatPlayerMap,
            player_seat_map := PlayerSeatMap}.
 
-init_duty(PlayerList, State) ->
+init_duty(PlayerList, DutyList, State) ->
     PlayerNum = length(PlayerList),
     RandSeatList = util:rand_list(lists:seq(1, PlayerNum)),
     
-    {BDutyList, DaozeiList} = get_duty_list_with_daozei(PlayerNum),
+    {BDutyList, DaozeiList} = get_duty_list_with_daozei(DutyList),
     SeatDutyList = lists:zip(RandSeatList, BDutyList),
 
     FunInitDuty =
@@ -270,18 +313,12 @@ init_duty(PlayerList, State) ->
            duty_seat_map := DutySeatMap,
            daozei := DaozeiList}.
 
-get_duty_list_with_daozei(PlayerNum) ->
-    BDutyList = b_duty:get(PlayerNum),
-    FunInitDutyConfig = 
-        fun({CurDuty, Num}, CurList) ->
-                lists:duplicate(Num, CurDuty) ++ CurList
-        end,
-    DutyIdList = lists:foldl(FunInitDutyConfig, [], BDutyList),
-    case lists:member(?DUTY_DAOZEI, DutyIdList) of
+get_duty_list_with_daozei(DutyList) ->
+    case lists:member(?DUTY_DAOZEI, DutyList) of
         true ->
-            generate_daozei_duty_list(DutyIdList);
+            generate_daozei_duty_list(DutyList ++ [?DUTY_PINGMIN]);
         false ->
-            {DutyIdList, []}
+            {DutyList, []}
     end.
 
 generate_daozei_duty_list(DutyIdList) ->
@@ -391,7 +428,7 @@ generate_fayan_turn(SeatId, IsFirst, Turn, State) ->
             ?TURN_DOWN ->
                 lists:sort(AliveList);
             _ ->
-                list:reverse(lits:sort(AliveList))
+                lists:reverse(lists:sort(AliveList))
         end,
     {PreList, TailList} = util:part_list(Part, InitTrunList),
     TurnList = TailList ++ PreList,
@@ -422,5 +459,5 @@ do_set_die_list(State) ->
             _ ->
                 [ShowWeiDef]
         end,
-    DieList = KillList -- SaveList,
+    DieList = [Die || Die <- (KillList -- SaveList), Die =/= 0],
     maps:put(die, DieList, State).

@@ -1,6 +1,16 @@
 -module(game_pb).
 
 -export([encode/1, encode/2, decode/2,
+	 encode_m__fight__notice_part_jingzhang__s2l/1,
+	 decode_m__fight__notice_part_jingzhang__s2l/1,
+	 encode_m__fight__notice_hunxuer__s2l/1,
+	 decode_m__fight__notice_hunxuer__s2l/1,
+	 encode_m__fight__stop_fayan__s2l/1,
+	 decode_m__fight__stop_fayan__s2l/1,
+	 encode_m__fight__notice_fayan__s2l/1,
+	 decode_m__fight__notice_fayan__s2l/1,
+	 encode_m__fight__guipiao__s2l/1,
+	 decode_m__fight__guipiao__s2l/1,
 	 encode_m__fight__result__s2l/1,
 	 decode_m__fight__result__s2l/1, encode_p_duty/1,
 	 decode_p_duty/1, encode_m__fight__night_result__s2l/1,
@@ -64,8 +74,20 @@
 	 encode_p_player_show_base/1,
 	 decode_p_player_show_base/1]).
 
+-record(m__fight__notice_part_jingzhang__s2l,
+	{msg_id, seat_list}).
+
+-record(m__fight__notice_hunxuer__s2l,
+	{msg_id, select_seat}).
+
+-record(m__fight__stop_fayan__s2l, {msg_id, seat_id}).
+
+-record(m__fight__notice_fayan__s2l, {msg_id, seat_id}).
+
+-record(m__fight__guipiao__s2l, {msg_id, guipiao_list}).
+
 -record(m__fight__result__s2l,
-	{msg_id, winner, duty_list}).
+	{msg_id, winner, duty_list, lover, hunxuer}).
 
 -record(p_duty, {seat_id, duty_id}).
 
@@ -73,7 +95,7 @@
 	{msg_id, die_list}).
 
 -record(m__fight__xuanju_result__s2l,
-	{msg_id, xuanju_type, result_list, is_draw}).
+	{msg_id, xuanju_type, result_list, is_draw, result_id}).
 
 -record(p_xuanju_result, {seat_id, select_list}).
 
@@ -121,7 +143,7 @@
 -record(m__room__create_room__s2l, {msg_id, room_info}).
 
 -record(m__room__create_room__l2s,
-	{msg_id, max_player_num, room_name}).
+	{msg_id, max_player_num, room_name, duty_list}).
 
 -record(m__room__enter_room__s2l,
 	{msg_id, room_info, member_list}).
@@ -132,7 +154,7 @@
 
 -record(p_room,
 	{room_id, cur_player_num, max_player_num, owner,
-	 room_name, room_status}).
+	 room_name, room_status, duty_list}).
 
 -record(m__room__get_list__l2s, {msg_id}).
 
@@ -150,6 +172,27 @@
 
 encode(Record) ->
     encode(erlang:element(1, Record), Record).
+
+encode_m__fight__notice_part_jingzhang__s2l(Record)
+    when is_record(Record,
+		   m__fight__notice_part_jingzhang__s2l) ->
+    encode(m__fight__notice_part_jingzhang__s2l, Record).
+
+encode_m__fight__notice_hunxuer__s2l(Record)
+    when is_record(Record, m__fight__notice_hunxuer__s2l) ->
+    encode(m__fight__notice_hunxuer__s2l, Record).
+
+encode_m__fight__stop_fayan__s2l(Record)
+    when is_record(Record, m__fight__stop_fayan__s2l) ->
+    encode(m__fight__stop_fayan__s2l, Record).
+
+encode_m__fight__notice_fayan__s2l(Record)
+    when is_record(Record, m__fight__notice_fayan__s2l) ->
+    encode(m__fight__notice_fayan__s2l, Record).
+
+encode_m__fight__guipiao__s2l(Record)
+    when is_record(Record, m__fight__guipiao__s2l) ->
+    encode(m__fight__guipiao__s2l, Record).
 
 encode_m__fight__result__s2l(Record)
     when is_record(Record, m__fight__result__s2l) ->
@@ -360,7 +403,10 @@ encode(p_room, _Record) ->
 			   []),
 		      pack(6, required,
 			   with_default(_Record#p_room.room_status, none),
-			   string, [])]);
+			   string, []),
+		      pack(7, repeated,
+			   with_default(_Record#p_room.duty_list, none), int32,
+			   [])]);
 encode(m__room__get_list__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__room__get_list__s2l.msg_id,
@@ -404,7 +450,11 @@ encode(m__room__create_room__l2s, _Record) ->
 		      pack(3, required,
 			   with_default(_Record#m__room__create_room__l2s.room_name,
 					none),
-			   string, [])]);
+			   string, []),
+		      pack(4, repeated,
+			   with_default(_Record#m__room__create_room__l2s.duty_list,
+					none),
+			   int32, [])]);
 encode(m__room__create_room__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__room__create_room__s2l.msg_id,
@@ -599,6 +649,10 @@ encode(m__fight__xuanju_result__s2l, _Record) ->
 		      pack(4, required,
 			   with_default(_Record#m__fight__xuanju_result__s2l.is_draw,
 					none),
+			   int32, []),
+		      pack(5, required,
+			   with_default(_Record#m__fight__xuanju_result__s2l.result_id,
+					none),
 			   int32, [])]);
 encode(m__fight__night_result__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
@@ -625,10 +679,63 @@ encode(m__fight__result__s2l, _Record) ->
 			   with_default(_Record#m__fight__result__s2l.winner,
 					none),
 			   int32, []),
-		      pack(3, required,
+		      pack(3, repeated,
 			   with_default(_Record#m__fight__result__s2l.duty_list,
 					none),
-			   p_duty, [])]).
+			   p_duty, []),
+		      pack(4, repeated,
+			   with_default(_Record#m__fight__result__s2l.lover,
+					none),
+			   int32, []),
+		      pack(5, required,
+			   with_default(_Record#m__fight__result__s2l.hunxuer,
+					none),
+			   int32, [])]);
+encode(m__fight__guipiao__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__guipiao__s2l.msg_id,
+					15012),
+			   int32, []),
+		      pack(2, repeated,
+			   with_default(_Record#m__fight__guipiao__s2l.guipiao_list,
+					none),
+			   int32, [])]);
+encode(m__fight__notice_fayan__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__notice_fayan__s2l.msg_id,
+					15013),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__fight__notice_fayan__s2l.seat_id,
+					none),
+			   int32, [])]);
+encode(m__fight__stop_fayan__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__stop_fayan__s2l.msg_id,
+					15014),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__fight__stop_fayan__s2l.seat_id,
+					none),
+			   int32, [])]);
+encode(m__fight__notice_hunxuer__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__notice_hunxuer__s2l.msg_id,
+					15015),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__fight__notice_hunxuer__s2l.select_seat,
+					none),
+			   int32, [])]);
+encode(m__fight__notice_part_jingzhang__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__notice_part_jingzhang__s2l.msg_id,
+					15016),
+			   int32, []),
+		      pack(2, repeated,
+			   with_default(_Record#m__fight__notice_part_jingzhang__s2l.seat_list,
+					none),
+			   int32, [])]).
 
 with_default(undefined, none) -> undefined;
 with_default(undefined, Default) -> Default;
@@ -648,6 +755,21 @@ pack(FNum, _, Data, _, _) when is_tuple(Data) ->
     protobuffs:encode(FNum, encode(RecName, Data), bytes);
 pack(FNum, _, Data, Type, _) ->
     protobuffs:encode(FNum, Data, Type).
+
+decode_m__fight__notice_part_jingzhang__s2l(Bytes) ->
+    decode(m__fight__notice_part_jingzhang__s2l, Bytes).
+
+decode_m__fight__notice_hunxuer__s2l(Bytes) ->
+    decode(m__fight__notice_hunxuer__s2l, Bytes).
+
+decode_m__fight__stop_fayan__s2l(Bytes) ->
+    decode(m__fight__stop_fayan__s2l, Bytes).
+
+decode_m__fight__notice_fayan__s2l(Bytes) ->
+    decode(m__fight__notice_fayan__s2l, Bytes).
+
+decode_m__fight__guipiao__s2l(Bytes) ->
+    decode(m__fight__guipiao__s2l, Bytes).
 
 decode_m__fight__result__s2l(Bytes) ->
     decode(m__fight__result__s2l, Bytes).
@@ -782,7 +904,8 @@ decode(m__room__get_list__l2s, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__get_list__l2s, Decoded);
 decode(p_room, Bytes) ->
-    Types = [{6, room_status, string, []},
+    Types = [{7, duty_list, int32, [repeated]},
+	     {6, room_status, string, []},
 	     {5, room_name, string, []},
 	     {4, owner, p_player_show_base, [is_record]},
 	     {3, max_player_num, int32, []},
@@ -808,7 +931,8 @@ decode(m__room__enter_room__s2l, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__enter_room__s2l, Decoded);
 decode(m__room__create_room__l2s, Bytes) ->
-    Types = [{3, room_name, string, []},
+    Types = [{4, duty_list, int32, [repeated]},
+	     {3, room_name, string, []},
 	     {2, max_player_num, int32, []}, {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__create_room__l2s, Decoded);
@@ -905,7 +1029,8 @@ decode(p_xuanju_result, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(p_xuanju_result, Decoded);
 decode(m__fight__xuanju_result__s2l, Bytes) ->
-    Types = [{4, is_draw, int32, []},
+    Types = [{5, result_id, int32, []},
+	     {4, is_draw, int32, []},
 	     {3, result_list, p_xuanju_result,
 	      [is_record, repeated]},
 	     {2, xuanju_type, int32, []}, {1, msg_id, int32, []}],
@@ -922,10 +1047,38 @@ decode(p_duty, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(p_duty, Decoded);
 decode(m__fight__result__s2l, Bytes) ->
-    Types = [{3, duty_list, p_duty, [is_record]},
+    Types = [{5, hunxuer, int32, []},
+	     {4, lover, int32, [repeated]},
+	     {3, duty_list, p_duty, [is_record, repeated]},
 	     {2, winner, int32, [repeated]}, {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
-    to_record(m__fight__result__s2l, Decoded).
+    to_record(m__fight__result__s2l, Decoded);
+decode(m__fight__guipiao__s2l, Bytes) ->
+    Types = [{2, guipiao_list, int32, [repeated]},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__guipiao__s2l, Decoded);
+decode(m__fight__notice_fayan__s2l, Bytes) ->
+    Types = [{2, seat_id, int32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__notice_fayan__s2l, Decoded);
+decode(m__fight__stop_fayan__s2l, Bytes) ->
+    Types = [{2, seat_id, int32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__stop_fayan__s2l, Decoded);
+decode(m__fight__notice_hunxuer__s2l, Bytes) ->
+    Types = [{2, select_seat, int32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__notice_hunxuer__s2l, Decoded);
+decode(m__fight__notice_part_jingzhang__s2l, Bytes) ->
+    Types = [{2, seat_list, int32, [repeated]},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__notice_part_jingzhang__s2l,
+	      Decoded).
 
 decode(<<>>, _, Acc) -> Acc;
 decode(<<Bytes/binary>>, Types, Acc) ->
@@ -1203,7 +1356,44 @@ to_record(m__fight__result__s2l, DecodedTuples) ->
 						     m__fight__result__s2l),
 					 Record, Name, Val)
 		end,
-		#m__fight__result__s2l{}, DecodedTuples).
+		#m__fight__result__s2l{}, DecodedTuples);
+to_record(m__fight__guipiao__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__guipiao__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__guipiao__s2l{}, DecodedTuples);
+to_record(m__fight__notice_fayan__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__notice_fayan__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__notice_fayan__s2l{}, DecodedTuples);
+to_record(m__fight__stop_fayan__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__stop_fayan__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__stop_fayan__s2l{}, DecodedTuples);
+to_record(m__fight__notice_hunxuer__s2l,
+	  DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__notice_hunxuer__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__notice_hunxuer__s2l{}, DecodedTuples);
+to_record(m__fight__notice_part_jingzhang__s2l,
+	  DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__notice_part_jingzhang__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__notice_part_jingzhang__s2l{}, DecodedTuples).
 
 set_record_field(Fields, Record, Field, Value) ->
     Index = list_index(Field, Fields),
