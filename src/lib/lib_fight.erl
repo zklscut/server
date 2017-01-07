@@ -276,7 +276,10 @@ do_skill_inner(_SeatId, ?DUTY_LIEREN, [SelectSeat], State) ->
     maps:put(die, maps:get(die, State) ++ [SelectSeat], State);
 
 do_skill_inner(SeatId, ?DUTY_BAILANG, [SelectSeat], State) ->
-    maps:put(die, maps:get(die, State) ++ [SelectSeat, SeatId], State).
+    maps:put(die, maps:get(die, State) ++ [SelectSeat, SeatId], State);
+
+do_skill_inner(SeatId, ?DUTY_LANGREN, _, State) ->
+    maps:put(die, maps:get(die, State) ++ [SeatId], State).
 
 %%%====================================================================
 %%% Internal functions

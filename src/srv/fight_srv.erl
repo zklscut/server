@@ -450,15 +450,24 @@ state_fayan({player_op, PlayerId, Op, [0]}, State) ->
     do_receive_player_op(PlayerId, Op, [0], state_fayan, State);
 
 state_fayan({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
-    NewState = 
-        case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
-            ?DUTY_BAILANG ->
-                lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State);
-            _ ->
-                State
-        end,
-    {next_state, state_fayan, NewState};
-
+    case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
+        ?DUTY_BAILANG ->
+            NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
+            send_event_inner(start),
+            {next_state, state_day, NewState};
+        _ ->
+            {next_state, state_fayan, State};
+    end;
+    
+state_fayan({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
+    case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
+        ?DUTY_LANGREN ->
+            NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
+            send_event_inner(start),
+            {next_state, state_day, NewState};
+        _ ->
+            {next_state, state_fayan, State};
+    end;
 
 state_fayan({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
     do_receive_fayan(PlayerId, Chat, State),
