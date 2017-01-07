@@ -257,7 +257,7 @@ state_part_jingzhang(start, State) ->
             {next_state, state_part_jingzhang, State};
         _ ->
             send_event_inner(start),
-            {next_state, state_night_death, State}
+            {next_state, state_night_skill, State}
     end;
 
 state_part_jingzhang(wait_op, State) ->
