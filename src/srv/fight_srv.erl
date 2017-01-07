@@ -456,7 +456,7 @@ state_fayan({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
             send_event_inner(start),
             {next_state, state_day, NewState};
         _ ->
-            {next_state, state_fayan, State};
+            {next_state, state_fayan, State}
     end;
     
 state_fayan({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
@@ -466,7 +466,7 @@ state_fayan({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
             send_event_inner(start),
             {next_state, state_day, NewState};
         _ ->
-            {next_state, state_fayan, State};
+            {next_state, state_fayan, State}
     end;
 
 state_fayan({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
