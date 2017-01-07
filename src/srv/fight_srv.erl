@@ -372,7 +372,6 @@ state_night_skill(op_over, State) ->
 %% ====================================================================
 
 state_night_death(start, State) ->
-    
     DieList = maps:get(die, State) ,
     case maps:get(game_round, State) of
         1 ->
@@ -564,7 +563,6 @@ state_toupiao(op_over, State) ->
 %% ====================================================================
 
 state_toupiao_skill(start, State) ->
-    notice_night_result(State),
     do_skill_state_start(state_toupiao_skill, State);
 
 state_toupiao_skill(wait_op, State) ->
