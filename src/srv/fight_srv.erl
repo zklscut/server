@@ -582,7 +582,8 @@ state_toupiao_skill(op_over, State) ->
 %% ====================================================================
 
 state_toupiao_death(start, State) ->
-    do_fayan_state_start([maps:get(quzhu, State)] -- [maps:get(baichi, State)], state_toupiao_death, State);
+    do_fayan_state_start([maps:get(quzhu, State)] ++ 
+        lib_fight:get_lieren_kill(State) -- [maps:get(baichi, State)], state_toupiao_death, State);
 
 state_toupiao_death(wait_op, State) ->
     do_fayan_state_wait_op(?OP_QUZHU_FAYAN, state_toupiao_death, State);

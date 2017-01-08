@@ -9,6 +9,7 @@
          get_player_id_by_seat/2,
          get_seat_id_by_player_id/2,
          get_duty_by_seat/2,
+         get_lieren_kill/1,
          update_duty/4,
          get_duty_seat/2,
          get_duty_seat/3,
@@ -79,6 +80,14 @@ get_all_seat(State) ->
 
 get_alive_seat_list(State) ->
     filter_out_seat(get_all_seat(State), State).
+
+get_lieren_kill(State) ->
+    case maps:get(lieren_kill, State) of
+        0 ->
+            [];
+        LieRenKill ->
+            [LieRenKill]
+    end.
 
 filter_out_seat(SeatList, State) ->
     [SeatId || SeatId <- SeatList, not lists:member(SeatId, maps:get(out_seat_list, State))].
@@ -273,7 +282,8 @@ do_skill_inner(SeatId, ?DUTY_BAICHI, [], State) ->
     maps:put(baichi, SeatId, State);
 
 do_skill_inner(_SeatId, ?DUTY_LIEREN, [SelectSeat], State) ->
-    maps:put(die, maps:get(die, State) ++ [SelectSeat], State);
+    StateAfterDie = maps:put(die, maps:get(die, State) ++ [SelectSeat], State),
+    maps:put(lieren_kill, SelectSeat, State);
 
 do_skill_inner(SeatId, ?DUTY_BAILANG, [SelectSeat], State) ->
     maps:put(die, maps:get(die, State) ++ [SelectSeat, SeatId], State);
