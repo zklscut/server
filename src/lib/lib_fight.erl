@@ -283,7 +283,7 @@ do_skill_inner(SeatId, ?DUTY_BAICHI, [], State) ->
 
 do_skill_inner(_SeatId, ?DUTY_LIEREN, [SelectSeat], State) ->
     StateAfterDie = maps:put(die, maps:get(die, State) ++ [SelectSeat], State),
-    maps:put(lieren_kill, SelectSeat, State);
+    maps:put(lieren_kill, SelectSeat, StateAfterDie);
 
 do_skill_inner(SeatId, ?DUTY_BAILANG, [SelectSeat], State) ->
     maps:put(die, maps:get(die, State) ++ [SelectSeat, SeatId], State);
