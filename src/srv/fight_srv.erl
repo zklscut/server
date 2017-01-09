@@ -451,6 +451,7 @@ state_fayan({player_op, PlayerId, Op, [0]}, State) ->
 state_fayan({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
     case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
         ?DUTY_BAILANG ->
+            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
             NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
             send_event_inner(start),
             {next_state, state_day, NewState};
@@ -461,6 +462,7 @@ state_fayan({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
 state_fayan({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
     case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
         ?DUTY_LANGREN ->
+            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
             NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
             send_event_inner(start),
             {next_state, state_day, NewState};
@@ -524,7 +526,7 @@ state_toupiao(start, State) ->
 state_toupiao(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_TOUPIAO)),
     notice_toupiao(State),
-    WaitList = lib_fight:get_alive_seat_list(State),
+    WaitList = lib_fight:get_alive_seat_list(State) -- [maps:get(baichi, State)],
     StateAfterWait = do_set_wait_op(WaitList, State),
     {next_state, state_toupiao, StateAfterWait};    
     
@@ -799,7 +801,7 @@ do_skill_state_wait(Op, StateName, State) ->
         case lib_fight:get_duty_by_seat(SkillSeat, State) of
             ?DUTY_BAICHI ->
                 lib_fight:do_skill(lib_fight:get_player_id_by_seat(SkillSeat, State), 
-                    ?DUTY_BAICHI, [], StateAfterWait);
+                    ?DUTY_BAICHI, [SkillSeat], StateAfterWait);
             _ ->
                 notice_player_op(Op, [SkillSeat], State),
                 StateAfterWait
@@ -1061,7 +1063,8 @@ clear_night_op(State) ->
            quzhu => 0,           %% 驱逐的玩家
            last_op_data => #{},  %% 上一轮操作的数据, 杀了几号, 投了几号等等}.
            game_round => maps:get(game_round, State) + 1,
-           jingzhang => NewJingZhang
+           jingzhang => NewJingZhang,
+           lieren_kill => 0
            }.
 
 notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, State) ->
