@@ -278,7 +278,7 @@ do_skill(PlayerId, Op, OpList, State) ->
     send_to_all_player(Send, State),
     do_skill_inner(SeatId, Op, OpList, State).
     
-do_skill_inner(SeatId, ?DUTY_BAICHI, [], State) ->
+do_skill_inner(SeatId, ?DUTY_BAICHI, _, State) ->
     maps:put(baichi, SeatId, State);
 
 do_skill_inner(_SeatId, ?DUTY_LIEREN, [SelectSeat], State) ->
