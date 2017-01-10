@@ -440,8 +440,8 @@ generate_fayan_turn(SeatId, _First, Turn, State) ->
                 lists:reverse(lists:sort(AllSeat))
         end,
     {PreList, TailList} = util:part_list(Part, InitTurnList),
-    TurnList = [Part] ++ ((TailList ++ PreList) -- [Part]),
-    TurnList -- maps:get(die, State) -- maps:get(out_seat_list, State) -- [0].
+    TurnList = ([Part] ++ TailList ++ PreList) -- [Part],
+    ((TurnList -- maps:get(die, State)) -- maps:get(out_seat_list, State)) -- [0].
 
 do_set_die_list(State) ->
     {NvwuSelect, NvwuOp} = maps:get(nvwu, State),
