@@ -1010,6 +1010,7 @@ notice_toupiao(State) ->
 
 notice_toupiao(MaxSelectList, State) ->
     AliveList = lib_fight:get_alive_seat_list(State),
+    lager:info("notice toupiao ~p", [{AliveList, MaxSelectList, [maps:get(baichi, State)], maps:get(die, State)}]),
     notice_player_op(?OP_TOUPIAO, MaxSelectList, AliveList -- MaxSelectList -- 
                                                  [maps:get(baichi, State)] -- maps:get(die, State)).
 
