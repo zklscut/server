@@ -541,23 +541,36 @@ state_toupiao(timeout, State) ->
 state_toupiao(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     {IsDraw, TouPiaoResult, MaxSelectList, NewState} = lib_fight:do_toupiao_op(State),
-    notice_state_toupiao_result(IsDraw, maps:get(quzhu, NewState), TouPiaoResult, NewState),
+    Quzhu = maps:get(quzhu, NewState),
+    notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, NewState),
     case IsDraw of
         true ->
             notice_toupiao(MaxSelectList, NewState),
             StateAfterWait = do_set_wait_op(lib_fight:get_alive_seat_list(State) -- MaxSelectList, NewState),
             {next_state, state_toupiao, StateAfterWait};
         false ->   
-            notice_toupiao_out(maps:get(quzhu, NewState), NewState),
-            send_event_inner(start, b_fight_state_wait:get(state_toupiao)),
-            NextState = 
-                case is_over(NewState) of
-                    true ->
-                        state_day;
-                    false ->
-                        get_next_game_state(state_toupiao)
+            IsBaichi = 
+                case Quzhu of
+                    0 ->
+                        false;
+                    _ ->
+                        lib_fight:get_duty_by_seat(Quzhu, State) == ?DUTY_BAICHI
                 end,
-            {next_state, NextState, NewState}
+            send_event_inner(start, b_fight_state_wait:get(state_toupiao)),
+            case IsBaichi of
+                true ->
+                    {next_state,  get_next_game_state(state_toupiao), NewState};
+                false ->
+                    notice_toupiao_out(maps:get(quzhu, NewState), NewState),
+                    NextState = 
+                        case is_over(NewState) of
+                            true ->
+                                state_day;
+                            false ->
+                                get_next_game_state(state_toupiao)
+                        end,
+                    {next_state, NextState, NewState}
+            end
     end.  
 
 %% ====================================================================
@@ -827,7 +840,7 @@ do_skill_state_op(PlayerId, Op, OpList, StateName, State) ->
 
 do_skill_state_op_over(StateName, State) ->
     send_event_inner(start, b_fight_state_wait:get(StateName)),
-    {next_state, get_next_game_state(StateName), State}.
+    {next_state, get_next_game_state(StateName), State#{lieren_kill := 0}}.
 
 get_allow_skill(StateName) ->
     case StateName of
@@ -853,7 +866,8 @@ assert_skill_legal(PlayerId, Op, StateName, State) ->
             end
     end.
 
-do_fayan_state_start(FayanList, StateName, State) ->
+do_fayan_state_start(InitFayanList, StateName, State) ->
+    FayanList = [SeatId || SeatId <- InitFayanList, SeatId =/= 0],
     case FayanList == [0] orelse FayanList == [] of
         true ->
             send_event_inner(start),

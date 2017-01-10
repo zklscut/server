@@ -422,11 +422,11 @@ count_xuanju_result(OpData) ->
     end.
 
 generate_fayan_turn(SeatId, IsFirst, Turn, State) ->
-    AliveList = get_alive_seat_list(State),
+    AllSeat = get_all_seat(State),
     Part = 
         case maps:get(die, State) of
             [] ->
-                util:rand_in_list(AliveList);
+                util:rand_in_list(AllSeat);
             [Die] ->
                 Die;
             DieList ->
@@ -440,9 +440,9 @@ generate_fayan_turn(SeatId, IsFirst, Turn, State) ->
     InitTrunList = 
         case Turn of
             ?TURN_DOWN ->
-                lists:sort(AliveList);
+                lists:sort(AllSeat);
             _ ->
-                lists:reverse(lists:sort(AliveList))
+                lists:reverse(lists:sort(AllSeat))
         end,
     {PreList, TailList} = util:part_list(Part, InitTrunList),
     TurnList = TailList ++ PreList,
@@ -453,7 +453,7 @@ generate_fayan_turn(SeatId, IsFirst, Turn, State) ->
             0 ->
                 TurnList
         end,
-    ResultList -- maps:get(die, State).
+    ResultList -- maps:get(die, State) -- maps:get(out_seat_list, State).
 
 do_set_die_list(State) ->
     {NvwuSelect, NvwuOp} = maps:get(nvwu, State),

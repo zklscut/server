@@ -83,7 +83,12 @@ index_of_list(Elem, List) ->
 
 part_list(Elem, List) ->
     Index = index_of_list(Elem, List),
-    lists:split(Index, List).
+    case Index of
+        undefined ->
+            {List, []};
+        _ ->
+            lists:split(Index, List)
+    end.
 
 conver_bool_to_int(Bool) ->
     case Bool of
