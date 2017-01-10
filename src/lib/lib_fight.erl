@@ -208,15 +208,15 @@ do_xuanju_jingzhang_op(State) ->
 
 do_jingzhang_op(State) ->
     LastOpData = get_last_op(State),
-    [{SeatId, [IsFirst, Turn]}] = 
+    [{SeatId, [First, Turn]}] = 
         case maps:to_list(LastOpData) of
             [] ->
                 [{0, [0, ?TURN_DOWN]}];
             OpList ->
                 OpList
         end,
-    StateAfterJingzhang = maps:put(jingzhang_op, {IsFirst, Turn}, State),
-    FayanTurn = generate_fayan_turn(SeatId, IsFirst, Turn, State),
+    StateAfterJingzhang = maps:put(jingzhang_op, {First, Turn}, State),
+    FayanTurn = generate_fayan_turn(SeatId, First, Turn, State),
     StateAfterFayanTurn = maps:put(fayan_turn, FayanTurn, StateAfterJingzhang),
     clear_last_op(StateAfterFayanTurn).
 
@@ -284,7 +284,7 @@ do_skill_inner(SeatId, ?DUTY_BAICHI, _, State) ->
 do_skill_inner(_SeatId, ?DUTY_LIEREN, [SelectSeat], State) ->
     StateAfterDie = maps:put(die, maps:get(die, State) ++ [SelectSeat], State),
     StateAfterLieRen = maps:put(lieren_kill, SelectSeat, StateAfterDie),
-    maps:put(out_seat_list, maps:get(out_seat_list, StateAfterLieRen) ++ [SelectSeat], StateAfterLieRen);
+    StateAfterLieRen;
 
 do_skill_inner(SeatId, ?DUTY_BAILANG, [SelectSeat], State) ->
     maps:put(die, maps:get(die, State) ++ [SelectSeat, SeatId], State);
@@ -421,7 +421,7 @@ count_xuanju_result(OpData) ->
             {IsDraw, [{CurSeatId, CurSelectSeat} || {CurSeatId, CurSelectSeat, _} <- CountSelectList], MaxSeatList}
     end.
 
-generate_fayan_turn(SeatId, IsFirst, Turn, State) ->
+generate_fayan_turn(SeatId, _First, Turn, State) ->
     AllSeat = get_all_seat(State),
     Part = 
         case maps:get(die, State) of
@@ -430,30 +430,18 @@ generate_fayan_turn(SeatId, IsFirst, Turn, State) ->
             [Die] ->
                 Die;
             DieList ->
-                case SeatId of
-                    0 ->
-                        hd(lists:sort(DieList));
-                    _ ->
-                        SeatId
-                end
+                SeatId
         end,
-    InitTrunList = 
+    InitTurnList = 
         case Turn of
             ?TURN_DOWN ->
                 lists:sort(AllSeat);
             _ ->
                 lists:reverse(lists:sort(AllSeat))
         end,
-    {PreList, TailList} = util:part_list(Part, InitTrunList),
-    TurnList = TailList ++ PreList,
-    ResultList = 
-        case IsFirst of
-            1 ->
-                [SeatId] ++ (TurnList -- [SeatId]);
-            0 ->
-                TurnList
-        end,
-    ResultList -- maps:get(die, State) -- maps:get(out_seat_list, State).
+    {PreList, TailList} = util:part_list(Part, InitTurnList),
+    TurnList = [Part] ++ ((TailList ++ PreList) -- [Part]),
+    TurnList -- maps:get(die, State) -- maps:get(out_seat_list, State) -- [0].
 
 do_set_die_list(State) ->
     {NvwuSelect, NvwuOp} = maps:get(nvwu, State),

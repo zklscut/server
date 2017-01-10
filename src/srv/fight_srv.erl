@@ -1011,7 +1011,7 @@ notice_toupiao(State) ->
 notice_toupiao(MaxSelectList, State) ->
     AliveList = lib_fight:get_alive_seat_list(State),
     notice_player_op(?OP_TOUPIAO, MaxSelectList, AliveList -- MaxSelectList -- 
-        [maps:get(baichi, State)], State).
+                                                 [maps:get(baichi, State)] -- maps:get(die, State)).
 
 notice_night_result(State) ->
     Send = #m__fight__night_result__s2l{die_list = maps:get(die, State)},
