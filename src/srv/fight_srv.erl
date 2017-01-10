@@ -1017,7 +1017,7 @@ notice_toupiao(MaxSelectList, State) ->
 
 notice_night_result(State) ->
     Send = #m__fight__night_result__s2l{die_list = maps:get(die, State)},
-    lib_fight:send_to_all_player(Send, Stae).
+    lib_fight:send_to_all_player(Send, State).
 
 out_die_player(State) ->
     maps:put(out_seat_list, (maps:get(out_seat_list, State) ++ maps:get(die, State) ++ 
