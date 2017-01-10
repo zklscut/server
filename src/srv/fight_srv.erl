@@ -1013,14 +1013,14 @@ notice_toupiao(MaxSelectList, State) ->
     lager:info("notice toupiao ~p", [{AliveList, MaxSelectList, [maps:get(baichi, State)],
         maps:get(die, State), (((AliveList -- MaxSelectList) -- [maps:get(baichi, State)]) -- maps:get(die, State))}]),
     notice_player_op(?OP_TOUPIAO, MaxSelectList, (((AliveList -- MaxSelectList) -- 
-                                                 [maps:get(baichi, State)]) -- maps:get(die, State)).
+                                                 [maps:get(baichi, State)]) -- maps:get(die, State))).
 
 notice_night_result(State) ->
     Send = #m__fight__night_result__s2l{die_list = maps:get(die, State)},
     lib_fight:send_to_all_player(Send, Stae).
 
 out_die_player(State) ->
-    maps:put(out_seat_list, ((maps:get(out_seat_list, State) ++ maps:get(die, State) ++ 
+    maps:put(out_seat_list, (maps:get(out_seat_list, State) ++ maps:get(die, State) ++ 
                             [maps:get(quzhu, State)]) -- [maps:get(baichi, State)], State).
 
 get_fight_result(State) ->
