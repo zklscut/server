@@ -426,7 +426,7 @@ generate_fayan_turn(SeatId, _First, Turn, State) ->
     Part = 
         case maps:get(die, State) of
             [] ->
-                util:rand_in_list(AllSeat);
+                SeatId;
             [Die] ->
                 Die;
             DieList ->

@@ -839,8 +839,14 @@ do_skill_state_op(PlayerId, Op, OpList, StateName, State) ->
     end.       
 
 do_skill_state_op_over(StateName, State) ->
-    send_event_inner(start, b_fight_state_wait:get(StateName)),
-    {next_state, get_next_game_state(StateName), State#{lieren_kill := 0}}.
+    LierenKill = maps:get(lieren_kill, State),
+    case maps:get(jingzhang, State) == LierenKill andalso LierenKill =/= 0 of
+        true ->
+            {next_state, StateName, maps:put(skill_seat, LierenKill, State)};
+        false ->
+            send_event_inner(start, b_fight_state_wait:get(StateName)),
+            {next_state, get_next_game_state(StateName), State#{lieren_kill := 0}}
+    end.
 
 get_allow_skill(StateName) ->
     case StateName of
