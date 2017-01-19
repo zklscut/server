@@ -429,7 +429,7 @@ generate_fayan_turn(SeatId, _First, Turn, State) ->
                 SeatId;
             [Die] ->
                 Die;
-            DieList ->
+            _ ->
                 SeatId
         end,
     InitTurnList = 
