@@ -350,7 +350,7 @@ state_xuanju_jingzhang(op_over, State) ->
 %% ====================================================================
 %% state_night_skill
 %% ====================================================================
-
+ 
 state_night_skill(start, State) ->
     notice_night_result(State),
     do_skill_state_start(state_night_skill, State);
