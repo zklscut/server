@@ -249,8 +249,8 @@ state_yuyanjia(timeout, State) ->
 state_yuyanjia(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_yuyanjia_op(State),
-    % send_event_inner(start, b_fight_state_wait:get(state_yuyanjia)),
-    send_event_inner(start),
+    send_event_inner(start, b_fight_state_wait:getEnd(state_yuyanjia)),
+    % send_event_inner(start),
     {next_state, get_next_game_state(state_yuyanjia), NewState}.
 
 
