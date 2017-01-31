@@ -1106,7 +1106,6 @@ clear_night_op(State) ->
                 JingZhang
         end,
     State#{wait_op_list => [],   %% 等待中的操作
-           shouwei => 0,         %% 守卫的id
            nvwu => {0, 0},       %% 女巫操作
            langren => 0,         %% 狼人操作
            part_jingzhang => [], %% 參與選舉警長
