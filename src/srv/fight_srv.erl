@@ -1199,7 +1199,7 @@ get_next_game_state(GameState) ->
         state_toupiao_skill ->
             state_toupiao_death;
         state_toupiao_death ->
-            state_day;
+            state_night;
         state_night ->
             state_shouwei
     end.
