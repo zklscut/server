@@ -464,10 +464,10 @@ do_set_die_list(State) ->
                     true ->
                         [];
                     false ->
-                        [ShowWeiDef];
-                end
+                        [ShowWeiDef]
+                end;
             _ ->
-                [ShowWeiDef];
+                [ShowWeiDef]
         end,
     DieList = [Die || Die <- (KillList -- SaveList), Die =/= 0],
     maps:put(die, DieList, State).
