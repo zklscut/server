@@ -955,6 +955,9 @@ notice_player_op(?DUTY_DAOZEI, SeatList, State) ->
 notice_player_op(?DUTY_NVWU, SeatList, State) ->
     notice_player_op(?DUTY_NVWU, [lists:sum(maps:get(nvwu_left, State))] ++ [maps:get(langren, State)], SeatList, State);
 
+notice_player_op(?DUTY_SHOUWEI, SeatList, State) ->
+    notice_player_op(?DUTY_SHOUWEI, maps:get(shouwei, State), SeatList, State);
+
 notice_player_op(?OP_XUANJU_JINGZHANG, SeatList, State) ->
     notice_player_op(?OP_XUANJU_JINGZHANG, maps:get(part_jingzhang, State), SeatList, State);
 
