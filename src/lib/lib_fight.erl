@@ -105,7 +105,7 @@ update_duty(SeatId, PreDuty, Duty, State) ->
 do_daozei_op(State) ->
     LastOpData = get_last_op(State),
     [{SeatId, [Duty]}] = maps:to_list(LastOpData),
-    StateDaoZeiSeat = maps:put(daozei_seat, SeatId, State)
+    StateDaoZeiSeat = maps:put(daozei_seat, SeatId, State),
     StateAfterDuty = update_duty(SeatId, ?DUTY_DAOZEI, Duty, StateDaoZeiSeat),
     clear_last_op(StateAfterDuty).
 
