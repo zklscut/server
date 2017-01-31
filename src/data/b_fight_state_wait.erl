@@ -1,5 +1,7 @@
 -module(b_fight_state_wait).
--export([get/1]).
+-export([get/1,
+         getEnd/1,
+        ]).
 
 get(start) ->
     4000;
@@ -41,5 +43,12 @@ get(state_toupiao_death) ->
     4000;
 get(state_day) ->
     4000;
+get(state_night) ->
+    4000;
 get(_) ->
     4000.
+
+getEnd(state_xuanju_jingzhang) ->
+    4000;
+get(_) ->
+    0.

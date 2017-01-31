@@ -79,6 +79,7 @@
                   baichi => 0,          %% 白痴id
                   lieren_kill => 0,     %% 猎人杀死
                   last_op_data => #{}   %% 上一轮操作的数据, 杀了几号, 投了几号等等
+                  daozei_seat => 0,     %%盗贼的位置
                   }).
 
 -endif.
