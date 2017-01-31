@@ -50,5 +50,7 @@ get(_) ->
 
 getEnd(state_xuanju_jingzhang) ->
     4000;
+getEnd(state_yuyanjia)->
+    4000;
 getEnd(_) ->
     0.
