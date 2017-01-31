@@ -50,5 +50,5 @@ get(_) ->
 
 getEnd(state_xuanju_jingzhang) ->
     4000;
-get(_) ->
+getEnd(_) ->
     0.
