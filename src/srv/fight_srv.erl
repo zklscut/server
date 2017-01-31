@@ -675,7 +675,7 @@ state_night(start, State) ->
 %% ====================================================================
 state_fight_over(start, State) ->
     NewState = out_die_player(State),
-    {IsOver, Winner} = get_fight_result(NewState),
+    {_, Winner} = get_fight_result(NewState),
     send_fight_result(Winner, NewState),
     send_event_inner(start, b_fight_state_wait:get(state_fight_over)),
     {next_state, state_over, NewState}.
