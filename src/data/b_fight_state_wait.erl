@@ -45,6 +45,8 @@ get(state_day) ->
     4000;
 get(state_night) ->
     4000;
+get(state_fight_over) ->
+    4000;
 get(_) ->
     4000.
 

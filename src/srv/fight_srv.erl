@@ -32,6 +32,7 @@
          state_toupiao_death/2,
          state_day/2,
          state_night/2,
+         state_fight_over/2,
          state_over/2]).
 
 -include("fight.hrl").
@@ -257,8 +258,13 @@ state_yuyanjia(op_over, State) ->
 state_day(start, State) ->
     notice_game_status_change(state_day, State),
     send_event_inner(start, b_fight_state_wait:get(state_day)),
-    {next_state, get_next_game_state(state_day), State}.
-
+    % {next_state, get_next_game_state(state_day), State}.
+    case is_over(State) of
+        true ->
+            {next_state, state_fight_over, State};
+        false ->
+            {next_state, get_next_game_state(state_day), State}
+    end.
 
 
 %% ====================================================================
@@ -594,7 +600,7 @@ state_toupiao(op_over, State) ->
                     NextState = 
                         case is_over(NewState) of
                             true ->
-                                state_day;
+                                state_fight_over;
                             false ->
                                 get_next_game_state(state_toupiao)
                         end,
@@ -651,7 +657,6 @@ state_toupiao_death(op_over, State) ->
 %% state_day
 %% ====================================================================
 state_night(start, State) ->
-    notice_game_status_change(state_night, State),
     NewState = out_die_player(State),
     {IsOver, Winner} = get_fight_result(NewState),
     case IsOver of
@@ -660,9 +665,20 @@ state_night(start, State) ->
             send_event_inner(start, b_fight_state_wait:get(state_night)),
             {next_state, state_over, NewState};
         false ->
+            notice_game_status_change(state_night, State),
             send_event_inner(start, b_fight_state_wait:get(state_night)),
             {next_state, get_next_game_state(state_night), clear_night_op(NewState)}
     end.
+
+%% ====================================================================
+%% state_fight_over
+%% ====================================================================
+state_fight_over(start, State)
+    NewState = out_die_player(State),
+    {IsOver, Winner} = get_fight_result(NewState),
+    send_fight_result(Winner, NewState),
+    send_event_inner(start, b_fight_state_wait:get(state_fight_over)),
+    {next_state, state_over, NewState};
 
 %% ====================================================================
 %% state_over
@@ -1245,7 +1261,9 @@ get_state_legal_op(GameState) ->
         state_day ->
             [];
         state_night ->
-            []
+            [];
+        state_fight_over ->
+            state_fight_over
     end.
 
 get_status_id(GameState) ->
@@ -1291,5 +1309,7 @@ get_status_id(GameState) ->
         state_day ->
             19;
         state_night->
-            20
+            20;
+        state_fight_over->
+            21
     end.
