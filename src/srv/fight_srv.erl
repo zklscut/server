@@ -31,6 +31,7 @@
          state_toupiao_skill/2,
          state_toupiao_death/2,
          state_day/2,
+         state_night/2,
          state_over/2]).
 
 -include("fight.hrl").
