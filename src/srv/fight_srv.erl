@@ -483,7 +483,7 @@ state_fayan({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
             NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
             send_event_inner(start),
-            {next_state, state_day, NewState};
+            {next_state, state_night, NewState};
         _ ->
             {next_state, state_fayan, State}
     end;
@@ -494,7 +494,7 @@ state_fayan({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
             NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
             send_event_inner(start),
-            {next_state, state_day, NewState};
+            {next_state, state_night, NewState};
         _ ->
             {next_state, state_fayan, State}
     end;

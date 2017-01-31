@@ -459,8 +459,15 @@ do_set_die_list(State) ->
         case NvwuOp of
             ?NVWU_JIEYAO ->
                 [ShowWeiDef, NvwuSelect];
+            ?NVWU_DUYAO ->
+                case NvwuSelect == ShowWeiDef of
+                    true ->
+                        [];
+                    false ->
+                        [ShowWeiDef];
+                end
             _ ->
-                [ShowWeiDef]
+                [ShowWeiDef];
         end,
     DieList = [Die || Die <- (KillList -- SaveList), Die =/= 0],
     maps:put(die, DieList, State).
