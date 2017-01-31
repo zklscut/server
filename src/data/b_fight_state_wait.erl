@@ -1,6 +1,6 @@
 -module(b_fight_state_wait).
 -export([get/1,
-         getEnd/1,
+         getEnd/1
         ]).
 
 get(start) ->
