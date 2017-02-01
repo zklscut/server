@@ -1114,10 +1114,10 @@ get_fight_result(State) ->
                 ignore
         end,
         lager:info("get_fight_result6 "),
-        %%判断剩余三个人是否是丘比特第三方获胜
+        %%判断剩余三个人是否是丘比特第三方获胜 
         case lib_fight:is_third_part_win(State) of
             true->
-                throw({true, lib_fight:get_third_part_seat()});    
+                throw({true, lib_fight:get_third_part_seat(State)});    
             _->
                 ignore
         end,    
