@@ -331,7 +331,7 @@ init_duty(PlayerList, DutyList, State) ->
 get_duty_list_with_daozei(DutyList) ->
     case lists:member(?DUTY_DAOZEI, DutyList) of
         true ->
-            generate_daozei_duty_list(DutyList ++ [?DUTY_PINGMIN]);
+            generate_daozei_duty_list(DutyList ++ [?DUTY_PINGMIN,?DUTY_PINGMIN]);
         false ->
             {DutyList, []}
     end.
@@ -345,12 +345,19 @@ generate_daozei_duty_list(DutyIdList, []) ->
 generate_daozei_duty_list(DutyIdList, [?DUTY_LANGREN, ?DUTY_LANGREN]) ->
     generate_daozei_duty_list(DutyIdList, util:rand_in_list(DutyIdList, 2));    
 
+generate_daozei_duty_list(DutyIdList, [?DUTY_BAILANG, ?DUTY_LANGREN]) ->
+    generate_daozei_duty_list(DutyIdList, util:rand_in_list(DutyIdList, 2)); 
+
+generate_daozei_duty_list(DutyIdList, [?DUTY_LANGREN, ?DUTY_BAILANG]) ->
+    generate_daozei_duty_list(DutyIdList, util:rand_in_list(DutyIdList, 2)); 
+
 generate_daozei_duty_list(DutyIdList, RandList) ->
-    FunCheckSpecial = 
-        fun(Duty) ->
-            lists:member(Duty, ?DUTY_LIST_SPECIAL)
-        end,
-    case lists:any(FunCheckSpecial, RandList) of
+    % FunCheckSpecial = 
+    %     fun(Duty) ->
+    %         lists:member(Duty, ?DUTY_LIST_SPECIAL)
+    %     end,
+    % case lists:any(FunCheckSpecial, RandList) of
+    case lists:member(?DUTY_DAOZEI, RandList) of
         true ->
             generate_daozei_duty_list(DutyIdList, util:rand_in_list(DutyIdList, 2));
         false ->
