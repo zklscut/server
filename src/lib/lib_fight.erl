@@ -94,7 +94,7 @@ is_third_part_win(State) ->
     Alivelen = length(Alivelist),
     case ThirdPartListLen == 3 of
         true ->
-            case Alivelen <= 3 of
+            case Alivelen =< 3 of
                 true ->
                     lists:all(fun(SeatId) lists:member(SeatId, ThirdPartList) end, Alivelist);
                 false ->
@@ -132,7 +132,7 @@ get_haoren_qiubite_seat(State)->
             [Lover1, Lover2] = maps:get(lover, State),
             LoverDuty1 = get_duty_by_seat(Lover1, State),
             LoverDuty2 = get_duty_by_seat(Lover2, State),
-            case PlayerNum <= 12 of
+            case PlayerNum =< 12 of
                 true->
                     [get_duty_by_seat(?DUTY_QIUBITE, State)];
                 false->
@@ -156,7 +156,7 @@ get_third_part_qiubite_seat(State)->
             [Lover1, Lover2] = maps:get(lover, State),
             LoverDuty1 = get_duty_by_seat(Lover1, State),
             LoverDuty2 = get_duty_by_seat(Lover2, State),
-            case PlayerNum <= 12 of
+            case PlayerNum =< 12 of
                 true->
                     [];
                 false->
