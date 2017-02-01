@@ -37,6 +37,7 @@
          get_third_part_seat/1,
          is_duty_exist/2,
          get_shenmin_seat/1,
+         enable_third_part_qiubite/1,
          do_skill/4]).
 
 -include("fight.hrl").
