@@ -167,7 +167,7 @@ get_third_part_qiubite_seat(State)->
                         false->
                             case lists:member(LoverDuty1, LangRenList) orelse lists:member(LoverDuty2, LangRenList) of
                                 true->
-                                    [get_duty_by_seat(?DUTY_QIUBITE, State)];;
+                                    [get_duty_by_seat(?DUTY_QIUBITE, State)];
                                 false->
                                     []
                             end
