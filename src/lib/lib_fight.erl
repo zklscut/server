@@ -35,6 +35,7 @@
          get_haoren_qiubite_seat/1,
          get_third_part_qiubite_seat/1,
          get_third_part_seat/1,
+         is_duty_exist/1,
          do_skill/4]).
 
 -include("fight.hrl").
