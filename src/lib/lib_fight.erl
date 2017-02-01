@@ -102,7 +102,7 @@ get_shenmin_seat(State)->
             false->
                 ?DUTY_LIST_SHENMIN
         end,
-    lists:flatten([lib_fight:get_duty_seat(DutyId, State) || DutyId <- ShenMinList]),
+    lists:flatten([lib_fight:get_duty_seat(DutyId, State) || DutyId <- ShenMinList]).
 
 %判断是否第三方获胜
 is_third_part_win(State) ->
