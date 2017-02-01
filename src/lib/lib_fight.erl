@@ -295,11 +295,16 @@ do_yuyanjia_op(State) ->
         [] ->
             clear_last_op(State);
         [{SeatId, [SelectSeatId]}]  ->
-            SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId, State),
-    
-            Send = #m__fight__notice_yuyanjia_result__s2l{seat_id = SelectSeatId,
-                                                          duty = SelectDuty},
-            send_to_seat(Send, SeatId, State),
+            case SelectSeatId == 0 of
+                true ->
+                    ignore;
+                false ->    
+                    SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId, State),
+            
+                    Send = #m__fight__notice_yuyanjia_result__s2l{seat_id = SelectSeatId,
+                                                                  duty = SelectDuty},
+                    send_to_seat(Send, SeatId, State)
+            end
             clear_last_op(State)
     end.
 
