@@ -36,6 +36,7 @@
          get_third_part_qiubite_seat/1,
          get_third_part_seat/1,
          is_duty_exist/2,
+         get_shenmin_seat/1,
          do_skill/4]).
 
 -include("fight.hrl").
@@ -90,6 +91,18 @@ get_all_seat(State) ->
 
 get_alive_seat_list(State) ->
     filter_out_seat(get_all_seat(State), State).
+
+%获得神名列表
+get_shenmin_seat(State)->
+    PlayerNum = maps:get(player_num, State),
+    ShenMinList = 
+        case PlayerNum =< 12 of
+            true->
+                ?DUTY_LIST_SHENMIN ++ [?DUTY_QIUBITE];
+            false->
+                ?DUTY_LIST_SHENMIN
+        end,
+    lists:flatten([lib_fight:get_duty_seat(DutyId, State) || DutyId <- ShenMinList]),
 
 %判断是否第三方获胜
 is_third_part_win(State) ->
