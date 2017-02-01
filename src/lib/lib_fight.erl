@@ -97,7 +97,7 @@ is_third_part_win(State) ->
         true ->
             case Alivelen =< 3 of
                 true ->
-                    lists:all(fun(SeatId) lists:member(SeatId, ThirdPartList) end, Alivelist);
+                    lists:all(fun(SeatId)-> lists:member(SeatId, ThirdPartList) end, Alivelist);
                 false ->
                     false
             end;
