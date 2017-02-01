@@ -1080,12 +1080,15 @@ out_die_player(State) ->
                             [maps:get(quzhu, State)]) -- [maps:get(baichi, State)], State).
 
 get_fight_result(State) ->
+    lager:info("get_fight_result1 "),
     LangrenAlive = lib_fight:get_duty_seat(?DUTY_LANGREN, State),
     ShenMinAlive = 
         lists:flatten([lib_fight:get_duty_seat(DutyId, State) || DutyId <- ?DUTY_LIST_SHENMIN]),
     AllLangren = lib_fight:get_duty_seat(false, ?DUTY_LANGREN, State),
     AllSeat = lib_fight:get_all_seat(State),
+    lager:info("get_fight_result2 "),
     try
+        lager:info("get_fight_result3 "),
         case LangrenAlive of
             [] ->
                 LangRenQiubite = lib_fight:get_langren_qiubite_seat(State),
@@ -1094,7 +1097,7 @@ get_fight_result(State) ->
             _ ->
                 ignore
         end,
-
+        lager:info("get_fight_result4 "),
         case ShenMinAlive of
             [] ->
                 LangrenQiubite = lib_fight:get_langren_qiubite_seat(State),
@@ -1102,7 +1105,7 @@ get_fight_result(State) ->
             _ ->
                 ignore
         end,
-
+        lager:info("get_fight_result5 "),
         case lib_fight:get_duty_seat(?DUTY_PINGMIN, State) of
             [] ->
                 LangrenQiubite1 = lib_fight:get_langren_qiubite_seat(State),
@@ -1110,7 +1113,7 @@ get_fight_result(State) ->
             _ ->
                 ignore
         end,
-
+        lager:info("get_fight_result6 "),
         %%判断剩余三个人是否是丘比特第三方获胜
         case lib_fight:is_third_part_win(State) of
             true->
@@ -1118,10 +1121,11 @@ get_fight_result(State) ->
             _->
                 ignore
         end,    
-
+        lager:info("get_fight_result7 "),
         {false, []}
     catch 
         throw:Result ->
+            lager:info("get_fight_result8 "),
             Result
     end.
 
