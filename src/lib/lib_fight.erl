@@ -211,7 +211,7 @@ get_third_part_qiubite_seat(State)->
 get_langren_hunxuer_seat(State)->
     Hunxuer = maps:get(hunxuer, State),
     LangRenList = [?DUTY_LANGREN, ?DUTY_BAILANG],
-    HunxuerDuty = get_duty_by_seat(Hunxuer, State),
+    HunxuerDuty = get_duty_by_seat(false, Hunxuer, State),
     case lists:member(HunxuerDuty, LangRenList) of
         true->
             [Hunxuer];
@@ -222,7 +222,7 @@ get_langren_hunxuer_seat(State)->
 get_haoren_hunxuer_seat(State)->
     Hunxuer = maps:get(hunxuer, State),
     LangRenList = [?DUTY_LANGREN, ?DUTY_BAILANG],
-    HunxuerDuty = get_duty_by_seat(Hunxuer, State),
+    HunxuerDuty = get_duty_by_seat(false, Hunxuer, State),
     case lists:member(HunxuerDuty, LangRenList) of
         true->
             [];
@@ -318,7 +318,7 @@ do_shouwei_op(State) ->
 do_hunxuer_op(State) ->
     LastOpData = get_last_op(State),
     [{SeatId, [SelectSeatId]}] = maps:to_list(LastOpData),
-    SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId, State),
+    % SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId, State),
     % HunxueerOp =
     %     case SelectDuty of
     %         ?DUTY_LANGREN ->
