@@ -304,7 +304,7 @@ do_yuyanjia_op(State) ->
                     Send = #m__fight__notice_yuyanjia_result__s2l{seat_id = SelectSeatId,
                                                                   duty = SelectDuty},
                     send_to_seat(Send, SeatId, State)
-            end
+            end,
             clear_last_op(State)
     end.
 
