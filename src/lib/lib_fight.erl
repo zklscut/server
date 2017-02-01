@@ -38,6 +38,8 @@
          is_duty_exist/2,
          get_shenmin_seat/1,
          enable_third_part_qiubite/1,
+         get_langren_hunxuer_seat/1,
+         get_haoren_hunxuer_seat/1,
          do_skill/4]).
 
 -include("fight.hrl").
@@ -205,6 +207,29 @@ get_third_part_qiubite_seat(State)->
             []
     end.
 
+%
+get_langren_hunxuer_seat(State)->
+    Hunxuer = maps:get(hunxuer, State),
+    LangRenList = [?DUTY_LANGREN, ?DUTY_BAILANG],
+    HunxuerDuty = get_duty_by_seat(Hunxuer, State),
+    case lists:member(HunxuerDuty, LangRenList) of
+        true->
+            [Hunxuer];
+        false->
+            []
+    end.
+
+get_haoren_hunxuer_seat(State)->
+    Hunxuer = maps:get(hunxuer, State),
+    LangRenList = [?DUTY_LANGREN, ?DUTY_BAILANG],
+    HunxuerDuty = get_duty_by_seat(Hunxuer, State),
+    case lists:member(HunxuerDuty, LangRenList) of
+        true->
+            [];
+        false->
+            [Hunxuer]
+    end.
+
 %是否可作为第三方丘比特
 enable_third_part_qiubite(State)->
     lager:info("enable_third_part_qiubite1 "),
@@ -294,14 +319,14 @@ do_hunxuer_op(State) ->
     LastOpData = get_last_op(State),
     [{SeatId, [SelectSeatId]}] = maps:to_list(LastOpData),
     SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId, State),
-    HunxueerOp =
-        case SelectDuty of
-            ?DUTY_LANGREN ->
-                1;
-            _ ->
-                0
-        end,                
-    StateAfterHunxueer = maps:put(hunxuer, HunxueerOp, State),
+    % HunxueerOp =
+    %     case SelectDuty of
+    %         ?DUTY_LANGREN ->
+    %             1;
+    %         _ ->
+    %             0
+    %     end,                
+    StateAfterHunxueer = maps:put(hunxuer, SelectSeatId, State),
 
     Send = #m__fight__notice_hunxuer__s2l{select_seat = SelectSeatId},
     send_to_seat(Send, SeatId, State),

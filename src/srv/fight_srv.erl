@@ -1093,7 +1093,8 @@ get_fight_result(State) ->
             [] ->
                 LangRenQiubite = lib_fight:get_langren_qiubite_seat(State),
                 ThirdPartQiubite = lib_fight:get_third_part_qiubite_seat(State),
-                throw({true, AllSeat -- AllLangren -- LangRenQiubite -- ThirdPartQiubite});
+                LangRenHunxuer = lib_fight:get_langren_hunxuer_seat(State),
+                throw({true, AllSeat -- AllLangren -- LangRenQiubite -- ThirdPartQiubite -- LangRenHunxuer});
             _ ->
                 ignore
         end,
@@ -1109,7 +1110,8 @@ get_fight_result(State) ->
         case ShenMinAlive of
             [] ->
                 LangrenQiubite = lib_fight:get_langren_qiubite_seat(State),
-                throw({true, AllLangren ++ LangrenQiubite});
+                LangRenHunxuer = lib_fight:get_langren_hunxuer_seat(State),
+                throw({true, AllLangren ++ LangrenQiubite ++ LangRenHunxuer});
             _ ->
                 ignore
         end,
@@ -1117,7 +1119,8 @@ get_fight_result(State) ->
         case lib_fight:get_duty_seat(?DUTY_PINGMIN, State) of
             [] ->
                 LangrenQiubite1 = lib_fight:get_langren_qiubite_seat(State),
-                throw({true, AllLangren ++ LangrenQiubite1});
+                LangRenHunxuer = lib_fight:get_langren_hunxuer_seat(State),
+                throw({true, AllLangren ++ LangrenQiubite1 ++ LangRenHunxuer});
             _ ->
                 ignore
         end,
