@@ -111,7 +111,7 @@ is_third_part_win(State) ->
 
 %获取狼人阵营丘比特(大于12人并且链子是两个狼人)
 get_langren_qiubite_seat(State)->
-    case is_duty_exist(?DUTY_QIUBITE) of
+    case is_duty_exist(?DUTY_QIUBITE, State) of
         true->
             PlayerNum = maps:get(player_num, State),
             LangRenList = [?DUTY_LANGREN, ?DUTY_BAILANG],
@@ -130,7 +130,7 @@ get_langren_qiubite_seat(State)->
 
 %获取好人阵营丘比特(小于12人并且链子是两个好人)
 get_haoren_qiubite_seat(State)->
-    case is_duty_exist(?DUTY_QIUBITE) of
+    case is_duty_exist(?DUTY_QIUBITE, State) of
         true->
             PlayerNum = maps:get(player_num, State),
             LangRenList = [?DUTY_LANGREN, ?DUTY_BAILANG],
@@ -154,7 +154,7 @@ get_haoren_qiubite_seat(State)->
 
 %获取第三方丘比特阵营(大于12人并且链子是一个好人一个坏人)
 get_third_part_qiubite_seat(State)->
-    case is_duty_exist(?DUTY_QIUBITE) of
+    case is_duty_exist(?DUTY_QIUBITE, State) of
         true->
             PlayerNum = maps:get(player_num, State),
             LangRenList = [?DUTY_LANGREN, ?DUTY_BAILANG],
