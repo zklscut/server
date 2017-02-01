@@ -140,7 +140,7 @@ get_haoren_qiubite_seat(State)->
                         true->
                             [];
                         false->
-                            [get_duty_by_seat(?DUTY_QIUBITE, State)];
+                            [get_duty_by_seat(?DUTY_QIUBITE, State)]
                     end
             end;
         false->
@@ -168,7 +168,7 @@ get_third_part_qiubite_seat(State)->
                                 true->
                                     [get_duty_by_seat(?DUTY_QIUBITE, State)];;
                                 false->
-                                    [];
+                                    []
                             end
                     end
             end;
