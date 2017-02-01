@@ -484,7 +484,7 @@ do_set_die_list(State) ->
         case LoverLen == 2 of
             true ->
                 [Lover1,Lover2] = Lover,
-                 case lists:member(Lover1, DieList) orelse lists:member(Lover2, DieList) of
+                case lists:member(Lover1, DieList) orelse lists:member(Lover2, DieList) of
                     true ->
                         DieList1 = 
                         case lists:member(Lover1, DieList) of
@@ -506,6 +506,4 @@ do_set_die_list(State) ->
             false ->
                 DieList
         end,
-    
-    maps:put(lover, [Seat1, Seat2], State)
-    maps:put(die, DieList, State).
+    maps:put(die, DieList3, State).
