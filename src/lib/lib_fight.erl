@@ -237,11 +237,11 @@ enable_third_part_qiubite(State)->
 %取得第三方位置列表
 get_third_part_seat(State)->
     Lover = maps:get(lover, State),
-    SeatIdList = get_duty_seat(?DUTY_QIUBITE, State),
+    SeatIdList = get_duty_seat(false, ?DUTY_QIUBITE, State),
     Lover ++ SeatIdList.
 
 is_duty_exist(Duty, State) ->
-    SeatIdList = get_duty_seat(Duty, State),
+    SeatIdList = get_duty_seat(false, Duty, State),
     case SeatIdList of
         [] ->
             false;
