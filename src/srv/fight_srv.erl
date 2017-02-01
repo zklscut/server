@@ -1105,8 +1105,8 @@ get_fight_result(State) ->
 
         case lib_fight:get_duty_seat(?DUTY_PINGMIN, State) of
             [] ->
-                LangrenQiubite = lib_fight:get_langren_qiubite_seat(State),
-                throw({true, AllLangren ++ LangrenQiubite});
+                LangrenQiubite1 = lib_fight:get_langren_qiubite_seat(State),
+                throw({true, AllLangren ++ LangrenQiubite1});
             _ ->
                 ignore
         end,
