@@ -111,20 +111,25 @@ is_third_part_win(State) ->
     ThirdPartListLen = length(ThirdPartList),
     Alivelist = get_alive_seat_list(State),
     Alivelen = length(Alivelist),
+    lager:info("is_third_part_win1 "),
     case enable_third_part_qiubite(State) of
         true->
             case ThirdPartListLen == 3 of
                 true ->
                     case Alivelen =< 3 of
                         true ->
+                            lager:info("is_third_part_win2 "),
                             lists:all(fun(SeatId)-> lists:member(SeatId, ThirdPartList) end, Alivelist);
                         false ->
+                            lager:info("is_third_part_win3 "),
                             false
                     end;
                 false ->
+                    lager:info("is_third_part_win4 "),
                     false
             end;
         false->
+            lager:info("is_third_part_win5 "),
             false
     end.
 
