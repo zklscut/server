@@ -68,9 +68,13 @@ get_duty_by_seat(SeatId, State) ->
 
 get_duty_seat(?DUTY_LANGREN, State) ->
     get_duty_seat(true, ?DUTY_LANGREN, State) ++ get_duty_seat(true, ?DUTY_BAILANG, State);
+
 get_duty_seat(Duty, State) ->
     get_duty_seat(true, Duty, State).
-    
+
+get_duty_seat(false, ?DUTY_LANGREN, State) ->
+    get_duty_seat(false, ?DUTY_LANGREN, State) ++ get_duty_seat(false, ?DUTY_BAILANG, State);
+
 get_duty_seat(IsAlive, Duty, State) ->
     DutySeatMap = maps:get(duty_seat_map, State),
     AllDutySeat = maps:get(Duty, DutySeatMap, []),

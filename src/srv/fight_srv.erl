@@ -1088,9 +1088,9 @@ get_fight_result(State) ->
     try
         case LangrenAlive of
             [] ->
-                HaoRenQiubite = lib_fight:get_langren_qiubite_seat(State)
+                LangRenQiubite = lib_fight:get_langren_qiubite_seat(State)
                 ThirdPartQiubite = lib_fight:get_third_part_qiubite_seat(State)
-                throw({true, AllSeat -- AllLangren -- HaoRenQiubite -- ThirdPartQiubite});
+                throw({true, AllSeat -- AllLangren -- LangRenQiubite -- ThirdPartQiubite});
             _ ->
                 ignore
         end,
