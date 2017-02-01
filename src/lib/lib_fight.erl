@@ -219,7 +219,7 @@ enable_third_part_qiubite(State)->
                         false->
                             false
                     end
-            end
+            end;
         false->
             false
     end.
