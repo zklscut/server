@@ -477,4 +477,35 @@ do_set_die_list(State) ->
                 [ShowWeiDef]
         end,
     DieList = [Die || Die <- (KillList -- SaveList), Die =/= 0],
+    %情侣需要一起阵亡
+    Lover = maps:get(lover, State),
+    LoverLen = length(Lover),
+    DieList3 = 
+        case LoverLen == 2 of
+            true ->
+                [Lover1,Lover2] = Lover,
+                 case lists:member(Lover1, DieList) orelse lists:member(Lover2, DieList) of
+                    true ->
+                        DieList1 = 
+                        case lists:member(Lover1, DieList) of
+                            true ->
+                                DieList;
+                            false ->
+                                DieList ++ [Lover1]
+                        end,
+                        DieList2 = 
+                        case lists:member(Lover2, DieList1) of
+                            true ->
+                                DieList1;
+                            false ->
+                                DieList1 ++ [Lover2]
+                        end;
+                    false ->
+                        DieList
+                end;
+            false ->
+                DieList
+        end,
+    
+    maps:put(lover, [Seat1, Seat2], State)
     maps:put(die, DieList, State).
