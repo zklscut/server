@@ -505,4 +505,4 @@ do_set_die_list(State) ->
             false ->
                 DieList
         end,
-    maps:put(die, DieList3, State).
+    maps:put(die, DieList2, State).
