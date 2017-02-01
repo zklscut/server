@@ -78,8 +78,9 @@
                   skill_seat => 0,      %% 发动技能列表
                   baichi => 0,          %% 白痴id
                   lieren_kill => 0,     %% 猎人杀死
-                  last_op_data => #{},   %% 上一轮操作的数据, 杀了几号, 投了几号等等
-                  daozei_seat => 0     %%盗贼的位置
+                  last_op_data => #{},  %% 上一轮操作的数据, 杀了几号, 投了几号等等
+                  daozei_seat => 0,     %%盗贼的位置
+                  player_num => 0       %%玩家总数量
                   }).
 
 -endif.

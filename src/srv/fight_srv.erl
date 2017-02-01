@@ -1088,24 +1088,37 @@ get_fight_result(State) ->
     try
         case LangrenAlive of
             [] ->
-                throw({true, AllSeat -- AllLangren});
+                HaoRenQiubite = lib_fight:get_langren_qiubite_seat(State)
+                ThirdPartQiubite = lib_fight:get_third_part_qiubite_seat(State)
+                throw({true, AllSeat -- AllLangren -- HaoRenQiubite -- ThirdPartQiubite});
             _ ->
                 ignore
         end,
 
         case ShenMinAlive of
             [] ->
-                throw({true, AllLangren});
+                LangrenQiubite = lib_fight:get_langren_qiubite_seat(State)
+                throw({true, AllLangren ++ LangrenQiubite});
             _ ->
                 ignore
         end,
 
         case lib_fight:get_duty_seat(?DUTY_PINGMIN, State) of
             [] ->
-                throw({true, AllLangren});
+                LangrenQiubite = lib_fight:get_langren_qiubite_seat(State)
+                throw({true, AllLangren ++ LangrenQiubite});
             _ ->
                 ignore
         end,
+
+        %%判断剩余三个人是否是丘比特第三方获胜
+        case lib_fight:is_third_part_win(State) of
+            true->
+                throw({true, lib_fight:get_third_part_seat()});    
+            _->
+                ignore
+        end,    
+
         {false, []}
     catch 
         throw:Result ->

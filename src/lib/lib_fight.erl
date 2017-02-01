@@ -30,6 +30,11 @@
          do_send_fayan/3,
          do_guipiao_op/1,
          do_toupiao_op/1,
+         is_third_part_win/1,
+         get_langren_qiubite_seat/1,
+         get_haoren_qiubite_seat/1,
+         get_third_part_qiubite_seat/1,
+         get_third_part_seat/1,
          do_skill/4]).
 
 -include("fight.hrl").
@@ -43,7 +48,7 @@ init(RoomId, PlayerList, DutyList, State) ->
     State1 = State#{room_id := RoomId},
     State2 = init_seat(PlayerList, State1),
     State3 = init_duty(PlayerList, DutyList, State2),
-    State3.
+    State3#{player_num := length(DutyList)}.
 
 send_to_all_player(Send, State) ->
     [net_send:send(Send, PlayerId) || PlayerId <- maps:keys(maps:get(player_seat_map, State))].
@@ -80,6 +85,111 @@ get_all_seat(State) ->
 
 get_alive_seat_list(State) ->
     filter_out_seat(get_all_seat(State), State).
+
+%判断是否第三方获胜
+is_third_part_win(State) ->
+    ThirdPartList = get_third_part_seat(State),
+    ThirdPartListLen = length(ThirdPartList),
+    Alivelist = get_alive_seat_list(State),
+    Alivelen = length(Alivelist),
+    case ThirdPartListLen == 3 of
+        true ->
+            case Alivelen <= 3 of
+                true ->
+                    lists:all(fun(SeatId) lists:member(SeatId, ThirdPartList) end, Alivelist);
+                false ->
+                    false
+            end;
+        false ->
+            false
+    end.
+
+%获取狼人阵营丘比特(大于12人并且链子是两个狼人)
+get_langren_qiubite_seat(State)->
+    case is_duty_exist(?DUTY_QIUBITE) of
+        true->
+            PlayerNum = maps:get(player_num, State),
+            LangRenList = [?DUTY_LANGREN, ?DUTY_BAILANG],
+            [Lover1, Lover2] = maps:get(lover, State),
+            LoverDuty1 = get_duty_by_seat(Lover1, State),
+            LoverDuty2 = get_duty_by_seat(Lover2, State),
+            case PlayerNum > 12 andalso lists:member(LoverDuty1, LangRenList) andalso lists:member(LoverDuty2, LangRenList) of
+                true->
+                    [get_duty_by_seat(?DUTY_QIUBITE, State)];
+                false->
+                    []
+            end;
+        false->
+            []
+    end.
+
+%获取好人阵营丘比特(小于12人并且链子是两个好人)
+get_haoren_qiubite_seat(State)->
+    case is_duty_exist(?DUTY_QIUBITE) of
+        true->
+            PlayerNum = maps:get(player_num, State),
+            LangRenList = [?DUTY_LANGREN, ?DUTY_BAILANG],
+            [Lover1, Lover2] = maps:get(lover, State),
+            LoverDuty1 = get_duty_by_seat(Lover1, State),
+            LoverDuty2 = get_duty_by_seat(Lover2, State),
+            case PlayerNum <= 12 of
+                true->
+                    [get_duty_by_seat(?DUTY_QIUBITE, State)];
+                false->
+                    case lists:member(LoverDuty1, LangRenList) orelse lists:member(LoverDuty2, LangRenList) of
+                        true->
+                            [];
+                        false->
+                            [get_duty_by_seat(?DUTY_QIUBITE, State)];
+                    end
+            end;
+        false->
+            []
+    end.
+
+%获取第三方丘比特阵营(大于12人并且链子是一个好人一个坏人)
+get_third_part_qiubite_seat(State)->
+    case is_duty_exist(?DUTY_QIUBITE) of
+        true->
+            PlayerNum = maps:get(player_num, State),
+            LangRenList = [?DUTY_LANGREN, ?DUTY_BAILANG],
+            [Lover1, Lover2] = maps:get(lover, State),
+            LoverDuty1 = get_duty_by_seat(Lover1, State),
+            LoverDuty2 = get_duty_by_seat(Lover2, State),
+            case PlayerNum <= 12 of
+                true->
+                    [];
+                false->
+                    case lists:member(LoverDuty1, LangRenList) andalso lists:member(LoverDuty2, LangRenList) of
+                        true->
+                            [];
+                        false->
+                            case lists:member(LoverDuty1, LangRenList) orelse lists:member(LoverDuty2, LangRenList) of
+                                true->
+                                    [get_duty_by_seat(?DUTY_QIUBITE, State)];;
+                                false->
+                                    [];
+                            end
+                    end
+            end;
+        false->
+            []
+    end.
+
+%取得第三方位置列表
+get_third_part_seat(State)->
+    Lover = maps:get(lover, State),
+    SeatIdList = get_duty_seat(?DUTY_QIUBITE, State),
+    Lover ++ SeatIdList.
+
+is_duty_exist(Duty, State) ->
+    SeatIdList = get_duty_seat(?Duty, State),
+    case SeatIdList of
+        [] ->
+            false;
+        _ ->
+            true
+    end.
 
 get_lieren_kill(State) ->
     case maps:get(lieren_kill, State) of
