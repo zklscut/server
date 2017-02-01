@@ -110,15 +110,20 @@ is_third_part_win(State) ->
     ThirdPartListLen = length(ThirdPartList),
     Alivelist = get_alive_seat_list(State),
     Alivelen = length(Alivelist),
-    case ThirdPartListLen == 3 of
-        true ->
-            case Alivelen =< 3 of
+    case enable_third_part_qiubite(State) of
+        true->
+            case ThirdPartListLen == 3 of
                 true ->
-                    lists:all(fun(SeatId)-> lists:member(SeatId, ThirdPartList) end, Alivelist);
+                    case Alivelen =< 3 of
+                        true ->
+                            lists:all(fun(SeatId)-> lists:member(SeatId, ThirdPartList) end, Alivelist);
+                        false ->
+                            false
+                    end;
                 false ->
                     false
             end;
-        false ->
+        false->
             false
     end.
 
@@ -192,6 +197,30 @@ get_third_part_qiubite_seat(State)->
             end;
         false->
             []
+    end.
+
+%是否可作为第三方丘比特
+enable_third_part_qiubite(State)->
+    case is_duty_exist(?DUTY_QIUBITE, State) of
+        true->
+            PlayerNum = maps:get(player_num, State),
+            LangRenList = [?DUTY_LANGREN, ?DUTY_BAILANG],
+            [Lover1, Lover2] = maps:get(lover, State),
+            LoverDuty1 = get_duty_by_seat(Lover1, State),
+            LoverDuty2 = get_duty_by_seat(Lover2, State),
+            case lists:member(LoverDuty1, LangRenList) andalso lists:member(LoverDuty2, LangRenList) of
+                true->
+                    false;
+                false->
+                    case lists:member(LoverDuty1, LangRenList) orelse lists:member(LoverDuty2, LangRenList) of
+                        true->
+                            true;
+                        false->
+                            false
+                    end
+            end
+        false->
+            false
     end.
 
 %取得第三方位置列表

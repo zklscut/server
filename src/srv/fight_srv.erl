@@ -1097,6 +1097,14 @@ get_fight_result(State) ->
             _ ->
                 ignore
         end,
+
+        case lib_fight:is_third_part_win(State) of
+            true->
+                throw({true, lib_fight:get_third_part_seat(State)});    
+            _->
+                ignore
+        end, 
+
         lager:info("get_fight_result4 "),
         case ShenMinAlive of
             [] ->
@@ -1115,12 +1123,7 @@ get_fight_result(State) ->
         end,
         lager:info("get_fight_result6 "),
         %%判断剩余三个人是否是丘比特第三方获胜 
-        case lib_fight:is_third_part_win(State) of
-            true->
-                throw({true, lib_fight:get_third_part_seat(State)});    
-            _->
-                ignore
-        end,    
+           
         lager:info("get_fight_result7 "),
         {false, []}
     catch 
