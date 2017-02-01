@@ -72,7 +72,7 @@ get_duty_seat(?DUTY_LANGREN, State) ->
 get_duty_seat(Duty, State) ->
     get_duty_seat(true, Duty, State).
 
-get_duty_seat(false, ?DUTY_LANGREN, State) ->
+get_duty_seat(?DUTY_LANGREN, false, State) ->
     get_duty_seat(false, ?DUTY_LANGREN, State) ++ get_duty_seat(false, ?DUTY_BAILANG, State);
 
 get_duty_seat(IsAlive, Duty, State) ->

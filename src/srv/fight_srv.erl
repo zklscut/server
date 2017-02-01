@@ -1084,7 +1084,7 @@ get_fight_result(State) ->
     LangrenAlive = lib_fight:get_duty_seat(?DUTY_LANGREN, State),
     ShenMinAlive = 
         lists:flatten([lib_fight:get_duty_seat(DutyId, State) || DutyId <- ?DUTY_LIST_SHENMIN]),
-    AllLangren = lib_fight:get_duty_seat(false, ?DUTY_LANGREN, State),
+    AllLangren = lib_fight:get_duty_seat(?DUTY_LANGREN, false, State),
     AllSeat = lib_fight:get_all_seat(State),
     lager:info("get_fight_result2 "),
     try
