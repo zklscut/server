@@ -1082,7 +1082,7 @@ out_die_player(State) ->
 get_fight_result(State) ->
     lager:info("get_fight_result1 "),
     LangrenAlive = lib_fight:get_duty_seat(?DUTY_LANGREN, State),
-    ShenMinAlive = lib_fight:get_shenmin_seat(state),
+    ShenMinAlive = lib_fight:get_shenmin_seat(State),
         % lists:flatten([lib_fight:get_duty_seat(DutyId, State) || DutyId <- ?DUTY_LIST_SHENMIN]),
     AllLangren = lib_fight:get_duty_seat(?DUTY_LANGREN, false, State),
     AllSeat = lib_fight:get_all_seat(State),
