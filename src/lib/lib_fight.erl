@@ -480,7 +480,7 @@ do_set_die_list(State) ->
     %情侣需要一起阵亡
     Lover = maps:get(lover, State),
     LoverLen = length(Lover),
-    DieList3 = 
+    DieList2 = 
         case LoverLen == 2 of
             true ->
                 [Lover1,Lover2] = Lover,
@@ -493,7 +493,6 @@ do_set_die_list(State) ->
                             false ->
                                 DieList ++ [Lover1]
                         end,
-                        DieList2 = 
                         case lists:member(Lover2, DieList1) of
                             true ->
                                 DieList1;
