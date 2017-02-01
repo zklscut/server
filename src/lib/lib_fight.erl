@@ -188,7 +188,7 @@ get_third_part_seat(State)->
     Lover ++ SeatIdList.
 
 is_duty_exist(Duty, State) ->
-    SeatIdList = get_duty_seat(?Duty, State),
+    SeatIdList = get_duty_seat(Duty, State),
     case SeatIdList of
         [] ->
             false;
