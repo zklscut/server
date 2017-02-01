@@ -202,25 +202,30 @@ get_third_part_qiubite_seat(State)->
 
 %是否可作为第三方丘比特
 enable_third_part_qiubite(State)->
+    lager:info("enable_third_part_qiubite1 "),
     case is_duty_exist(?DUTY_QIUBITE, State) of
         true->
-            PlayerNum = maps:get(player_num, State),
+            lager:info("enable_third_part_qiubite2 "),
             LangRenList = [?DUTY_LANGREN, ?DUTY_BAILANG],
             [Lover1, Lover2] = maps:get(lover, State),
             LoverDuty1 = get_duty_by_seat(Lover1, State),
             LoverDuty2 = get_duty_by_seat(Lover2, State),
             case lists:member(LoverDuty1, LangRenList) andalso lists:member(LoverDuty2, LangRenList) of
                 true->
+                    lager:info("enable_third_part_qiubite3 "),
                     false;
                 false->
                     case lists:member(LoverDuty1, LangRenList) orelse lists:member(LoverDuty2, LangRenList) of
                         true->
+                            lager:info("enable_third_part_qiubite4 "),
                             true;
                         false->
+                            lager:info("enable_third_part_qiubite5 "),
                             false
                     end
             end;
         false->
+            lager:info("enable_third_part_qiubite6 "),
             false
     end.
 
