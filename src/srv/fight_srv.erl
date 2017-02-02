@@ -288,7 +288,7 @@ state_part_jingzhang(start, State) ->
                     Die = maps:get(die, State),
                     DieCache = map:get(die_cache, State),
                     send_event_inner(start),
-                    {next_state, get_next_game_state(state_part_jingzhang), NewState};
+                    {next_state, get_next_game_state(state_part_jingzhang), maps:put(die, Die ++ DieCache, State)};
                 1 ->
                    send_event_inner(start),
                    {next_state, state_night_skill, State} 
