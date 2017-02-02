@@ -398,15 +398,18 @@ state_xuanju_jingzhang(timeout, State) ->
     {next_state, state_xuanju_jingzhang, State};
 
 state_xuanju_jingzhang(op_over, State) ->
+    lager:info("state_xuanju_jingzhang1 "),
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     % {IsDraw, XuanjuResult, NewState} = lib_fight:do_xuanju_jingzhang_op(State#{xuanju_draw_cnt := 1}),
     {IsDraw, XuanjuResult, MaxSeatList, NewState} = lib_fight:do_xuanju_jingzhang_op(State),
     notice_xuanju_jingzhang_result(IsDraw, maps:get(jingzhang, NewState), XuanjuResult, NewState),
     case IsDraw of
         true ->
+            lager:info("state_xuanju_jingzhang2 "),
             send_event_inner(start),
             {next_state, state_part_fayan, maps:put(jingzhang, MaxSeatList, NewState)};
         false ->   
+            lager:info("state_xuanju_jingzhang3 "),
             send_event_inner(start, b_fight_state_wait:get(state_xuanju_jingzhang)),
             {next_state, get_next_game_state(state_xuanju_jingzhang), maps:put(do_police_select, 1, NewState)}
     end.     

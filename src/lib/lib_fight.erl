@@ -394,20 +394,24 @@ do_part_jingzhang_op(State) ->
     clear_last_op(maps:put(part_jingzhang, PartList, StateAfterFayan)).
 
 do_xuanju_jingzhang_op(State) ->
+    lager:info("do_xuanju_jingzhang_op1 "),
     LastOpData = get_last_op(State),
     {IsDraw, ResultList, MaxSeatList} = count_xuanju_result(LastOpData),
     DrawCnt = maps:get(xuanju_draw_cnt, State),
     {DrawResult, NewState} = 
         case IsDraw of
             false ->
+                lager:info("do_xuanju_jingzhang_op2 "),
                 {false, State#{xuanju_draw_cnt := 0,
                                jingzhang := hd(MaxSeatList)}};
             true ->
                 case DrawCnt > 0 of
                     true ->
+                        lager:info("do_xuanju_jingzhang_op3 "),
                         {false, State#{xuanju_draw_cnt := 0,
                                        jingzhang := 0}};
                     false ->
+                        lager:info("do_xuanju_jingzhang_op4 "),
                         {true , State#{xuanju_draw_cnt := 1,
                                        jingzhang := 0}}
                 end
