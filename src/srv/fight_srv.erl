@@ -348,9 +348,9 @@ state_part_fayan({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
         ?DUTY_BAILANG ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
             NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
-            NewState1 = maps:put(die_cache, maps:get(die, NewState), State),
+            NewState1 = maps:put(langren_boom, 1, NewState),
             send_event_inner(start),
-            {next_state, state_night, NewState1};
+            {next_state, state_night_skill, NewState1};
         _ ->
             {next_state, state_part_fayan, State}
     end;
@@ -361,9 +361,9 @@ state_part_fayan({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
         ?DUTY_LANGREN ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
             NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
-            NewState1 = maps:put(die_cache, maps:get(die, State), NewState),
+            NewState1 = maps:put(langren_boom, 1, NewState),
             send_event_inner(start),
-            {next_state, state_night, NewState1};
+            {next_state, state_night_skill, NewState1};
         _ ->
             {next_state, state_part_fayan, State}
     end;
@@ -446,6 +446,7 @@ state_night_skill({player_op, PlayerId, Op, OpList}, State) ->
 
 state_night_skill(op_over, State) ->
     %%如果玩家没有移交警长,判断警长是否合法
+    LangRenBoom = maps:get(langren_boom, State),
     JingZhang = maps:get(jingzhang, State),
     NewJingZhang = 
         case lists:member(JingZhang, maps:get(out_seat_list, State)) of
@@ -455,7 +456,23 @@ state_night_skill(op_over, State) ->
                 JingZhang
         end,
     NewState = maps:put(jingzhang, NewJingZhang, State),
-    do_skill_state_op_over(state_night_skill, NewState).
+    LierenKill = maps:get(lieren_kill, State),
+    case maps:get(jingzhang, State) == LierenKill andalso LierenKill =/= 0 of
+        true ->
+            %%如果猎人带走了人，猎人带走的人发动技能
+            send_event_inner(wait_op),
+            {next_state, StateName, maps:put(skill_seat, LierenKill, State)};
+        false ->
+            case LangRenBoom of
+                0->
+                    send_event_inner(start, b_fight_state_wait:get(StateName)),
+                    {next_state, get_next_game_state(StateName), State#{lieren_kill := 0}};
+                1->
+                    send_event_inner(start),
+                    {next_state, state_night, NewState}
+            end
+    end.
+    
 
 %% ====================================================================
 %% state_night_death
@@ -1241,7 +1258,8 @@ clear_night_op(State) ->
            last_op_data => #{},  %% 上一轮操作的数据, 杀了几号, 投了几号等等}.
            game_round => maps:get(game_round, State) + 1,
            jingzhang => NewJingZhang,
-           lieren_kill => 0
+           lieren_kill => 0,
+           langren_boom => 0
            }.
 
 notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, State) ->
