@@ -1168,7 +1168,7 @@ get_fight_result(State) ->
                 LangrenQiubite = lib_fight:get_langren_qiubite_seat(State),
                 LangRenHunxuer1 = lib_fight:get_langren_hunxuer_seat(State),
                 SWinner1 = AllLangren ++ LangrenQiubite,
-                SWinner2 = SWinner1 ++ LangRenHunxuer1
+                SWinner2 = SWinner1 ++ LangRenHunxuer1,
                 throw({true, SWinner2});
             _ ->
                 ignore
