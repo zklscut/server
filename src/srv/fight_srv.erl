@@ -1074,7 +1074,7 @@ do_fayan_state_start(InitFayanList, StateName, State) ->
                     StateName;
                 _->
                     get_twice_state_id(StateName)
-            end
+            end,
             notice_game_status_change(GameStatus, State),
             NewState = maps:put(fayan_turn, FayanList, State),
             % send_event_inner(wait_op),
