@@ -461,12 +461,12 @@ state_night_skill(op_over, State) ->
         true ->
             %%如果猎人带走了人，猎人带走的人发动技能
             send_event_inner(wait_op),
-            {next_state, StateName, maps:put(skill_seat, LierenKill, State)};
+            {next_state, state_night_skill, maps:put(skill_seat, LierenKill, State)};
         false ->
             case LangRenBoom of
                 0->
-                    send_event_inner(start, b_fight_state_wait:get(StateName)),
-                    {next_state, get_next_game_state(StateName), State#{lieren_kill := 0}};
+                    send_event_inner(start, b_fight_state_wait:get(state_night_skill)),
+                    {next_state, get_next_game_state(state_night_skill), State#{lieren_kill := 0}};
                 1->
                     send_event_inner(start),
                     {next_state, state_night, NewState}
