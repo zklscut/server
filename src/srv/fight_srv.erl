@@ -355,7 +355,7 @@ state_part_fayan({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
             {next_state, state_part_fayan, State}
     end;
     
-state_part_fayan({player_op, PlayerId, ?DUTY_LANGREN, [0]}, State) ->
+state_part_fayan({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
     lager:info("state_part_fayan3 "),
     case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
         ?DUTY_LANGREN ->
@@ -709,7 +709,7 @@ state_toupiao_death({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
             {next_state, state_toupiao_death, State}
     end;
     
-state_toupiao_death({player_op, PlayerId, ?DUTY_LANGREN, _}, State) ->
+state_toupiao_death({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
     case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
         ?DUTY_LANGREN ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
