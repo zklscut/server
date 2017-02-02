@@ -288,7 +288,7 @@ state_part_jingzhang(start, State) ->
                     PartJingZhangList = maps:get(part_jingzhang, State),
                     FayanList = [SeatId || SeatId <- PartJingZhangList, not lists:member(SeatId, maps:get(out_seat_list, State))],
                     send_event_inner(start, b_fight_state_wait:get(state_part_jingzhang)),
-                    {next_state, get_next_game_state(state_part_jingzhang), maps:put(part_jingzhang, PartJingZhangList, State)};
+                    {next_state, get_next_game_state(state_part_jingzhang), maps:put(part_jingzhang, FayanList, State)};
                 1 ->
                    send_event_inner(start),
                    {next_state, state_night_skill, State} 
@@ -488,7 +488,7 @@ state_night_death({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
             NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
             send_event_inner(start),
-            {next_state, state_night, NewState1};
+            {next_state, state_night, NewState};
         _ ->
             {next_state, state_night_death, State}
     end;
@@ -500,7 +500,7 @@ state_night_death({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
             NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
             send_event_inner(start),
-            {next_state, state_night, NewState1};
+            {next_state, state_night, NewState};
         _ ->
             {next_state, state_night_death, State}
     end;
