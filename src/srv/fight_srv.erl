@@ -550,9 +550,9 @@ state_fayan({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
     case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
         ?DUTY_LANGREN ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-            NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
+            % NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
             send_event_inner(start),
-            {next_state, state_night, NewState};
+            {next_state, state_night, State};
         _ ->
             {next_state, state_fayan, State}
     end;
@@ -694,6 +694,28 @@ state_toupiao_death(wait_op, State) ->
 state_toupiao_death({player_op, PlayerId, Op, [0]}, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     do_receive_player_op(PlayerId, Op, [0], state_toupiao_death, State);
+
+state_toupiao_death({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
+    case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
+        ?DUTY_BAILANG ->
+            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+            NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
+            send_event_inner(start),
+            {next_state, state_night, NewState};
+        _ ->
+            {next_state, state_toupiao_death, State}
+    end;
+    
+state_toupiao_death({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
+    case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
+        ?DUTY_LANGREN ->
+            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+            % NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
+            send_event_inner(start),
+            {next_state, state_night, State};
+        _ ->
+            {next_state, state_toupiao_death, State}
+    end;
 
 state_toupiao_death({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
     do_receive_fayan(PlayerId, Chat, State),
