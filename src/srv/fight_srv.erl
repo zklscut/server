@@ -465,9 +465,11 @@ state_night_skill(op_over, State) ->
         false ->
             case LangRenBoom of
                 0->
+                    lager:info("state_night_skill1 "),
                     send_event_inner(start, b_fight_state_wait:get(state_night_skill)),
                     {next_state, get_next_game_state(state_night_skill), State#{lieren_kill := 0}};
                 1->
+                    lager:info("state_night_skill2 "),
                     send_event_inner(start),
                     {next_state, state_night, NewState}
             end
