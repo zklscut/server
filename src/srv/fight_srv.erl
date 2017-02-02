@@ -282,7 +282,7 @@ state_part_jingzhang(start, State) ->
             {next_state, state_part_jingzhang, State};
         2 ->
             %%第二天可以再次竞选警长,但是参与者按照第一天的算
-            DoPoliceSelect = maps:get(do_police_select, State)
+            DoPoliceSelect = maps:get(do_police_select, State),
             case DoPoliceSelect of
                 0 ->
                     Die = maps:get(die, State),
