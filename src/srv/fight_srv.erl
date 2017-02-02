@@ -328,7 +328,7 @@ state_part_fayan(start, State) ->
     NewState = 
     case DrawCnt of
         0->
-        ignore;
+        State;
         _->
         lib_fight:do_part_jingzhang_op_twice(State)
     end,
@@ -1325,7 +1325,7 @@ clear_night_op(State) ->
            nvwu => {0, 0},       %% 女巫操作
            langren => 0,         %% 狼人操作
            % part_jingzhang => [], %% 參與選舉警長
-           xuanju_draw_cnt => 0, %% 选举平局次数
+           % xuanju_draw_cnt => 0, %% 选举平局次数
            jingzhang_op => 0,    %% 警长操作
            fayan_turn => [],     %% 发言顺序
            die => [],            %% 死亡玩家
