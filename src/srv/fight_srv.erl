@@ -286,7 +286,7 @@ state_part_jingzhang(start, State) ->
             case DoPoliceSelect of
                 0 ->
                     Die = maps:get(die, State),
-                    DieCache = map:get(die_cache, State),
+                    DieCache = maps:get(die_cache, State),
                     send_event_inner(start),
                     {next_state, get_next_game_state(state_part_jingzhang), maps:put(die, Die ++ DieCache, State)};
                 1 ->
@@ -299,7 +299,7 @@ state_part_jingzhang(start, State) ->
             case DoPoliceSelect1 of
                 0 ->
                     Die1 = maps:get(die, State),
-                    DieCache1 = map:get(die_cache, State),
+                    DieCache1 = maps:get(die_cache, State),
                     send_event_inner(start),
                     {next_state, state_night_skill, maps:put(die, Die1 ++ DieCache1, State)};
                 1 ->
@@ -360,10 +360,10 @@ state_part_fayan({player_op, PlayerId, ?DUTY_LANGREN, [0]}, State) ->
     case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
         ?DUTY_LANGREN ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-            % NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
-            NewState = maps:put(die_cache, maps:get(die, State), State),
+            NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
+            NewState1 = maps:put(die_cache, maps:get(die, State), NewState),
             send_event_inner(start),
-            {next_state, state_night, NewState};
+            {next_state, state_night, NewState1};
         _ ->
             {next_state, state_part_fayan, State}
     end;
@@ -553,9 +553,9 @@ state_fayan({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
     case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
         ?DUTY_LANGREN ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-            % NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
+            NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
             send_event_inner(start),
-            {next_state, state_night, State};
+            {next_state, state_night, NewState};
         _ ->
             {next_state, state_fayan, State}
     end;
@@ -713,9 +713,9 @@ state_toupiao_death({player_op, PlayerId, ?DUTY_LANGREN, _}, State) ->
     case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
         ?DUTY_LANGREN ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-            % NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
+            NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
             send_event_inner(start),
-            {next_state, state_night, State};
+            {next_state, state_night, NewState};
         _ ->
             {next_state, state_toupiao_death, State}
     end;
