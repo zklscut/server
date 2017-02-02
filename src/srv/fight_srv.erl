@@ -378,8 +378,7 @@ state_part_fayan({player_op, PlayerId, ?OP_EXIT_PART_JINGZHANG, OpList}, State) 
                 false->
                     {next_state, state_part_fayan, maps:put(fayan_turn, HFayanTurn -- [SeatId])}
             end
-    end.
-
+    end;
 
 state_part_fayan({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
     do_receive_fayan(PlayerId, Chat, State),
