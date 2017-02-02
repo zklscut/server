@@ -351,7 +351,7 @@ state_part_fayan({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
         ?DUTY_BAILANG ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
             NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
-            NewState1 = maps:put(die_cache, maps:get(die, NewState)),
+            NewState1 = maps:put(die_cache, maps:get(die, NewState), State),
             send_event_inner(start),
             {next_state, state_night, NewState1};
         _ ->
@@ -363,7 +363,7 @@ state_part_fayan({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
         ?DUTY_LANGREN ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
             % NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
-            NewState = maps:put(die_cache, maps:get(die, State)),
+            NewState = maps:put(die_cache, maps:get(die, State), State),
             send_event_inner(start),
             {next_state, state_night, NewState};
         _ ->
