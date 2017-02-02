@@ -973,7 +973,7 @@ do_skill_state_wait(Op, StateName, State) ->
     SkillSeat = maps:get(skill_seat, State),
     case SkillSeat of
         0->
-            ignore;
+            {next_state, StateName, State};
         _->
             StateAfterWait = do_set_wait_op([SkillSeat], State),
             %%主动发送的技能
@@ -985,9 +985,10 @@ do_skill_state_wait(Op, StateName, State) ->
                     _ ->
                         notice_player_op(Op, [SkillSeat], State),
                         StateAfterWait
-                end
-    end,
-    {next_state, StateName, NewState}.
+                end,
+            {next_state, StateName, NewState}
+    end.
+    
 
 do_skill_state_timeout(StateName, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
