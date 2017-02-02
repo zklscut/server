@@ -364,7 +364,7 @@ state_part_fayan({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
 state_part_fayan({player_op, PlayerId, ?OP_EXIT_PART_JINGZHANG, OpList}, State) ->
     SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
     PartJingZhang = maps:get(part_jingzhang, State),
-    NewState = maps:put(part_jingzhang, PartJingZhang -- [SeatId]),
+    NewState = maps:put(part_jingzhang, PartJingZhang -- [SeatId], State),
     notice_player_op(?OP_EXIT_PART_JINGZHANG, [SeatId], State),
     FayanTurn = maps:get(fayan_turn, State),
     case length(FayanTurn) of
@@ -376,7 +376,7 @@ state_part_fayan({player_op, PlayerId, ?OP_EXIT_PART_JINGZHANG, OpList}, State) 
                 true->
                     state_part_fayan({player_op, PlayerId, ?OP_PART_FAYAN, [0]}, NewState);
                 false->
-                    {next_state, state_part_fayan, maps:put(fayan_turn, HFayanTurn -- [SeatId])}
+                    {next_state, state_part_fayan, maps:put(fayan_turn, HFayanTurn -- [SeatId], NewState)}
             end
     end;
 
