@@ -706,7 +706,7 @@ state_toupiao_death({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
             {next_state, state_toupiao_death, State}
     end;
     
-state_toupiao_death({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
+state_toupiao_death({player_op, PlayerId, ?DUTY_LANGREN, _}, State) ->
     case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
         ?DUTY_LANGREN ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
