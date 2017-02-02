@@ -969,9 +969,11 @@ do_skill_state_start(StateName, State) ->
         end,
     case IsHaveSkill of
         true ->
+            notice_game_status_change(StateName, State),
             send_event_inner(wait_op),
             {next_state, StateName, maps:put(skill_seat, SeatId, State)};
         false ->
+            notice_game_status_change(StateName, State),
             send_event_inner(wait_op),
             {next_state, StateName, maps:put(skill_seat, 0, State)}
     end.
