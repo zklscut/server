@@ -413,7 +413,7 @@ do_xuanju_jingzhang_op(State) ->
                 end
         end,
 
-    {DrawResult, ResultList, clear_last_op(NewState)}.
+    {DrawResult, ResultList, MaxSeatList, clear_last_op(NewState)}.
 
 do_jingzhang_op(State) ->
     LastOpData = get_last_op(State),

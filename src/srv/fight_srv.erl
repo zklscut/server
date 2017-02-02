@@ -330,7 +330,6 @@ state_part_fayan(wait_op, State) ->
     do_fayan_state_wait_op(?OP_PART_FAYAN, state_part_fayan, State);
 
 state_part_fayan({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
-    lager:info("state_part_fayan2 "),
     case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
         ?DUTY_BAILANG ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -343,7 +342,6 @@ state_part_fayan({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
     end;
     
 state_part_fayan({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
-    lager:info("state_part_fayan3 "),
     case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
         ?DUTY_LANGREN ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -360,7 +358,6 @@ state_part_fayan({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
     {next_state, state_part_fayan, State};
 
 state_part_fayan({player_op, PlayerId, Op, [0]}, State) ->
-    lager:info("state_part_fayan1 "),
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     do_receive_player_op(PlayerId, Op, [0], state_part_fayan, State);
 
@@ -402,12 +399,13 @@ state_xuanju_jingzhang(timeout, State) ->
 
 state_xuanju_jingzhang(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    {IsDraw, XuanjuResult, NewState} = lib_fight:do_xuanju_jingzhang_op(State#{xuanju_draw_cnt := 1}),
+    % {IsDraw, XuanjuResult, NewState} = lib_fight:do_xuanju_jingzhang_op(State#{xuanju_draw_cnt := 1}),
+    {IsDraw, XuanjuResult, MaxSeatList, NewState} = lib_fight:do_xuanju_jingzhang_op(State),
     notice_xuanju_jingzhang_result(IsDraw, maps:get(jingzhang, NewState), XuanjuResult, NewState),
     case IsDraw of
         true ->
-            send_event_inner(wait_op),
-            {next_state, state_xuanju_jingzhang, NewState};
+            send_event_inner(start),
+            {next_state, state_part_fayan, maps:put(jingzhang, MaxSeatList, NewState)};
         false ->   
             send_event_inner(start, b_fight_state_wait:get(state_xuanju_jingzhang)),
             {next_state, get_next_game_state(state_xuanju_jingzhang), maps:put(do_police_select, 1, NewState)}
@@ -610,9 +608,18 @@ state_guipiao(start, State) ->
             send_event_inner(start),
             {next_state, get_next_game_state(state_guipiao), State};
         _ ->
-            notice_game_status_change(state_guipiao, State),
-            send_event_inner(wait_op),
-            {next_state, state_guipiao, State}
+            DrawCnt = maps:get(xuanju_draw_cnt, State),
+            case DrawCnt of
+                0->
+                    notice_game_status_change(state_guipiao, State),
+                    send_event_inner(wait_op),
+                    {next_state, state_guipiao, State};
+                1->
+                    %%平票投票直接跳过归票
+                    send_event_inner(start),
+                    {next_state, get_next_game_state(state_guipiao), State}
+            end
+            
     end;
 
 state_guipiao(wait_op, State) ->
@@ -666,9 +673,12 @@ state_toupiao(op_over, State) ->
     notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, NewState),
     case IsDraw of
         true ->
-            notice_toupiao(MaxSelectList, NewState),
-            StateAfterWait = do_set_wait_op(lib_fight:get_alive_seat_list(State) -- MaxSelectList, NewState),
-            {next_state, state_toupiao, StateAfterWait};
+            % maps:put(fayan_turn, MaxSelectList, NewState)
+            % notice_toupiao(MaxSelectList, NewState),
+            % StateAfterWait = do_set_wait_op(lib_fight:get_alive_seat_list(State) -- MaxSelectList, NewState),
+            % {next_state, state_toupiao, StateAfterWait};
+            send_event_inner(start),
+            {next_state, state_fayan, maps:put(fayan_turn, MaxSelectList, NewState)};
         false ->   
             IsBaichi = 
                 case Quzhu of
@@ -1058,7 +1068,14 @@ do_fayan_state_start(InitFayanList, StateName, State) ->
             send_event_inner(start),
             {next_state, get_next_game_state(StateName), State};
         false ->
-            notice_game_status_change(StateName, State),
+            DrawCnt = maps:get(xuanju_draw_cnt, State),
+            GameStatus = case DrawCnt of
+                0->
+                    StateName;
+                _->
+                    get_twice_state_id(StateName)
+            end
+            notice_game_status_change(GameStatus, State),
             NewState = maps:put(fayan_turn, FayanList, State),
             % send_event_inner(wait_op),
             send_event_inner(wait_op, b_fight_state_wait:get(StateName)),
@@ -1484,5 +1501,19 @@ get_status_id(GameState) ->
         state_night->
             20;
         state_fight_over->
-            21
+            21;
+        state_part_fayan_twice->    %%竞选警长平票发言状态
+            22;
+        state_fayan_twice->     %%驱逐发言平票发言状态
+            23
+    end.
+
+get_twice_state_id(GameState)->
+    case GameState of
+        state_part_fayan->
+            state_part_fayan_twice;
+        state_fayan->
+            state_fayan_twice;
+        _->
+            GameState
     end.
