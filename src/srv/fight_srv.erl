@@ -433,7 +433,7 @@ state_xuanju_jingzhang(op_over, State) ->
  
 state_night_skill(start, State) ->
     notice_night_result(State),
-    do_skill_state_start(state_night_skill, State).
+    do_skill_state_start(state_night_skill, State);
     % {IsHaveSkill, SeatId} = skill_exist_in_die_list(state_night_skill, State),
 
 state_night_skill(wait_op, State) ->
