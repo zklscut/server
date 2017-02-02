@@ -42,6 +42,7 @@
          get_haoren_hunxuer_seat/1,
          is_seat_alive/2,
          do_part_jingzhang_op_twice/1,
+         do_exit_part/3,
          do_skill/4]).
 
 -include("fight.hrl").
@@ -488,6 +489,13 @@ do_toupiao_op(State) ->
                 end
         end,
     {DrawResult, ResultList, MaxSeatList, NewState}.
+
+do_exit_part(PlayerId, OpList, State)->
+    SeatId = get_seat_id_by_player_id(PlayerId, State),
+    Send = #m__fight__notice_skill__s2l{seat_id = SeatId,
+                                        op = ?OP_EXIT_PART_JINGZHANG,
+                                        op_list = OpList},
+    send_to_all_player(Send, State).
 
 do_skill(PlayerId, Op, OpList, State) ->
     SeatId = get_seat_id_by_player_id(PlayerId, State),
