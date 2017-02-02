@@ -375,7 +375,7 @@ state_part_fayan({player_op, PlayerId, ?OP_EXIT_PART_JINGZHANG, OpList}, State) 
             HFayanTurn = hd(FayanTurn),
             case HFayanTurn == SeatId of
                 true->
-                    state_part_fayan({player_op, PlayerId, ?OP_PART_FAYAN, [0]}, NewState);
+                    {next_state, state_part_fayan, NewState};
                 false->
                     {next_state, state_part_fayan, maps:put(fayan_turn, HFayanTurn -- [SeatId], NewState)}
             end
