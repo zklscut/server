@@ -273,7 +273,6 @@ state_day(start, State) ->
 
 state_part_jingzhang(start, State) ->
     GameRound = maps:get(game_round, State),
-
     case GameRound of
         1 ->
             notice_game_status_change(state_part_jingzhang, State),
@@ -285,26 +284,14 @@ state_part_jingzhang(start, State) ->
             DoPoliceSelect = maps:get(do_police_select, State),
             case DoPoliceSelect of
                 0 ->
-                    Die = maps:get(die, State),
-                    DieCache = maps:get(die_cache, State),
-                    send_event_inner(start),
-                    {next_state, get_next_game_state(state_part_jingzhang), maps:put(die, Die ++ DieCache, State)};
+                    % send_event_inner(start),
+                    PartJingZhangList = maps:get(part_jingzhang, State),
+                    FayanList = [SeatId || SeatId <- PartJingZhangList, not lists:member(SeatId, maps:get(out_seat_list, State))],
+                    send_event_inner(start, b_fight_state_wait:get(state_part_jingzhang)),
+                    {next_state, get_next_game_state(state_part_jingzhang), maps:put(part_jingzhang, PartJingZhangList, State)};
                 1 ->
                    send_event_inner(start),
                    {next_state, state_night_skill, State} 
-            end;
-        3 ->
-            %%第三天不可能选择警长，但死亡者需要同步,并且不能发言
-            DoPoliceSelect1 = maps:get(do_police_select, State),
-            case DoPoliceSelect1 of
-                0 ->
-                    Die1 = maps:get(die, State),
-                    DieCache1 = maps:get(die_cache, State),
-                    send_event_inner(start),
-                    {next_state, state_night_skill, maps:put(die, Die1 ++ DieCache1, State)};
-                1 ->
-                    send_event_inner(start),
-                    {next_state, state_night_skill, State}   
             end;
         _ ->
             send_event_inner(start),
@@ -494,6 +481,30 @@ state_night_death(start, State) ->
 state_night_death(wait_op, State) ->
     do_fayan_state_wait_op(?OP_DEATH_FAYAN, state_night_death, State);
 
+state_night_death({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
+    lager:info("state_part_fayan2 "),
+    case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
+        ?DUTY_BAILANG ->
+            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+            NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
+            send_event_inner(start),
+            {next_state, state_night, NewState1};
+        _ ->
+            {next_state, state_night_death, State}
+    end;
+    
+state_night_death({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
+    lager:info("state_part_fayan3 "),
+    case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
+        ?DUTY_LANGREN ->
+            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+            NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
+            send_event_inner(start),
+            {next_state, state_night, NewState1};
+        _ ->
+            {next_state, state_night_death, State}
+    end;
+
 state_night_death({player_op, PlayerId, Op, [0]}, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     do_receive_player_op(PlayerId, Op, [0], state_night_death, State);
@@ -554,10 +565,6 @@ state_fayan(start, State) ->
 state_fayan(wait_op, State) ->
     do_fayan_state_wait_op(?OP_FAYAN, state_fayan, State);
 
-state_fayan({player_op, PlayerId, Op, [0]}, State) ->
-    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    do_receive_player_op(PlayerId, Op, [0], state_fayan, State);
-
 state_fayan({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
     case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
         ?DUTY_BAILANG ->
@@ -579,6 +586,10 @@ state_fayan({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
         _ ->
             {next_state, state_fayan, State}
     end;
+
+state_fayan({player_op, PlayerId, Op, [0]}, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    do_receive_player_op(PlayerId, Op, [0], state_fayan, State);
 
 state_fayan({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
     do_receive_fayan(PlayerId, Chat, State),
@@ -948,25 +959,22 @@ do_skill_state_start(StateName, State) ->
             state_toupiao_skill ->
                 maps:get(quzhu, State)
         end,
-    % IsHaveSkill = 
-    %     case SeatId of
-    %         0 ->
-    %             false;
-    %         _ ->
-    %             DutyId = lib_fight:get_duty_by_seat(SeatId, State),
-    %             lists:member(DutyId, AllowDuty) orelse (SeatId == maps:get(jingzhang, State))
-    %     end,
-    send_event_inner(wait_op),
-    {next_state, StateName, maps:put(skill_seat, SeatId, State)}.
-    
-    % case IsHaveSkill of
-    %     true ->
-    %         send_event_inner(wait_op),
-    %         {next_state, StateName, maps:put(skill_seat, SeatId, State)};
-    %     false ->
-    %         send_event_inner(start),
-    %         {next_state, get_next_game_state(StateName), maps:put(skill_seat, 0, State)}
-    % end.
+    IsHaveSkill = 
+        case SeatId of
+            0 ->
+                false;
+            _ ->
+                DutyId = lib_fight:get_duty_by_seat(SeatId, State),
+                lists:member(DutyId, AllowDuty) orelse (SeatId == maps:get(jingzhang, State))
+        end,
+    case IsHaveSkill of
+        true ->
+            send_event_inner(wait_op),
+            {next_state, StateName, maps:put(skill_seat, SeatId, State)};
+        false ->
+            send_event_inner(wait_op),
+            {next_state, StateName, maps:put(skill_seat, 0, State)}
+    end.
 
 do_skill_state_wait(Op, StateName, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(Op)), 
@@ -1199,8 +1207,16 @@ notice_night_result(State) ->
     lib_fight:send_to_all_player(Send, State).
 
 out_die_player(State) ->
+    Quzhu = maps:get(quzhu, State),
+    QuzhuList = 
+        case Quzhu of
+            0->
+            [];
+            _->
+            [Quzhu]
+        end,
     maps:put(out_seat_list, (maps:get(out_seat_list, State) ++ maps:get(die, State) ++ 
-                            [maps:get(quzhu, State)]) -- [maps:get(baichi, State)], State).
+                                QuzhuList) -- [maps:get(baichi, State)], State).
 
 get_fight_result(State) ->
     lager:info("get_fight_result1 "),

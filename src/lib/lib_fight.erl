@@ -40,6 +40,7 @@
          enable_third_part_qiubite/1,
          get_langren_hunxuer_seat/1,
          get_haoren_hunxuer_seat/1,
+         is_seat_alive/2,
          do_skill/4]).
 
 -include("fight.hrl").
@@ -94,6 +95,15 @@ get_all_seat(State) ->
 
 get_alive_seat_list(State) ->
     filter_out_seat(get_all_seat(State), State).
+
+is_seat_alive(SeatId, State) ->
+    case SeatId of
+        0 ->
+            false;
+        _->
+            Alivelist = get_alive_seat_list(State),
+            lists:member(SeatId, Alivelist)
+    end.
 
 %获得神名列表
 get_shenmin_seat(State)->
