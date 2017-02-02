@@ -272,12 +272,40 @@ state_day(start, State) ->
 %% ====================================================================
 
 state_part_jingzhang(start, State) ->
-    case maps:get(game_round, State) of
+    GameRound = maps:get(game_round, State),
+
+    case GameRound of
         1 ->
             notice_game_status_change(state_part_jingzhang, State),
             % send_event_inner(wait_op),
             send_event_inner(wait_op, b_fight_state_wait:get(state_part_jingzhang)),
             {next_state, state_part_jingzhang, State};
+        2 ->
+            %%第二天可以再次竞选警长,但是参与者按照第一天的算
+            DoPoliceSelect = maps:get(do_police_select, State)
+            case DoPoliceSelect of
+                0 ->
+                    Die = maps:get(die, State),
+                    DieCache = map:get(die_cache, State),
+                    send_event_inner(start),
+                    {next_state, get_next_game_state(state_part_jingzhang), NewState};
+                1 ->
+                   send_event_inner(start),
+                   {next_state, state_night_skill, State} 
+            end;
+        3 ->
+            %%第三天不可能选择警长，但死亡者需要同步,并且不能发言
+            DoPoliceSelect1 = maps:get(do_police_select, State),
+            case DoPoliceSelect1 of
+                0 ->
+                    Die1 = maps:get(die, State),
+                    DieCache1 = map:get(die_cache, State),
+                    send_event_inner(start),
+                    {next_state, state_night_skill, maps:put(die, Die1 ++ DieCache1, State)};
+                1 ->
+                    send_event_inner(start),
+                    {next_state, state_night_skill, State}   
+            end;
         _ ->
             send_event_inner(start),
             {next_state, state_night_skill, State}
@@ -317,6 +345,30 @@ state_part_fayan(wait_op, State) ->
 state_part_fayan({player_op, PlayerId, Op, [0]}, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     do_receive_player_op(PlayerId, Op, [0], state_part_fayan, State);
+
+state_part_fayan({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
+    case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
+        ?DUTY_BAILANG ->
+            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+            NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
+            NewState1 = maps:put(die_cache, maps:get(die, NewState)),
+            send_event_inner(start),
+            {next_state, state_night, NewState1};
+        _ ->
+            {next_state, state_part_fayan, State}
+    end;
+    
+state_part_fayan({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
+    case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
+        ?DUTY_LANGREN ->
+            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+            % NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
+            NewState = maps:put(die_cache, maps:get(die, State)),
+            send_event_inner(start),
+            {next_state, state_night, NewState};
+        _ ->
+            {next_state, state_part_fayan, State}
+    end;
 
 state_part_fayan({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
     do_receive_fayan(PlayerId, Chat, State),
@@ -368,7 +420,7 @@ state_xuanju_jingzhang(op_over, State) ->
             {next_state, state_xuanju_jingzhang, NewState};
         false ->   
             send_event_inner(start, b_fight_state_wait:get(state_xuanju_jingzhang)),
-            {next_state, get_next_game_state(state_xuanju_jingzhang), NewState}
+            {next_state, get_next_game_state(state_xuanju_jingzhang), maps:put(do_police_select, 1, NewState)}
     end.     
 
 
@@ -1155,7 +1207,7 @@ clear_night_op(State) ->
     State#{wait_op_list => [],   %% 等待中的操作
            nvwu => {0, 0},       %% 女巫操作
            langren => 0,         %% 狼人操作
-           part_jingzhang => [], %% 參與選舉警長
+           % part_jingzhang => [], %% 參與選舉警長
            xuanju_draw_cnt => 0, %% 选举平局次数
            jingzhang_op => 0,    %% 警长操作
            fayan_turn => [],     %% 发言顺序
