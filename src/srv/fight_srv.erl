@@ -433,7 +433,8 @@ state_xuanju_jingzhang(op_over, State) ->
  
 state_night_skill(start, State) ->
     notice_night_result(State),
-    do_skill_state_start(state_night_skill, State);
+    do_skill_state_start(state_night_skill, State).
+    % {IsHaveSkill, SeatId} = skill_exist_in_die_list(state_night_skill, State),
 
 state_night_skill(wait_op, State) ->
     do_skill_state_wait(?OP_NIGHT_SKILL, state_night_skill, State);
@@ -918,6 +919,26 @@ do_receive_player_op(PlayerId, Op, OpList, StateName, State) ->
             {next_state, StateName, State}
     end.
 
+%%是否有死亡的目标可以发动技能
+% skill_exist_in_die_list(StateName, State)->
+%     AllowDuty = get_allow_skill(StateName),
+%     SeatId = 
+%         case StateName of
+%             state_night_skill ->
+%                 maps:get(langren, State);
+%             state_toupiao_skill ->
+%                 maps:get(quzhu, State)
+%         end,
+%     IsHaveSkill = 
+%         case SeatId of
+%             0 ->
+%                 false;
+%             _ ->
+%                 DutyId = lib_fight:get_duty_by_seat(SeatId, State),
+%                 lists:member(DutyId, AllowDuty) orelse (SeatId == maps:get(jingzhang, State))
+%         end,
+%     {IsHaveSkill, SeatId}.
+
 do_skill_state_start(StateName, State) ->
     AllowDuty = get_allow_skill(StateName),
     SeatId = 
@@ -927,40 +948,45 @@ do_skill_state_start(StateName, State) ->
             state_toupiao_skill ->
                 maps:get(quzhu, State)
         end,
-    IsHaveSkill = 
-        case SeatId of
-            0 ->
-                false;
-            _ ->
-                DutyId = lib_fight:get_duty_by_seat(SeatId, State),
-                lists:member(DutyId, AllowDuty) orelse (SeatId == maps:get(jingzhang, State))
-        end,
+    % IsHaveSkill = 
+    %     case SeatId of
+    %         0 ->
+    %             false;
+    %         _ ->
+    %             DutyId = lib_fight:get_duty_by_seat(SeatId, State),
+    %             lists:member(DutyId, AllowDuty) orelse (SeatId == maps:get(jingzhang, State))
+    %     end,
+    send_event_inner(wait_op),
+    {next_state, StateName, maps:put(skill_seat, SeatId, State)}.
     
-    case IsHaveSkill of
-        true ->
-            send_event_inner(wait_op),
-            {next_state, StateName, maps:put(skill_seat, SeatId, State)};
-        false ->
-            send_event_inner(start),
-            {next_state, get_next_game_state(StateName), State}
-    end.
+    % case IsHaveSkill of
+    %     true ->
+    %         send_event_inner(wait_op),
+    %         {next_state, StateName, maps:put(skill_seat, SeatId, State)};
+    %     false ->
+    %         send_event_inner(start),
+    %         {next_state, get_next_game_state(StateName), maps:put(skill_seat, 0, State)}
+    % end.
 
 do_skill_state_wait(Op, StateName, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(Op)), 
     SkillSeat = maps:get(skill_seat, State),
-    
-    StateAfterWait = do_set_wait_op([SkillSeat], State),
-
-    %%主动发送的技能
-    NewState = 
-        case lib_fight:get_duty_by_seat(SkillSeat, State) of
-            ?DUTY_BAICHI ->
-                lib_fight:do_skill(lib_fight:get_player_id_by_seat(SkillSeat, State), 
-                    ?DUTY_BAICHI, [SkillSeat], StateAfterWait);
-            _ ->
-                notice_player_op(Op, [SkillSeat], State),
-                StateAfterWait
-        end,
+    case SkillSeat of
+        0->
+            ignore;
+        _->
+            StateAfterWait = do_set_wait_op([SkillSeat], State),
+            %%主动发送的技能
+            NewState = 
+                case lib_fight:get_duty_by_seat(SkillSeat, State) of
+                    ?DUTY_BAICHI ->
+                        lib_fight:do_skill(lib_fight:get_player_id_by_seat(SkillSeat, State), 
+                            ?DUTY_BAICHI, [SkillSeat], StateAfterWait);
+                    _ ->
+                        notice_player_op(Op, [SkillSeat], State),
+                        StateAfterWait
+                end,
+    end,
     {next_state, StateName, NewState}.
 
 do_skill_state_timeout(StateName, State) ->
