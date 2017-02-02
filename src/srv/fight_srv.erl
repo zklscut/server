@@ -343,10 +343,12 @@ state_part_fayan(wait_op, State) ->
     do_fayan_state_wait_op(?OP_PART_FAYAN, state_part_fayan, State);
 
 state_part_fayan({player_op, PlayerId, Op, [0]}, State) ->
+    lager:info("state_part_fayan1 "),
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     do_receive_player_op(PlayerId, Op, [0], state_part_fayan, State);
 
 state_part_fayan({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
+    lager:info("state_part_fayan2 "),
     case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
         ?DUTY_BAILANG ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -359,6 +361,7 @@ state_part_fayan({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
     end;
     
 state_part_fayan({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
+    lager:info("state_part_fayan3 "),
     case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
         ?DUTY_LANGREN ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
