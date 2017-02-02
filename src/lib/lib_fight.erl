@@ -41,6 +41,7 @@
          get_langren_hunxuer_seat/1,
          get_haoren_hunxuer_seat/1,
          is_seat_alive/2,
+         do_part_jingzhang_op_twice/1,
          do_skill/4]).
 
 -include("fight.hrl").
@@ -387,11 +388,16 @@ do_part_jingzhang_op(State) ->
     LastOpData = get_last_op(State),
     PartList = maps:keys(filter_last_op(LastOpData)),
     StateAfterFayan = maps:put(fayan_turn, PartList, State),
-
     Send = #m__fight__notice_part_jingzhang__s2l{seat_list = PartList},
     send_to_all_player(Send, State),
-
     clear_last_op(maps:put(part_jingzhang, PartList, StateAfterFayan)).
+
+do_part_jingzhang_op_twice(State) ->
+    PartJingZhang = maps:get(part_jingzhang, State),
+    StateNew = maps:put(fayan_turn, PartJingZhang, State),
+    Send = #m__fight__notice_part_jingzhang__s2l{seat_list = PartJingZhang},
+    send_to_all_player(Send, State),
+    clear_last_op(StateNew).
 
 do_xuanju_jingzhang_op(State) ->
     lager:info("do_xuanju_jingzhang_op1 "),

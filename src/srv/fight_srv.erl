@@ -324,7 +324,15 @@ state_part_jingzhang(op_over, State) ->
 %% ====================================================================
 
 state_part_fayan(start, State) ->
-    do_fayan_state_start(maps:get(part_jingzhang, State), state_part_fayan, State);
+    DrawCnt = maps:get(xuanju_draw_cnt, State),
+    NewState = 
+    case DrawCnt of
+        0->
+        ignore;
+        _->
+        lib_fight:do_part_jingzhang_op_twice(State)
+    end,
+    do_fayan_state_start(maps:get(part_jingzhang, NewState), state_part_fayan, NewState);
 
 state_part_fayan(wait_op, State) ->
     do_fayan_state_wait_op(?OP_PART_FAYAN, state_part_fayan, State);
@@ -407,7 +415,7 @@ state_xuanju_jingzhang(op_over, State) ->
         true ->
             lager:info("state_xuanju_jingzhang2 "),
             send_event_inner(start),
-            {next_state, state_part_fayan, maps:put(jingzhang, MaxSeatList, NewState)};
+            {next_state, state_part_fayan, maps:put(part_jingzhang, MaxSeatList, NewState)};
         false ->   
             lager:info("state_xuanju_jingzhang3 "),
             send_event_inner(start, b_fight_state_wait:get(state_xuanju_jingzhang)),
