@@ -1094,7 +1094,11 @@ get_fight_result(State) ->
                 LangRenQiubite = lib_fight:get_langren_qiubite_seat(State),
                 ThirdPartQiubite = lib_fight:get_third_part_qiubite_seat(State),
                 LangRenHunxuer = lib_fight:get_langren_hunxuer_seat(State),
-                throw({true, AllSeat -- AllLangren -- LangRenQiubite -- ThirdPartQiubite -- LangRenHunxuer});
+                LWinner1 = AllSeat -- AllLangren,
+                LWinner2 = LWinner1 -- LangRenQiubite,
+                LWinner3 = LWinner2 -- ThirdPartQiubite,
+                LWinner4 = LWinner3 -- LangRenHunxuer,
+                throw({true, LWinner4});
             _ ->
                 ignore
         end,
@@ -1111,7 +1115,9 @@ get_fight_result(State) ->
             [] ->
                 LangrenQiubite = lib_fight:get_langren_qiubite_seat(State),
                 LangRenHunxuer1 = lib_fight:get_langren_hunxuer_seat(State),
-                throw({true, AllLangren ++ LangrenQiubite ++ LangRenHunxuer1});
+                SWinner1 = AllLangren ++ LangrenQiubite,
+                SWinner2 = SWinner1 ++ LangRenHunxuer1
+                throw({true, SWinner2});
             _ ->
                 ignore
         end,
@@ -1120,7 +1126,9 @@ get_fight_result(State) ->
             [] ->
                 LangrenQiubite1 = lib_fight:get_langren_qiubite_seat(State),
                 LangRenHunxuer2 = lib_fight:get_langren_hunxuer_seat(State),
-                throw({true, AllLangren ++ LangrenQiubite1 ++ LangRenHunxuer2});
+                PWinner1 = AllLangren ++ LangrenQiubite1,
+                PWinner2 = PWinner1 ++ LangRenHunxuer2,
+                throw({true, PWinner2});
             _ ->
                 ignore
         end,
