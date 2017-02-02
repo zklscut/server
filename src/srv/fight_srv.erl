@@ -985,7 +985,7 @@ do_skill_state_wait(Op, StateName, State) ->
                     _ ->
                         notice_player_op(Op, [SkillSeat], State),
                         StateAfterWait
-                end,
+                end
     end,
     {next_state, StateName, NewState}.
 
