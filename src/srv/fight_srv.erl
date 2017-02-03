@@ -365,9 +365,11 @@ state_part_fayan({player_op, PlayerId, ?OP_EXIT_PART_JINGZHANG, OpList}, State) 
     SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
     PartJingZhang = maps:get(part_jingzhang, State),
     NewState = maps:put(part_jingzhang, PartJingZhang -- [SeatId], State),
+    ExitJingZhang = maps:get(exit_jingzhang, NewState),
+    NewState1 =  maps:put(exit_jingzhang, ExitJingZhang ++ [SeatId], NewState),
     % notice_player_op(?OP_EXIT_PART_JINGZHANG, [SeatId], State),
-    lib_fight:do_exit_part(PlayerId, [0], NewState),
-    {next_state, state_part_fayan, NewState};
+    lib_fight:do_exit_part(PlayerId, [0], NewState1),
+    {next_state, state_part_fayan, NewState1};
 
 state_part_fayan({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
     do_receive_fayan(PlayerId, Chat, State),
@@ -401,7 +403,8 @@ state_xuanju_jingzhang(start, State) ->
 state_xuanju_jingzhang(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_XUANJU_JINGZHANG)),
     notice_xuanju_jingzhang(State),
-    WaitList = lib_fight:get_alive_seat_list(State) -- maps:get(part_jingzhang, State),
+    ExitJingZhang = maps:get(exit_jingzhang, NewState),
+    WaitList = (lib_fight:get_alive_seat_list(State) -- maps:get(part_jingzhang, State)) -- ExitJingZhang,
     StateAfterWait = do_set_wait_op(WaitList, State),
     {next_state, state_xuanju_jingzhang, StateAfterWait};    
     
@@ -1223,9 +1226,10 @@ notice_xuanju_result(XaunJuType, IsDraw, XuanjuSeat, XuanJuResult, State) ->
     lib_fight:send_to_all_player(Send, State).
 
 notice_xuanju_jingzhang(State) ->
+    ExitJingZhang = maps:get(exit_jingzhang, NewState),
     PartXuanjuList = maps:get(part_jingzhang, State),
     notice_player_op(?OP_XUANJU_JINGZHANG, PartXuanjuList, 
-        lib_fight:get_alive_seat_list(State) -- PartXuanjuList, State).
+        (lib_fight:get_alive_seat_list(State) -- PartXuanjuList) -- ExitJingZhang, State).
 
 notice_xuanju_jingzhang_result(IsDraw, JingZhang, XuanjuResult, State) ->
     notice_xuanju_result(?XUANJU_TYPE_JINGZHANG, IsDraw, JingZhang, XuanjuResult, State).
@@ -1342,6 +1346,7 @@ clear_night_op(State) ->
            game_round => maps:get(game_round, State) + 1,
            jingzhang => NewJingZhang,
            lieren_kill => 0,
+           exit_jingzhang => [], %%
            langren_boom => 0
            }.
 
