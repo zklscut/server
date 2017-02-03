@@ -489,10 +489,10 @@ state_night_skill(op_over, State) ->
 %% ====================================================================
 
 state_night_death(start, State) ->
-    DieList = maps:get(die, State) ,
+    DieList = maps:get(die, State),
     case maps:get(game_round, State) of
         1 ->
-            do_fayan_state_start(DieList, state_night_death, State);
+            do_fayan_state_start(lists:sort(DieList), state_night_death, State);
         _ ->
             send_event_inner(start),
             {next_state, get_next_game_state(state_night_death), State}
