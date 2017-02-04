@@ -43,6 +43,7 @@
          is_seat_alive/2,
          do_part_jingzhang_op_twice/1,
          do_exit_part/3,
+         do_bailang_boom/3,
          do_skill/4]).
 
 -include("fight.hrl").
@@ -528,6 +529,11 @@ do_skill_inner(SeatId, ?DUTY_LANGREN, _, State) ->
 
 do_skill_inner(_SeatId, ?OP_CHANGE_JINGZHANG, [SelectId], State) ->
     maps:put(jingzhang, SelectId, State).
+
+do_bailang_boom(PlayerId, ?DUTY_BAILANG, State) ->
+    SeatId = get_seat_id_by_player_id(PlayerId, State),
+    NewState = maps:put(die, maps:get(die, State) ++ [SeatId], State),
+    maps:put(bailang, SeatId, NewState).
 
 %%%====================================================================
 %%% Internal functions

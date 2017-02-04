@@ -66,7 +66,8 @@
                   shouwei => 0,         %% 守卫的id
                   nvwu => {0, 0},       %% 女巫操作
                   nvwu_left => [1, 2],  %% 女巫剩余的药
-                  langren => 0,         %% 狼人操作
+                  langren => 0,         %% 狼人击杀的目标
+                  bailang => 0,         %% 白狼自爆
                   hunxuer => 0,         %% 混血儿是否帮狼人
                   daozei => [],         %% 盗贼可选择的
                   part_jingzhang => [], %% 參與選舉警長

@@ -286,11 +286,11 @@ state_part_jingzhang(start, State) ->
                     {next_state, get_next_game_state(state_part_jingzhang), maps:put(part_jingzhang, FayanList, State)};
                 1 ->
                    send_event_inner(start),
-                   {next_state, state_night_skill, State} 
+                   {next_state, state_night_result, State} 
             end;
         _ ->
             send_event_inner(start),
-            {next_state, state_night_skill, State}
+            {next_state, state_night_result, State}
     end;
 
 state_part_jingzhang(wait_op, State) ->
@@ -336,10 +336,11 @@ state_part_fayan({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
     case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
         ?DUTY_BAILANG ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-            NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
+            % NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
+            NewState = lib_fight:do_bailang_boom(PlayerId, ?DUTY_BAILANG, State),
             NewState1 = maps:put(langren_boom, 1, NewState),
             send_event_inner(start),
-            {next_state, state_night_skill, NewState1};
+            {next_state, state_night_result, NewState1};
         _ ->
             {next_state, state_part_fayan, State}
     end;
@@ -351,7 +352,7 @@ state_part_fayan({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
             NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
             NewState1 = maps:put(langren_boom, 1, NewState),
             send_event_inner(start),
-            {next_state, state_night_skill, NewState1};
+            {next_state, state_night_result, NewState1};
         _ ->
             {next_state, state_part_fayan, State}
     end;
@@ -430,11 +431,20 @@ state_xuanju_jingzhang(op_over, State) ->
 
 
 %% ====================================================================
+%% state_night_result
+%% ====================================================================
+state_night_result(start, State)->
+    notice_game_status_change(state_night_result, State),
+    notice_night_result(State),
+    send_event_inner(start, b_fight_state_wait:get(state_night_result)),
+    {next_state, get_next_game_state(state_night_result), State}
+
+%% ====================================================================
 %% state_night_skill
 %% ====================================================================
  
 state_night_skill(start, State) ->
-    notice_night_result(State),
+    % notice_night_result(State),
     do_skill_state_start(state_night_skill, State);
     % {IsHaveSkill, SeatId} = skill_exist_in_die_list(state_night_skill, State),
 
@@ -501,7 +511,8 @@ state_night_death({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
     case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
         ?DUTY_BAILANG ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-            NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
+            % NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
+            NewState = lib_fight:do_bailang_boom(PlayerId, ?DUTY_BAILANG, State),
             send_event_inner(start),
             {next_state, state_night, NewState};
         _ ->
@@ -584,7 +595,8 @@ state_fayan({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
     case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
         ?DUTY_BAILANG ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-            NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
+            % NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
+            NewState = lib_fight:do_bailang_boom(PlayerId, ?DUTY_BAILANG, State),
             send_event_inner(start),
             {next_state, state_night, NewState};
         _ ->
@@ -760,7 +772,8 @@ state_toupiao_death({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
     case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
         ?DUTY_BAILANG ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-            NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
+            % NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
+            NewState = lib_fight:do_bailang_boom(PlayerId, ?DUTY_BAILANG, State),
             send_event_inner(start),
             {next_state, state_night, NewState};
         _ ->
@@ -1330,7 +1343,8 @@ clear_night_op(State) ->
         end,
     State#{wait_op_list => [],   %% 等待中的操作
            nvwu => {0, 0},       %% 女巫操作
-           langren => 0,         %% 狼人操作
+           langren => 0,         %% 狼人击杀的目标
+           bailang => 0,         %% 白狼自爆
            % part_jingzhang => [], %% 參與選舉警長
            % xuanju_draw_cnt => 0, %% 选举平局次数
            jingzhang_op => 0,    %% 警长操作
@@ -1408,6 +1422,8 @@ get_next_game_state(GameState) ->
         state_part_fayan ->
             state_xuanju_jingzhang;
         state_xuanju_jingzhang ->
+            state_night_result;
+        state_night_result->
             state_night_skill;
         state_night_skill ->
             state_night_death;
@@ -1471,8 +1487,10 @@ get_state_legal_op(GameState) ->
             [];
         state_night ->
             [];
+        state_night_result->
+            [];
         state_fight_over ->
-            state_fight_over
+            []
     end.
 
 get_status_id(GameState) ->
@@ -1524,7 +1542,9 @@ get_status_id(GameState) ->
         state_part_fayan_twice->    %%竞选警长平票发言状态
             22;
         state_fayan_twice->     %%驱逐发言平票发言状态
-            23
+            23;
+        state_night_result-> %%晚上死亡结果通知
+            24
     end.
 
 get_twice_state_id(GameState)->
