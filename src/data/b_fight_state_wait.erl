@@ -6,17 +6,17 @@
 get(start) ->
     4000;
 get(state_daozei) ->
-    4000;
+    0;
 get(state_qiubite) ->
-    4000;
+    0;
 get(state_hunxueer) ->
-    4000;
+    0;
 get(state_shouwei) ->
-    4000;
+    0;
 get(state_langren) ->
-    4000;
+    0;
 get(state_nvwu) ->
-    4000;
+    0;
 get(state_yuyanjia) ->
     4000;
 get(state_part_jingzhang) ->

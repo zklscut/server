@@ -98,8 +98,7 @@ state_daozei(timeout, State) ->
 state_daozei(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_daozei_op(State),
-    % send_event_inner(start, b_fight_state_wait:get(state_daozei)),
-    send_event_inner(start),
+    send_event_inner(start, b_fight_state_wait:get(state_daozei)),
     {next_state, get_next_game_state(state_daozei), NewState}.
             
 %% ====================================================================
@@ -123,8 +122,7 @@ state_qiubite(timeout, State) ->
 state_qiubite(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_qiubite_op(State),
-    % send_event_inner(start, b_fight_state_wait:get(state_qiubite)),
-    send_event_inner(start),
+    send_event_inner(start, b_fight_state_wait:get(state_qiubite)),
     {next_state, get_next_game_state(state_qiubite), NewState}.
 
 %% ====================================================================
@@ -148,8 +146,7 @@ state_hunxueer(timeout, State) ->
 state_hunxueer(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_hunxuer_op(State),
-    % send_event_inner(start, b_fight_state_wait:get(state_hunxueer)),
-    send_event_inner(start),
+    send_event_inner(start, b_fight_state_wait:get(state_hunxueer)),
     {next_state, get_next_game_state(state_hunxueer), NewState}.
 
 %% ====================================================================
@@ -171,8 +168,7 @@ state_shouwei(timeout, State) ->
 state_shouwei(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_shouwei_op(State),
-    % send_event_inner(start, b_fight_state_wait:get(state_shouwei)),
-    send_event_inner(start),
+    send_event_inner(start, b_fight_state_wait:get(state_shouwei)),
     {next_state, get_next_game_state(state_shouwei), NewState}.
             
 %% ====================================================================
@@ -196,8 +192,7 @@ state_langren(timeout, State) ->
 state_langren(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_langren_op(State),
-    % send_event_inner(start, b_fight_state_wait:get(state_langren)),
-    send_event_inner(start),
+    send_event_inner(start, b_fight_state_wait:get(state_langren)),
     {next_state, get_next_game_state(state_langren), NewState}.
                  
 %% ====================================================================
@@ -219,8 +214,7 @@ state_nvwu(timeout, State) ->
 state_nvwu(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_nvwu_op(State),
-    % send_event_inner(start, b_fight_state_wait:get(state_nvwu)),
-    send_event_inner(start),
+    send_event_inner(start, b_fight_state_wait:get(state_nvwu)),
     {next_state, get_next_game_state(state_nvwu), NewState}.
             
 %% ====================================================================
@@ -250,22 +244,23 @@ state_yuyanjia(timeout, State) ->
 state_yuyanjia(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_yuyanjia_op(State),
-    send_event_inner(start, b_fight_state_wait:getEnd(state_yuyanjia)),
-    % send_event_inner(start),
+    send_event_inner(start, b_fight_state_wait:get(state_yuyanjia)),
     {next_state, get_next_game_state(state_yuyanjia), NewState}.
 
-
+%% ====================================================================
+%% state_day
+%% ====================================================================
 state_day(start, State) ->
     notice_game_status_change(state_day, State),
     send_event_inner(start, b_fight_state_wait:get(state_day)),
-    % {next_state, get_next_game_state(state_day), State}.
-    case is_over(State) of
-        true ->
-            {next_state, state_fight_over, State};
-        false ->
-            {next_state, get_next_game_state(state_day), State}
-    end.
-
+    NextState = 
+        case is_over(State) of
+            true ->
+                state_fight_over;
+            false ->
+                get_next_game_state(state_day)
+        end,
+    {next_state, NewState, State}.
 
 %% ====================================================================
 %% state_part_jingzhang
