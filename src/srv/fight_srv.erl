@@ -22,13 +22,19 @@
          state_part_jingzhang/2,
          state_part_fayan/2,
          state_xuanju_jingzhang/2,
+         state_night_bailang_kill/2,
+         state_night_result/2,
+         state_night_change_jing_zhang/2,
          state_night_skill/2,
+         state_night_lieren_kill_change_jing_zhang/2,
          state_night_death/2,
          state_jingzhang/2,
          state_fayan/2,
          state_guipiao/2,
          state_toupiao/2,
+         state_toupiao_change_jing_zhang/2,
          state_toupiao_skill/2,
+         state_toupiao_lieren_kill_change_jing_zhang/2,
          state_toupiao_death/2,
          state_day/2,
          state_night/2,
@@ -359,7 +365,7 @@ state_part_fayan({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
             {next_state, state_part_fayan, State}
     end;
 
-state_part_fayan({player_op, PlayerId, ?OP_EXIT_PART_JINGZHANG, OpList}, State) ->
+state_part_fayan({player_op, PlayerId, ?OP_EXIT_PART_JINGZHANG, _}, State) ->
     SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
     PartJingZhang = maps:get(part_jingzhang, State),
     NewState = maps:put(part_jingzhang, PartJingZhang -- [SeatId], State),
