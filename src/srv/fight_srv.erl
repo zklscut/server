@@ -503,7 +503,7 @@ state_night_skill(start, State) ->
             send_event_inner(start),
             {next_state, state_night_death, State};
         _->
-            do_skill_state_start(state_night_skill, State);
+            do_skill_state_start(state_night_skill, State)
     end;
 
 state_night_skill(wait_op, State) ->
@@ -528,7 +528,7 @@ state_night_lieren_kill_change_jing_zhang(start, State)->
         _->
             notice_game_status_change(state_night_lieren_kill_change_jing_zhang, State),
             send_event_inner(wait_op, b_fight_state_wait:get(state_night_lieren_kill_change_jing_zhang)),
-            {next_state, state_night_lieren_kill_change_jing_zhang, State};
+            {next_state, state_night_lieren_kill_change_jing_zhang, State}
     end;
 
 state_night_lieren_kill_change_jing_zhang(wait_op, State)->
