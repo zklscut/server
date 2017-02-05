@@ -557,7 +557,7 @@ state_night_lieren_kill_change_jing_zhang(op_over, State) ->
             1->
                 send_event_inner(start),
                 state_night
-        end
+        end,
     {next_state, NextState, NewState}.   
 
 
@@ -803,7 +803,7 @@ state_toupiao(op_over, State) ->
                         _->
                             %%白痴阵亡
                            maps:put(baichi, 0, NewState)     
-                    end
+                    end,
                     {next_state,  get_next_game_state(state_toupiao), NewState1};
                 false ->
                     % notice_toupiao_out(maps:get(quzhu, NewState), NewState),
