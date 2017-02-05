@@ -881,7 +881,7 @@ state_toupiao_lieren_kill_change_jing_zhang(start, State)->
         true->
             notice_game_status_change(state_toupiao_lieren_kill_change_jing_zhang, State),
             send_event_inner(wait_op, b_fight_state_wait:get(state_toupiao_lieren_kill_change_jing_zhang)),
-            {next_state, state_toupiao_lieren_kill_change_jing_zhang, State};
+            {next_state, state_toupiao_lieren_kill_change_jing_zhang, State}
     end;
 
 state_toupiao_lieren_kill_change_jing_zhang(wait_op, State)->
