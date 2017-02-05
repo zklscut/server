@@ -516,7 +516,7 @@ state_night_skill({player_op, PlayerId, Op, OpList}, State) ->
     do_skill_state_op(PlayerId, Op, OpList, state_night_skill, State);
 
 state_night_skill(op_over, State) ->
-    {next_state, state_night_lieren_kill_change_jing_zhang, State}
+    {next_state, state_night_lieren_kill_change_jing_zhang, State}.
  
  %%猎人带走的人移交警徽
 state_night_lieren_kill_change_jing_zhang(start, State)->
