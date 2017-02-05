@@ -32,6 +32,7 @@
          state_fayan/2,
          state_guipiao/2,
          state_toupiao/2,
+         state_day_bailang_kill/2,
          state_toupiao_change_jing_zhang/2,
          state_toupiao_skill/2,
          state_toupiao_lieren_kill_change_jing_zhang/2,
@@ -271,7 +272,6 @@ state_day(start, State) ->
 %% ====================================================================
 %% state_part_jingzhang
 %% ====================================================================
-
 state_part_jingzhang(start, State) ->
     GameRound = maps:get(game_round, State),
     case GameRound of
@@ -824,6 +824,30 @@ state_toupiao(op_over, State) ->
             end
     end.  
 
+%%白狼自爆带人
+%%白狼自爆选择要带走的人
+state_day_bailang_kill(start, State) ->
+    notice_game_status_change(state_day_bailang_kill, State),
+    {next_state, state_day_bailang_kill, State};
+
+state_day_bailang_kill(wait_op, State) ->
+    start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_BAILANG_KILL)),
+    notice_bailang_kill(State),
+    {next_state, state_day_bailang_kill, State}; 
+
+state_day_bailang_kill({player_op, PlayerId, Op, OpList}, State) ->
+    do_receive_player_op(PlayerId, Op, OpList, state_day_bailang_kill, State);
+
+state_day_bailang_kill(timeout, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    send_event_inner(op_over),
+    {next_state, state_day_bailang_kill, State};
+
+state_day_bailang_kill(op_over, State) ->
+    NewState = lib_fight:do_bailang_kill_op(State),
+    %%如果白狼带走白痴
+    {next_state, state_toupiao_change_jing_zhang, NewState}.
+
 %%被投出去的人移交警徽
 state_toupiao_change_jing_zhang(start, State)->
     JingZhang = maps:get(jingzhang, State),
@@ -876,7 +900,7 @@ state_toupiao_skill({player_op, PlayerId, Op, OpList}, State) ->
 state_toupiao_skill(op_over, State) ->
     {next_state, state_toupiao_lieren_kill_change_jing_zhang, State}.
 
-%%猎人带走的人已经警徽
+%%猎人带走的人移交警徽
 state_toupiao_lieren_kill_change_jing_zhang(start, State)->
     JingZhang = maps:get(jingzhang, State),
     Alive = fight_lib:is_seat_alive(JingZhang),
@@ -906,8 +930,19 @@ state_toupiao_lieren_kill_change_jing_zhang(timeout, State) ->
     {next_state, state_toupiao_lieren_kill_change_jing_zhang, State};
 
 state_toupiao_lieren_kill_change_jing_zhang(op_over, State) ->
+    %%判断狼人自爆
     NewState = lib_fight:do_change_jingzhang_op(State),
-    {next_state, state_toupiao_death, NewState}.
+    LangRenBoom = maps:get(langren_boom, NewState),
+    NextState = 
+        case LangRenBoom of
+            0->
+                send_event_inner(start, b_fight_state_wait:get(state_toupiao_lieren_kill_change_jing_zhang)),
+                get_next_game_state(state_toupiao_lieren_kill_change_jing_zhang);
+            1->
+                send_event_inner(start),
+                state_night
+        end,
+    {next_state, NextState, NewState}.
 
 %% ====================================================================
 %% state_toupiao_death
@@ -956,6 +991,9 @@ state_toupiao_death(timeout, State) ->
 
 state_toupiao_death(op_over, State) ->
     do_fayan_state_op_over(state_toupiao_death, State).
+
+
+
 
 %% ====================================================================
 %% state_day
@@ -1674,7 +1712,9 @@ get_state_legal_op(GameState) ->
         state_toupiao_change_jing_zhang->
             [?OP_CHANGE_JINGZHANG];
         state_toupiao_lieren_kill_change_jing_zhang->
-            [?OP_CHANGE_JINGZHANG]
+            [?OP_CHANGE_JINGZHANG];
+        state_day_bailang_kill->
+            [?OP_BAILANG_KILL]
     end.
 
 get_status_id(GameState) ->
@@ -1738,7 +1778,9 @@ get_status_id(GameState) ->
         state_toupiao_change_jing_zhang->
             28;
         state_toupiao_lieren_kill_change_jing_zhang->
-            29
+            29;
+        state_day_bailang_kill->
+            30
     end.
 
 get_twice_state_id(GameState)->
