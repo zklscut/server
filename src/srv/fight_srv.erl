@@ -466,10 +466,10 @@ state_night_change_jing_zhang(start, State)->
         false->
             send_event_inner(start),
             {next_state, state_night_skill, State};
-        true
+        true->
             notice_game_status_change(state_night_change_jing_zhang, State),
             send_event_inner(wait_op, b_fight_state_wait:get(state_night_change_jing_zhang)),
-            {next_state, state_night_change_jing_zhang, State};
+            {next_state, state_night_change_jing_zhang, State}
     end;
 
 state_night_change_jing_zhang(wait_op, State)->
