@@ -548,7 +548,7 @@ do_skill_inner(_SeatId, ?DUTY_LIEREN, [SelectSeat], State) ->
     StateAfterLieRen = maps:put(lieren_kill, SelectSeat, StateAfterDie),
     StateAfterLieRen;
 
-do_skill_inner(SeatId, ?DUTY_BAILANG, [SelectSeat], State) ->
+do_skill_inner(SeatId, ?DUTY_BAILANG, _, State) ->
     DieList = [SeatId],
     maps:put(die, maps:get(die, State) ++ DieList, State);
 
@@ -776,4 +776,4 @@ do_set_die_list(State) ->
     DieList3 = BaiLangKill ++ DieList2,
     DieList4 = [DieList3 || DieList3 <- (KillList -- SaveList), DieList3 =/= 0],
     %%todo:去重
-    maps:put(die, DieList2, State).
+    maps:put(die, DieList4, State).
