@@ -549,7 +549,7 @@ do_skill_inner(_SeatId, ?DUTY_LIEREN, [SelectSeat], State) ->
     StateAfterLieRen;
 
 do_skill_inner(SeatId, ?DUTY_BAILANG, [SelectSeat], State) ->
-    DieList = [SeatId]
+    DieList = [SeatId],
     maps:put(die, maps:get(die, State) ++ DieList, State);
 
 do_skill_inner(SeatId, ?DUTY_LANGREN, _, State) ->
