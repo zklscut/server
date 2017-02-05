@@ -387,7 +387,7 @@ do_bailang_kill_op(State)->
     NewState1 = do_set_die_list(NewState),
     clear_last_op(NewState1).
 
-do_change_jingzhang_op(State)
+do_change_jingzhang_op(State)->
     LastOpData = get_last_op(State),
     PreJingZhang = maps:get(jingzhang, State),
     SeatId = 
