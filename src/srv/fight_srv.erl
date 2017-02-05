@@ -453,7 +453,7 @@ state_night_bailang_kill(timeout, State) ->
 state_night_bailang_kill(op_over, State) ->
     NewState = lib_fight:do_bailang_kill_op(State),
     %%如果白狼带走白痴
-    {next_state, state_night_result, State}.
+    {next_state, state_night_result, NewState}.
 
 %% ====================================================================
 %% state_night_result
@@ -495,7 +495,7 @@ state_night_change_jing_zhang(timeout, State) ->
 
 state_night_change_jing_zhang(op_over, State) ->
     NewState = lib_fight:do_change_jingzhang_op(State),
-    {next_state, state_night_skill, State}.
+    {next_state, state_night_skill, NewState}.
 
 %% ====================================================================
 %% state_night_skill
@@ -587,7 +587,7 @@ state_night_death(start, State) ->
 state_night_death(wait_op, State) ->
     do_fayan_state_wait_op(?OP_DEATH_FAYAN, state_night_death, State);
 
-state_night_death({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
+state_night_death({player_op, PlayerId, ?DUTY_BAILANG, _}, State) ->
     lager:info("state_part_fayan2 "),
     case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
         ?DUTY_BAILANG ->
@@ -672,7 +672,7 @@ state_fayan(start, State) ->
 state_fayan(wait_op, State) ->
     do_fayan_state_wait_op(?OP_FAYAN, state_fayan, State);
 
-state_fayan({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
+state_fayan({player_op, PlayerId, ?DUTY_BAILANG, _}, State) ->
     case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
         ?DUTY_BAILANG ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -855,7 +855,7 @@ state_toupiao_change_jing_zhang(timeout, State) ->
 
 state_toupiao_change_jing_zhang(op_over, State) ->
     NewState = lib_fight:do_change_jingzhang_op(State),
-    {next_state, state_toupiao_skill, State}.
+    {next_state, state_toupiao_skill, NewState}.
 
 %% ====================================================================
 %% state_toupiao_skill
@@ -924,7 +924,7 @@ state_toupiao_death({player_op, PlayerId, Op, [0]}, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     do_receive_player_op(PlayerId, Op, [0], state_toupiao_death, State);
 
-state_toupiao_death({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
+state_toupiao_death({player_op, PlayerId, ?DUTY_BAILANG, _}, State) ->
     case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
         ?DUTY_BAILANG ->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -1213,15 +1213,15 @@ do_skill_state_op(PlayerId, Op, OpList, StateName, State) ->
             {next_state, StateName, State}
     end.       
 
-do_skill_state_op_over(StateName, State) ->
-    LierenKill = maps:get(lieren_kill, State),
-    case maps:get(jingzhang, State) == LierenKill andalso LierenKill =/= 0 of
-        true ->
-            {next_state, StateName, maps:put(skill_seat, LierenKill, State)};
-        false ->
-            send_event_inner(start, b_fight_state_wait:get(StateName)),
-            {next_state, get_next_game_state(StateName), State#{lieren_kill := 0}}
-    end.
+% do_skill_state_op_over(StateName, State) ->
+%     LierenKill = maps:get(lieren_kill, State),
+%     case maps:get(jingzhang, State) == LierenKill andalso LierenKill =/= 0 of
+%         true ->
+%             {next_state, StateName, maps:put(skill_seat, LierenKill, State)};
+%         false ->
+%             send_event_inner(start, b_fight_state_wait:get(StateName)),
+%             {next_state, get_next_game_state(StateName), State#{lieren_kill := 0}}
+%     end.
 
 get_allow_skill(StateName) ->
     case StateName of
@@ -1526,11 +1526,11 @@ clear_night_op(State) ->
 notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, State) ->
     notice_xuanju_result(?XUANJU_TYPE_QUZHU, IsDraw, Quzhu, TouPiaoResult, State).  
 
-notice_toupiao_out(0, _) ->
-    ignore;
+% notice_toupiao_out(0, _) ->
+%     ignore;
 
-notice_toupiao_out(SeatId, State) ->  
-    notice_player_op(?OP_QUZHU, [SeatId], State).
+% notice_toupiao_out(SeatId, State) ->  
+%     notice_player_op(?OP_QUZHU, [SeatId], State).
 
 notice_game_status_change(Status, State) ->
     StatusId = get_status_id(Status),
