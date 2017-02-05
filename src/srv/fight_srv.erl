@@ -866,15 +866,22 @@ state_name(_Event, _From, StateData) ->
     Reply = next_state,
     {reply, Reply, state_name, StateData}.
 
-handle_event({skill, ?SKILL_BAILANG, [SeatId], StateName, State) ->
-    try expression of
-        pattern when guard ->
-            body
+handle_event({skill, PlayerId, Op, OpList}, StateName, State) ->
+    try 
+        SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
+        assert_skill_legal(SeatId, SkillId, SkillData, StateName, State),
+        NewState = lib_fight:do_skill(PlayerId, Op, OpList, State),
+        NextState = get_skill_next_state(Op, StateName),
+        case NewState of
+            StateName ->
+                ignore;
+            ->
+                send_event_inner(start),
+                {next_state, StateName, NewState}
+        end
     catch
-        pattern when guard ->
-            body
-    after
-        body
+        _:_ ->
+            ignore
     end.
 
 handle_event(print_state, StateName, StateData) ->
@@ -894,7 +901,6 @@ terminate(_Reason, _StateName, _StatData) ->
 
 code_change(_OldVsn, StateName, StateData, _Extra) ->
     {ok, StateName, StateData}.
-
 
 %% ====================================================================
 %% gen_fsm Internal functions
@@ -1079,7 +1085,6 @@ do_skill_state_timeout(StateName, State) ->
 do_skill_state_op(PlayerId, Op, OpList, StateName, State) ->
     try
         assert_op_in_wait(PlayerId, State),
-        assert_skill_legal(PlayerId, Op, StateName, State),
         NewState = lib_fight:do_skill(PlayerId, Op, OpList, State),
         {next_state, StateName, NewState}
     catch
@@ -1087,30 +1092,6 @@ do_skill_state_op(PlayerId, Op, OpList, StateName, State) ->
             net_send:send_errcode(ErrCode, PlayerId),
             {next_state, StateName, State}
     end.       
-
-get_allow_skill(StateName) ->
-    case StateName of
-        state_night_skill ->
-            [?DUTY_LIEREN];
-        state_toupiao_skill ->
-            [?DUTY_LIEREN, ?DUTY_BAICHI]
-    end.
-
-assert_skill_legal(PlayerId, Op, StateName, State) ->
-    AllowDuty = get_allow_skill(StateName),
-    case lists:member(Op, AllowDuty) of
-        true ->
-            ok;
-        false ->
-            SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
-            case maps:get(jingzhang, State) == SeatId andalso 
-                    Op == ?OP_CHANGE_JINGZHANG of
-                true ->
-                    ok;
-                false ->
-                    throw(?ERROR)
-            end
-    end.
 
 do_fayan_state_start(InitFayanList, StateName, State) ->
     FayanList = [SeatId || SeatId <- InitFayanList, SeatId =/= 0],

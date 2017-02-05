@@ -84,10 +84,10 @@
                   lieren_kill => 0,     %% 猎人杀死
                   last_op_data => #{},  %% 上一轮操作的数据, 杀了几号, 投了几号等等
                   daozei_seat => 0,     %%盗贼的位置
-                  player_num => 0,       %%玩家总数量
-                  do_police_select => 0, %%是否选举过警长
-                  langren_boom => 0,      %%狼人自爆过
-                  die_cache => []         %%狼人自爆时死亡对象缓冲
+                  player_num => 0,      %%玩家总数量
+                  do_police_select => 0,%%是否选举过警长
+                  langren_boom => 0,    %%狼人自爆过
+                  die_cache => []       %%狼人自爆时死亡对象缓冲
                   }).
 
 -endif.
