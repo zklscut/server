@@ -383,9 +383,9 @@ do_bailang_kill_op(State)->
                                 op = ?OP_BAILANG_KILL,
                                 op_list = [KillSeat]},
     send_to_all_player(Send, State),
-    maps:put(bailang, KillSeat, State),
-    do_set_die_list(),
-    clear_last_op(NewState).
+    NewState = maps:put(bailang, KillSeat, State),
+    NewState1 = do_set_die_list(NewState),
+    clear_last_op(NewState1).
 
 do_change_jingzhang_op(State)
     LastOpData = get_last_op(State),
