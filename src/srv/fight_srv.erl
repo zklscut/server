@@ -260,7 +260,7 @@ state_day(start, State) ->
             false ->
                 get_next_game_state(state_day)
         end,
-    {next_state, NewState, State}.
+    {next_state, NextState, State}.
 
 %% ====================================================================
 %% state_part_jingzhang
@@ -826,7 +826,7 @@ state_toupiao_change_jing_zhang(start, State)->
         false->
             send_event_inner(start),
             {next_state, state_toupiao_skill, State};
-        true
+        true->
             notice_game_status_change(state_toupiao_change_jing_zhang, State),
             send_event_inner(wait_op, b_fight_state_wait:get(state_toupiao_change_jing_zhang)),
             {next_state, state_toupiao_change_jing_zhang, State}
@@ -878,7 +878,7 @@ state_toupiao_lieren_kill_change_jing_zhang(start, State)->
         false->
             send_event_inner(start),
             {next_state, state_toupiao_death, State};
-        true
+        true->
             notice_game_status_change(state_toupiao_lieren_kill_change_jing_zhang, State),
             send_event_inner(wait_op, b_fight_state_wait:get(state_toupiao_lieren_kill_change_jing_zhang)),
             {next_state, state_toupiao_lieren_kill_change_jing_zhang, State};
