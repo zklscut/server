@@ -22,7 +22,6 @@
          state_part_jingzhang/2,
          state_part_fayan/2,
          state_xuanju_jingzhang/2,
-         state_night_bailang_kill/2,
          state_night_result/2,
          state_night_change_jing_zhang/2,
          state_night_skill/2,
@@ -32,7 +31,6 @@
          state_fayan/2,
          state_guipiao/2,
          state_toupiao/2,
-         state_day_bailang_kill/2,
          state_toupiao_change_jing_zhang/2,
          state_toupiao_skill/2,
          state_toupiao_lieren_kill_change_jing_zhang/2,
@@ -277,17 +275,15 @@ state_part_jingzhang(start, State) ->
     case GameRound of
         1 ->
             notice_game_status_change(state_part_jingzhang, State),
-            % send_event_inner(wait_op),
-            send_event_inner(wait_op, b_fight_state_wait:get(state_part_jingzhang)),
+            send_event_inner(wait_op, b_fight_wait_op:get(state_part_jingzhang)),
             {next_state, state_part_jingzhang, State};
         2 ->
-            %%第二天可以再次竞选警长,但是参与者按照第一天的算
+            %%如果狼人自爆中断选举过程,第二天可以再次竞选警长,但是参与者按照第一天的算
             DoPoliceSelect = maps:get(do_police_select, State),
             case DoPoliceSelect of
                 0 ->
-                    % send_event_inner(start),
                     PartJingZhangList = maps:get(part_jingzhang, State),
-                    FayanList = [SeatId || SeatId <- PartJingZhangList, not lists:member(SeatId, maps:get(out_seat_list, State))],
+                    FayanList = [SeatId || SeatId <- (PartJingZhangList -- maps:get(out_seat_list, State))],
                     send_event_inner(start, b_fight_state_wait:get(state_part_jingzhang)),
                     {next_state, get_next_game_state(state_part_jingzhang), maps:put(part_jingzhang, FayanList, State)};
                 1 ->
@@ -316,8 +312,7 @@ state_part_jingzhang(timeout, State) ->
 state_part_jingzhang(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_part_jingzhang_op(State),
-    % send_event_inner(start, b_fight_state_wait:get(state_part_jingzhang)),
-    send_event_inner(start),
+    send_event_inner(start, b_fight_state_wait:get(state_part_jingzhang)),
     {next_state, get_next_game_state(state_part_jingzhang), NewState}. 
 
 %% ====================================================================
@@ -329,58 +324,22 @@ state_part_fayan(start, State) ->
     NewState = 
     case DrawCnt of
         0->
-        State;
+            State;
         _->
-        lib_fight:do_part_jingzhang_op_twice(State)
+            lib_fight:do_part_jingzhang_op_twice(State)
     end,
     do_fayan_state_start(maps:get(part_jingzhang, NewState), state_part_fayan, NewState);
 
 state_part_fayan(wait_op, State) ->
     do_fayan_state_wait_op(?OP_PART_FAYAN, state_part_fayan, State);
 
-state_part_fayan({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
-    case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
-        ?DUTY_BAILANG ->
-            %%todo:如果白狼晚上被杀了，则发动技能无效
-            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-            % NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
-            NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
-            NewState1 = maps:put(langren_boom, 1, NewState),
-            send_event_inner(start),
-            {next_state, state_night_bailang_kill, NewState1};
-        _ ->
-            {next_state, state_part_fayan, State}
-    end;
-    
-state_part_fayan({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
-    case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
-        ?DUTY_LANGREN ->
-            %%如果狼人晚上被杀了，则发动技能无效并且通知前端
-            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-            NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
-            NewState1 = maps:put(langren_boom, 1, NewState),
-            send_event_inner(start),
-            {next_state, state_night_result, NewState1};
-        _ ->
-            {next_state, state_part_fayan, State}
-    end;
-
-state_part_fayan({player_op, PlayerId, ?OP_EXIT_PART_JINGZHANG, _}, State) ->
-    SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
-    PartJingZhang = maps:get(part_jingzhang, State),
-    NewState = maps:put(part_jingzhang, PartJingZhang -- [SeatId], State),
-    ExitJingZhang = maps:get(exit_jingzhang, NewState),
-    NewState1 =  maps:put(exit_jingzhang, ExitJingZhang ++ [SeatId], NewState),
-    lib_fight:do_exit_part(PlayerId, [0], NewState1),
-    {next_state, state_part_fayan, NewState1};
+state_part_fayan({player_op, PlayerId, Op, [0]}, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    do_receive_player_op(PlayerId, Op, [0], state_part_fayan, State);
 
 state_part_fayan({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
     do_receive_fayan(PlayerId, Chat, State),
     {next_state, state_part_fayan, State};
-
-state_part_fayan({player_op, PlayerId, Op, [0]}, State) ->
-    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    do_receive_player_op(PlayerId, Op, [0], state_part_fayan, State);
 
 state_part_fayan(timeout, State) ->
     do_fayan_state_timeout(state_part_fayan, State);
@@ -398,8 +357,7 @@ state_xuanju_jingzhang(start, State) ->
             {next_state, get_next_game_state(state_xuanju_jingzhang), State};
         _ ->
             notice_game_status_change(state_xuanju_jingzhang, State),
-            % send_event_inner(wait_op),
-            send_event_inner(wait_op, b_fight_state_wait:get(state_xuanju_jingzhang)),
+            send_event_inner(wait_op, b_fight_op_wait:get(state_xuanju_jingzhang)),
             {next_state, state_xuanju_jingzhang, State}
     end;
 
@@ -420,7 +378,6 @@ state_xuanju_jingzhang(timeout, State) ->
     {next_state, state_xuanju_jingzhang, State};
 
 state_xuanju_jingzhang(op_over, State) ->
-    % {IsDraw, XuanjuResult, NewState} = lib_fight:do_xuanju_jingzhang_op(State#{xuanju_draw_cnt := 1}),
     {IsDraw, XuanjuResult, MaxSeatList, NewState} = lib_fight:do_xuanju_jingzhang_op(State),
     notice_xuanju_jingzhang_result(IsDraw, maps:get(jingzhang, NewState), XuanjuResult, NewState),
     case IsDraw of
@@ -431,29 +388,6 @@ state_xuanju_jingzhang(op_over, State) ->
             send_event_inner(start, b_fight_state_wait:get(state_xuanju_jingzhang)),
             {next_state, get_next_game_state(state_xuanju_jingzhang), maps:put(do_police_select, 1, NewState)}
     end.     
-
-%%白狼自爆选择要带走的人
-state_night_bailang_kill(start, State) ->
-    notice_game_status_change(state_night_bailang_kill, State),
-    {next_state, state_night_bailang_kill, State};
-
-state_night_bailang_kill(wait_op, State) ->
-    start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_BAILANG_KILL)),
-    notice_bailang_kill(State),
-    {next_state, state_night_bailang_kill, State}; 
-
-state_night_bailang_kill({player_op, PlayerId, Op, OpList}, State) ->
-    do_receive_player_op(PlayerId, Op, OpList, state_night_bailang_kill, State);
-
-state_night_bailang_kill(timeout, State) ->
-    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    send_event_inner(op_over),
-    {next_state, state_night_bailang_kill, State};
-
-state_night_bailang_kill(op_over, State) ->
-    NewState = lib_fight:do_bailang_kill_op(State),
-    %%如果白狼带走白痴
-    {next_state, state_night_result, NewState}.
 
 %% ====================================================================
 %% state_night_result
@@ -495,7 +429,8 @@ state_night_change_jing_zhang(timeout, State) ->
 
 state_night_change_jing_zhang(op_over, State) ->
     NewState = lib_fight:do_change_jingzhang_op(State),
-    {next_state, state_night_skill, NewState}.
+    send_event_inner(start),
+    {next_state, get_next_game_state(state_night_skill), NewState}.
 
 %% ====================================================================
 %% state_night_skill
@@ -522,9 +457,13 @@ state_night_skill({player_op, PlayerId, Op, OpList}, State) ->
     do_skill_state_op(PlayerId, Op, OpList, state_night_skill, State);
 
 state_night_skill(op_over, State) ->
-    {next_state, state_night_lieren_kill_change_jing_zhang, State}.
+    {next_state, get_next_game_state(state_night_skill), State}.
  
- %%猎人带走的人移交警徽
+
+%% ====================================================================
+%% state_night_skill
+%% ====================================================================
+%%猎人带走的人移交警徽
 state_night_lieren_kill_change_jing_zhang(start, State)->
     LierenKill = maps:get(lieren_kill, State),
     case LierenKill of
@@ -566,10 +505,6 @@ state_night_lieren_kill_change_jing_zhang(op_over, State) ->
         end,
     {next_state, NextState, NewState}.   
 
-
-%%猎人带走的人不可能发动技能
-
-
 %% ====================================================================
 %% state_night_death
 %% ====================================================================
@@ -586,31 +521,6 @@ state_night_death(start, State) ->
 
 state_night_death(wait_op, State) ->
     do_fayan_state_wait_op(?OP_DEATH_FAYAN, state_night_death, State);
-
-state_night_death({player_op, PlayerId, ?DUTY_BAILANG, _}, State) ->
-    lager:info("state_part_fayan2 "),
-    case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
-        ?DUTY_BAILANG ->
-            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-            % NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
-            NewState = lib_fight:do_bailang_boom(PlayerId, ?DUTY_BAILANG, State),
-            send_event_inner(start),
-            {next_state, state_night, NewState};
-        _ ->
-            {next_state, state_night_death, State}
-    end;
-    
-state_night_death({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
-    lager:info("state_part_fayan3 "),
-    case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
-        ?DUTY_LANGREN ->
-            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-            NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
-            send_event_inner(start),
-            {next_state, state_night, NewState};
-        _ ->
-            {next_state, state_night_death, State}
-    end;
 
 state_night_death({player_op, PlayerId, Op, [0]}, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -665,35 +575,11 @@ state_jingzhang(op_over, State) ->
 %% ====================================================================
 %% state_fayan
 %% ====================================================================
-
 state_fayan(start, State) ->
     do_fayan_state_start(maps:get(fayan_turn, State), state_fayan, State);
 
 state_fayan(wait_op, State) ->
     do_fayan_state_wait_op(?OP_FAYAN, state_fayan, State);
-
-state_fayan({player_op, PlayerId, ?DUTY_BAILANG, _}, State) ->
-    case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
-        ?DUTY_BAILANG ->
-            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-            % NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
-            NewState = lib_fight:do_bailang_boom(PlayerId, ?DUTY_BAILANG, State),
-            send_event_inner(start),
-            {next_state, state_night, NewState};
-        _ ->
-            {next_state, state_fayan, State}
-    end;
-    
-state_fayan({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
-    case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
-        ?DUTY_LANGREN ->
-            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-            NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
-            send_event_inner(start),
-            {next_state, state_night, NewState};
-        _ ->
-            {next_state, state_fayan, State}
-    end;
 
 state_fayan({player_op, PlayerId, Op, [0]}, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -783,10 +669,6 @@ state_toupiao(op_over, State) ->
     notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, NewState),
     case IsDraw of
         true ->
-            % maps:put(fayan_turn, MaxSelectList, NewState)
-            % notice_toupiao(MaxSelectList, NewState),
-            % StateAfterWait = do_set_wait_op(lib_fight:get_alive_seat_list(State) -- MaxSelectList, NewState),
-            % {next_state, state_toupiao, StateAfterWait};
             send_event_inner(start),
             {next_state, state_fayan, maps:put(fayan_turn, MaxSelectList, NewState)};
         false ->   
@@ -798,25 +680,18 @@ state_toupiao(op_over, State) ->
                         lib_fight:get_duty_by_seat(Quzhu, NewState) == ?DUTY_BAICHI
                 end,
             send_event_inner(start, b_fight_state_wait:get(state_toupiao)),
-            case IsBaichi of
+            case IsBaichi andalso maps:get(baichi, NewState) == 0 of
                 true ->
-                    NewState1 =
-                    case maps:get(baichi, NewState) of
-                        0->
-                            %%白痴只有被投票出去才翻牌
-                            lib_fight:do_skill(lib_fight:get_player_id_by_seat(Quzhu, NewState), 
-                            ?DUTY_BAICHI, [Quzhu], NewState);
-                        _->
-                            %%白痴阵亡
-                           maps:put(baichi, 0, NewState)     
-                    end,
-                    {next_state,  get_next_game_state(state_toupiao), NewState1};
+                    StateAfterBaichi = 
+                        lib_fight:do_skill(lib_fight:get_player_id_by_seat(Quzhu, NewState), 
+                            ?DUTY_BAICHI, [Quzhu], NewState),
+                    {next_state,  get_next_game_state(state_toupiao), maps:put(baichi, Quzhu, StateAfterBaichi};
                 false ->
-                    % notice_toupiao_out(maps:get(quzhu, NewState), NewState),
+                    notice_toupiao_out(maps:get(quzhu, NewState), NewState),
                     NextState = 
                         case is_over(NewState) of
                             true ->
-                                state_fight_over;
+                                state_day;
                             false ->
                                 get_next_game_state(state_toupiao)
                         end,
@@ -824,39 +699,19 @@ state_toupiao(op_over, State) ->
             end
     end.  
 
-%%白狼自爆带人
-%%白狼自爆选择要带走的人
-state_day_bailang_kill(start, State) ->
-    notice_game_status_change(state_day_bailang_kill, State),
-    {next_state, state_day_bailang_kill, State};
-
-state_day_bailang_kill(wait_op, State) ->
-    start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_BAILANG_KILL)),
-    notice_bailang_kill(State),
-    {next_state, state_day_bailang_kill, State}; 
-
-state_day_bailang_kill({player_op, PlayerId, Op, OpList}, State) ->
-    do_receive_player_op(PlayerId, Op, OpList, state_day_bailang_kill, State);
-
-state_day_bailang_kill(timeout, State) ->
-    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    send_event_inner(op_over),
-    {next_state, state_day_bailang_kill, State};
-
-state_day_bailang_kill(op_over, State) ->
-    NewState = lib_fight:do_bailang_kill_op(State),
-    %%如果白狼带走白痴
-    {next_state, state_toupiao_change_jing_zhang, NewState}.
+%% ====================================================================
+%% state_toupiao_change_jing_zhang
+%% ====================================================================
 
 %%被投出去的人移交警徽
 state_toupiao_change_jing_zhang(start, State)->
     JingZhang = maps:get(jingzhang, State),
-    Alive = fight_lib:is_seat_alive(JingZhang),
-    case Alive of
-        false->
+    IsJingchaAlive = lib_fight:is_seat_alive(JingZhang) andalso (maps:get(baichi, State) =/= JingZhang),
+    case IsJingchaAlive of
+        true->
             send_event_inner(start),
             {next_state, state_toupiao_skill, State};
-        true->
+        false ->
             notice_game_status_change(state_toupiao_change_jing_zhang, State),
             send_event_inner(wait_op, b_fight_state_wait:get(state_toupiao_change_jing_zhang)),
             {next_state, state_toupiao_change_jing_zhang, State}
@@ -900,6 +755,9 @@ state_toupiao_skill({player_op, PlayerId, Op, OpList}, State) ->
 state_toupiao_skill(op_over, State) ->
     {next_state, state_toupiao_lieren_kill_change_jing_zhang, State}.
 
+%% ====================================================================
+%% state_toupiao_lieren_kill_change_jing_zhang
+%% ====================================================================
 %%猎人带走的人移交警徽
 state_toupiao_lieren_kill_change_jing_zhang(start, State)->
     JingZhang = maps:get(jingzhang, State),
@@ -959,29 +817,6 @@ state_toupiao_death({player_op, PlayerId, Op, [0]}, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     do_receive_player_op(PlayerId, Op, [0], state_toupiao_death, State);
 
-state_toupiao_death({player_op, PlayerId, ?DUTY_BAILANG, _}, State) ->
-    case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
-        ?DUTY_BAILANG ->
-            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-            % NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
-            NewState = lib_fight:do_bailang_boom(PlayerId, ?DUTY_BAILANG, State),
-            send_event_inner(start),
-            {next_state, state_night, NewState};
-        _ ->
-            {next_state, state_toupiao_death, State}
-    end;
-    
-state_toupiao_death({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
-    case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
-        ?DUTY_LANGREN ->
-            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-            NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
-            send_event_inner(start),
-            {next_state, state_night, NewState};
-        _ ->
-            {next_state, state_toupiao_death, State}
-    end;
-
 state_toupiao_death({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
     do_receive_fayan(PlayerId, Chat, State),
     {next_state, state_toupiao_death, State};
@@ -991,9 +826,6 @@ state_toupiao_death(timeout, State) ->
 
 state_toupiao_death(op_over, State) ->
     do_fayan_state_op_over(state_toupiao_death, State).
-
-
-
 
 %% ====================================================================
 %% state_day
@@ -1033,6 +865,17 @@ state_over(start, State) ->
 state_name(_Event, _From, StateData) ->
     Reply = next_state,
     {reply, Reply, state_name, StateData}.
+
+handle_event({skill, ?SKILL_BAILANG, [SeatId], StateName, State) ->
+    try expression of
+        pattern when guard ->
+            body
+    catch
+        pattern when guard ->
+            body
+    after
+        body
+    end.
 
 handle_event(print_state, StateName, StateData) ->
     lager:info("state name ~p", [StateName]),
@@ -1120,7 +963,7 @@ do_duty_state_start(Duty, GameState, State) ->
             {next_state, get_next_game_state(GameState), State};
         _ ->
             notice_game_status_change(GameState, State),
-            send_event_inner(wait_op, b_fight_state_wait:get(GameState)),
+            send_event_inner(wait_op, b_fight_wait_op:get(GameState)),
             {next_state, GameState, State}
     end.
 
@@ -1164,26 +1007,6 @@ do_receive_player_op(PlayerId, Op, OpList, StateName, State) ->
             {next_state, StateName, State}
     end.
 
-%%是否有死亡的目标可以发动技能
-% skill_exist_in_die_list(StateName, State)->
-%     AllowDuty = get_allow_skill(StateName),
-%     SeatId = 
-%         case StateName of
-%             state_night_skill ->
-%                 maps:get(langren, State);
-%             state_toupiao_skill ->
-%                 maps:get(quzhu, State)
-%         end,
-%     IsHaveSkill = 
-%         case SeatId of
-%             0 ->
-%                 false;
-%             _ ->
-%                 DutyId = lib_fight:get_duty_by_seat(SeatId, State),
-%                 lists:member(DutyId, AllowDuty) orelse (SeatId == maps:get(jingzhang, State))
-%         end,
-%     {IsHaveSkill, SeatId}.
-
 do_skill_state_start(StateName, State) ->
     AllowDuty = get_allow_skill(StateName),
     SeatId = 
@@ -1193,23 +1016,37 @@ do_skill_state_start(StateName, State) ->
             state_toupiao_skill ->
                 maps:get(quzhu, State)
         end,
-    IsHaveSkill = 
-        case SeatId of
-            0 ->
-                false;
-            _ ->
-                DutyId = lib_fight:get_duty_by_seat(SeatId, State),
-                lists:member(DutyId, AllowDuty) orelse (SeatId == maps:get(jingzhang, State))
+
+    SeatHaveSkill =
+        case StateName of
+            state_night_skill ->
+                NvWuKill = 
+                    case maps:get(nvwu, State) of
+                        {?NVWU_DUYAO, DuYaoSeat} ->
+                            DuYaoSeat;
+                        _ ->
+                            0
+                    end,
+                maps:get(die, State) -- [NvWuKill];
+            state_toupiao_skill ->
+                [maps:get(quzhu, State)]
         end,
+    IsHaveSkill = lists:member(?DUTY_LIEREN, [lib_fight:get_duty_by_seat(CurSeatId) || CurSeatId <- SeatHaveSkill]),
+     
     case IsHaveSkill of
         true ->
             notice_game_status_change(StateName, State),
             send_event_inner(wait_op),
             {next_state, StateName, maps:put(skill_seat, SeatId, State)};
         false ->
-            notice_game_status_change(StateName, State),
-            send_event_inner(wait_op),
-            {next_state, StateName, maps:put(skill_seat, 0, State)}
+            case maps:get(lieren_kill, State) of
+                0 ->
+                    send_event_inner(wait_op),
+                    {next_state, StateName, maps:put(skill_seat, 0, State)};
+                _ ->
+                    send_event_inner(start),
+                    {next_state, get_next_game_state(StateName), State}
+            end
     end.
 
 do_skill_state_wait(Op, StateName, State) ->
@@ -1251,16 +1088,6 @@ do_skill_state_op(PlayerId, Op, OpList, StateName, State) ->
             {next_state, StateName, State}
     end.       
 
-% do_skill_state_op_over(StateName, State) ->
-%     LierenKill = maps:get(lieren_kill, State),
-%     case maps:get(jingzhang, State) == LierenKill andalso LierenKill =/= 0 of
-%         true ->
-%             {next_state, StateName, maps:put(skill_seat, LierenKill, State)};
-%         false ->
-%             send_event_inner(start, b_fight_state_wait:get(StateName)),
-%             {next_state, get_next_game_state(StateName), State#{lieren_kill := 0}}
-%     end.
-
 get_allow_skill(StateName) ->
     case StateName of
         state_night_skill ->
@@ -1293,16 +1120,9 @@ do_fayan_state_start(InitFayanList, StateName, State) ->
             {next_state, get_next_game_state(StateName), State};
         false ->
             DrawCnt = maps:get(xuanju_draw_cnt, State),
-            GameStatus = case DrawCnt of
-                0->
-                    StateName;
-                _->
-                    get_twice_state_id(StateName)
-            end,
-            notice_game_status_change(GameStatus, State),
+            notice_game_status_change(StateName, DrawCnt, State),
             NewState = maps:put(fayan_turn, FayanList, State),
-            % send_event_inner(wait_op),
-            send_event_inner(wait_op, b_fight_state_wait:get(StateName)),
+            send_event_inner(wait_op, b_fight_wait_op:get(StateName)),
             {next_state, StateName, NewState}
     end.
 
@@ -1345,9 +1165,6 @@ notice_player_op(?DUTY_DAOZEI, SeatList, State) ->
     
 notice_player_op(?DUTY_NVWU, SeatList, State) ->
     notice_player_op(?DUTY_NVWU, [lists:sum(maps:get(nvwu_left, State))] ++ [maps:get(langren, State)], SeatList, State);
-
-notice_player_op(?DUTY_SHOUWEI, SeatList, State) ->
-    notice_player_op(?DUTY_SHOUWEI, [maps:get(shouwei, State)], SeatList, State);
 
 notice_player_op(?OP_XUANJU_JINGZHANG, SeatList, State) ->
     notice_player_op(?OP_XUANJU_JINGZHANG, maps:get(part_jingzhang, State), SeatList, State);
@@ -1415,10 +1232,6 @@ do_remove_wait_op(SeatId, State) ->
     NewWaitOpList = WaitOpList -- [SeatId],
     {NewWaitOpList == [], maps:put(wait_op_list, NewWaitOpList, State)}.
 
-notice_bailang_kill(State)->
-     [BaiLang] = fight_lib:get_duty_seat(?DUTY_BAILANG, State),
-     notice_player_op(?OP_BAILANG_KILL, BaiLang, State).
-
 %%移交警徽
 notice_change_jing_zhang(State)->
      notice_player_op(?OP_CHANGE_JINGZHANG, [maps:get(jingzhang, State)], State).
@@ -1459,16 +1272,8 @@ notice_night_result(State) ->
     lib_fight:send_to_all_player(Send, State).
 
 out_die_player(State) ->
-    Quzhu = maps:get(quzhu, State),
-    QuzhuList = 
-        case Quzhu of
-            0->
-            [];
-            _->
-            [Quzhu]
-        end,
     maps:put(out_seat_list, (maps:get(out_seat_list, State) ++ maps:get(die, State) ++ 
-                                QuzhuList) -- [maps:get(baichi, State)], State).
+                            [maps:get(quzhu, State)]) -- [maps:get(baichi, State)], State).
 
 get_fight_result(State) ->
     lager:info("get_fight_result1 "),
@@ -1547,8 +1352,6 @@ clear_night_op(State) ->
            nvwu => {0, 0},       %% 女巫操作
            langren => 0,         %% 狼人击杀的目标
            bailang => 0,         %% 白狼自爆
-           % part_jingzhang => [], %% 參與選舉警長
-           % xuanju_draw_cnt => 0, %% 选举平局次数
            jingzhang_op => 0,    %% 警长操作
            fayan_turn => [],     %% 发言顺序
            die => [],            %% 死亡玩家
@@ -1564,11 +1367,11 @@ clear_night_op(State) ->
 notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, State) ->
     notice_xuanju_result(?XUANJU_TYPE_QUZHU, IsDraw, Quzhu, TouPiaoResult, State).  
 
-% notice_toupiao_out(0, _) ->
-%     ignore;
+notice_toupiao_out(0, _) ->
+    ignore;
 
-% notice_toupiao_out(SeatId, State) ->  
-%     notice_player_op(?OP_QUZHU, [SeatId], State).
+notice_toupiao_out(SeatId, State) ->  
+    notice_player_op(?OP_QUZHU, [SeatId], State).
 
 notice_game_status_change(Status, State) ->
     StatusId = get_status_id(Status),
@@ -1783,12 +1586,38 @@ get_status_id(GameState) ->
             30
     end.
 
-get_twice_state_id(GameState)->
-    case GameState of
-        state_part_fayan->
-            state_part_fayan_twice;
-        state_fayan->
-            state_fayan_twice;
-        _->
-            GameState
-    end.
+state_part_fayan({player_op, PlayerId, ?DUTY_BAILANG, OpList}, State) ->
+    case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
+        ?DUTY_BAILANG ->
+            %%todo:如果白狼晚上被杀了，则发动技能无效
+            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+            % NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
+            NewState = lib_fight:do_skill(PlayerId, ?DUTY_BAILANG, OpList, State),
+            NewState1 = maps:put(langren_boom, 1, NewState),
+            send_event_inner(start),
+            {next_state, state_night_bailang_kill, NewState1};
+        _ ->
+            {next_state, state_part_fayan, State}
+    end;
+    
+state_part_fayan({player_op, PlayerId, ?DUTY_LANGREN, OpList}, State) ->
+    case lib_fight:get_duty_by_seat(lib_fight:get_seat_id_by_player_id(PlayerId, State), State) of
+        ?DUTY_LANGREN ->
+            %%如果狼人晚上被杀了，则发动技能无效并且通知前端
+            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+            NewState = lib_fight:do_skill(PlayerId, ?DUTY_LANGREN, OpList, State),
+            NewState1 = maps:put(langren_boom, 1, NewState),
+            send_event_inner(start),
+            {next_state, state_night_result, NewState1};
+        _ ->
+            {next_state, state_part_fayan, State}
+    end;
+
+state_part_fayan({player_op, PlayerId, ?OP_EXIT_PART_JINGZHANG, _}, State) ->
+    SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
+    PartJingZhang = maps:get(part_jingzhang, State),
+    NewState = maps:put(part_jingzhang, PartJingZhang -- [SeatId], State),
+    ExitJingZhang = maps:get(exit_jingzhang, NewState),
+    NewState1 =  maps:put(exit_jingzhang, ExitJingZhang ++ [SeatId], NewState),
+    lib_fight:do_exit_part(PlayerId, [0], NewState1),
+    {next_state, state_part_fayan, NewState1};
