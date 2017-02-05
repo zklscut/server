@@ -774,6 +774,6 @@ do_set_die_list(State) ->
         end,
     BaiLangKill = [maps:get(bailang, State)],
     DieList3 = BaiLangKill ++ DieList2,
-    DieList4 = [DieList3 || DieList3 <- (KillList -- SaveList), DieList3 =/= 0],
+    DieList4 = [DieList3 || Die1 <- DieList3, Die1 =/= 0],
     %%todo:去重
     maps:put(die, DieList4, State).
