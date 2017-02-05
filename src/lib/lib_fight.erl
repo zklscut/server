@@ -44,6 +44,8 @@
          do_part_jingzhang_op_twice/1,
          do_exit_part/3,
          do_bailang_boom/3,
+         do_bailang_kill_op/1,
+         do_change_jingzhang_op/1,
          do_skill/4]).
 
 -include("fight.hrl").
@@ -367,6 +369,41 @@ do_langren_op(State) ->
     StateAfterUpdateDie = do_set_die_list(StateAfterLangren),
     clear_last_op(StateAfterUpdateDie). 
 
+do_bailang_kill_op(State)->
+    [BaiLang] = fight_lib:get_duty_seat(?DUTY_BAILANG, State),
+    LastOpData = get_last_op(State),
+    KillSeat = 
+        case maps:to_list(LastOpData) of
+            [] ->
+                0;
+            _ ->
+                rand_target_in_op(filter_last_op(LastOpData))
+        end,  
+    Send = #m__fight__notice_skill__s2l{seat_id = BaiLang,
+                                op = ?OP_BAILANG_KILL,
+                                op_list = [KillSeat]},
+    send_to_all_player(Send, State),
+    maps:put(bailang, KillSeat, State),
+    do_set_die_list(),
+    clear_last_op(NewState).
+
+do_change_jingzhang_op(State)
+    LastOpData = get_last_op(State),
+    PreJingZhang = maps:get(jingzhang, State),
+    SeatId = 
+        case maps:to_list(LastOpData) of
+            [] ->
+                0;
+            _ ->
+                rand_target_in_op(filter_last_op(LastOpData))
+        end,
+    NewState = maps:put(jingzhang, SeatId, State),
+    Send = #m__fight__notice_skill__s2l{seat_id = PreJingZhang,
+                                        op = ?OP_CHANGE_JINGZHANG,
+                                        op_list = [SeatId]},
+    send_to_all_player(Send, State),
+    clear_last_op(NewState).
+
 do_yuyanjia_op(State) ->
     LastOpData = get_last_op(State),
     case maps:to_list(LastOpData) of
@@ -402,24 +439,20 @@ do_part_jingzhang_op_twice(State) ->
     clear_last_op(StateNew).
 
 do_xuanju_jingzhang_op(State) ->
-    lager:info("do_xuanju_jingzhang_op1 "),
     LastOpData = get_last_op(State),
     {IsDraw, ResultList, MaxSeatList} = count_xuanju_result(LastOpData),
     DrawCnt = maps:get(xuanju_draw_cnt, State),
     {DrawResult, NewState} = 
         case IsDraw of
             false ->
-                lager:info("do_xuanju_jingzhang_op2 "),
                 {false, State#{xuanju_draw_cnt := 0,
                                jingzhang := hd(MaxSeatList)}};
             true ->
                 case DrawCnt > 0 of
                     true ->
-                        lager:info("do_xuanju_jingzhang_op3 "),
                         {false, State#{xuanju_draw_cnt := 0,
                                        jingzhang := 0}};
                     false ->
-                        lager:info("do_xuanju_jingzhang_op4 "),
                         {true , State#{xuanju_draw_cnt := 1,
                                        jingzhang := 0}}
                 end
@@ -498,6 +531,7 @@ do_exit_part(PlayerId, OpList, State)->
                                         op_list = OpList},
     send_to_all_player(Send, State).
 
+
 do_skill(PlayerId, Op, OpList, State) ->
     SeatId = get_seat_id_by_player_id(PlayerId, State),
     Send = #m__fight__notice_skill__s2l{seat_id = SeatId,
@@ -515,13 +549,7 @@ do_skill_inner(_SeatId, ?DUTY_LIEREN, [SelectSeat], State) ->
     StateAfterLieRen;
 
 do_skill_inner(SeatId, ?DUTY_BAILANG, [SelectSeat], State) ->
-    DieList = 
-        case SelectSeat of
-            0->
-                [SeatId];
-            _->
-                [SelectSeat, SeatId]
-        end,
+    DieList = [SeatId]
     maps:put(die, maps:get(die, State) ++ DieList, State);
 
 do_skill_inner(SeatId, ?DUTY_LANGREN, _, State) ->
@@ -744,4 +772,8 @@ do_set_die_list(State) ->
             false ->
                 DieList
         end,
+    BaiLangKill = [maps:get(bailang, State)],
+    DieList3 = BaiLangKill ++ DieList2,
+    DieList4 = [DieList3 || DieList3 <- (KillList -- SaveList), DieList3 =/= 0],
+    %%todo:去重
     maps:put(die, DieList2, State).

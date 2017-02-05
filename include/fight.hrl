@@ -38,6 +38,7 @@
 -define(OP_TOUPIAO_SKILL, 1012). %%投票死亡技能
 -define(OP_CHANGE_JINGZHANG, 1013). %%转移警长
 -define(OP_EXIT_PART_JINGZHANG, 1014). %%参选警长退水
+-define(OP_BAILANG_KILL, 1015) %%白狼自爆带人
 
 -define(XUANJU_TYPE_JINGZHANG, 1).
 -define(XUANJU_TYPE_QUZHU, 2).
