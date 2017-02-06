@@ -408,6 +408,10 @@ state_someone_die(start, State) ->
 state_someone_die(wait_op, State) ->
     {_DieType, Die} = maps:get(skill_die_list, State),
     try
+
+        %%todo:白狼发动自爆技能(如果是竞选阶段完了以后跳转到state_night_result,否则继续即可)
+
+
         DoJingzhang = (maps:get(jingzhang, State) == Die),
         case DoJingzhang of
             true ->
@@ -417,7 +421,6 @@ state_someone_die(wait_op, State) ->
         end,
 
         Duty = lib_fight:get_duty_by_seat(Die, State),
-
         DoLieren = (Duty == ?DUTY_LIEREN),
         case DoLieren of
             true ->
@@ -425,6 +428,7 @@ state_someone_die(wait_op, State) ->
             false ->
                 ignore
         end,
+
 
         DoBaichi = 
             (maps:get(pre_state_name) == state_toupiao andalso Duty == ?DUTY_BAICHI andalso 
@@ -438,6 +442,8 @@ state_someone_die(wait_op, State) ->
                 ignore
 
         end,
+
+        %%todo:如果猎人未翻牌，并且有人死了，死亡对象在翻牌列表以外，则做默认操作的延时而不是直接跳过
 
         send_event_inner(op_over),
         {next_state, state_someone_die, State}
@@ -1305,16 +1311,18 @@ get_status_id(GameState) ->
             11;
         state_night_result->
             12;
-        state_night_death_fayan ->
+        state_someone_die->
             13;
-        state_jingzhang ->
+        state_night_death_fayan ->
             14;
-        state_fayan ->
+        state_jingzhang ->
             15;
-        state_guipiao ->
+        state_fayan ->
             16;
-        state_toupiao ->
+        state_guipiao ->
             17;
+        state_toupiao ->
+            18;
         state_toupiao_death_fayan ->
             19;
         state_night ->

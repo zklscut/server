@@ -90,6 +90,7 @@
                   do_police_select => 0,%%是否选举过警长
                   langren_boom => 0,    %%狼人自爆过
                   die_cache => []       %%狼人自爆时死亡对象缓冲
+                  flop_list => []       %%翻牌列表
                   }).
 
 -endif.
