@@ -41,11 +41,6 @@
          get_langren_hunxuer_seat/1,
          get_haoren_hunxuer_seat/1,
          is_seat_alive/2,
-         do_part_jingzhang_op_twice/1,
-         do_exit_part/3,
-         do_bailang_boom/3,
-         do_bailang_kill_op/1,
-         do_change_jingzhang_op/1,
          do_skill/4]).
 
 -include("fight.hrl").
@@ -369,41 +364,6 @@ do_langren_op(State) ->
     StateAfterUpdateDie = do_set_die_list(StateAfterLangren),
     clear_last_op(StateAfterUpdateDie). 
 
-do_bailang_kill_op(State)->
-    [BaiLang] = fight_lib:get_duty_seat(?DUTY_BAILANG, State),
-    LastOpData = get_last_op(State),
-    KillSeat = 
-        case maps:to_list(LastOpData) of
-            [] ->
-                0;
-            _ ->
-                rand_target_in_op(filter_last_op(LastOpData))
-        end,  
-    Send = #m__fight__notice_skill__s2l{seat_id = BaiLang,
-                                op = ?OP_BAILANG_KILL,
-                                op_list = [KillSeat]},
-    send_to_all_player(Send, State),
-    NewState = maps:put(bailang, KillSeat, State),
-    NewState1 = do_set_die_list(NewState),
-    clear_last_op(NewState1).
-
-do_change_jingzhang_op(State)->
-    LastOpData = get_last_op(State),
-    PreJingZhang = maps:get(jingzhang, State),
-    SeatId = 
-        case maps:to_list(LastOpData) of
-            [] ->
-                0;
-            _ ->
-                rand_target_in_op(filter_last_op(LastOpData))
-        end,
-    NewState = maps:put(jingzhang, SeatId, State),
-    Send = #m__fight__notice_skill__s2l{seat_id = PreJingZhang,
-                                        op = ?OP_CHANGE_JINGZHANG,
-                                        op_list = [SeatId]},
-    send_to_all_player(Send, State),
-    clear_last_op(NewState).
-
 do_yuyanjia_op(State) ->
     LastOpData = get_last_op(State),
     case maps:to_list(LastOpData) of
@@ -427,16 +387,7 @@ do_part_jingzhang_op(State) ->
     LastOpData = get_last_op(State),
     PartList = maps:keys(filter_last_op(LastOpData)),
     StateAfterFayan = maps:put(fayan_turn, PartList, State),
-    Send = #m__fight__notice_part_jingzhang__s2l{seat_list = PartList},
-    send_to_all_player(Send, State),
     clear_last_op(maps:put(part_jingzhang, PartList, StateAfterFayan)).
-
-do_part_jingzhang_op_twice(State) ->
-    PartJingZhang = maps:get(part_jingzhang, State),
-    StateNew = maps:put(fayan_turn, PartJingZhang, State),
-    Send = #m__fight__notice_part_jingzhang__s2l{seat_list = PartJingZhang},
-    send_to_all_player(Send, State),
-    clear_last_op(StateNew).
 
 do_xuanju_jingzhang_op(State) ->
     LastOpData = get_last_op(State),
@@ -524,13 +475,6 @@ do_toupiao_op(State) ->
         end,
     {DrawResult, ResultList, MaxSeatList, NewState}.
 
-do_exit_part(PlayerId, OpList, State)->
-    SeatId = get_seat_id_by_player_id(PlayerId, State),
-    Send = #m__fight__notice_skill__s2l{seat_id = SeatId,
-                                        op = ?OP_EXIT_PART_JINGZHANG,
-                                        op_list = OpList},
-    send_to_all_player(Send, State).
-
 
 do_skill(PlayerId, Op, OpList, State) ->
     SeatId = get_seat_id_by_player_id(PlayerId, State),
@@ -540,28 +484,23 @@ do_skill(PlayerId, Op, OpList, State) ->
     send_to_all_player(Send, State),
     do_skill_inner(SeatId, Op, OpList, State).
     
-do_skill_inner(SeatId, ?DUTY_BAICHI, _, State) ->
+do_skill_inner(SeatId, ?OP_SKILL_BAICHI, _, State) ->
     maps:put(baichi, SeatId, State);
 
-do_skill_inner(_SeatId, ?DUTY_LIEREN, [SelectSeat], State) ->
+do_skill_inner(_SeatId, ?OP_SKILL_LIEREN, [SelectSeat], State) ->
     StateAfterDie = maps:put(die, maps:get(die, State) ++ [SelectSeat], State),
     StateAfterLieRen = maps:put(lieren_kill, SelectSeat, StateAfterDie),
     StateAfterLieRen;
 
-do_skill_inner(SeatId, ?DUTY_BAILANG, _, State) ->
-    DieList = [SeatId],
+do_skill_inner(SeatId, ?OP_SKILL_BAILANG, [SelectId], State) ->
+    DieList = [SeatId, SelectId],
     maps:put(die, maps:get(die, State) ++ DieList, State);
 
-do_skill_inner(SeatId, ?DUTY_LANGREN, _, State) ->
+do_skill_inner(SeatId, ?OP_SKILL_LANGREN, _, State) ->
     maps:put(die, maps:get(die, State) ++ [SeatId], State);
 
-do_skill_inner(_SeatId, ?OP_CHANGE_JINGZHANG, [SelectId], State) ->
+do_skill_inner(_SeatId, ?OP_SKILL_CHANGE_JINGZHANG, [SelectId], State) ->
     maps:put(jingzhang, SelectId, State).
-
-do_bailang_boom(PlayerId, ?DUTY_BAILANG, State) ->
-    SeatId = get_seat_id_by_player_id(PlayerId, State),
-    NewState = maps:put(die, maps:get(die, State) ++ [SeatId], State),
-    maps:put(bailang, SeatId, NewState).
 
 %%%====================================================================
 %%% Internal functions
@@ -744,36 +683,17 @@ do_set_die_list(State) ->
                 [ShowWeiDef]
         end,
     DieList = [Die || Die <- (KillList -- SaveList), Die =/= 0],
-    %情侣需要一起阵亡
-    Lover = maps:get(lover, State),
-    LoverLen = length(Lover),
-    DieList2 = 
-        case LoverLen == 2 of
-            true ->
-                [Lover1,Lover2] = Lover,
+
+    DieAfterLover = 
+        case maps:get(lover, State) of
+            [] ->
+                DieList;
+            [Lover1, Lover2] ->
                 case lists:member(Lover1, DieList) orelse lists:member(Lover2, DieList) of
                     true ->
-                        DieList1 = 
-                        case lists:member(Lover1, DieList) of
-                            true ->
-                                DieList;
-                            false ->
-                                DieList ++ [Lover1]
-                        end,
-                        case lists:member(Lover2, DieList1) of
-                            true ->
-                                DieList1;
-                            false ->
-                                DieList1 ++ [Lover2]
-                        end;
+                        DieList ++ maps:get(lover, State);
                     false ->
-                        DieList
-                end;
-            false ->
-                DieList
+                        ok
+                end
         end,
-    BaiLangKill = [maps:get(bailang, State)],
-    DieList3 = BaiLangKill ++ DieList2,
-    DieList4 = [DieList3 || Die1 <- DieList3, Die1 =/= 0],
-    %%todo:去重
-    maps:put(die, DieList4, State).
+    lists:usort(DieAfterLover).

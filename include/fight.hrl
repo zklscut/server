@@ -34,11 +34,13 @@
 -define(OP_GUIPIAO, 1008). %%归票
 -define(OP_DEATH_FAYAN, 1009). %%死亡发言
 -define(OP_QUZHU_FAYAN, 1010). %%驱逐发言
--define(OP_NIGHT_SKILL, 1011). %%夜晚死亡技能
--define(OP_TOUPIAO_SKILL, 1012). %%投票死亡技能
--define(OP_CHANGE_JINGZHANG, 1013). %%转移警长
--define(OP_EXIT_PART_JINGZHANG, 1014). %%参选警长退水
--define(OP_BAILANG_KILL, 1015). %%白狼自爆带人
+
+-define(OP_SKILL_CHANGE_JINGZHANG, 2001).
+-define(OP_SKILL_LIEREN, 2002).
+-define(OP_SKILL_BAICHI, 2003).
+-define(OP_SKILL_BAILANG, 2004).
+-define(OP_SKILL_LANGREN, 2004).
+-define(OP_SKILL_EIXT_PART_JINGZHANG, 2005).
 
 -define(XUANJU_TYPE_JINGZHANG, 1).
 -define(XUANJU_TYPE_QUZHU, 2).
