@@ -317,9 +317,7 @@ state_part_jingzhang(op_over, State) ->
 %% ====================================================================
 %% state_part_fayan
 %% ====================================================================
-state_part_fayan(start, State) ->
-    DrawCnt = maps:get(xuanju_draw_cnt, State),
-    
+state_part_fayan(start, State) ->    
     Send = #m__fight__notice_part_jingzhang__s2l{seat_list = maps:get(part_jingzhang, State)},
     lib_fight:send_to_all_player(Send, State),
     
@@ -408,7 +406,7 @@ state_someone_die(start, State) ->
     end;
 
 state_someone_die(wait_op, State) ->
-    {DieType, Die} = maps:get(skill_die_list, State),
+    {_DieType, Die} = maps:get(skill_die_list, State),
     try
         DoJingzhang = (maps:get(jingzhang, State) == Die),
         case DoJingzhang of
@@ -434,9 +432,8 @@ state_someone_die(wait_op, State) ->
         case DoBaichi of
             true ->
                 PlayerId = lib_fight:get_player_id_by_seat(Die, State),
-                NewState = lib_fight:do_skill(PlayerId, ?OP_SKILL_BAICHI, OpList, State),
-                send_event_inner(op_over),
-                {next_state, state_someone_die, NewState};
+                NewState = lib_fight:do_skill(PlayerId, ?OP_SKILL_BAICHI, [0], State),
+                throw({skip, NewState});
             false ->
                 ignore
 
@@ -445,6 +442,9 @@ state_someone_die(wait_op, State) ->
         send_event_inner(op_over),
         {next_state, state_someone_die, State}
     catch
+        throw:{skip, SkipState} ->
+            send_event_inner(op_over),
+            {next_state, state_someone_die, SkipState};
         throw:Op ->
             start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(Op)),
             notice_player_op(Op, [Die], State),
@@ -470,13 +470,13 @@ state_someone_die(timeout, State) ->
 state_someone_die({player_op, PlayerId, Op, OpList}, State) ->
     try 
         assert_die_skill_legal(PlayerId, Op, OpList, State),
-        NewState = lib_fight:do_skill(PlayerId, Skill, OpList, State),
+        NewState = lib_fight:do_skill(PlayerId, Op, OpList, State),
         send_event_inner(op_over),
         {next_state, state_someone_die, NewState}        
     catch
         throw:ErrCode ->
             net_send:send_errcode(ErrCode, PlayerId),
-            {next_state, StateName, State}
+            {next_state, state_someone_die, State}
     end;
 
 state_someone_die(op_over, State) ->
@@ -728,13 +728,13 @@ state_name(_Event, _From, StateData) ->
 handle_event({skill, PlayerId, Op, OpList}, StateName, State) ->
     try 
         SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
-        assert_skill_legal(SeatId, SkillId, SkillData, StateName, State),
+        assert_skill_legal(SeatId, Op, OpList, StateName, State),
         NewState = lib_fight:do_skill(PlayerId, Op, OpList, State),
         NextState = get_skill_next_state(Op, StateName),
-        case NewState of
+        case NextState of
             StateName ->
                 ignore;
-            ->
+            _ ->
                 send_event_inner(start),
                 {next_state, StateName, NewState}
         end
@@ -742,7 +742,7 @@ handle_event({skill, PlayerId, Op, OpList}, StateName, State) ->
         throw:ErrCode ->
             net_send:send_errcode(ErrCode, PlayerId),
             {next_state, StateName, State} 
-    end.
+    end;
 
 handle_event(print_state, StateName, StateData) ->
     lager:info("state name ~p", [StateName]),
@@ -876,87 +876,7 @@ do_receive_player_op(PlayerId, Op, OpList, StateName, State) ->
         throw:ErrCode ->
             net_send:send_errcode(ErrCode, PlayerId),
             {next_state, StateName, State}
-    end.
-
-do_skill_state_start(StateName, State) ->
-    AllowDuty = get_allow_skill(StateName),
-    SeatId = 
-        case StateName of
-            state_night_skill ->
-                maps:get(langren, State);
-            state_toupiao_skill ->
-                maps:get(quzhu, State)
-        end,
-
-    SeatHaveSkill =
-        case StateName of
-            state_night_skill ->
-                NvWuKill = 
-                    case maps:get(nvwu, State) of
-                        {?NVWU_DUYAO, DuYaoSeat} ->
-                            DuYaoSeat;
-                        _ ->
-                            0
-                    end,
-                maps:get(die, State) -- [NvWuKill];
-            state_toupiao_skill ->
-                [maps:get(quzhu, State)]
-        end,
-    IsHaveSkill = lists:member(?DUTY_LIEREN, [lib_fight:get_duty_by_seat(CurSeatId) || CurSeatId <- SeatHaveSkill]),
-     
-    case IsHaveSkill of
-        true ->
-            notice_game_status_change(StateName, State),
-            send_event_inner(wait_op),
-            {next_state, StateName, maps:put(skill_seat, SeatId, State)};
-        false ->
-            case maps:get(lieren_kill, State) of
-                0 ->
-                    send_event_inner(wait_op),
-                    {next_state, StateName, maps:put(skill_seat, 0, State)};
-                _ ->
-                    send_event_inner(start),
-                    {next_state, get_next_game_state(StateName), State}
-            end
-    end.
-
-do_skill_state_wait(Op, StateName, State) ->
-    start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(Op)), 
-    SkillSeat = maps:get(skill_seat, State),
-    case SkillSeat of
-        0->
-            {next_state, StateName, State};
-        _->
-            StateAfterWait = do_set_wait_op([SkillSeat], State),
-            %%主动发送的技能
-            NewState = 
-                case lib_fight:get_duty_by_seat(SkillSeat, State) of
-                    ?DUTY_BAICHI ->
-                        lib_fight:do_skill(lib_fight:get_player_id_by_seat(SkillSeat, State), 
-                            ?DUTY_BAICHI, [SkillSeat], StateAfterWait);
-                    _ ->
-                        notice_player_op(Op, [SkillSeat], State),
-                        StateAfterWait
-                end,
-            {next_state, StateName, NewState}
-    end.
-    
-
-do_skill_state_timeout(StateName, State) ->
-    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    send_event_inner(op_over),
-    {next_state, StateName, State}.
-
-do_skill_state_op(PlayerId, Op, OpList, StateName, State) ->
-    try
-        assert_op_in_wait(PlayerId, State),
-        NewState = lib_fight:do_skill(PlayerId, Op, OpList, State),
-        {next_state, StateName, NewState}
-    catch
-        throw:ErrCode ->
-            net_send:send_errcode(ErrCode, PlayerId),
-            {next_state, StateName, State}
-    end.       
+    end.    
 
 do_fayan_state_start(InitFayanList, StateName, State) ->
     FayanList = [SeatId || SeatId <- InitFayanList, SeatId =/= 0],
@@ -966,7 +886,7 @@ do_fayan_state_start(InitFayanList, StateName, State) ->
             {next_state, get_next_game_state(StateName), State};
         false ->
             DrawCnt = maps:get(xuanju_draw_cnt, State),
-            notice_game_status_change(StateName, DrawCnt, State),
+            notice_game_status_change(StateName, [DrawCnt], State),
             NewState = maps:put(fayan_turn, FayanList, State),
             send_event_inner(wait_op, b_fight_wait_op:get(StateName)),
             {next_state, StateName, NewState}
@@ -1068,7 +988,7 @@ assert_op_fit(?OP_XUANJU_JINGZHANG, [SeatId], State) ->
 assert_op_fit(_, _, _) ->
     ok.
 
-assert_die_skill_legal(PlayerId, Op, OpList, State) ->
+assert_die_skill_legal(PlayerId, _Op, _OpList, State) ->
     SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
     {_, Die} = hd(maps:get(skill_die_list, State)),
     case Die of
@@ -1098,10 +1018,6 @@ do_remove_wait_op(SeatId, State) ->
     WaitOpList = maps:get(wait_op_list, State),
     NewWaitOpList = WaitOpList -- [SeatId],
     {NewWaitOpList == [], maps:put(wait_op_list, NewWaitOpList, State)}.
-
-%%移交警徽
-notice_change_jing_zhang(State)->
-     notice_player_op(?OP_CHANGE_JINGZHANG, [maps:get(jingzhang, State)], State).
 
 notice_jingxuan_jingzhang(State) ->
     notice_player_op(?OP_PART_JINGZHANG, lib_fight:get_alive_seat_list(State), State).
@@ -1241,8 +1157,12 @@ notice_toupiao_out(SeatId, State) ->
     notice_player_op(?OP_QUZHU, [SeatId], State).
 
 notice_game_status_change(Status, State) ->
+    notice_game_status_change(Status, [], State).
+
+notice_game_status_change(Status, AttachData, State) ->
     StatusId = get_status_id(Status),
-    Send = #m__fight__game_state_change__s2l{game_status = StatusId},
+    Send = #m__fight__game_state_change__s2l{game_status = StatusId,
+                                             attach_data = AttachData},
     lib_fight:send_to_all_player(Send, State).
 
 send_fight_result(Winner, State) ->
@@ -1335,8 +1255,6 @@ get_state_legal_op(GameState) ->
             [?OP_PART_FAYAN, ?OP_FAYAN];
         state_xuanju_jingzhang ->
             [?OP_XUANJU_JINGZHANG];
-        state_night_skill ->
-            [?OP_NIGHT_SKILL];
         state_night_death_fayan ->
             [?OP_FAYAN, ?OP_DEATH_FAYAN];
         state_jingzhang ->
@@ -1347,8 +1265,6 @@ get_state_legal_op(GameState) ->
             [?OP_FAYAN];
         state_toupiao ->
             [?OP_TOUPIAO];
-        state_toupiao_skill ->
-            [?OP_TOUPIAO_SKILL];
         state_toupiao_death_fayan ->
             [?OP_FAYAN, ?OP_QUZHU_FAYAN];
         state_day ->
@@ -1358,19 +1274,7 @@ get_state_legal_op(GameState) ->
         state_night_result->
             [];
         state_fight_over ->
-            [];
-        state_night_bailang_kill->
-            [?OP_BAILANG_KILL];
-        state_night_change_jing_zhang->
-            [?OP_CHANGE_JINGZHANG];
-        state_night_lieren_kill_change_jing_zhang->
-            [?OP_CHANGE_JINGZHANG];
-        state_toupiao_change_jing_zhang->
-            [?OP_CHANGE_JINGZHANG];
-        state_toupiao_lieren_kill_change_jing_zhang->
-            [?OP_CHANGE_JINGZHANG];
-        state_day_bailang_kill->
-            [?OP_BAILANG_KILL]
+            []
     end.
 
 get_status_id(GameState) ->

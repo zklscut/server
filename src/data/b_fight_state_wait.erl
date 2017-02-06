@@ -1,6 +1,5 @@
 -module(b_fight_state_wait).
--export([get/1,
-         getEnd/1
+-export([get/1
         ]).
 
 get(start) ->
@@ -49,10 +48,3 @@ get(state_fight_over) ->
     4000;
 get(_) ->
     4000.
-
-getEnd(state_xuanju_jingzhang) ->
-    4000;
-getEnd(state_yuyanjia)->
-    4000;
-getEnd(_) ->
-    0.
