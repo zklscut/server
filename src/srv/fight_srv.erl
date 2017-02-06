@@ -395,6 +395,7 @@ state_night_result(start, State)->
 %% state_someone_die
 %% ====================================================================
 state_someone_die(start, State) ->
+    %%skill_die_list 建议做排序 (白狼--警长--猎人(白痴)--其他) 放后面做延时判断
     SkillDieList = maps:get(skill_die_list, State),
     case SkillDieList of
         [] ->
@@ -420,16 +421,6 @@ state_someone_die(wait_op, State) ->
                 ignore
         end,
 
-        Duty = lib_fight:get_duty_by_seat(Die, State),
-        DoLieren = (Duty == ?DUTY_LIEREN),
-        case DoLieren of
-            true ->
-                throw(?OP_SKILL_LIEREN);
-            false ->
-                ignore
-        end,
-
-
         DoBaichi = 
             (maps:get(pre_state_name) == state_toupiao andalso Duty == ?DUTY_BAICHI andalso 
                 maps:get(baichi, State) == 0),
@@ -443,7 +434,21 @@ state_someone_die(wait_op, State) ->
 
         end,
 
-        %%todo:如果猎人未翻牌，并且有人死了，死亡对象在翻牌列表以外，则做默认操作的延时而不是直接跳过
+        %%判断猎人是否翻牌，如果翻牌直接跳过 state_someone_die
+
+        Duty = lib_fight:get_duty_by_seat(Die, State),
+        DoLieren = (Duty == ?DUTY_LIEREN),
+        case DoLieren of
+            true ->
+                throw(?OP_SKILL_LIEREN);
+            false ->
+                ignore
+        end,
+
+
+        
+
+        %%todo:走到这里应该做延时，因为不知道猎人死没死
 
         send_event_inner(op_over),
         {next_state, state_someone_die, State}
