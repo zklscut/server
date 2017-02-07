@@ -816,7 +816,7 @@ handle_event({skill, PlayerId, Op, OpList}, StateName, State) ->
         NextState = get_skill_next_state(Op, StateName),
         case NextState of
             StateName ->
-                ignore;
+                {next_state, StateName, NewState};
             _ ->
                 send_event_inner(start),
                 {next_state, StateName, NewState}
