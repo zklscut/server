@@ -476,29 +476,19 @@ do_skill(PlayerId, Op, OpList, State) ->
     do_skill_inner(SeatId, Op, OpList, State).
     
 do_skill_inner(SeatId, ?OP_SKILL_BAICHI, _, State) ->
-    NewState = maps:put(baichi, SeatId, State)
-    maps:put(flop_list, maps:get(flop_list, NewState) ++ [SeatId], NewState)
+    maps:put(baichi, SeatId, State);
 
 do_skill_inner(_SeatId, ?OP_SKILL_LIEREN, [SelectSeat], State) ->
     StateAfterDie = maps:put(die, maps:get(die, State) ++ [SelectSeat], State),
     StateAfterLieRen = maps:put(lieren_kill, SelectSeat, StateAfterDie),
-    StateAfterFlopList = 
-    case SelectSeat of
-        0->
-            StateAfterLieRen;
-        _->
-             maps:put(flop_list, maps:get(flop_list, StateAfterLieRen) ++ [SelectSeat], StateAfterLieRen)
-    end,
-    StateAfterFlopList;
+    StateAfterLieRen;
 
 do_skill_inner(SeatId, ?OP_SKILL_BAILANG, [SelectId], State) ->
     DieList = [SeatId, SelectId],
-    NewState = maps:put(die, maps:get(die, State) ++ DieList, State),
-    maps:put(flop_list, maps:get(flop_list, NewState) ++ [SeatId], NewState);
+    maps:put(die, maps:get(die, State) ++ DieList, State);
 
 do_skill_inner(SeatId, ?OP_SKILL_LANGREN, _, State) ->
-    NewState = maps:put(die, maps:get(die, State) ++ [SeatId], State),
-    maps:put(flop_list, maps:get(flop_list, NewState) ++ [SeatId], NewState);
+    maps:put(die, maps:get(die, State) ++ [SeatId], State);
 
 do_skill_inner(_SeatId, ?OP_SKILL_CHANGE_JINGZHANG, [SelectId], State) ->
     maps:put(jingzhang, SelectId, State).

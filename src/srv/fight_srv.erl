@@ -39,7 +39,7 @@
 -include("errcode.hrl").
 -include("game_pb.hrl").
 
--define(TEST, true).
+-define(TEST, false).
 
 %% ====================================================================
 %% API functions
@@ -328,21 +328,20 @@ state_part_jingzhang({player_op, PlayerId, Op, OpList}, State) ->
 
 state_part_jingzhang(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    case ?TEST of
-        true ->
-            send_event_inner({player_op, lib_fight:get_player_id_by_seat(lib_fight:rand_in_alive_seat(State), State), 
-                              ?OP_PART_JINGZHANG, []});
-        false ->
-            ignore
-    end,
     send_event_inner(op_over),
     {next_state, state_part_jingzhang, State};
-
+    
 state_part_jingzhang(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_part_jingzhang_op(State),
     send_event_inner(start, b_fight_state_wait:get(state_part_jingzhang)),
-    {next_state, get_next_game_state(state_part_jingzhang), NewState}. 
+    case ?TEST == true andalso maps:get(part_jingzhang, State) == [] of
+        true ->
+            {next_state, get_next_game_state(state_part_jingzhang), 
+            maps:put(part_jingzhang, [lib_fight:rand_in_alive_seat(State)], State)};
+        false ->
+            {next_state, get_next_game_state(state_part_jingzhang), NewState}
+    end.
 
 %% ====================================================================
 %% state_part_fayan
@@ -368,7 +367,10 @@ state_part_fayan(timeout, State) ->
     do_fayan_state_timeout(state_part_fayan, State);
 
 state_part_fayan(op_over, State) ->
-    do_fayan_state_op_over(state_part_fayan, State).
+    do_fayan_state_op_over(state_part_fayan, State);
+
+state_part_fayan(_, State) ->
+    {next_state, state_part_fayan, State}.    
 
 %% ====================================================================
 %% state_xuanju_jingzhang
@@ -400,7 +402,7 @@ state_xuanju_jingzhang(timeout, State) ->
     case ?TEST of
         true ->
             send_event_inner({player_op, lib_fight:get_player_id_by_seat(lib_fight:rand_in_alive_seat(State), State), 
-                              ?OP_XUANJU_JINGZHANG, [util:rand(maps:get(part_jingzhang, State))]});
+                              ?OP_XUANJU_JINGZHANG, [util:rand_in_list(maps:get(part_jingzhang, State))]});
         false ->
             ignore
     end,
@@ -427,7 +429,10 @@ state_night_result(start, State)->
     notice_game_status_change(state_night_result, State),
     notice_night_result(State),
     send_event_inner(start, b_fight_state_wait:get(state_night_result)),
-    {next_state, state_someone_die, lib_fight:set_skill_die_list(state_night_result, State)}.
+    {next_state, state_someone_die, lib_fight:set_skill_die_list(state_night_result, State)};
+
+state_night_result(_, State) ->
+    {next_state, state_night_result,  State}.
 
 %% ====================================================================
 %% state_someone_die
@@ -444,8 +449,17 @@ state_someone_die(start, State) ->
     end;
 
 state_someone_die(wait_op, State) ->
-    {DieType, Die} = maps:get(skill_die_list, State),
+    start_fight_fsm_event_timer(?TIMER_TIMEOUT, 1000),
+    SkillDieList = maps:get(skill_die_list, State),
     try
+        case SkillDieList of
+            [] ->
+                throw(ignore);
+            _ ->
+                ok
+        end,
+
+        {DieType, Die} = hd(SkillDieList),
         DoJingzhang = (maps:get(jingzhang, State) == Die),
         case DoJingzhang of
             true ->
@@ -465,7 +479,7 @@ state_someone_die(wait_op, State) ->
         end,
 
         DoBaichi = 
-            (maps:get(pre_state_name) == state_toupiao andalso Duty == ?DUTY_BAICHI andalso 
+            (maps:get(pre_state_name, State) == state_toupiao andalso Duty == ?DUTY_BAICHI andalso 
                 maps:get(baichi, State) == 0 andalso DieType == ?DIE_TYPE_QUZHU),
         case DoBaichi of
             true ->
@@ -483,10 +497,14 @@ state_someone_die(wait_op, State) ->
         throw:{skip, SkipState} ->
             send_event_inner(op_over),
             {next_state, state_someone_die, SkipState};
+        throw:ignore ->
+            send_event_inner(op_over),
+             {next_state, state_someone_die, State};
         throw:Op ->
             start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(Op)),
-            notice_player_op(Op, [Die], State),
-            {next_state, state_someone_die, maps:put(cur_skill, {Op, Die}, State)}
+            {_DieType, OpSeat} = hd(SkillDieList),
+            notice_player_op(Op, [OpSeat], State),
+            {next_state, state_someone_die, maps:put(cur_skill, Op, State)}
     end;
 
 state_someone_die(timeout, State) ->
@@ -528,7 +546,14 @@ state_someone_die({player_op, PlayerId, Op, OpList}, State) ->
     end;
 
 state_someone_die(op_over, State) ->
-    NewSkillDieList = tl(maps:get(skill_die_list, State)),
+    NewSkillDieList = 
+        case maps:get(skill_die_list, State) of
+            [] ->
+                [];
+            SkillDieList ->
+                tl(SkillDieList)
+        end,
+    send_event_inner(start),
     {next_state, state_someone_die, maps:put(skill_die_list, NewSkillDieList, State)}.
     
 
@@ -1048,7 +1073,14 @@ assert_op_fit(_, _, _) ->
 
 assert_die_skill_legal(PlayerId, _Op, _OpList, State) ->
     SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
-    {_, Die} = hd(maps:get(skill_die_list, State)),
+    SkillDieList = maps:get(skill_die_list, State),
+    case SkillDieList of
+        [] ->
+            throw(?ERROR);
+        _ ->
+            ok
+    end,
+    {_, Die} = hd(SkillDieList),
     case Die of
         SeatId ->
             ok;
@@ -1114,61 +1146,62 @@ out_die_player(State) ->
     maps:put(out_seat_list, (maps:get(out_seat_list, State) ++ maps:get(die, State) ++ 
                             [maps:get(quzhu, State)]) -- [maps:get(baichi, State)], State).
 
-get_fight_result(State) ->
-    LangrenAlive = lib_fight:get_duty_seat(?DUTY_LANGREN, State),
-    ShenMinAlive = lib_fight:get_shenmin_seat(State),
-        % lists:flatten([lib_fight:get_duty_seat(DutyId, State) || DutyId <- ?DUTY_LIST_SHENMIN]),
-    AllLangren = lib_fight:get_duty_seat(?DUTY_LANGREN, false, State),
-    AllSeat = lib_fight:get_all_seat(State),
-    try
-        case LangrenAlive of
-            [] ->
-                LangRenQiubite = lib_fight:get_langren_qiubite_seat(State),
-                ThirdPartQiubite = lib_fight:get_third_part_qiubite_seat(State),
-                LangRenHunxuer = lib_fight:get_langren_hunxuer_seat(State),
-                LWinner1 = AllSeat -- AllLangren,
-                LWinner2 = LWinner1 -- LangRenQiubite,
-                LWinner3 = LWinner2 -- ThirdPartQiubite,
-                LWinner4 = LWinner3 -- LangRenHunxuer,
-                throw({true, LWinner4});
-            _ ->
-                ignore
-        end,
+get_fight_result(_State) ->
+    {false, []}.
+    % LangrenAlive = lib_fight:get_duty_seat(?DUTY_LANGREN, State),
+    % ShenMinAlive = lib_fight:get_shenmin_seat(State),
+    %     % lists:flatten([lib_fight:get_duty_seat(DutyId, State) || DutyId <- ?DUTY_LIST_SHENMIN]),
+    % AllLangren = lib_fight:get_duty_seat(?DUTY_LANGREN, false, State),
+    % AllSeat = lib_fight:get_all_seat(State),
+    % try
+    %     case LangrenAlive of
+    %         [] ->
+    %             LangRenQiubite = lib_fight:get_langren_qiubite_seat(State),
+    %             ThirdPartQiubite = lib_fight:get_third_part_qiubite_seat(State),
+    %             LangRenHunxuer = lib_fight:get_langren_hunxuer_seat(State),
+    %             LWinner1 = AllSeat -- AllLangren,
+    %             LWinner2 = LWinner1 -- LangRenQiubite,
+    %             LWinner3 = LWinner2 -- ThirdPartQiubite,
+    %             LWinner4 = LWinner3 -- LangRenHunxuer,
+    %             throw({true, LWinner4});
+    %         _ ->
+    %             ignore
+    %     end,
 
-        case lib_fight:is_third_part_win(State) of
-            true->
-                throw({true, lib_fight:get_third_part_seat(State)});    
-            _->
-                ignore
-        end, 
+    %     case lib_fight:is_third_part_win(State) of
+    %         true->
+    %             throw({true, lib_fight:get_third_part_seat(State)});    
+    %         _->
+    %             ignore
+    %     end, 
 
-        case ShenMinAlive of
-            [] ->
-                LangrenQiubite = lib_fight:get_langren_qiubite_seat(State),
-                LangRenHunxuer1 = lib_fight:get_langren_hunxuer_seat(State),
-                SWinner1 = AllLangren ++ LangrenQiubite,
-                SWinner2 = SWinner1 ++ LangRenHunxuer1,
-                throw({true, SWinner2});
-            _ ->
-                ignore
-        end,
-        case lib_fight:get_duty_seat(?DUTY_PINGMIN, State) of
-            [] ->
-                LangrenQiubite1 = lib_fight:get_langren_qiubite_seat(State),
-                LangRenHunxuer2 = lib_fight:get_langren_hunxuer_seat(State),
-                PWinner1 = AllLangren ++ LangrenQiubite1,
-                PWinner2 = PWinner1 ++ LangRenHunxuer2,
-                throw({true, PWinner2});
-            _ ->
-                ignore
-        end,
-        %%判断剩余三个人是否是丘比特第三方获胜 
+    %     case ShenMinAlive of
+    %         [] ->
+    %             LangrenQiubite = lib_fight:get_langren_qiubite_seat(State),
+    %             LangRenHunxuer1 = lib_fight:get_langren_hunxuer_seat(State),
+    %             SWinner1 = AllLangren ++ LangrenQiubite,
+    %             SWinner2 = SWinner1 ++ LangRenHunxuer1,
+    %             throw({true, SWinner2});
+    %         _ ->
+    %             ignore
+    %     end,
+    %     case lib_fight:get_duty_seat(?DUTY_PINGMIN, State) of
+    %         [] ->
+    %             LangrenQiubite1 = lib_fight:get_langren_qiubite_seat(State),
+    %             LangRenHunxuer2 = lib_fight:get_langren_hunxuer_seat(State),
+    %             PWinner1 = AllLangren ++ LangrenQiubite1,
+    %             PWinner2 = PWinner1 ++ LangRenHunxuer2,
+    %             throw({true, PWinner2});
+    %         _ ->
+    %             ignore
+    %     end,
+    %     %%判断剩余三个人是否是丘比特第三方获胜 
            
-        {false, []}
-    catch 
-        throw:Result ->
-            Result
-    end.
+    %     {false, []}
+    % catch 
+    %     throw:Result ->
+    %         Result
+    % end.
 
 clear_night_op(State) ->
     JingZhang = maps:get(jingzhang, State),
