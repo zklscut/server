@@ -491,7 +491,11 @@ do_skill_inner(SeatId, ?OP_SKILL_LANGREN, _, State) ->
     maps:put(die, maps:get(die, State) ++ [SeatId], State);
 
 do_skill_inner(_SeatId, ?OP_SKILL_CHANGE_JINGZHANG, [SelectId], State) ->
-    maps:put(jingzhang, SelectId, State).
+    maps:put(jingzhang, SelectId, State);
+
+do_skill_inner(_SeatId, ?OP_SKILL_EIXT_PART_JINGZHANG, [SelectId], State) ->
+    NewState = maps:put(exit_jingzhang, maps:get(exit_jingzhang, State) ++ [_SeatId], State),
+    maps:put(part_jingzhang, maps:get(part_jingzhang, State) -- [_SeatId], NewState).
 
 rand_in_alive_seat(State) ->
     util:rand_in_list(get_alive_seat_list(State)).
