@@ -41,7 +41,9 @@
          get_langren_hunxuer_seat/1,
          get_haoren_hunxuer_seat/1,
          is_seat_alive/2,
-         do_skill/4]).
+         do_skill/4,
+         rand_in_alive_seat/1,
+         set_skill_die_list/2]).
 
 -include("fight.hrl").
 -include("game_pb.hrl").
@@ -123,25 +125,20 @@ is_third_part_win(State) ->
     ThirdPartListLen = length(ThirdPartList),
     Alivelist = get_alive_seat_list(State),
     Alivelen = length(Alivelist),
-    lager:info("is_third_part_win1 "),
     case enable_third_part_qiubite(State) of
         true->
             case ThirdPartListLen == 3 of
                 true ->
                     case Alivelen =< 3 of
                         true ->
-                            lager:info("is_third_part_win2 "),
                             lists:all(fun(SeatId)-> lists:member(SeatId, ThirdPartList) end, Alivelist);
                         false ->
-                            lager:info("is_third_part_win3 "),
                             false
                     end;
                 false ->
-                    lager:info("is_third_part_win4 "),
                     false
             end;
         false->
-            lager:info("is_third_part_win5 "),
             false
     end.
 
@@ -242,30 +239,24 @@ get_haoren_hunxuer_seat(State)->
 
 %是否可作为第三方丘比特
 enable_third_part_qiubite(State)->
-    lager:info("enable_third_part_qiubite1 "),
     case is_duty_exist(?DUTY_QIUBITE, State) of
         true->
-            lager:info("enable_third_part_qiubite2 "),
             LangRenList = [?DUTY_LANGREN, ?DUTY_BAILANG],
             [Lover1, Lover2] = maps:get(lover, State),
             LoverDuty1 = get_duty_by_seat(Lover1, State),
             LoverDuty2 = get_duty_by_seat(Lover2, State),
             case lists:member(LoverDuty1, LangRenList) andalso lists:member(LoverDuty2, LangRenList) of
                 true->
-                    lager:info("enable_third_part_qiubite3 "),
                     false;
                 false->
                     case lists:member(LoverDuty1, LangRenList) orelse lists:member(LoverDuty2, LangRenList) of
                         true->
-                            lager:info("enable_third_part_qiubite4 "),
                             true;
                         false->
-                            lager:info("enable_third_part_qiubite5 "),
                             false
                     end
             end;
         false->
-            lager:info("enable_third_part_qiubite6 "),
             false
     end.
 
@@ -512,6 +503,32 @@ do_skill_inner(SeatId, ?OP_SKILL_LANGREN, _, State) ->
 do_skill_inner(_SeatId, ?OP_SKILL_CHANGE_JINGZHANG, [SelectId], State) ->
     maps:put(jingzhang, SelectId, State).
 
+rand_in_alive_seat(State) ->
+    util:rand_in_list(get_alive_seat_list(State)).
+
+set_skill_die_list(StateName, State) ->
+    SkillDieList =
+        case StateName of
+            state_night_result ->
+                DieList = maps:get(die, State),
+                case maps:get(nvwu, State) of
+                    {?NVWU_DUYAO, NvWuKill} ->
+                        [{?DIE_TYPE_NVWU, NvWuKill}] ++ [{?DIE_TYPE_LANGRNE, SeatId} || SeatId <- (DieList -- [NvWuKill])];
+                    _ ->
+                        [{?DIE_TYPE_LANGRNE, SeatId} || SeatId <- DieList]
+                end;
+            state_toupiao ->
+                case maps:get(quzhu, State) of
+                    0 ->
+                        [];
+                    Quzhu ->
+                        [{?DIE_TYPE_QUZHU, Quzhu}]
+                end
+        end,
+    State#{pre_state_name => StateName,
+           skill_die_list => SkillDieList}.
+
+
 %%%====================================================================
 %%% Internal functions
 %%%====================================================================
@@ -706,4 +723,4 @@ do_set_die_list(State) ->
                         ok
                 end
         end,
-    lists:usort(DieAfterLover).
+    maps:put(die, lists:usort(DieAfterLover), State).

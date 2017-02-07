@@ -53,6 +53,10 @@
 -define(NVWU_DUYAO, 1).
 -define(NVWU_JIEYAO, 2).
 
+-define(DIE_TYPE_LANGRNE, 1).
+-define(DIE_TYPE_NVWU, 2).
+-define(DIE_TYPE_QUZHU, 3).
+
 -define(MFIGHT, #{room_id => 0,
                   seat_player_map => #{},%% #{seat_id, player_id}
                   player_seat_map => #{},%% #{player_id, seat_id}

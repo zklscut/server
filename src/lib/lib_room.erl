@@ -88,7 +88,12 @@ get_player_room_player_list(Player) ->
     end.
 
 update_fight_pid(RoomId, Pid) ->
-    update_room(RoomId, maps:put(fight_pid, Pid, get_room(RoomId))).
+    case get_room(RoomId) of
+        undefined ->
+            ignore;
+        Room ->
+            update_room(RoomId, maps:put(fight_pid, Pid, Room))
+    end.
 
 get_fight_pid_by_player(Player) ->
     maps:get(fight_pid, get_room(get_player_room_id(Player))).
