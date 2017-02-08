@@ -569,7 +569,7 @@ state_someone_die(op_over, State) ->
         true->
             state_someone_die;
         false->
-            state_night_result;
+            state_night_result
     end,
     send_event_inner(start),
     {next_state, NextState, maps:put(skill_die_list, NewSkillDieList, State)}.
