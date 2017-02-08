@@ -489,10 +489,10 @@ do_skill_inner(SeatId, ?OP_SKILL_BAILANG, [SelectId], State) ->
     SkillDieListPre = maps:get(skill_die_list, State),
     NewState = 
     case lists:member(SeatId, DieListPre) of
-        true->
+        true ->
             State;
-        false->
-            maps:put(skill_die_list, [{?DIE_TYPE_BOOM, SeatId}] ++ SkillDieListPre, State)
+        false ->
+            State% maps:put(skill_die_list, [{?DIE_TYPE_BOOM, SeatId}] ++ SkillDieListPre, State)
     end,
     maps:put(die, maps:get(die, NewState) ++ DieList, NewState);
 
