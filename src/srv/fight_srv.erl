@@ -429,7 +429,8 @@ state_night_result(start, State)->
     notice_game_status_change(state_night_result, State),
     notice_night_result(State),
     send_event_inner(start, b_fight_state_wait:get(state_night_result)),
-    {next_state, state_someone_die, lib_fight:set_skill_die_list(state_night_result, State)};
+    NewState = maps:put(show_nigth_result, 1, State),
+    {next_state, state_someone_die, lib_fight:set_skill_die_list(state_night_result, NewState)};
 
 state_night_result(_, State) ->
     {next_state, state_night_result,  State}.
@@ -460,6 +461,15 @@ state_someone_die(wait_op, State) ->
         end,
 
         {DieType, Die} = hd(SkillDieList),
+
+        DoBaiLang = (DieType == ?DIE_TYPE_BOOM),
+        case DoBaiLang of
+            true->
+                throw(?OP_SKILL_BAILANG);
+            false->
+                ignore
+        end,
+
         DoJingzhang = (maps:get(jingzhang, State) == Die),
         case DoJingzhang of
             true ->
@@ -553,8 +563,16 @@ state_someone_die(op_over, State) ->
             SkillDieList ->
                 tl(SkillDieList)
         end,
+    ShowNightResult = maps:get(show_nigth_result, State),
+    NextState = 
+    case ShowNightResult == 1 of 
+        true->
+            state_someone_die;
+        false->
+            state_night_result;
+    end,
     send_event_inner(start),
-    {next_state, state_someone_die, maps:put(skill_die_list, NewSkillDieList, State)}.
+    {next_state, NextState, maps:put(skill_die_list, NewSkillDieList, State)}.
     
 
 %% ====================================================================
@@ -813,7 +831,7 @@ handle_event({skill, PlayerId, Op, OpList}, StateName, State) ->
         SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
         assert_skill_legal(SeatId, Op, OpList, StateName, State),
         NewState = lib_fight:do_skill(PlayerId, Op, OpList, State),
-        NextState = get_skill_next_state(Op, StateName),
+        NextState = get_skill_next_state(Op, StateName, State),
         case NextState of
             StateName ->
                 {next_state, StateName, NewState};
@@ -1091,12 +1109,22 @@ assert_die_skill_legal(PlayerId, _Op, _OpList, State) ->
 assert_skill_legal(_SeatId, _SkillId, _SkillData, _StateName, _State) ->
     ok.
 
-get_skill_next_state(Op, StateName) ->
+get_skill_next_state(Op, StateName, State) ->
     case Op of
         ?OP_SKILL_EIXT_PART_JINGZHANG ->
             StateName;
-        _ ->
-            state_night_result
+        ?OP_SKILL_LANGREN ->
+            ShowNightResult = maps:get(show_nigth_result, State),
+            case ShowNightResult == 1 of
+                true->
+                    state_someone_die;
+                false->
+                    state_night_result
+            end;
+        ?OP_SKILL_BAILANG->
+            state_someone_die;
+        _->
+            StateName
     end.
 
 do_log_op(SeatId, Op, State) ->
@@ -1225,7 +1253,8 @@ clear_night_op(State) ->
            jingzhang => NewJingZhang,
            lieren_kill => 0,
            exit_jingzhang => [], %%
-           langren_boom => 0
+           langren_boom => 0,
+           show_nigth_result => 0
            }.
 
 notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, State) ->

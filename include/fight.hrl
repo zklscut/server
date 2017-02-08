@@ -56,44 +56,46 @@
 -define(DIE_TYPE_LANGRNE, 1).
 -define(DIE_TYPE_NVWU, 2).
 -define(DIE_TYPE_QUZHU, 3).
+-define(DIE_TYPE_BOOM, 4)
 
 -define(MFIGHT, #{room_id => 0,
                   seat_player_map => #{},%% #{seat_id, player_id}
                   player_seat_map => #{},%% #{player_id, seat_id}
-                  offline_list => [],   %% seat_id
-                  out_seat_list => [],%% 出局列表 seat_id
-                  seat_duty_map => #{}, %% #{seat_id, 职责}
-                  duty_seat_map => #{}, %% #{duty_id, [seat_id]}
-                  left_op_list => [],   %% 剩余操作seat_id 按照顺序排好
-                  wait_op_list => [],   %% 等待中的操作
-                  status => 0,          %% 当前游戏状态
-                  game_state =>  0,     %% 第几天晚上
-                  game_round =>  1,     %% 第几轮
-                  lover => [],          %% 情侣
-                  shouwei => 0,         %% 守卫的id
-                  nvwu => {0, 0},       %% 女巫操作
-                  nvwu_left => [1, 2],  %% 女巫剩余的药
-                  langren => 0,         %% 狼人击杀的目标
-                  bailang => 0,         %% 白狼自爆
-                  hunxuer => 0,         %% 混血儿是否帮狼人
-                  daozei => [],         %% 盗贼可选择的
-                  part_jingzhang => [], %% 參與選舉警長
-                  exit_jingzhang => [], %% 参选警长退水的人
-                  xuanju_draw_cnt => 0, %% 选举平局次数
-                  jingzhang => 0,       %% 选举的警长
-                  jingzhang_op => 0,    %% 警长操作
-                  fayan_turn => [],     %% 发言顺序
-                  die => [],            %% 死亡玩家
-                  quzhu => 0,           %% 驱逐的玩家
-                  skill_seat => 0,      %% 发动技能列表
-                  baichi => 0,          %% 白痴id
-                  lieren_kill => 0,     %% 猎人杀死
-                  last_op_data => #{},  %% 上一轮操作的数据, 杀了几号, 投了几号等等
-                  daozei_seat => 0,     %%盗贼的位置
-                  player_num => 0,      %%玩家总数量
-                  do_police_select => 0,%%是否选举过警长
-                  langren_boom => 0,    %%狼人自爆过
-                  die_cache => []       %%狼人自爆时死亡对象缓冲
+                  offline_list => [],    %% seat_id
+                  out_seat_list => [],   %% 出局列表 seat_id
+                  seat_duty_map => #{},  %% #{seat_id, 职责}
+                  duty_seat_map => #{},  %% #{duty_id, [seat_id]}
+                  left_op_list => [],    %% 剩余操作seat_id 按照顺序排好
+                  wait_op_list => [],    %% 等待中的操作
+                  status => 0,           %% 当前游戏状态
+                  game_state =>  0,      %% 第几天晚上
+                  game_round =>  1,      %% 第几轮
+                  lover => [],           %% 情侣
+                  shouwei => 0,          %% 守卫的id
+                  nvwu => {0, 0},        %% 女巫操作
+                  nvwu_left => [1, 2],   %% 女巫剩余的药
+                  langren => 0,          %% 狼人击杀的目标
+                  bailang => 0,          %% 白狼自爆
+                  hunxuer => 0,          %% 混血儿是否帮狼人
+                  daozei => [],          %% 盗贼可选择的
+                  part_jingzhang => [],  %% 參與選舉警長
+                  exit_jingzhang => [],  %% 参选警长退水的人
+                  xuanju_draw_cnt => 0,  %% 选举平局次数
+                  jingzhang => 0,        %% 选举的警长
+                  jingzhang_op => 0,     %% 警长操作
+                  fayan_turn => [],      %% 发言顺序
+                  die => [],             %% 死亡玩家
+                  quzhu => 0,            %% 驱逐的玩家
+                  skill_seat => 0,       %% 发动技能列表
+                  baichi => 0,           %% 白痴id
+                  lieren_kill => 0,      %% 猎人杀死
+                  last_op_data => #{},   %% 上一轮操作的数据, 杀了几号, 投了几号等等
+                  daozei_seat => 0,      %%盗贼的位置
+                  player_num => 0,       %%玩家总数量
+                  do_police_select => 0, %%是否选举过警长
+                  langren_boom => 0,     %%狼人自爆过
+                  die_cache => [],       %%狼人自爆时死亡对象缓冲
+                  show_nigth_result => 0 %%是否公布过死亡结果
                   }).
 
 -endif.
