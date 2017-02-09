@@ -511,7 +511,7 @@ do_skill_inner(SeatId, ?OP_SKILL_BAICHI, _, State) ->
             0;
         false->
             SeatId
-    end
+    end,
     StateAfterBaichi = maps:put(baichi, SeatIdAfterBaichi, State),
     maps:put(flop_list, maps:get(flop_list, StateAfterBaichi) ++ [SeatId], StateAfterBaichi);
 
