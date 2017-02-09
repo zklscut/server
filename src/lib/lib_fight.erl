@@ -371,7 +371,7 @@ do_langren_op(State) ->
 
     %%白痴翻牌的情况下是不是被杀
     ShowWeiDef = maps:get(shouwei, State),
-    BaiChi = maps:get(baichi, StateAfterUpdateDie)
+    BaiChi = maps:get(baichi, StateAfterUpdateDie),
     StateAfterBaichi = 
     case (BaiChi =/= 0) andalso (ShowWeiDef =/= BaiChi) andalso lists:member(BaiChi, KillSeat) of
         true->
