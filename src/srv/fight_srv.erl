@@ -1177,9 +1177,9 @@ get_skill_next_state(Op, StateName, State) ->
             StateName
     end.
 
-do_log_op(SeatId, Op, State) ->
+do_log_op(SeatId, OpList, State) ->
     LastOpData = maps:get(last_op_data, State),
-    NewLastOpData = maps:put(SeatId, Op, LastOpData),
+    NewLastOpData = maps:put(SeatId, OpList, LastOpData),
     maps:put(last_op_data, NewLastOpData, State).
 
 do_remove_wait_op(SeatId, State) ->

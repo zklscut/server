@@ -314,6 +314,7 @@ do_shouwei_op(State) ->
     LastOpData = get_last_op(State),
     [{_, [SeatId]}] = maps:to_list(LastOpData),
     StateAfterShouWei = maps:put(shouwei, SeatId, State),
+    %%todo:通知守护目标
     clear_last_op(StateAfterShouWei).
 
 do_hunxuer_op(State) ->
