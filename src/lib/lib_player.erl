@@ -63,7 +63,7 @@ update_fight_pid(Pid, Player) ->
 
 is_in_fight(Player) ->
     Pid = maps:get(fight_pid, Player, undefined),
-    Pid =/= undefined andalso is_process_alive(Player) == true.
+    Pid =/= undefined andalso is_process_alive(Pid) == true.
 
 get_fight_pid(Player) ->
     case is_in_fight(Player) of
