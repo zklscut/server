@@ -9,7 +9,8 @@
          rand_in_list/2,
          index_of_list/2,
          part_list/2,
-         conver_bool_to_int/1]).
+         conver_bool_to_int/1,
+         add_element_single/2]).
 
 
 %% ====================================================================
@@ -97,6 +98,14 @@ conver_bool_to_int(Bool) ->
         false ->
             0
     end.
+
+add_element_single(Elem, List) ->
+  case lists:member(Elem, List) of
+    true ->
+        ignore;
+    false ->
+        List ++ [Elem]
+  end.
 
 
 %%%====================================================================

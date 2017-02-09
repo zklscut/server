@@ -48,7 +48,10 @@
          player_op/4,
          player_skill/4,
          player_speak/3,
-         print_state/1]).
+         print_state/1,
+         player_online/1,
+         player_offline/1
+         ]).
 
 start_link(RoomId, PlayerList, DutyList) ->
     gen_fsm:start(?MODULE, [RoomId, PlayerList, DutyList, ?MFIGHT], []).
@@ -64,6 +67,22 @@ player_skill(Pid, PlayerId, Op, OpList) ->
 
 print_state(Pid) ->
     gen_fsm:send_all_state_event(Pid, print_state).
+
+player_online(Player) ->
+    case lib_fight:get_fight_pid(Player) of
+        undefined ->
+            ignore;
+        Pid ->
+            gen_fsm:send_all_state_event(Pid, {player_online, lib_player:get_player_id(Player)})
+    end.    
+
+player_offline(Player) ->
+    case lib_fight:get_fight_pid(Player) of
+        undefined ->
+            ignore;
+        Pid ->
+            gen_fsm:send_all_state_event(Pid, {player_offline, lib_player:get_player_id(Player)})
+    end.
 
 %% ====================================================================
 %% Behavioural functions
@@ -844,6 +863,36 @@ handle_event({skill, PlayerId, Op, OpList}, StateName, State) ->
             net_send:send_errcode(ErrCode, PlayerId),
             {next_state, StateName, State} 
     end;
+
+handle_event({player_online, PlayerId}, StateName, State) ->
+    OfflineList = maps:get(offline_list, State),
+    NewOfflineList = OfflineList -- [PlayerId],
+    NewState =  maps:put(offline_list, NewOfflineList, State),
+
+    SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
+    DutyId = lib_fight:get_duty_by_seat(SeatId, State),
+    Round = maps:get(game_round, State),
+    GameState = maps:get(game_state, State),
+    DieList = maps:get(out_seat_list, State),
+
+    Send = #m__fihgt__online__s2l{duty = DutyId,
+                                  seat_id = SeatId,
+                                  game_state =GameState,
+                                  round = Round,
+                                  speak_id = 0,
+                                  die_list = DieList,
+                                  attach_data1 = [],
+                                  attach_data2 = []
+                                  },
+    mod_send:send(Send, PlayerId),
+
+    {next_state, StateName, NewState};
+
+handle_event({player_offline, PlayerId}, StateName, State) ->
+    OfflineList = maps:get(offline_list, State),
+    NewOfflineList = util:add_element_single(PlayerId, OfflineList),
+    NewState =  maps:put(offline_list, NewOfflineList, State),
+    {next_state, StateName, NewState};
 
 handle_event(print_state, StateName, StateData) ->
     lager:info("state name ~p", [StateName]),

@@ -13,7 +13,10 @@
          update_player/1,
          get_player_pid/1,
          get_player_show_base/1,
-         get_player_id/1]).
+         get_player_id/1,
+         update_fight_pid/2,
+         is_in_fight/1,
+         get_fight_pid/1]).
 
 
 %% ====================================================================
@@ -22,10 +25,12 @@
 
 handle_after_login(#{id := PlayerId} = Player) ->
     lib_ets:update(?ETS_PLAYER_PID, PlayerId, self()),
+    fight_srv:player_online(Player),
     Player.
 
 handle_after_logout(#{id := PlayerId} = Player) ->
     lib_ets:delete(?ETS_PLAYER_PID, PlayerId),
+    fight_srv:player_offline(Player),
     room_srv:leave_room(Player),
     lib_room:update_player_room_id(0, Player);
 
@@ -51,6 +56,23 @@ get_player_show_base(Player) ->
 
 get_player_id(Player) ->
     maps:get(id, Player, 0).
+
+update_fight_pid(Pid, Player) ->
+    NewPlayer = maps:put(fight_pid, Player),
+    update_player(NewPlayer).
+
+is_in_fight(Player) ->
+    Pid = maps:get(fight_pid, Player, undefined),
+    Pid =/= undefined andalso is_process_alive(Player) == true.
+
+get_fight_pid(Player) ->
+    case is_in_fight(Player) of
+        true ->
+            maps:get(fight_pid, Player);
+        false ->
+            undefined
+    end.
+
 
 %%%====================================================================
 %%% Internal functions
