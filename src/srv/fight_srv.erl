@@ -449,10 +449,10 @@ state_night_result(start, State)->
     notice_night_result(State),
     send_event_inner(over, b_fight_state_wait:get(state_night_result)),
     NewState = maps:put(show_nigth_result, 1, State),
-    {next_state, state_someone_die, lib_fight:set_skill_die_list(state_night_result, NewState)};
+    {next_state, state_night_result, lib_fight:set_skill_die_list(state_night_result, NewState)};
 
 state_night_result(over, State)->
-    send_event_inner(over);
+    send_event_inner(over),
     {next_state, state_someone_die, State};
 
 state_night_result(_, State) ->
