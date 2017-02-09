@@ -78,6 +78,7 @@
                   bailang => 0,          %% 白狼自爆
                   hunxuer => 0,          %% 混血儿是否帮狼人
                   daozei => [],          %% 盗贼可选择的
+                  yuyanjia_op => [],     %% 预言家验过的人
                   part_jingzhang => [],  %% 參與選舉警長
                   exit_jingzhang => [],  %% 参选警长退水的人
                   xuanju_draw_cnt => 0,  %% 选举平局次数

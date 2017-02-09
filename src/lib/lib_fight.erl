@@ -371,7 +371,8 @@ do_yuyanjia_op(State) ->
                                                                   duty = SelectDuty},
                     send_to_seat(Send, SeatId, State)
             end,
-            clear_last_op(State)
+            NewYuyanjia = maps:get(yuyanjia_op, State) ++ [{SelectSeatId, SelectDuty}],
+            clear_last_op(maps:put(yuyanjia_op, NewYuyanjia, State))
     end.
 
 do_part_jingzhang_op(State) ->

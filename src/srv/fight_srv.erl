@@ -874,6 +874,7 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     Round = maps:get(game_round, State),
     GameState = maps:get(game_state, State),
     DieList = maps:get(out_seat_list, State),
+    {AttachData1, AttachData2} = get_online_attach_data(SeatId, DutyId, State),
 
     Send = #m__fihgt__online__s2l{duty = DutyId,
                                   seat_id = SeatId,
@@ -881,8 +882,8 @@ handle_event({player_online, PlayerId}, StateName, State) ->
                                   round = Round,
                                   speak_id = 0,
                                   die_list = DieList,
-                                  attach_data1 = [],
-                                  attach_data2 = []
+                                  attach_data1 = AttachData1,
+                                  attach_data2 = AttachData2
                                   },
     mod_send:send(Send, PlayerId),
 
@@ -1349,6 +1350,24 @@ is_over(State) ->
     NewState = out_die_player(State),
     {IsOver, _Winner} = get_fight_result(NewState),
     IsOver.
+
+get_online_attach_data(_SeatId, ?DUTY_YUYANJIA, State) ->
+    lists:unzip(maps:get(yuyanjia_op, State));
+
+get_online_attach_data(_SeatId, ?DUTY_LANGREN, State) ->
+    {lib_fight:get_duty_seat(State), []};
+
+get_online_attach_data(_SeatId, ?DUTY_BAILANG, State) ->
+    {lib_fight:get_duty_seat(State), []};
+
+get_online_attach_data(_SeatId, ?DUTY_SHOUWEI, State) ->
+    {[maps:get(shouwei, State)], []};
+
+get_online_attach_data(_SeatId, ?DUTY_HUNXUEER, State) ->
+    {[maps:get(hunxuer, State)], []};
+
+get_online_attach_data(_, _, _) ->
+    [].
 
 get_next_game_state(GameState) ->
     case GameState of
