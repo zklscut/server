@@ -344,7 +344,14 @@ do_nvwu_op(State) ->
     StateAfterNvKill = 
     case maps:get(nvwu, State) of
         {NvWuKill, ?NVWU_DUYAO} ->
-            maps:put(nv_kill, NvWuKill, StateAfterUpdateDie);
+            StateAfterSetNvKill = maps:put(nv_kill, NvWuKill, StateAfterUpdateDie),
+            BaiChi = maps:get(baichi, StateAfterSetNvKill),
+            case BaiChi == NvWuKill of
+                true->
+                    maps:put(baichi, 0, StateAfterSetNvKill);
+                false->
+                    StateAfterSetNvKill
+            end;
         _ ->
             ignore
     end,
@@ -361,7 +368,18 @@ do_langren_op(State) ->
         end,
     StateAfterLangren = maps:put(langren, KillSeat, State),
     StateAfterUpdateDie = do_set_die_list(StateAfterLangren),
-    clear_last_op(StateAfterUpdateDie). 
+
+    %%白痴翻牌的情况下是不是被杀
+    ShowWeiDef = maps:get(shouwei, State),
+    BaiChi = maps:get(baichi, StateAfterUpdateDie)
+    StateAfterBaichi = 
+    case (BaiChi =/= 0) andalso (ShowWeiDef =/= BaiChi) andalso lists:member(BaiChi, KillSeat) of
+        true->
+            maps:put(baichi, 0, StateAfterUpdateDie);
+        false->
+            StateAfterUpdateDie
+    end,
+    clear_last_op(StateAfterBaichi). 
 
 do_yuyanjia_op(State) ->
     LastOpData = get_last_op(State),
@@ -487,7 +505,14 @@ do_skill(PlayerId, Op, OpList, State) ->
     do_skill_inner(SeatId, Op, OpList, State).
     
 do_skill_inner(SeatId, ?OP_SKILL_BAICHI, _, State) ->
-    StateAfterBaichi = maps:put(baichi, SeatId, State),
+    SeatIdAfterBaichi = 
+    case maps:get(baichi, State) =/= 0 of
+        true->
+            0;
+        false->
+            SeatId
+    end
+    StateAfterBaichi = maps:put(baichi, SeatIdAfterBaichi, State),
     maps:put(flop_list, maps:get(flop_list, StateAfterBaichi) ++ [SeatId], StateAfterBaichi);
 
 do_skill_inner(_SeatId, ?OP_SKILL_LIEREN, [SelectSeat], State) ->
@@ -511,7 +536,7 @@ do_skill_inner(SeatId, ?OP_SKILL_BAILANG, [SelectId], State) ->
         true ->
             State;
         false ->
-            StateAfterDieList = maps:put(skill_die_list, [{?DIE_TYPE_BOOM, SeatId}] ++ SkillDieListPre, State),
+            StateAfterDieList = maps:put(skill_die_list, [{?DIE_TYPE_BOOM, SeatId}] ++ SkillDieListPre, State)
             
     end,
     StateAfterDie = maps:put(die, maps:get(die, NewState) ++ DieList, NewState),

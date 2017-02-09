@@ -470,6 +470,7 @@ get_someone_die_op(State)->
 
         {DieType, Die} = hd(SkillDieList),
 
+        %%白狼自爆发动技能
         DoBaiLang = (DieType == ?DIE_TYPE_BOOM),
         case DoBaiLang of
             true->
@@ -519,8 +520,7 @@ get_someone_die_op(State)->
             false->
                 ignore
         end,
-        send_event_inner(op_over),
-        {next_state, state_someone_die, State}
+        throw(ignore)
     catch
         throw:{skip, SkipState} ->
             send_event_inner(op_over),
@@ -854,8 +854,22 @@ state_toupiao(op_over, State) ->
             {next_state, state_fayan, maps:put(toupiao_draw_list, MaxSelectList, NewState)};
         false ->   
             send_event_inner(start),
-            notice_toupiao_out(Quzhu, NewState),
-            {next_state, state_someone_die, lib_fight:set_skill_die_list(state_toupiao, NewState)}
+            StateAfterQuzhu = 
+            case (Quzhu =/= 0) andalso (lib_fight:get_duty_by_seat(Quzhu, NewState)) of
+                true->
+                    %%白痴直接翻牌
+                    StateAfterBaichi = lib_fight:do_skill(lib_fight:get_player_id_by_seat(Quzhu), ?OP_SKILL_BAICHI, [0], NewState),
+                    case maps:get(baichi, StateAfterBaichi) == 0 of
+                        true->
+                            notice_toupiao_out(Quzhu, NewState);
+                        false->
+                            ignore
+                    end;
+                false->
+                    notice_toupiao_out(Quzhu, NewState),
+                    NewState
+            end,
+            {next_state, state_someone_die, lib_fight:set_skill_die_list(state_toupiao, StateAfterQuzhu)}
     end.
             
 %% ====================================================================
