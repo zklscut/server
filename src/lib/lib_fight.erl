@@ -536,7 +536,7 @@ do_skill_inner(SeatId, ?OP_SKILL_BAILANG, [SelectId], State) ->
         true ->
             State;
         false ->
-            StateAfterDieList = maps:put(skill_die_list, [{?DIE_TYPE_BOOM, SeatId}] ++ SkillDieListPre, State)
+            maps:put(skill_die_list, [{?DIE_TYPE_BOOM, SeatId}] ++ SkillDieListPre, State)
             
     end,
     StateAfterDie = maps:put(die, maps:get(die, NewState) ++ DieList, NewState),

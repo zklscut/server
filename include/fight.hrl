@@ -96,6 +96,7 @@
                   do_police_select => 0, %%是否选举过警长
                   langren_boom => 0,     %%狼人自爆过
                   show_nigth_result => 0, %%是否公布过死亡结果
+                  quzhu_op => 0,          %%是否有过驱逐操作
                   flop_list => [],         %%翻牌列表
                   flop_lieren => 0,       %%猎人是否已经翻牌
                   nv_kill => 0            %%

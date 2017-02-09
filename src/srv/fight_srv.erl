@@ -478,19 +478,7 @@ get_someone_die_op(State)->
             false->
                 ignore
         end,
-        Duty = lib_fight:get_duty_by_seat(Die, State),
-        DoBaichi = 
-            (maps:get(pre_state_name, State) == state_toupiao andalso Duty == ?DUTY_BAICHI andalso 
-                maps:get(baichi, State) == 0 andalso DieType == ?DIE_TYPE_QUZHU),
-        case DoBaichi of
-            true ->
-                PlayerId = lib_fight:get_player_id_by_seat(Die, State),
-                NewState = lib_fight:do_skill(PlayerId, ?OP_SKILL_BAICHI, [0], State),
-                throw({skip, NewState});
-            false ->
-                ignore
-
-        end,
+        
 
         DoJingzhang = (maps:get(jingzhang, State) == Die),
         case DoJingzhang of
@@ -500,10 +488,7 @@ get_someone_die_op(State)->
                 ignore
         end,
 
-        
-
-        
-
+        Duty = lib_fight:get_duty_by_seat(Die, State),
         DoLieren = (Duty == ?DUTY_LIEREN andalso DieType =/= ?DIE_TYPE_NVWU),
         case DoLieren of
             true ->
@@ -520,6 +505,20 @@ get_someone_die_op(State)->
             false->
                 ignore
         end,
+
+        %%判断是否平安夜或者平安日
+        % case maps:get(quzhu_op, State) == 1 of
+        %     true->
+        %         case maps:get(quzhu, State) =/= 0 of
+        %             true->
+        %                 ;
+        %             false->
+                        
+        %         end;
+        %     false->
+
+        % end
+
         throw(ignore)
     catch
         throw:{skip, SkipState} ->
@@ -869,7 +868,8 @@ state_toupiao(op_over, State) ->
                     notice_toupiao_out(Quzhu, NewState),
                     NewState
             end,
-            {next_state, state_someone_die, lib_fight:set_skill_die_list(state_toupiao, StateAfterQuzhu)}
+            StateAfterZhuQuOp = maps:put(quzhu_op, StateAfterQuzhu),
+            {next_state, state_someone_die, lib_fight:set_skill_die_list(state_toupiao, StateAfterZhuQuOp)}
     end.
             
 %% ====================================================================
@@ -1402,7 +1402,8 @@ clear_night_op(State) ->
            exit_jingzhang => [], %%
            langren_boom => 0,
            show_nigth_result => 0,
-           flop_list => []
+           flop_list => [],
+           quzhu_op => 0
            }.
 
 notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, State) ->
