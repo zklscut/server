@@ -478,7 +478,7 @@ get_someone_die_op(State)->
             false->
                 ignore
         end,
-
+        Duty = lib_fight:get_duty_by_seat(Die, State),
         DoBaichi = 
             (maps:get(pre_state_name, State) == state_toupiao andalso Duty == ?DUTY_BAICHI andalso 
                 maps:get(baichi, State) == 0 andalso DieType == ?DIE_TYPE_QUZHU),
@@ -502,7 +502,7 @@ get_someone_die_op(State)->
 
         
 
-        Duty = lib_fight:get_duty_by_seat(Die, State),
+        
 
         DoLieren = (Duty == ?DUTY_LIEREN andalso DieType =/= ?DIE_TYPE_NVWU),
         case DoLieren of
