@@ -95,8 +95,10 @@
                   player_num => 0,       %%玩家总数量
                   do_police_select => 0, %%是否选举过警长
                   langren_boom => 0,     %%狼人自爆过
-                  die_cache => [],       %%狼人自爆时死亡对象缓冲
-                  show_nigth_result => 0 %%是否公布过死亡结果
+                  show_nigth_result => 0, %%是否公布过死亡结果
+                  flop_list => [],         %%翻牌列表
+                  flop_lieren => 0,       %%猎人是否已经翻牌
+                  nv_kill => 0            %%
                   }).
 
 -endif.

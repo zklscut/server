@@ -341,7 +341,14 @@ do_nvwu_op(State) ->
     StateAfterNvwu = maps:put(nvwu, {SelectSeatId, UseYao}, State),
     StateAfterDelete = maps:put(nvwu_left, maps:get(nvwu_left, State) -- [UseYao], StateAfterNvwu),
     StateAfterUpdateDie = do_set_die_list(StateAfterDelete),
-    clear_last_op(StateAfterUpdateDie).        
+    StateAfterNvKill = 
+    case maps:get(nvwu, State) of
+        {NvWuKill, ?NVWU_DUYAO} ->
+            maps:put(nv_kill, NvWuKill, StateAfterUpdateDie);
+        _ ->
+            ignore
+    end,
+    clear_last_op(StateAfterNvKill).        
 
 do_langren_op(State) ->
     LastOpData = get_last_op(State),
@@ -480,12 +487,20 @@ do_skill(PlayerId, Op, OpList, State) ->
     do_skill_inner(SeatId, Op, OpList, State).
     
 do_skill_inner(SeatId, ?OP_SKILL_BAICHI, _, State) ->
-    maps:put(baichi, SeatId, State);
+    StateAfterBaichi = maps:put(baichi, SeatId, State),
+    maps:put(flop_list, maps:get(flop_list, StateAfterBaichi) ++ [SeatId], StateAfterBaichi);
 
 do_skill_inner(_SeatId, ?OP_SKILL_LIEREN, [SelectSeat], State) ->
     StateAfterDie = maps:put(die, maps:get(die, State) ++ [SelectSeat], State),
     StateAfterLieRen = maps:put(lieren_kill, SelectSeat, StateAfterDie),
-    StateAfterLieRen;
+    StateAfterFlopLieRen = 
+    case SelectSeat == 0 of
+        true->
+            StateAfterLieRen;
+        false->
+            maps:put(flop_lieren, 1, StateAfterLieRen)
+    end,
+    StateAfterFlopLieRen;
 
 do_skill_inner(SeatId, ?OP_SKILL_BAILANG, [SelectId], State) ->
     DieList = [SeatId, SelectId],
@@ -496,12 +511,15 @@ do_skill_inner(SeatId, ?OP_SKILL_BAILANG, [SelectId], State) ->
         true ->
             State;
         false ->
-            maps:put(skill_die_list, [{?DIE_TYPE_BOOM, SeatId}] ++ SkillDieListPre, State)
+            StateAfterDieList = maps:put(skill_die_list, [{?DIE_TYPE_BOOM, SeatId}] ++ SkillDieListPre, State),
+            
     end,
-    maps:put(die, maps:get(die, NewState) ++ DieList, NewState);
+    StateAfterDie = maps:put(die, maps:get(die, NewState) ++ DieList, NewState),
+    maps:put(langren_boom, 1, StateAfterDie);
 
 do_skill_inner(SeatId, ?OP_SKILL_LANGREN, _, State) ->
-    maps:put(die, maps:get(die, State) ++ [SeatId], State);
+    StateAfterDie = maps:put(die, maps:get(die, State) ++ [SeatId], State),
+    maps:put(langren_boom, 1, StateAfterDie);
 
 do_skill_inner(_SeatId, ?OP_SKILL_CHANGE_JINGZHANG, [SelectId], State) ->
     maps:put(jingzhang, SelectId, State);
@@ -522,7 +540,7 @@ set_skill_die_list(StateName, State) ->
                 DieList = maps:get(die, State),
                 case maps:get(nvwu, State) of
                     {NvWuKill, ?NVWU_DUYAO} ->
-                        [{?DIE_TYPE_NVWU, NvWuKill}] ++ [{?DIE_TYPE_LANGRNE, SeatId} || SeatId <- (DieList -- [NvWuKill])];
+                        [{?DIE_TYPE_LANGRNE, SeatId} || SeatId <- (DieList -- [NvWuKill])];
                     _ ->
                         [{?DIE_TYPE_LANGRNE, SeatId} || SeatId <- DieList]
                 end;

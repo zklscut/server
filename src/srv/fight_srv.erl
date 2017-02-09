@@ -447,12 +447,93 @@ state_xuanju_jingzhang(op_over, State) ->
 state_night_result(start, State)->
     notice_game_status_change(state_night_result, State),
     notice_night_result(State),
-    send_event_inner(start, b_fight_state_wait:get(state_night_result)),
+    send_event_inner(over, b_fight_state_wait:get(state_night_result)),
     NewState = maps:put(show_nigth_result, 1, State),
     {next_state, state_someone_die, lib_fight:set_skill_die_list(state_night_result, NewState)};
 
+state_night_result(over, State)->
+    send_event_inner(over);
+    {next_state, state_someone_die, State};
+
 state_night_result(_, State) ->
     {next_state, state_night_result,  State}.
+
+get_someone_die_op(State)->
+    SkillDieList = maps:get(skill_die_list, State),
+    try
+        case SkillDieList of
+            [] ->
+                throw(ignore);
+            _ ->
+                ok
+        end,
+
+        {DieType, Die} = hd(SkillDieList),
+
+        DoBaiLang = (DieType == ?DIE_TYPE_BOOM),
+        case DoBaiLang of
+            true->
+                throw(?OP_SKILL_BAILANG);
+            false->
+                ignore
+        end,
+
+        DoBaichi = 
+            (maps:get(pre_state_name, State) == state_toupiao andalso Duty == ?DUTY_BAICHI andalso 
+                maps:get(baichi, State) == 0 andalso DieType == ?DIE_TYPE_QUZHU),
+        case DoBaichi of
+            true ->
+                PlayerId = lib_fight:get_player_id_by_seat(Die, State),
+                NewState = lib_fight:do_skill(PlayerId, ?OP_SKILL_BAICHI, [0], State),
+                throw({skip, NewState});
+            false ->
+                ignore
+
+        end,
+
+        DoJingzhang = (maps:get(jingzhang, State) == Die),
+        case DoJingzhang of
+            true ->
+                throw(?OP_SKILL_CHANGE_JINGZHANG);
+            false ->
+                ignore
+        end,
+
+        
+
+        Duty = lib_fight:get_duty_by_seat(Die, State),
+
+        DoLieren = (Duty == ?DUTY_LIEREN andalso DieType =/= ?DIE_TYPE_NVWU),
+        case DoLieren of
+            true ->
+                throw(?OP_SKILL_LIEREN);
+            false ->
+                ignore
+        end,
+
+        %%猎人已经出局直接跳过
+        FlopLieRen = maps:get(flop_lieren, State),
+        case FlopLieRen == 1 of
+            true->
+                throw(?OP_SKILL_LIEREN);
+            false->
+                ignore
+        end,
+        send_event_inner(op_over),
+        {next_state, state_someone_die, State}
+    catch
+        throw:{skip, SkipState} ->
+            send_event_inner(op_over),
+            {next_state, state_someone_die, SkipState};
+        throw:ignore ->
+            send_event_inner(op_over),
+             {next_state, state_someone_die, State};
+        throw:Op ->
+            start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(Op)),
+            {_DieType, OpSeat} = hd(SkillDieList),
+            notice_player_op(Op, [OpSeat], State),
+            {next_state, state_someone_die, maps:put(cur_skill, Op, State)}
+    end.
 
 %% ====================================================================
 %% state_someone_die
@@ -496,6 +577,8 @@ state_someone_die(wait_op, State) ->
             false ->
                 ignore
         end,
+
+        %%猎人已经出局直接跳过
 
         Duty = lib_fight:get_duty_by_seat(Die, State),
 
@@ -1301,10 +1384,11 @@ clear_night_op(State) ->
            last_op_data => #{},  %% 上一轮操作的数据, 杀了几号, 投了几号等等}.
            game_round => maps:get(game_round, State) + 1,
            jingzhang => NewJingZhang,
-           lieren_kill => 0,
+           % lieren_kill => 0,
            exit_jingzhang => [], %%
            langren_boom => 0,
-           show_nigth_result => 0
+           show_nigth_result => 0,
+           flop_list => []
            }.
 
 notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, State) ->
