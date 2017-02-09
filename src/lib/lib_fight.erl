@@ -361,18 +361,20 @@ do_yuyanjia_op(State) ->
         [] ->
             clear_last_op(State);
         [{SeatId, [SelectSeatId]}]  ->
-            case SelectSeatId == 0 of
-                true ->
-                    ignore;
-                false ->    
-                    SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId, State),
+            NewState = 
+                case SelectSeatId == 0 of
+                    true ->
+                        State;
+                    false ->    
+                        SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId, State),
             
-                    Send = #m__fight__notice_yuyanjia_result__s2l{seat_id = SelectSeatId,
+                        Send = #m__fight__notice_yuyanjia_result__s2l{seat_id = SelectSeatId,
                                                                   duty = SelectDuty},
-                    send_to_seat(Send, SeatId, State)
-            end,
-            NewYuyanjia = maps:get(yuyanjia_op, State) ++ [{SelectSeatId, SelectDuty}],
-            clear_last_op(maps:put(yuyanjia_op, NewYuyanjia, State))
+                        send_to_seat(Send, SeatId, State),
+                        NewYuyanjia = maps:get(yuyanjia_op, State) ++ [{SelectSeatId, SelectDuty}],
+                        maps:put(yuyanjia_op, NewYuyanjia, State)
+                end,
+            clear_last_op(NewState)
     end.
 
 do_part_jingzhang_op(State) ->
