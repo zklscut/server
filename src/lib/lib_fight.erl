@@ -661,7 +661,7 @@ get_someone_die_op(State)->
             %  {next_state, state_someone_die, StateAfterDelay};
             {op_over, _, StateAfterDelay};
         throw:d_delay ->
-            (d_delay, ?OP_SKILL_D_DELAY, StateAfterDelay);
+            (d_delay, ?OP_SKILL_LIEREN,StateAfterDelay);
         throw:skip ->
             {skip, _, StateAfterDelay};
         throw:Op ->
