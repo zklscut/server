@@ -755,7 +755,8 @@ state_toupiao(op_over, State) ->
             send_event_inner(start),
             {next_state, state_fayan, maps:put(toupiao_draw_list, MaxSelectList, NewState)};
         false ->   
-            send_event_inner(start),
+            %%临时6秒
+            send_event_inner(start, b_fight_wait_op:get(state_toupiao)),
             StateAfterQuzhu = 
             case (Quzhu =/= 0) andalso (?DUTY_BAICHI == lib_fight:get_duty_by_seat(Quzhu, NewState)) of
                 true->
