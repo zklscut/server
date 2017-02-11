@@ -537,20 +537,39 @@ do_skill_inner(_SeatId, ?OP_SKILL_LIEREN, [SelectSeat], State) ->
         false->
             maps:put(flop_lieren, 1, StateAfterLieRen)
     end,
+    SkillDieListPre = maps:get(skill_die_list, State),
+    NewState = 
+    case lists:member(SelectSeat, DieListPre) of
+        true ->
+            State;
+        false ->
+            maps:put(skill_die_list, SkillDieListPre ++ [{?DIE_TYPE_LIEREN, SelectSeat}] , State)
+            
+    end,
     check_set_baichi_die(SelectSeat, StateAfterFlopLieRen);
 
 do_skill_inner(SeatId, ?OP_SKILL_BAILANG, [SelectId], State) ->
     DieList = [SeatId, SelectId],
     DieListPre = maps:get(die, State),
     SkillDieListPre = maps:get(skill_die_list, State),
+
     NewState = 
     case lists:member(SelectId, DieListPre) of
         true ->
             State;
         false ->
-            maps:put(skill_die_list, [{?DIE_TYPE_BOOM, SelectId}] ++ SkillDieListPre, State)
+            maps:put(skill_die_list,  SkillDieListPre ++ [{?DIE_TYPE_BAILANG, SelectId}], State)
             
     end,
+
+    StateAfterBoom = 
+    case is_seat_alive(SeatId, NewState) of
+        true->
+            maps:put(skill_die_list,  SkillDieListPre ++ [{?DIE_TYPE_BOOM, SeatId}], NewState);
+        false->
+            NewState
+    end
+
     StateAfterDie = maps:put(die, maps:get(die, NewState) ++ DieList, NewState),
     StateAfterLangRenBoom = maps:put(langren_boom, 1, StateAfterDie),
     StateAtferBaiLangBoom = maps:put(bailang, SelectId, StateAfterLangRenBoom),
