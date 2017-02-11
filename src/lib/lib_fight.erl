@@ -484,9 +484,9 @@ do_toupiao_op(State) ->
 
 %%设置白痴死亡状态
 check_set_baichi_die(DieSeat, State)->
-    case maps:get(baichi, StateAfterSetNvKill) == DieSeat of
+    case maps:get(baichi, State) == DieSeat of
         true->
-            maps:put(baichi, DieSeat, State);
+            maps:put(baichi, 0, State);
         false->
             State
     end.
