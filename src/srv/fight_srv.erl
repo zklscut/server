@@ -323,7 +323,7 @@ state_part_jingzhang(start, State) ->
     case GameRound of
         1 ->
             notice_game_status_change(state_part_jingzhang, State),
-            send_event_inner(wait_op, b_fight_wait_op:get(state_part_jingzhang)),
+            send_event_inner(wait_op, b_fight_state_wait:get(state_part_jingzhang)),
             {next_state, state_part_jingzhang, State};
         2 ->
             %%如果狼人自爆中断选举过程,第二天可以再次竞选警长,但是参与者按照第一天的算
@@ -408,7 +408,7 @@ state_xuanju_jingzhang(start, State) ->
             {next_state, get_next_game_state(state_xuanju_jingzhang), State};
         _ ->
             notice_game_status_change(state_xuanju_jingzhang, State),
-            send_event_inner(wait_op, b_fight_op_wait:get(state_xuanju_jingzhang)),
+            send_event_inner(wait_op, b_fight_state_wait:get(state_xuanju_jingzhang)),
             {next_state, state_xuanju_jingzhang, State}
     end;
 
@@ -977,7 +977,7 @@ do_duty_state_start(Duty, GameState, State) ->
             {next_state, get_next_game_state(GameState), State};
         _ ->
             notice_game_status_change(GameState, State),
-            send_event_inner(wait_op, b_fight_wait_op:get(GameState)),
+            send_event_inner(wait_op, b_fight_state_wait:get(GameState)),
             {next_state, GameState, State}
     end.
 
@@ -1031,7 +1031,7 @@ do_fayan_state_start(InitFayanList, StateName, State) ->
             DrawCnt = maps:get(xuanju_draw_cnt, State),
             notice_game_status_change(StateName, [DrawCnt], State),
             NewState = maps:put(fayan_turn, FayanList, State),
-            send_event_inner(wait_op, b_fight_wait_op:get(StateName)),
+            send_event_inner(wait_op, b_fight_state_wait:get(StateName)),
             {next_state, StateName, NewState}
     end.
 

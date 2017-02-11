@@ -558,12 +558,8 @@ do_skill_inner(SeatId, ?OP_SKILL_EIXT_PART_JINGZHANG, [_SelectId], State) ->
     StateAfterFayanTurn = maps:put(fayan_turn, maps:get(fayan_turn, State) -- [SeatId], StateAfterJingZhang),
     StateAfterFayanTurn.
 
-
-
 rand_in_alive_seat(State) ->
     util:rand_in_list(get_alive_seat_list(State)).
-
-
 
 
 set_skill_die_list(StateName, State) ->
@@ -604,7 +600,7 @@ get_someone_die_op(State)->
     StateAfterDelay = 
     case SkillDieList of
         []->
-            ignore;
+            State;
         _->
             maps:put(skill_d_delay, 0, State)
     end,
