@@ -807,7 +807,7 @@ state_night(start, State) ->
             notice_game_status_change(state_night, State),
             send_event_inner(over, b_fight_state_wait:get(state_night)),
             {next_state, state_night, NewState}
-    end.
+    end;
 
 state_night(over, State)->
     send_event_inner(start),
