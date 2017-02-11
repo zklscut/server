@@ -612,7 +612,7 @@ get_someone_die_op(State)->
                         throw(d_delay);
                     false->
                         throw(skip)
-                end
+                end;
             _ ->
                 ok
         end,
