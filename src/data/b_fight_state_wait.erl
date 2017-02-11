@@ -41,6 +41,10 @@ get(state_toupiao_death_fayan)->
 	4000;
 get(state_night)->
 	4000;
+get(state_someone_die)->
+	4000;
+get(state_someone_die_d_delay)->
+	6000;
 get(_) ->
     1000.
 

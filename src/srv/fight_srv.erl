@@ -446,6 +446,7 @@ state_xuanju_jingzhang(op_over, State) ->
 %% ====================================================================
 state_night_result(start, State)->
     notice_game_status_change(state_night_result, State),
+    %%客户端判断是不是平安夜
     notice_night_result(State),
     send_event_inner(over, b_fight_state_wait:get(state_night_result)),
     NewState = maps:put(show_nigth_result, 1, State),
@@ -458,165 +459,41 @@ state_night_result(over, State)->
 state_night_result(_, State) ->
     {next_state, state_night_result,  State}.
 
-get_someone_die_op(State)->
-    SkillDieList = maps:get(skill_die_list, State),
-    try
-        case SkillDieList of
-            [] ->
-                throw(ignore);
-            _ ->
-                ok
-        end,
 
-        {DieType, Die} = hd(SkillDieList),
-
-        %%白狼自爆发动技能
-        DoBaiLang = (DieType == ?DIE_TYPE_BOOM),
-        case DoBaiLang of
-            true->
-                throw(?OP_SKILL_BAILANG);
-            false->
-                ignore
-        end,
-        
-
-        DoJingzhang = (maps:get(jingzhang, State) == Die),
-        case DoJingzhang of
-            true ->
-                throw(?OP_SKILL_CHANGE_JINGZHANG);
-            false ->
-                ignore
-        end,
-
-        Duty = lib_fight:get_duty_by_seat(Die, State),
-        DoLieren = (Duty == ?DUTY_LIEREN andalso DieType =/= ?DIE_TYPE_NVWU),
-        case DoLieren of
-            true ->
-                throw(?OP_SKILL_LIEREN);
-            false ->
-                ignore
-        end,
-
-        %%猎人已经出局直接跳过
-        FlopLieRen = maps:get(flop_lieren, State),
-        case FlopLieRen == 1 of
-            true->
-                throw(?OP_SKILL_LIEREN);
-            false->
-                ignore
-        end,
-
-        %%判断是否平安夜或者平安日
-        % case maps:get(quzhu_op, State) == 1 of
-        %     true->
-        %         case maps:get(quzhu, State) =/= 0 of
-        %             true->
-        %                 ;
-        %             false->
-                        
-        %         end;
-        %     false->
-
-        % end
-
-        throw(ignore)
-    catch
-        throw:{skip, SkipState} ->
-            send_event_inner(op_over),
-            {next_state, state_someone_die, SkipState};
-        throw:ignore ->
-            send_event_inner(op_over),
-             {next_state, state_someone_die, State};
-        throw:Op ->
-            start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(Op)),
-            {_DieType, OpSeat} = hd(SkillDieList),
-            notice_player_op(Op, [OpSeat], State),
-            {next_state, state_someone_die, maps:put(cur_skill, Op, State)}
-    end.
 
 %% ====================================================================
 %% state_someone_die
 %% ====================================================================
 state_someone_die(start, State) ->
-    SkillDieList = maps:get(skill_die_list, State),
-    case SkillDieList of
-        [] ->
+    {OpName, Op, StateAfterDieOp} = lib_fight:get_someone_die_op(State),
+    case OpName of
+        op_over->
+            send_event_inner(op_over),
+            {next_state, state_someone_die, StateAfterDieOp};
+        d_delay->
+            notice_game_status_change(state_someone_die, [?OP_SKILL_D_DELAY], State)
+            send_event_inner(op_over, b_fight_state_wait:get(state_someone_die_d_delay));
+        skip->
             send_event_inner(start),
-            {next_state, get_next_game_state(maps:get(pre_state_name, State)), State};
-        _ ->
-            send_event_inner(wait_op),
-            {next_state, state_someone_die, State}
+            NextState = 
+                case maps:get(langren_boom, StateAfterDieOp) == 1 of
+                    true->
+                        state_day;
+                    false->
+                        get_next_game_state(maps:get(pre_state_name, StateAfterDieOp))
+                end 
+        _->
+            notice_game_status_change(state_someone_die, [Op], State)
+            send_event_inner(wait_op, b_fight_state_wait:get(state_night_result))
     end;
 
 state_someone_die(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, 1000),
     SkillDieList = maps:get(skill_die_list, State),
-    try
-        case SkillDieList of
-            [] ->
-                throw(ignore);
-            _ ->
-                ok
-        end,
-
-        {DieType, Die} = hd(SkillDieList),
-
-        DoBaiLang = (DieType == ?DIE_TYPE_BOOM),
-        case DoBaiLang of
-            true->
-                throw(?OP_SKILL_BAILANG);
-            false->
-                ignore
-        end,
-
-        DoJingzhang = (maps:get(jingzhang, State) == Die),
-        case DoJingzhang of
-            true ->
-                throw(?OP_SKILL_CHANGE_JINGZHANG);
-            false ->
-                ignore
-        end,
-
-        %%猎人已经出局直接跳过
-
-        Duty = lib_fight:get_duty_by_seat(Die, State),
-
-        DoLieren = (Duty == ?DUTY_LIEREN andalso DieType =/= ?DIE_TYPE_NVWU),
-        case DoLieren of
-            true ->
-                throw(?OP_SKILL_LIEREN);
-            false ->
-                ignore
-        end,
-
-        DoBaichi = 
-            (maps:get(pre_state_name, State) == state_toupiao andalso Duty == ?DUTY_BAICHI andalso 
-                maps:get(baichi, State) == 0 andalso DieType == ?DIE_TYPE_QUZHU),
-        case DoBaichi of
-            true ->
-                PlayerId = lib_fight:get_player_id_by_seat(Die, State),
-                NewState = lib_fight:do_skill(PlayerId, ?OP_SKILL_BAICHI, [0], State),
-                throw({skip, NewState});
-            false ->
-                ignore
-
-        end,
-
-        send_event_inner(op_over),
-        {next_state, state_someone_die, State}
-    catch
-        throw:{skip, SkipState} ->
-            send_event_inner(op_over),
-            {next_state, state_someone_die, SkipState};
-        throw:ignore ->
-            send_event_inner(op_over),
-             {next_state, state_someone_die, State};
-        throw:Op ->
-            start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(Op)),
-            {_DieType, OpSeat} = hd(SkillDieList),
-            notice_player_op(Op, [OpSeat], State),
-            {next_state, state_someone_die, maps:put(cur_skill, Op, State)}
-    end;
+    {_DieType, OpSeat} = hd(SkillDieList),
+    {OpName, Op, StateAfterDieOp} = lib_fight:get_someone_die_op(State),
+    notice_player_op(Op, [OpSeat], StateAfterDieOp),
+    {next_state, state_someone_die, maps:put(cur_skill, Op, StateAfterDelay)};
 
 state_someone_die(timeout, State) ->
     {_, SeatId} = hd(maps:get(skill_die_list, State)),
@@ -710,11 +587,12 @@ state_night_death_fayan(op_over, State) ->
 %% state_jingzhang
 %% ====================================================================
 state_jingzhang(start, State) ->
+    StateAfterZhuQuOp = maps:put(quzhu_op, 1, StateAfterQuzhu),
     case maps:get(jingzhang, State, 0) of
         0 ->
-            NewState = lib_fight:do_no_jingzhang_op(State),
+            StateAfterNoJingZhangOp = lib_fight:do_no_jingzhang_op(StateAfterZhuQuOp),
             send_event_inner(start),
-            {next_state, get_next_game_state(state_jingzhang), NewState};
+            {next_state, get_next_game_state(state_jingzhang), StateAfterNoJingZhangOp};
         _ ->
             notice_game_status_change(state_jingzhang, State),
             send_event_inner(wait_op),
@@ -854,7 +732,7 @@ state_toupiao(op_over, State) ->
         false ->   
             send_event_inner(start),
             StateAfterQuzhu = 
-            case (Quzhu =/= 0) andalso (lib_fight:get_duty_by_seat(Quzhu, NewState)) of
+            case (Quzhu =/= 0) andalso (?DUTY_BAICHI == lib_fight:get_duty_by_seat(Quzhu, NewState)) of
                 true->
                     %%白痴直接翻牌
                     StateAfterBaichi = lib_fight:do_skill(lib_fight:get_player_id_by_seat(Quzhu), ?OP_SKILL_BAICHI, [0], NewState),
@@ -865,10 +743,10 @@ state_toupiao(op_over, State) ->
                             ignore
                     end;
                 false->
+                    %%客户端根据通知结果判断是否平安日
                     notice_toupiao_out(Quzhu, NewState),
                     NewState
             end,
-            StateAfterZhuQuOp = maps:put(quzhu_op, StateAfterQuzhu),
             {next_state, state_someone_die, lib_fight:set_skill_die_list(state_toupiao, StateAfterZhuQuOp)}
     end.
             
@@ -1398,12 +1276,14 @@ clear_night_op(State) ->
            last_op_data => #{},  %% 上一轮操作的数据, 杀了几号, 投了几号等等}.
            game_round => maps:get(game_round, State) + 1,
            jingzhang => NewJingZhang,
-           % lieren_kill => 0,
+           lieren_kill => 0,
            exit_jingzhang => [], %%
            langren_boom => 0,
            show_nigth_result => 0,
            flop_list => [],
-           quzhu_op => 0
+           quzhu_op => 0,
+           safe_night => 1,         %%平安夜
+           safe_day => 1           %%平安日
            }.
 
 notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, State) ->
@@ -1595,5 +1475,7 @@ get_status_id(GameState) ->
         state_toupiao_death_fayan ->
             19;
         state_night ->
-            20
+            20;
+        state_someone_die ->
+            21
     end.

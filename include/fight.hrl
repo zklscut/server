@@ -41,6 +41,7 @@
 -define(OP_SKILL_BAILANG, 2004).
 -define(OP_SKILL_LANGREN, 2005).
 -define(OP_SKILL_EIXT_PART_JINGZHANG, 2006).
+-define(OP_SKILL_D_DELAY, 2007). %%默认延时操作
 
 -define(XUANJU_TYPE_JINGZHANG, 1).
 -define(XUANJU_TYPE_QUZHU, 2).
@@ -75,7 +76,7 @@
                   nvwu => {0, 0},        %% 女巫操作
                   nvwu_left => [1, 2],   %% 女巫剩余的药
                   langren => 0,          %% 狼人击杀的目标
-                  bailang => 0,          %% 白狼自爆
+                  bailang => 0,          %% 白狼自爆带走的人
                   hunxuer => 0,          %% 混血儿是否帮狼人
                   daozei => [],          %% 盗贼可选择的
                   yuyanjia_op => [],     %% 预言家验过的人
@@ -95,11 +96,14 @@
                   player_num => 0,       %%玩家总数量
                   do_police_select => 0, %%是否选举过警长
                   langren_boom => 0,     %%狼人自爆过
-                  show_nigth_result => 0, %%是否公布过死亡结果
-                  quzhu_op => 0,          %%是否有过驱逐操作
-                  flop_list => [],         %%翻牌列表
-                  flop_lieren => 0,       %%猎人是否已经翻牌
-                  nv_kill => 0            %%
+                  show_nigth_result => 0,%%是否公布过死亡结果
+                  quzhu_op => 0,         %%是否进入过驱逐驱逐操作
+                  flop_list => [],       %%翻牌列表
+                  flop_lieren => 0,      %%猎人是否已经翻牌
+                  nv_kill => 0,          %%女巫带走的人
+                  safe_night => 1,       %%平安夜
+                  safe_day => 1,         %%平安日
+                  skill_d_delay => 0     %%释放技能是否做过默认延时
                   }).
 
 -endif.
