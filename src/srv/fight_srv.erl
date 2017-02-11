@@ -490,7 +490,7 @@ state_someone_die(start, State) ->
             send_event_inner(wait_op, b_fight_state_wait:get(state_night_result)),
             state_someone_die
     end,
-    {next_state, NextState, StateAfterDieOp}; ;
+    {next_state, NextState, StateAfterDieOp};
 
 state_someone_die(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, 1000),
