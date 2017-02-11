@@ -500,15 +500,22 @@ state_someone_die(start, State) ->
     {next_state, NextState, StateAfterDieOp};
 
 state_someone_die(wait_op, State) ->
-    SkillDieList = maps:get(skill_die_list, State),
-    {_DieType, OpSeat} = hd(SkillDieList),
     {_OpName, Op, StateAfterDieOp} = lib_fight:get_someone_die_op(State),
+    {_DieType, OpSeat} = 
+    case Op == ?OP_SKILL_CHANGE_JINGZHANG of
+        true->
+            {?DIE_TYPE_LANGRNE, maps:get(jingzhang, StateAfterDieOp)};
+        false->
+            SkillDieList = maps:get(skill_die_list, State),
+            hd(SkillDieList)
+    end,
+    StateAfterSkillSeat = maps:put(skill_seat, OpSeat, StateAfterDieOp),
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(Op)),
-    notice_player_op(Op, [OpSeat], StateAfterDieOp),
-    {next_state, state_someone_die, maps:put(cur_skill, Op, StateAfterDieOp)};
+    notice_player_op(Op, [OpSeat], StateAfterSkillSeat),
+    {next_state, state_someone_die, maps:put(cur_skill, Op, StateAfterSkillSeat)};
 
 state_someone_die(timeout, State) ->
-    {_, SeatId} = hd(maps:get(skill_die_list, State)),
+    SeatId = maps:get(skill_seat, State),
     Skill = maps:get(cur_skill, State),
     OpList = 
         case Skill of
@@ -552,7 +559,12 @@ state_someone_die(op_over, State) ->
             [] ->
                 [];
             SkillDieList ->
-                tl(SkillDieList)
+                case maps:get(cur_skill, State) == ?OP_SKILL_CHANGE_JINGZHANG of 
+                    true->
+                        SkillDieList;
+                    false->
+                        tl(SkillDieList)
+                end
         end,
     ShowNightResult = maps:get(show_nigth_result, State),
     NextState = 

@@ -221,24 +221,33 @@ get_third_part_qiubite_seat(State)->
 %
 get_langren_hunxuer_seat(State)->
     Hunxuer = maps:get(hunxuer, State),
-    LangRenList = [?DUTY_LANGREN, ?DUTY_BAILANG],
-    HunxuerDuty = get_duty_by_seat(Hunxuer, State),
-    case lists:member(HunxuerDuty, LangRenList) of
+    case Hunxuer =/= 0 of
         true->
-            [Hunxuer];
+            LangRenList = [?DUTY_LANGREN, ?DUTY_BAILANG],
+            HunxuerDuty = get_duty_by_seat(Hunxuer, State),
+            case lists:member(HunxuerDuty, LangRenList) of
+                true->
+                    [Hunxuer];
+                false->
+                    []
+            end
         false->
-            []
     end.
 
 get_haoren_hunxuer_seat(State)->
     Hunxuer = maps:get(hunxuer, State),
-    LangRenList = [?DUTY_LANGREN, ?DUTY_BAILANG],
-    HunxuerDuty = get_duty_by_seat(Hunxuer, State),
-    case lists:member(HunxuerDuty, LangRenList) of
+    case Hunxuer =/= 0 of
         true->
-            [];
+            LangRenList = [?DUTY_LANGREN, ?DUTY_BAILANG],
+            HunxuerDuty = get_duty_by_seat(Hunxuer, State),
+            case lists:member(HunxuerDuty, LangRenList) of
+                true->
+                    [];
+                false->
+                    [Hunxuer]
+            end;
         false->
-            [Hunxuer]
+            []
     end.
 
 %是否可作为第三方丘比特
@@ -596,6 +605,9 @@ is_need_someone_die_default_delay(State)->
     SkillDDelay = maps:get(skill_d_delay, State),
     (FlopLieRen =/= 0) andalso (SkillDDelay =/= 0) andalso (BaiLang =/= 0) andalso (((QuzhuOp == 0) andalso (SafeNight == 1)) orelse ((QuzhuOp == 1) andalso (Quzhu =/= 0))).
 
+get_someone_die_op_seat_info(State)->
+    
+
 get_someone_die_op(State)->
     SkillDieList = maps:get(skill_die_list, State),
     StateAfterDelay = 
@@ -629,8 +641,9 @@ get_someone_die_op(State)->
                 ignore
         end,
 
+        JingZhang = maps:get(jingzhang, StateAfterDelay),
         DoJingzhang = (maps:get(jingzhang, StateAfterDelay) == Die),
-        case DoJingzhang of
+        case (JingZhang =/= 0) andalso (not is_seat_alive(JingZhang)) of
             true ->
                 throw(?OP_SKILL_CHANGE_JINGZHANG);
             false ->

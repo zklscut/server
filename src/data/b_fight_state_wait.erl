@@ -26,7 +26,7 @@ get(state_part_fayan)->
 get(state_xuanju_jingzhang)->
 	2;
 get(state_night_result)->
-	2;
+	6;
 get(state_night_death_fayan)->
 	2;
 get(state_jingzhang)->
