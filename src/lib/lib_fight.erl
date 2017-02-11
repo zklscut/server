@@ -439,7 +439,13 @@ do_no_jingzhang_op(State) ->
 
 do_fayan_op(State) ->
     FanyanTurn = maps:get(fayan_turn, State),
-    NewFanyanTurn = tl(FanyanTurn),
+    NewFanyanTurn = 
+    case FanyanTurn of
+        []->
+            FanyanTurn;
+        _->
+            tl(FanyanTurn)
+    end,
     NewState = maps:put(fayan_turn, NewFanyanTurn, State),
     clear_last_op(NewState).
     
@@ -587,7 +593,6 @@ set_skill_die_list(StateName, State) ->
 is_need_someone_die_default_delay(State)->
     FlopLieRen = maps:get(flop_lieren, State),
     SafeNight = maps:get(safe_night, State),
-    ShowNightResult = maps:get(show_nigth_result, State),
     QuzhuOp = maps:get(quzhu_op, State),
     Quzhu = maps:get(quzhu, State),
     BaiLang = maps:get(bailang, State),

@@ -2,7 +2,7 @@
 -export([get/1
         ]).
 get(start)->
-	4000;
+	8000;
 get(state_daozei)->
 	4000;
 get(state_qiubite)->

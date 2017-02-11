@@ -496,7 +496,7 @@ state_someone_die(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, 1000),
     SkillDieList = maps:get(skill_die_list, State),
     {_DieType, OpSeat} = hd(SkillDieList),
-    {OpName, Op, StateAfterDieOp} = lib_fight:get_someone_die_op(State),
+    {_OpName, Op, StateAfterDieOp} = lib_fight:get_someone_die_op(State),
     notice_player_op(Op, [OpSeat], StateAfterDieOp),
     {next_state, state_someone_die, maps:put(cur_skill, Op, StateAfterDieOp)};
 
@@ -1479,9 +1479,9 @@ get_status_id(GameState) ->
         state_toupiao ->
             17;
         state_toupiao_death_fayan ->
-            19;
+            18;
         state_night ->
-            20;
+            19;
         state_someone_die ->
-            21
+            20
     end.
