@@ -103,7 +103,8 @@
                   nv_kill => 0,          %%女巫带走的人
                   safe_night => 1,       %%平安夜
                   safe_day => 1,         %%平安日
-                  skill_d_delay => 0     %%释放技能是否做过默认延时
+                  skill_d_delay => 0,     %%释放技能是否做过默认延时
+                  cur_skill => 0
                   }).
 
 -endif.

@@ -4,45 +4,45 @@
 get(start)->
 	6000;
 get(state_daozei)->
-	2;
+	2000;
 get(state_qiubite)->
-	2;
+	2000;
 get(state_hunxueer)->
-	2;
+	2000;
 get(state_shouwei)->
-	2;
+	2000;
 get(state_langren)->
-	2;
+	2000;
 get(state_nvwu)->
-	2;
+	2000;
 get(state_yuyanjia)->
-	2;
+	2000;
 get(state_day)->
 	1500;
 get(state_part_jingzhang)->
-	2;
+	2000;
 get(state_part_fayan)->
-	2;
+	2000;
 get(state_xuanju_jingzhang)->
-	2;
+	2000;
 get(state_night_result)->
-	6;
+	6000;
 get(state_night_death_fayan)->
-	2;
+	2000;
 get(state_jingzhang)->
 	2000;
 get(state_fayan)->
-	2;
+	2000;
 get(state_guipiao)->
-	2;
+	2000;
 get(state_toupiao)->
-	2;
+	2000;
 get(state_toupiao_death_fayan)->
-	2;
+	2000;
 get(state_night)->
-	2;
+	2000;
 get(state_someone_die)->
-	2;
+	2000;
 get(state_someone_die_d_delay)->
 	6000;
 get(_) ->
