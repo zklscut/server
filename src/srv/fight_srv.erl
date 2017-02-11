@@ -534,6 +534,7 @@ state_someone_die({player_op, PlayerId, Op, OpList}, State) ->
     end;
 
 state_someone_die(op_over, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewSkillDieList = 
         case maps:get(skill_die_list, State) of
             [] ->

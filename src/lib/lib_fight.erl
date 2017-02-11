@@ -347,7 +347,7 @@ do_nvwu_op(State) ->
     StateAfterNvKill = 
     case maps:get(nvwu, State) of
         {NvWuKill, ?NVWU_DUYAO} ->
-            maps:put(nv_kill, NvWuKill, StateAfterUpdateDie),
+            maps:put(nv_kill, NvWuKill, StateAfterUpdateDie);
         _ ->
             StateAfterUpdateDie
     end,
@@ -611,7 +611,7 @@ get_someone_die_op(State)->
                     true->
                         throw(d_delay);
                     false->
-                        throw(skip);
+                        throw(skip)
                 end
             _ ->
                 ok
@@ -878,7 +878,7 @@ do_set_die_list(State) ->
     case BaiChi =/= 0 andalso lists:member(BaiChi,DieAfterLover) of
         true->
             maps:put(baichi, StateAfterSafeDay);
-        false
+        false->
             StateAfterSafeDay
     end,
     maps:put(die, lists:usort(DieAfterLover), StateAfterBaichi).
