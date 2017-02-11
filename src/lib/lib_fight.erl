@@ -642,7 +642,6 @@ get_someone_die_op(State)->
         end,
 
         JingZhang = maps:get(jingzhang, StateAfterDelay),
-        DoJingzhang = (maps:get(jingzhang, StateAfterDelay) == Die),
         case (JingZhang =/= 0) andalso (not is_seat_alive(JingZhang, StateAfterDelay)) of
             true ->
                 throw(?OP_SKILL_CHANGE_JINGZHANG);
