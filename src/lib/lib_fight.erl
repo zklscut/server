@@ -606,7 +606,6 @@ is_need_someone_die_default_delay(State)->
     SkillDDelay = maps:get(skill_d_delay, State),
     (FlopLieRen =/= 0) andalso (SkillDDelay =/= 0) andalso (BaiLang =/= 0) andalso (((QuzhuOp == 0) andalso (SafeNight == 1)) orelse ((QuzhuOp == 1) andalso (Quzhu =/= 0))).
 
-get_someone_die_op_seat_info(State)->
 
 
 get_someone_die_op(State)->
