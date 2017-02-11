@@ -659,11 +659,11 @@ get_someone_die_op(State)->
         throw:ignore ->
             % send_event_inner(op_over),
             %  {next_state, state_someone_die, StateAfterDelay};
-            {op_over, _, StateAfterDelay};
+            {op_over, ?OP_SKILL_D_DELAY, StateAfterDelay};
         throw:d_delay ->
             {d_delay, ?OP_SKILL_D_DELAY,StateAfterDelay};
         throw:skip ->
-            {skip, _, StateAfterDelay};
+            {skip, ?OP_SKILL_D_DELAY, StateAfterDelay};
         throw:Op ->
             % start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(Op)),
             % {_DieType, OpSeat} = hd(SkillDieList),
