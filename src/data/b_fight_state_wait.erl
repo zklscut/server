@@ -2,7 +2,7 @@
 -export([get/1
         ]).
 get(start)->
-	4000;
+	6000;
 get(state_daozei)->
 	4000;
 get(state_qiubite)->
@@ -18,7 +18,7 @@ get(state_nvwu)->
 get(state_yuyanjia)->
 	4000;
 get(state_day)->
-	4000;
+	1500;
 get(state_part_jingzhang)->
 	4000;
 get(state_part_fayan)->
@@ -30,7 +30,7 @@ get(state_night_result)->
 get(state_night_death_fayan)->
 	4000;
 get(state_jingzhang)->
-	4000;
+	2000;
 get(state_fayan)->
 	4000;
 get(state_guipiao)->

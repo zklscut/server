@@ -123,7 +123,7 @@ state_daozei(timeout, State) ->
 state_daozei(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_daozei_op(State),
-    send_event_inner(start, b_fight_state_wait:get(state_daozei)),
+    send_event_inner(start),
     {next_state, get_next_game_state(state_daozei), NewState}.
             
 %% ====================================================================
@@ -147,7 +147,7 @@ state_qiubite(timeout, State) ->
 state_qiubite(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_qiubite_op(State),
-    send_event_inner(start, b_fight_state_wait:get(state_qiubite)),
+    send_event_inner(start),
     {next_state, get_next_game_state(state_qiubite), NewState}.
 
 %% ====================================================================
@@ -171,7 +171,7 @@ state_hunxueer(timeout, State) ->
 state_hunxueer(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_hunxuer_op(State),
-    send_event_inner(start, b_fight_state_wait:get(state_hunxueer)),
+    send_event_inner(start),
     {next_state, get_next_game_state(state_hunxueer), NewState}.
 
 %% ====================================================================
@@ -200,7 +200,7 @@ state_shouwei(timeout, State) ->
 state_shouwei(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_shouwei_op(State),
-    send_event_inner(start, b_fight_state_wait:get(state_shouwei)),
+    send_event_inner(start),
     {next_state, get_next_game_state(state_shouwei), NewState}.
             
 %% ====================================================================
@@ -231,7 +231,7 @@ state_langren(timeout, State) ->
 state_langren(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_langren_op(State),
-    send_event_inner(start, b_fight_state_wait:get(state_langren)),
+    send_event_inner(start),
     {next_state, get_next_game_state(state_langren), NewState}.
                  
 %% ====================================================================
@@ -260,7 +260,7 @@ state_nvwu(timeout, State) ->
 state_nvwu(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_nvwu_op(State),
-    send_event_inner(start, b_fight_state_wait:get(state_nvwu)),
+    send_event_inner(start),
     {next_state, get_next_game_state(state_nvwu), NewState}.
             
 %% ====================================================================
@@ -290,7 +290,7 @@ state_yuyanjia(timeout, State) ->
 state_yuyanjia(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_yuyanjia_op(State),
-    send_event_inner(start, b_fight_state_wait:get(state_yuyanjia)),
+    send_event_inner(start),
     {next_state, get_next_game_state(state_yuyanjia), NewState}.
 
 %% ====================================================================
@@ -298,7 +298,10 @@ state_yuyanjia(op_over, State) ->
 %% ====================================================================
 state_day(start, State) ->
     notice_game_status_change(state_day, State),
-    send_event_inner(start, b_fight_state_wait:get(state_day)),
+    send_event_inner(over, b_fight_state_wait:get(state_day)),
+    {next_state, state_day, State};
+
+state_day(over, State)->
     NextState = 
         case is_over(State) of
             true ->
@@ -306,8 +309,10 @@ state_day(start, State) ->
             false ->
                 get_next_game_state(state_day)
         end,
+    send_event_inner(start),
     {next_state, NextState, State}.
 
+    
 %% ====================================================================
 %% state_part_jingzhang
 %% ====================================================================
@@ -325,7 +330,7 @@ state_part_jingzhang(start, State) ->
                 0 ->
                     PartJingZhangList = maps:get(part_jingzhang, State),
                     FayanList = [SeatId || SeatId <- (PartJingZhangList -- maps:get(out_seat_list, State))],
-                    send_event_inner(start, b_fight_state_wait:get(state_part_jingzhang)),
+                    send_event_inner(start),
                     {next_state, get_next_game_state(state_part_jingzhang), maps:put(part_jingzhang, FayanList, State)};
                 1 ->
                    send_event_inner(start),
@@ -353,7 +358,7 @@ state_part_jingzhang(timeout, State) ->
 state_part_jingzhang(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_part_jingzhang_op(State),
-    send_event_inner(start, b_fight_state_wait:get(state_part_jingzhang)),
+    send_event_inner(start),
     case ?TEST == true andalso maps:get(part_jingzhang, State) == [] of
         true ->
             {next_state, get_next_game_state(state_part_jingzhang), 
@@ -437,7 +442,7 @@ state_xuanju_jingzhang(op_over, State) ->
             send_event_inner(start),
             {next_state, state_part_fayan, maps:put(part_jingzhang, MaxSeatList, NewState)};
         false ->   
-            send_event_inner(start, b_fight_state_wait:get(state_xuanju_jingzhang)),
+            send_event_inner(start),
             {next_state, get_next_game_state(state_xuanju_jingzhang), maps:put(do_police_select, 1, NewState)}
     end.     
 
@@ -453,7 +458,7 @@ state_night_result(start, State)->
     {next_state, state_night_result, lib_fight:set_skill_die_list(state_night_result, NewState)};
 
 state_night_result(over, State)->
-    send_event_inner(over),
+    send_event_inner(start),
     {next_state, state_someone_die, State};
 
 state_night_result(_, State) ->
@@ -601,7 +606,7 @@ state_jingzhang(start, State) ->
             {next_state, get_next_game_state(state_jingzhang), StateAfterNoJingZhangOp};
         _ ->
             notice_game_status_change(state_jingzhang, State),
-            send_event_inner(wait_op),
+            send_event_inner(wait_op, b_fight_state_wait:get(state_jingzhang)),
             {next_state, state_jingzhang, State}
     end;
 
@@ -665,7 +670,7 @@ state_guipiao(start, State) ->
             case DrawCnt of
                 0->
                     notice_game_status_change(state_guipiao, State),
-                    send_event_inner(wait_op),
+                    send_event_inner(wait_op, b_fight_state_wait:get(state_guipiao)),
                     {next_state, state_guipiao, State};
                 1->
                     %%平票投票直接跳过归票
@@ -693,7 +698,7 @@ state_guipiao(timeout, State) ->
 state_guipiao(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_guipiao_op(State),
-    send_event_inner(start, b_fight_state_wait:get(state_guipiao)),
+    send_event_inner(start),
     {next_state, get_next_game_state(state_guipiao), NewState}.
 
 %% ====================================================================
@@ -701,7 +706,7 @@ state_guipiao(op_over, State) ->
 %% ====================================================================
 state_toupiao(start, State) ->
     notice_game_status_change(state_toupiao, State),
-    send_event_inner(wait_op),
+    send_event_inner(wait_op, b_fight_state_wait:get(state_toupiao)),
     {next_state, state_toupiao, State};
 
 state_toupiao(wait_op, State) ->
@@ -800,9 +805,13 @@ state_night(start, State) ->
             {next_state, state_over, NewState};
         false ->
             notice_game_status_change(state_night, State),
-            send_event_inner(start, b_fight_state_wait:get(state_night)),
-            {next_state, get_next_game_state(state_night), clear_night_op(NewState)}
+            send_event_inner(over, b_fight_state_wait:get(state_night)),
+            {next_state, state_night, NewState}
     end.
+
+state_night(over, State)->
+    send_event_inner(start),
+    {next_state, get_next_game_state(state_night), clear_night_op(NewState)}.
 
 %% ====================================================================
 %% state_fight_over
@@ -1042,7 +1051,7 @@ do_fayan_state_op_over(StateName, State) ->
     StateAfterFayan = lib_fight:do_fayan_op(State),
     case maps:get(fayan_turn, StateAfterFayan) of
         [] ->
-            send_event_inner(start, b_fight_state_wait:get(StateName)),
+            send_event_inner(start),
             {next_state, get_next_game_state(StateName), StateAfterFayan};
         _ ->
             send_event_inner(wait_op),
