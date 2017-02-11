@@ -1216,7 +1216,7 @@ out_die_player(State) ->
     maps:put(out_seat_list, (maps:get(out_seat_list, State) ++ maps:get(die, State) ++ 
                             [maps:get(quzhu, State)]) -- [maps:get(baichi, State)], State).
 
-get_fight_result(_State) ->
+get_fight_result(State) ->
     LangrenAlive = lib_fight:get_duty_seat(?DUTY_LANGREN, State),
     ShenMinAlive = lib_fight:get_shenmin_seat(State),
         % lists:flatten([lib_fight:get_duty_seat(DutyId, State) || DutyId <- ?DUTY_LIST_SHENMIN]),
