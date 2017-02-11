@@ -811,7 +811,7 @@ state_night(start, State) ->
 
 state_night(over, State)->
     send_event_inner(start),
-    {next_state, get_next_game_state(state_night), clear_night_op(NewState)}.
+    {next_state, get_next_game_state(state_night), clear_night_op(State)}.
 
 %% ====================================================================
 %% state_fight_over
