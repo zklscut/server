@@ -535,16 +535,8 @@ do_skill_inner(_SeatId, ?OP_SKILL_LIEREN, [SelectSeat], State) ->
         true->
             StateAfterLieRen;
         false->
-            maps:put(flop_lieren, 1, StateAfterLieRen)
-    end,
-    SkillDieListPre = maps:get(skill_die_list, State),
-    NewState = 
-    case lists:member(SelectSeat, DieListPre) of
-        true ->
-            State;
-        false ->
-            maps:put(skill_die_list, SkillDieListPre ++ [{?DIE_TYPE_LIEREN, SelectSeat}] , State)
-            
+            StateAfterSetFlop = maps:put(flop_lieren, 1, StateAfterLieRen),
+            maps:put(skill_die_list, SkillDieListPre ++ [{?DIE_TYPE_LIEREN, SelectSeat}] , StateAfterSetFlop)
     end,
     check_set_baichi_die(SelectSeat, StateAfterFlopLieRen);
 
