@@ -73,8 +73,7 @@ player_online(Player) ->
         undefined ->
             ignore;
         Pid ->
-            ignore
-            % gen_fsm:send_all_state_event(Pid, {player_online, lib_player:get_player_id(Player)})
+            gen_fsm:send_all_state_event(Pid, {player_online, lib_player:get_player_id(Player)})
     end.    
 
 player_offline(Player) ->
@@ -82,8 +81,7 @@ player_offline(Player) ->
         undefined ->
             ignore;
         Pid ->
-            ignore
-            % gen_fsm:send_all_state_event(Pid, {player_offline, lib_player:get_player_id(Player)})
+            gen_fsm:send_all_state_event(Pid, {player_offline, lib_player:get_player_id(Player)})
     end.
 
 %% ====================================================================
@@ -91,7 +89,7 @@ player_offline(Player) ->
 %% ====================================================================
 
 init([RoomId, PlayerList, DutyList, State]) ->
-    % lib_room:update_fight_pid(RoomId, self()),
+    lib_room:update_fight_pid(RoomId, self()),
     NewState = lib_fight:init(RoomId, PlayerList, DutyList, State),
     notice_game_status_change(start, NewState),
     notice_duty(NewState),
