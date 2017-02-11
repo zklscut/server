@@ -471,7 +471,7 @@ state_someone_die(start, State) ->
             send_event_inner(op_over),
             {next_state, state_someone_die, StateAfterDieOp};
         d_delay->
-            notice_game_status_change(state_someone_die, [?OP_SKILL_D_DELAY], State)
+            notice_game_status_change(state_someone_die, [?OP_SKILL_D_DELAY], State),
             send_event_inner(op_over, b_fight_state_wait:get(state_someone_die_d_delay));
         skip->
             send_event_inner(start),
@@ -588,7 +588,7 @@ state_night_death_fayan(op_over, State) ->
 %% state_jingzhang
 %% ====================================================================
 state_jingzhang(start, State) ->
-    StateAfterZhuQuOp = maps:put(quzhu_op, 1, StateAfterQuzhu),
+    StateAfterZhuQuOp = maps:put(quzhu_op, 1, State),
     case maps:get(jingzhang, State, 0) of
         0 ->
             StateAfterNoJingZhangOp = lib_fight:do_no_jingzhang_op(StateAfterZhuQuOp),
@@ -748,7 +748,7 @@ state_toupiao(op_over, State) ->
                     notice_toupiao_out(Quzhu, NewState),
                     NewState
             end,
-            {next_state, state_someone_die, lib_fight:set_skill_die_list(state_toupiao, StateAfterZhuQuOp)}
+            {next_state, state_someone_die, lib_fight:set_skill_die_list(state_toupiao, StateAfterQuzhu)}
     end.
             
 %% ====================================================================
