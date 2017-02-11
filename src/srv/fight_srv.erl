@@ -481,7 +481,7 @@ state_someone_die(start, State) ->
                         state_day;
                     false->
                         get_next_game_state(maps:get(pre_state_name, StateAfterDieOp))
-                end 
+                end ;
         _->
             notice_game_status_change(state_someone_die, [Op], State)
             send_event_inner(wait_op, b_fight_state_wait:get(state_night_result))
