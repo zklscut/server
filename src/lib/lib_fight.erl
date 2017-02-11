@@ -44,7 +44,6 @@
          do_skill/4,
          rand_in_alive_seat/1,
          get_someone_die_op/1,
-         get_shenmin_seat/1,
          set_skill_die_list/2]).
 
 -include("fight.hrl").
@@ -218,17 +217,6 @@ get_third_part_qiubite_seat(State)->
             []
     end.
 
-%获得神名列表
-get_shenmin_seat(State)->
-    PlayerNum = maps:get(player_num, State),
-    ShenMinList = 
-        case PlayerNum =< 12 of
-            true->
-                ?DUTY_LIST_SHENMIN ++ [?DUTY_QIUBITE];
-            false->
-                ?DUTY_LIST_SHENMIN
-        end,
-    lists:flatten([lib_fight:get_duty_seat(DutyId, State) || DutyId <- ShenMinList]).
 
 %
 get_langren_hunxuer_seat(State)->
