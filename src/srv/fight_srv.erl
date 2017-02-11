@@ -466,26 +466,31 @@ state_night_result(_, State) ->
 %% ====================================================================
 state_someone_die(start, State) ->
     {OpName, Op, StateAfterDieOp} = lib_fight:get_someone_die_op(State),
+    NextState = 
     case OpName of
         op_over->
             send_event_inner(op_over),
-            {next_state, state_someone_die, StateAfterDieOp};
+            state_someone_die;
         d_delay->
-            notice_game_status_change(state_someone_die, [?OP_SKILL_D_DELAY], State),
+            notice_game_status_change(state_someone_die, [?OP_SKILL_D_DELAY], StateAfterDieOp),
             send_event_inner(op_over, b_fight_state_wait:get(state_someone_die_d_delay));
+            state_someone_die;
         skip->
             send_event_inner(start),
-            NextState = 
+            StateAfterBoom = 
                 case maps:get(langren_boom, StateAfterDieOp) == 1 of
                     true->
                         state_day;
                     false->
                         get_next_game_state(maps:get(pre_state_name, StateAfterDieOp))
-                end ;
+                end,
+            StateAfterBoom; 
         _->
-            notice_game_status_change(state_someone_die, [Op], State),
-            send_event_inner(wait_op, b_fight_state_wait:get(state_night_result))
-    end;
+            notice_game_status_change(state_someone_die, [Op], StateAfterDieOp),
+            send_event_inner(wait_op, b_fight_state_wait:get(state_night_result)),
+            state_someone_die
+    end,
+    {next_state, NextState, StateAfterDieOp}; ;
 
 state_someone_die(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, 1000),
@@ -493,7 +498,7 @@ state_someone_die(wait_op, State) ->
     {_DieType, OpSeat} = hd(SkillDieList),
     {OpName, Op, StateAfterDieOp} = lib_fight:get_someone_die_op(State),
     notice_player_op(Op, [OpSeat], StateAfterDieOp),
-    {next_state, state_someone_die, maps:put(cur_skill, Op, StateAfterDelay)};
+    {next_state, state_someone_die, maps:put(cur_skill, Op, StateAfterDieOp)};
 
 state_someone_die(timeout, State) ->
     {_, SeatId} = hd(maps:get(skill_die_list, State)),
