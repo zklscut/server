@@ -473,7 +473,7 @@ state_someone_die(start, State) ->
             state_someone_die;
         d_delay->
             notice_game_status_change(state_someone_die, [?OP_SKILL_D_DELAY], StateAfterDieOp),
-            send_event_inner(op_over, b_fight_state_wait:get(state_someone_die_d_delay));
+            send_event_inner(op_over, b_fight_state_wait:get(state_someone_die_d_delay)),
             state_someone_die;
         skip->
             send_event_inner(start),
