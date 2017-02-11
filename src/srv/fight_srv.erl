@@ -480,7 +480,7 @@ state_someone_die(start, State) ->
             state_someone_die;
         d_delay->
             notice_game_status_change(state_someone_die, [?OP_SKILL_D_DELAY], StateAfterDieOp),
-            send_event_inner(op_over, b_fight_state_wait:get(state_someone_die_d_delay)),
+            send_event_inner(op_over, b_fight_op_wait:get(?OP_SKILL_D_DELAY)),
             state_someone_die;
         skip->
             send_event_inner(start),
@@ -500,10 +500,10 @@ state_someone_die(start, State) ->
     {next_state, NextState, StateAfterDieOp};
 
 state_someone_die(wait_op, State) ->
-    start_fight_fsm_event_timer(?TIMER_TIMEOUT, 1000),
     SkillDieList = maps:get(skill_die_list, State),
     {_DieType, OpSeat} = hd(SkillDieList),
     {_OpName, Op, StateAfterDieOp} = lib_fight:get_someone_die_op(State),
+    start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(Op)),
     notice_player_op(Op, [OpSeat], StateAfterDieOp),
     {next_state, state_someone_die, maps:put(cur_skill, Op, StateAfterDieOp)};
 
@@ -1217,61 +1217,59 @@ out_die_player(State) ->
                             [maps:get(quzhu, State)]) -- [maps:get(baichi, State)], State).
 
 get_fight_result(_State) ->
-    {false, []}.
-    % LangrenAlive = lib_fight:get_duty_seat(?DUTY_LANGREN, State),
-    % ShenMinAlive = lib_fight:get_shenmin_seat(State),
-    %     % lists:flatten([lib_fight:get_duty_seat(DutyId, State) || DutyId <- ?DUTY_LIST_SHENMIN]),
-    % AllLangren = lib_fight:get_duty_seat(?DUTY_LANGREN, false, State),
-    % AllSeat = lib_fight:get_all_seat(State),
-    % try
-    %     case LangrenAlive of
-    %         [] ->
-    %             LangRenQiubite = lib_fight:get_langren_qiubite_seat(State),
-    %             ThirdPartQiubite = lib_fight:get_third_part_qiubite_seat(State),
-    %             LangRenHunxuer = lib_fight:get_langren_hunxuer_seat(State),
-    %             LWinner1 = AllSeat -- AllLangren,
-    %             LWinner2 = LWinner1 -- LangRenQiubite,
-    %             LWinner3 = LWinner2 -- ThirdPartQiubite,
-    %             LWinner4 = LWinner3 -- LangRenHunxuer,
-    %             throw({true, LWinner4});
-    %         _ ->
-    %             ignore
-    %     end,
+    LangrenAlive = lib_fight:get_duty_seat(?DUTY_LANGREN, State),
+    ShenMinAlive = lib_fight:get_shenmin_seat(State),
+        % lists:flatten([lib_fight:get_duty_seat(DutyId, State) || DutyId <- ?DUTY_LIST_SHENMIN]),
+    AllLangren = lib_fight:get_duty_seat(?DUTY_LANGREN, false, State),
+    AllSeat = lib_fight:get_all_seat(State),
+    try
+        case LangrenAlive of
+            [] ->
+                LangRenQiubite = lib_fight:get_langren_qiubite_seat(State),
+                ThirdPartQiubite = lib_fight:get_third_part_qiubite_seat(State),
+                LangRenHunxuer = lib_fight:get_langren_hunxuer_seat(State),
+                LWinner1 = AllSeat -- AllLangren,
+                LWinner2 = LWinner1 -- LangRenQiubite,
+                LWinner3 = LWinner2 -- ThirdPartQiubite,
+                LWinner4 = LWinner3 -- LangRenHunxuer,
+                throw({true, LWinner4});
+            _ ->
+                ignore
+        end,
 
-    %     case lib_fight:is_third_part_win(State) of
-    %         true->
-    %             throw({true, lib_fight:get_third_part_seat(State)});    
-    %         _->
-    %             ignore
-    %     end, 
+        case lib_fight:is_third_part_win(State) of
+            true->
+                throw({true, lib_fight:get_third_part_seat(State)});    
+            _->
+                ignore
+        end, 
 
-    %     case ShenMinAlive of
-    %         [] ->
-    %             LangrenQiubite = lib_fight:get_langren_qiubite_seat(State),
-    %             LangRenHunxuer1 = lib_fight:get_langren_hunxuer_seat(State),
-    %             SWinner1 = AllLangren ++ LangrenQiubite,
-    %             SWinner2 = SWinner1 ++ LangRenHunxuer1,
-    %             throw({true, SWinner2});
-    %         _ ->
-    %             ignore
-    %     end,
-    %     case lib_fight:get_duty_seat(?DUTY_PINGMIN, State) of
-    %         [] ->
-    %             LangrenQiubite1 = lib_fight:get_langren_qiubite_seat(State),
-    %             LangRenHunxuer2 = lib_fight:get_langren_hunxuer_seat(State),
-    %             PWinner1 = AllLangren ++ LangrenQiubite1,
-    %             PWinner2 = PWinner1 ++ LangRenHunxuer2,
-    %             throw({true, PWinner2});
-    %         _ ->
-    %             ignore
-    %     end,
-    %     %%判断剩余三个人是否是丘比特第三方获胜 
+        case ShenMinAlive of
+            [] ->
+                LangrenQiubite = lib_fight:get_langren_qiubite_seat(State),
+                LangRenHunxuer1 = lib_fight:get_langren_hunxuer_seat(State),
+                SWinner1 = AllLangren ++ LangrenQiubite,
+                SWinner2 = SWinner1 ++ LangRenHunxuer1,
+                throw({true, SWinner2});
+            _ ->
+                ignore
+        end,
+        case lib_fight:get_duty_seat(?DUTY_PINGMIN, State) of
+            [] ->
+                LangrenQiubite1 = lib_fight:get_langren_qiubite_seat(State),
+                LangRenHunxuer2 = lib_fight:get_langren_hunxuer_seat(State),
+                PWinner1 = AllLangren ++ LangrenQiubite1,
+                PWinner2 = PWinner1 ++ LangRenHunxuer2,
+                throw({true, PWinner2});
+            _ ->
+                ignore
+        end,
            
-    %     {false, []}
-    % catch 
-    %     throw:Result ->
-    %         Result
-    % end.
+        {false, []}
+    catch 
+        throw:Result ->
+            Result
+    end.
 
 clear_night_op(State) ->
     JingZhang = maps:get(jingzhang, State),
