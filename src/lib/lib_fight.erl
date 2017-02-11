@@ -561,16 +561,14 @@ do_skill_inner(SeatId, ?OP_SKILL_BAILANG, [SelectId], State) ->
             maps:put(skill_die_list,  SkillDieListPre ++ [{?DIE_TYPE_BAILANG, SelectId}], State)
             
     end,
-
     StateAfterBoom = 
     case is_seat_alive(SeatId, NewState) of
         true->
-            maps:put(skill_die_list,  SkillDieListPre ++ [{?DIE_TYPE_BOOM, SeatId}], NewState);
+            maps:put(skill_die_list,  [{?DIE_TYPE_BOOM, SeatId}] ++ SkillDieListPre , NewState);
         false->
             NewState
-    end
-
-    StateAfterDie = maps:put(die, maps:get(die, NewState) ++ DieList, NewState),
+    end,
+    StateAfterDie = maps:put(die, maps:get(die, StateAfterBoom) ++ DieList, StateAfterBoom),
     StateAfterLangRenBoom = maps:put(langren_boom, 1, StateAfterDie),
     StateAtferBaiLangBoom = maps:put(bailang, SelectId, StateAfterLangRenBoom),
     check_set_baichi_die(SelectId, StateAtferBaiLangBoom);
