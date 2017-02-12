@@ -878,6 +878,7 @@ handle_event({skill, PlayerId, Op, OpList}, StateName, State) ->
         assert_skill_legal(SeatId, Op, OpList, StateName, State),
         NewState = lib_fight:do_skill(PlayerId, Op, OpList, State),
         NextState = get_skill_next_state(Op, StateName, State),
+        lager:info("out_die_player ~p", [[NextState, StateName, OpList, Op]]),
         case NextState of
             StateName ->
                 {next_state, StateName, NewState};
