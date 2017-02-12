@@ -458,7 +458,7 @@ do_fayan_op(State) ->
             tl(FanyanTurn)
     end,
     NewState = maps:put(fayan_turn, NewFanyanTurn, State),
-    clear_last_op(NewState).
+    NewState.
     
 do_send_fayan(PlayerId, Chat, State) ->
     Player = lib_player:get_player(PlayerId),
