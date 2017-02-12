@@ -416,8 +416,11 @@ state_xuanju_jingzhang(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_XUANJU_JINGZHANG)),
     notice_xuanju_jingzhang(State),
     ExitJingZhang = maps:get(exit_jingzhang, State),
+
     WaitList = (lib_fight:get_alive_seat_list(State) -- maps:get(part_jingzhang, State)) -- ExitJingZhang,
+    lager:info("state_xuanju_jingzhang ~p", [WaitList]),
     StateAfterWait = do_set_wait_op(WaitList, State),
+
     {next_state, state_xuanju_jingzhang, StateAfterWait};    
     
 state_xuanju_jingzhang({player_op, PlayerId, Op, OpList}, State) ->
