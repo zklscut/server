@@ -548,14 +548,17 @@ do_skill_inner(SeatId, ?OP_SKILL_BAILANG, [SelectId], State) ->
     DieList = [SeatId, SelectId],
     DieListPre = maps:get(die, State),
     SkillDieListPre = maps:get(skill_die_list, State),
-
     NewState = 
     case lists:member(SelectId, DieListPre) of
         true ->
             State;
         false ->
-            maps:put(skill_die_list,  SkillDieListPre ++ [{?DIE_TYPE_BAILANG, SelectId}], State)
-            
+            case SelectId =/= 0 of
+                true->
+                    maps:put(skill_die_list,  SkillDieListPre ++ [{?DIE_TYPE_BAILANG, SelectId}], State);
+                false->
+                    State
+            end
     end,
     StateAfterBoom = 
     case is_seat_alive(SeatId, NewState) of
