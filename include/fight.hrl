@@ -43,6 +43,7 @@
 -define(OP_SKILL_EIXT_PART_JINGZHANG, 2006).
 -define(OP_SKILL_D_DELAY, 2007). %%默认延时操作
 -define(OP_SKILL_END_FIGHT, 2008). %%结束战斗
+-define(OP_SKILL_LOVER_DIE, 2009). %%情侣一方死亡带走另外一方
 
 -define(XUANJU_TYPE_JINGZHANG, 1).
 -define(XUANJU_TYPE_QUZHU, 2).
@@ -61,6 +62,7 @@
 -define(DIE_TYPE_BOOM, 4).
 -define(DIE_TYPE_BAILANG, 5).
 -define(DIE_TYPE_LIEREN, 6).
+-define(DIE_TYPE_LOVER, 7).
 
 -define(MFIGHT, #{room_id => 0,
                   seat_player_map => #{},%% #{seat_id, player_id}
@@ -75,6 +77,7 @@
                   game_state =>  0,      %% 第几天晚上
                   game_round =>  1,      %% 第几轮
                   lover => [],           %% 情侣
+                  lover_kill => 0,        %% 被链子弄死的玩家
                   shouwei => 0,          %% 守卫的id
                   nvwu => {0, 0},        %% 女巫操作
                   nvwu_left => [1, 2],   %% 女巫剩余的药

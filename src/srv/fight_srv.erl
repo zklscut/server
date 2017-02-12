@@ -772,14 +772,15 @@ state_toupiao(op_over, State) ->
                     StateAfterBaichi = lib_fight:do_skill(lib_fight:get_player_id_by_seat(Quzhu, NewState), ?OP_SKILL_BAICHI, [0], NewState),
                     case maps:get(baichi, StateAfterBaichi) == 0 of
                         true->
-                            notice_toupiao_out(Quzhu, NewState);
+                            notice_toupiao_out(Quzhu, StateAfterBaichi),
+                            lib_fight:lover_die_judge(Quzhu, StateAfterBaichi)
                         false->
-                            ignore
+                            StateAfterBaichi
                     end;
                 false->
                     %%客户端根据通知结果判断是否平安日
                     notice_toupiao_out(Quzhu, NewState),
-                    NewState
+                    lib_fight:lover_die_judge(Quzhu, NewState)
             end,
 
             send_event_inner(wait_over, b_fight_wait_op:get(state_toupiao)),
@@ -807,7 +808,7 @@ state_toupiao_death_fayan(start, State) ->
             send_event_inner(start),
             {next_state, state_fight_over, State};
         false ->
-            do_fayan_state_start([maps:get(quzhu, State)] ++ 
+            do_fayan_state_start(([maps:get(quzhu, State)] ++ lib_fight:get_lover_kill(State)) ++ 
                 lib_fight:get_lieren_kill(State) -- [maps:get(baichi, State)], state_toupiao_death_fayan, State)
     end;
 
@@ -1343,6 +1344,7 @@ clear_night_op(State) ->
            game_round => maps:get(game_round, State) + 1,
            jingzhang => NewJingZhang,
            lieren_kill => 0,
+           lover_kill => 0,
            exit_jingzhang => [], %%
            langren_boom => 0,
            show_nigth_result => 0,
@@ -1355,11 +1357,11 @@ clear_night_op(State) ->
 notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, State) ->
     notice_xuanju_result(?XUANJU_TYPE_QUZHU, IsDraw, Quzhu, TouPiaoResult, State).  
 
-notice_toupiao_out(0, _) ->
+notice_toupiao_out([0], _) ->
     ignore;
 
-notice_toupiao_out(SeatId, State) ->  
-    notice_player_op(?OP_QUZHU, [SeatId], State).
+notice_toupiao_out(SeatList, State) ->  
+    notice_player_op(?OP_QUZHU, SeatList, State).
 
 notice_game_status_change(Status, State) ->
     notice_game_status_change(Status, [], State).

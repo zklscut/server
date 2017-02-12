@@ -45,6 +45,8 @@
          rand_in_alive_seat/1,
          get_someone_die_op/1,
          clear_last_op/1,
+         lover_die_judge/2,
+         get_lover_kill/1,
          set_skill_die_list/2]).
 
 -include("fight.hrl").
@@ -300,6 +302,14 @@ get_lieren_kill(State) ->
             [LieRenKill]
     end.
 
+get_lover_kill(State) ->
+    case maps:get(lover_kill, State) of
+        0 ->
+            [];
+        LoverKill ->
+            [LoverKill]
+    end.
+
 filter_out_seat(SeatList, State) ->
     [SeatId || SeatId <- SeatList, not lists:member(SeatId, maps:get(out_seat_list, State))].
 
@@ -504,11 +514,31 @@ do_toupiao_op(State) ->
 
 %%设置白痴死亡状态
 check_set_baichi_die(DieSeat, State)->
-    case maps:get(baichi, State) == DieSeat of
+    case (DieSeat =/= 0) andalso (maps:get(baichi, State) == DieSeat) of
         true->
             maps:put(baichi, 0, State);
         false->
             State
+    end.
+
+%%情侣一起死亡判定
+lover_die_judge(SeatId, State)->
+    case maps:get(lover, State) of
+        [] ->
+            State;
+        [Lover1, Lover2] ->
+            case SeatId == Lover1 of
+                true->
+                    do_skill(get_player_id_by_seat(Lover2, State), ?OP_SKILL_LOVER_DIE, [0], State);
+                false
+                    State
+            end,
+            case SeatId == Lover2 of
+                true->
+                    do_skill(get_player_id_by_seat(Lover1, State), ?OP_SKILL_LOVER_DIE, [0], State);
+                false->
+                    State
+            end
     end.
 
 do_skill(PlayerId, Op, OpList, State) ->
@@ -527,8 +557,27 @@ do_skill_inner(SeatId, ?OP_SKILL_BAICHI, _, State) ->
         false->
             SeatId
     end,
-    StateAfterBaichi = maps:put(baichi, SeatIdAfterBaichi, State),
-    maps:put(flop_list, maps:get(flop_list, StateAfterBaichi) ++ [SeatId], StateAfterBaichi);
+    StateAfterFlop = 
+    case maps:get(baichi, State) =/= 0 of
+        true->
+            maps:put(flop_list, maps:get(flop_list, StateAfterBaichi) ++ [SeatId], State);
+        false->
+            lover_die_judge(SeatId, State);
+    end,
+    StateAfterBaichi = maps:put(baichi, SeatIdAfterBaichi, StateAfterFlop);
+
+do_skill_inner(SeatId, ?OP_SKILL_LOVER_DIE, _, State) ->
+    StateAfterDie = maps:put(die, maps:get(die, State) ++ [SeatId], State),
+    StateAfterLover = 
+    case SeatId == 0 of
+        true->
+            StateAfterDie;
+        false->
+            SkillDieListPre = maps:get(skill_die_list, State),
+            StateAfterDieList = maps:put(skill_die_list, SkillDieListPre ++ [{?DIE_TYPE_LOVER, SeatId}] , StateAfterDie),
+            maps:put(lover_kill, SeatId, StateAfterDieList)
+    end,
+    check_set_baichi_die(SeatId, StateAfterLover);
 
 do_skill_inner(_SeatId, ?OP_SKILL_LIEREN, [SelectSeat], State) ->
     StateAfterDie = maps:put(die, maps:get(die, State) ++ [SelectSeat], State),
@@ -540,7 +589,8 @@ do_skill_inner(_SeatId, ?OP_SKILL_LIEREN, [SelectSeat], State) ->
         false->
             SkillDieListPre = maps:get(skill_die_list, State),
             StateAfterSetFlop = maps:put(flop_lieren, 1, StateAfterLieRen),
-            maps:put(skill_die_list, SkillDieListPre ++ [{?DIE_TYPE_LIEREN, SelectSeat}] , StateAfterSetFlop)
+            StateAfterDieList = maps:put(skill_die_list, SkillDieListPre ++ [{?DIE_TYPE_LIEREN, SelectSeat}] , StateAfterSetFlop),
+            lover_die_judge(SelectSeat, StateAfterDieList)
     end,
     check_set_baichi_die(SelectSeat, StateAfterFlopLieRen);
 
@@ -555,7 +605,8 @@ do_skill_inner(SeatId, ?OP_SKILL_BAILANG, [SelectId], State) ->
         false ->
             case SelectId =/= 0 of
                 true->
-                    maps:put(skill_die_list,  SkillDieListPre ++ [{?DIE_TYPE_BAILANG, SelectId}], State);
+                    StateAfterDieList = maps:put(skill_die_list,  SkillDieListPre ++ [{?DIE_TYPE_BAILANG, SelectId}], State),
+                    lover_die_judge(SelectId, StateAfterDieList);
                 false->
                     State
             end
@@ -563,7 +614,8 @@ do_skill_inner(SeatId, ?OP_SKILL_BAILANG, [SelectId], State) ->
     StateAfterBoom = 
     case is_seat_alive(SeatId, NewState) of
         true->
-            maps:put(skill_die_list,  [{?DIE_TYPE_BOOM, SeatId}] ++ SkillDieListPre , NewState);
+            StateAfterBoomDieList = maps:put(skill_die_list,  [{?DIE_TYPE_BOOM, SeatId}] ++ SkillDieListPre , NewState),
+            lover_die_judge(SeatId, StateAfterBoomDieList);
         false->
             NewState
     end,
@@ -574,7 +626,8 @@ do_skill_inner(SeatId, ?OP_SKILL_BAILANG, [SelectId], State) ->
 
 do_skill_inner(SeatId, ?OP_SKILL_LANGREN, _, State) ->
     StateAfterDie = maps:put(die, maps:get(die, State) ++ [SeatId], State),
-    maps:put(langren_boom, 1, StateAfterDie);
+    StateAfterBoom = maps:put(langren_boom, 1, StateAfterDie),
+    lover_die_judge(SeatId, StateAfterBoom);
 
 do_skill_inner(_SeatId, ?OP_SKILL_CHANGE_JINGZHANG, [SelectId], State) ->
     maps:put(jingzhang, SelectId, State);
@@ -923,3 +976,4 @@ do_set_die_list(State) ->
     end,
     lager:info("out_die_player  ~p ", [DieAfterLover]),
     maps:put(die, lists:usort(DieAfterLover), StateAfterBaichi).
+
