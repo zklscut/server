@@ -663,7 +663,6 @@ get_someone_die_op(State)->
         
         JingZhang = maps:get(jingzhang, StateAfterDelay),
         lager:info("get_someone_die_op5  ~p", [JingZhang]),
-        lager:info("get_someone_die_op511  ~p", [[is_seat_alive(JingZhang, StateAfterDelay)]]),
         case (JingZhang =/= 0) andalso (not is_seat_alive(JingZhang, StateAfterDelay)) of
             true ->
                 throw(?OP_SKILL_CHANGE_JINGZHANG);
@@ -671,12 +670,17 @@ get_someone_die_op(State)->
                 ignore
         end,
         lager:info("get_someone_die_op6  ~p"),
-        Duty = lib_fight:get_duty_by_seat(Die, StateAfterDelay),
-        DoLieren = (Duty == ?DUTY_LIEREN andalso DieType =/= ?DIE_TYPE_NVWU),
-        case DoLieren of
-            true ->
-                throw(?OP_SKILL_LIEREN);
-            false ->
+        case Die =/= 0 of
+            true->
+                Duty = lib_fight:get_duty_by_seat(Die, StateAfterDelay),
+                DoLieren = (Duty == ?DUTY_LIEREN andalso DieType =/= ?DIE_TYPE_NVWU),
+                case DoLieren of
+                    true ->
+                        throw(?OP_SKILL_LIEREN);
+                    false ->
+                        ignore
+                end;
+            false->
                 ignore
         end,
         lager:info("get_someone_die_op7  ~p"),
