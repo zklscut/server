@@ -558,13 +558,13 @@ do_skill_inner(SeatId, ?OP_SKILL_BAICHI, _, State) ->
             SeatId
     end,
     StateAfterFlop = 
-    case maps:get(baichi, State) =/= 0 of
+    case SeatIdAfterBaichi =/= 0 of
         true->
             maps:put(flop_list, maps:get(flop_list, State) ++ [SeatId], State);
         false->
             lover_die_judge(SeatId, State)
     end,
-    StateAfterBaichi = maps:put(baichi, SeatIdAfterBaichi, StateAfterFlop);
+    maps:put(baichi, SeatIdAfterBaichi, StateAfterFlop);
 
 do_skill_inner(SeatId, ?OP_SKILL_LOVER_DIE, _, State) ->
     StateAfterDie = maps:put(die, maps:get(die, State) ++ [SeatId], State),
