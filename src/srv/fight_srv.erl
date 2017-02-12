@@ -872,7 +872,7 @@ state_name(_Event, _From, StateData) ->
     {reply, Reply, state_name, StateData}.
 
 
-handle_event({skill, PlayerId, ?OP_SKILL_END_FIGHT, OpList}, StateName, State) ->
+handle_event({skill, _PlayerId, ?OP_SKILL_END_FIGHT, _OpList}, _StateName, State) ->
     send_event_inner(start),
     {next_state, state_over, State};
 
@@ -883,12 +883,19 @@ handle_event({skill, PlayerId, Op, OpList}, StateName, State) ->
         NewState = lib_fight:do_skill(PlayerId, Op, OpList, State),
         NextState = get_skill_next_state(Op, StateName, State),
         lager:info("handle_event ~p", [[NextState, StateName, OpList, Op]]),
-        case NextState of
+        NextStateAfterOver = 
+        case is_over(State) of
+            true ->
+                state_fight_over;
+            false ->
+                NextState
+        end,
+        case NextStateAfterOver of
             StateName ->
                 {next_state, StateName, NewState};
             _ ->
                 send_event_inner(start),
-                {next_state, NextState, NewState}
+                {next_state, NextStateAfterOver, NewState}
         end
     catch
         throw:ErrCode ->
