@@ -753,11 +753,10 @@ state_toupiao(op_over, State) ->
     notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, NewState),
     case IsDraw of
         true ->
-            send_event_inner(start),
+            send_event_inner(start, b_fight_wait_op:get(state_toupiao)),
             {next_state, state_fayan, maps:put(toupiao_draw_list, MaxSelectList, NewState)};
         false ->   
             %%临时6秒
-            send_event_inner(start, b_fight_wait_op:get(state_toupiao)),
             StateAfterQuzhu = 
             case (Quzhu =/= 0) andalso (?DUTY_BAICHI == lib_fight:get_duty_by_seat(Quzhu, NewState)) of
                 true->
@@ -774,8 +773,12 @@ state_toupiao(op_over, State) ->
                     notice_toupiao_out(Quzhu, NewState),
                     NewState
             end,
-            {next_state, state_someone_die, lib_fight:set_skill_die_list(state_toupiao, StateAfterQuzhu)}
-    end.
+            send_event_inner(start, b_fight_wait_op:get(state_toupiao)),
+            {next_state, state_toupiao, StateAfterQuzhu}
+    end;
+
+state_toupiao(wait_over, State)->
+    {next_state, state_someone_die, lib_fight:set_skill_die_list(state_toupiao, State)}.
             
 %% ====================================================================
 %% state_toupiao_death_fayan
