@@ -622,7 +622,7 @@ state_jingzhang(start, State) ->
         _ ->
             notice_game_status_change(state_jingzhang, State),
             send_event_inner(wait_op, b_fight_state_wait:get(state_jingzhang)),
-            {next_state, state_jingzhang, State}
+            {next_state, state_jingzhang, StateAfterZhuQuOp}
     end;
 
 state_jingzhang(wait_op, State) ->
