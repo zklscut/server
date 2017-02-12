@@ -426,6 +426,7 @@ state_xuanju_jingzhang({player_op, PlayerId, Op, OpList}, State) ->
 state_xuanju_jingzhang(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     case ?TEST of
+            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
         true ->
             send_event_inner({player_op, lib_fight:get_player_id_by_seat(lib_fight:rand_in_alive_seat(State), State), 
                               ?OP_XUANJU_JINGZHANG, [util:rand_in_list(maps:get(part_jingzhang, State))]});
@@ -437,6 +438,7 @@ state_xuanju_jingzhang(timeout, State) ->
     {next_state, state_xuanju_jingzhang, State};
 
 state_xuanju_jingzhang(op_over, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     {IsDraw, XuanjuResult, MaxSeatList, NewState} = lib_fight:do_xuanju_jingzhang_op(State),
     notice_xuanju_jingzhang_result(IsDraw, maps:get(jingzhang, NewState), XuanjuResult, NewState),
     case IsDraw of
@@ -496,10 +498,10 @@ state_someone_die(start, State) ->
             {StateAfterBoom, StateAfterDieOp}; 
         _->
             notice_game_status_change(state_someone_die, [Op], StateAfterDieOp),
-            send_event_inner(wait_op, b_fight_op_wait:get(Op)),
+            send_event_inner(wait_op),
             {state_someone_die, StateAfterDieOp}
     end,
-    lager:info("state_someone_die33", [maps:get(skill_d_delay, StateAfterOp)]),
+    lager:info("state_someone_die33 ~p ~p", [[OpName],[maps:get(skill_d_delay, StateAfterOp)]]),
     {next_state, NextState, maps:put(cur_skill, 0, StateAfterOp)};
 
 state_someone_die(wait_op, State) ->
