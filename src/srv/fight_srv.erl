@@ -773,12 +773,21 @@ state_toupiao(op_over, State) ->
                     notice_toupiao_out(Quzhu, NewState),
                     NewState
             end,
+
             send_event_inner(wait_over, b_fight_wait_op:get(state_toupiao)),
-            {next_state, state_toupiao, StateAfterQuzhu}
+            {next_state, state_toupiao, lib_fight:set_skill_die_list(state_toupiao, StateAfterQuzhu)}
     end;
 
 state_toupiao(wait_over, State)->
-    {next_state, state_someone_die, lib_fight:set_skill_die_list(state_toupiao, State)}.
+    send_event_inner(start),
+    NextState = 
+    case is_over(State) of
+        true ->
+            state_fight_over;
+        false ->
+            state_someone_die
+    end;
+    {next_state, NextState, lib_fight:set_skill_die_list(state_toupiao, State)}.
             
 %% ====================================================================
 %% state_toupiao_death_fayan
