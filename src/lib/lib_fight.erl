@@ -912,4 +912,5 @@ do_set_die_list(State) ->
         false->
             StateAfterSafeDay
     end,
+    lager:info("out_die_player  ~p ", [DieAfterLover]),
     maps:put(die, lists:usort(DieAfterLover), StateAfterBaichi).

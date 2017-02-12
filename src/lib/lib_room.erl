@@ -92,7 +92,7 @@ update_fight_pid(RoomId, Pid) ->
         undefined ->
             ignore;
         Room ->
-            [lib_player:update_fight_pid(Pid, PlayerId) || PlayerId <- maps:get(player_list, Room)],
+            [lib_player:update_fight_pid(Pid, lib_player:get_player(PlayerId)) || PlayerId <- maps:get(player_list, Room)],
             update_room(RoomId, Room#{fight_pid=>Pid})%}maps:put(fight_pid, Pid, Room))
     end.
 
