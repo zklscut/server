@@ -495,7 +495,7 @@ state_someone_die(start, State) ->
             StateAfterBoom; 
         _->
             notice_game_status_change(state_someone_die, [Op], StateAfterDieOp),
-            send_event_inner(wait_op, b_fight_state_wait:get(state_night_result)),
+            send_event_inner(wait_op, b_fight_op_wait:get(Op)),
             state_someone_die
     end,
     {next_state, NextState, StateAfterDieOp};

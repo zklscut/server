@@ -615,6 +615,7 @@ is_need_someone_die_default_delay(State)->
     Quzhu = maps:get(quzhu, State),
     BaiLang = maps:get(bailang, State),
     SkillDDelay = maps:get(skill_d_delay, State),
+    lager:info("is_need_someone_die_default_delay  ~p",[FlopLieRen,SafeNight,QuzhuOp,Quzhu,BaiLang,SkillDDelay]),
     (FlopLieRen == 0) andalso (SkillDDelay == 0) andalso (BaiLang == 0) andalso (((QuzhuOp == 0) andalso (SafeNight == 1)) orelse ((QuzhuOp == 1) andalso (Quzhu =/= 0))).
 
 
@@ -654,8 +655,9 @@ get_someone_die_op(State)->
             false->
                 ignore
         end,
-        lager:info("get_someone_die_op5  ~p"),
+        
         JingZhang = maps:get(jingzhang, StateAfterDelay),
+        lager:info("get_someone_die_op5  ~p", [JingZhang]),
         case (JingZhang =/= 0) andalso (not is_seat_alive(JingZhang, StateAfterDelay)) of
             true ->
                 throw(?OP_SKILL_CHANGE_JINGZHANG);
