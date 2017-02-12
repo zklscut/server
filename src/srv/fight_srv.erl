@@ -786,7 +786,7 @@ state_toupiao(wait_over, State)->
             state_fight_over;
         false ->
             state_someone_die
-    end;
+    end,
     {next_state, NextState, lib_fight:set_skill_die_list(state_toupiao, State)}.
             
 %% ====================================================================
