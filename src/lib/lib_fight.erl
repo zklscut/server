@@ -903,7 +903,7 @@ do_set_die_list(State) ->
                     true ->
                         DieList ++ maps:get(lover, State);
                     false ->
-                        ok
+                        DieList
                 end
         end,
     StateAfterSafeDay = 
