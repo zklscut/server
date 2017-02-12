@@ -1064,7 +1064,7 @@ do_fayan_state_timeout(StateName, State) ->
 
 do_fayan_state_op_over(StateName, State) ->
     % StateAfterFayan = lib_fight:do_fayan_op(State),
-    StateAfterFayan = clear_last_op(State),
+    StateAfterFayan = lib_fight:clear_last_op(State),
     case maps:get(fayan_turn, State) of
         [] ->
             send_event_inner(start),

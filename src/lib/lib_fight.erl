@@ -44,6 +44,7 @@
          do_skill/4,
          rand_in_alive_seat/1,
          get_someone_die_op/1,
+         clear_last_op/1,
          set_skill_die_list/2]).
 
 -include("fight.hrl").
