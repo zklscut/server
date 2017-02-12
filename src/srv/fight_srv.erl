@@ -490,6 +490,7 @@ state_someone_die(start, State) ->
             {state_someone_die, maps:put(skill_d_delay, 1, StateAfterDieOp)};
         skip->
             send_event_inner(start),
+            lager:info("state_someone_die_skip ~p", [maps:get(pre_state_name, StateAfterDieOp), maps:get(langren_boom, StateAfterDieOp)]),
             StateAfterBoom = 
                 case maps:get(langren_boom, StateAfterDieOp) == 1 of
                     true->
