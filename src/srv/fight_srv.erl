@@ -773,7 +773,7 @@ state_toupiao(op_over, State) ->
                     case maps:get(baichi, StateAfterBaichi) == 0 of
                         true->
                             notice_toupiao_out(Quzhu, StateAfterBaichi),
-                            lib_fight:lover_die_judge(Quzhu, StateAfterBaichi)
+                            lib_fight:lover_die_judge(Quzhu, StateAfterBaichi);
                         false->
                             StateAfterBaichi
                     end;
