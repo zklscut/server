@@ -105,8 +105,10 @@ is_seat_alive(SeatId, State) ->
         0 ->
             false;
         _->
-            Alivelist = get_alive_seat_list(State),
-            lists:member(SeatId, Alivelist)
+            % Alivelist = get_alive_seat_list(State),
+            DieList = (maps:get(out_seat_list, State) ++ maps:get(die, State) ++ 
+                            [maps:get(quzhu, State)]) -- [maps:get(baichi, State)],
+            lists:member(SeatId, DieList)
     end.
 
 %%是否平安日
