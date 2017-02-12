@@ -894,6 +894,7 @@ handle_event({skill, PlayerId, Op, OpList}, StateName, State) ->
             StateName ->
                 {next_state, StateName, NewState};
             _ ->
+                cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
                 send_event_inner(start),
                 {next_state, NextStateAfterOver, NewState}
         end
