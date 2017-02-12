@@ -111,7 +111,7 @@ is_seat_alive(SeatId, State) ->
                             [maps:get(quzhu, State)]) -- [maps:get(baichi, State)],
             lager:info("out_die_player ~p ~p ~p ~p ~p", [DieList, maps:get(out_seat_list, State),
                             maps:get(die, State),[maps:get(quzhu, State)],[maps:get(baichi, State)]]),
-            lists:member(SeatId, DieList)
+            not lists:member(SeatId, DieList)
     end.
 
 %%是否平安日
