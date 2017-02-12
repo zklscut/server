@@ -58,9 +58,9 @@ get_player_id(Player) ->
     maps:get(id, Player, 0).
 
 update_fight_pid(Pid, Player) ->
-    % NewPlayer = Player#{fight_pid=>Pid},%maps:put(fight_pid, Pid, Player),
-    % update_player(NewPlayer).
-    ignore.
+    NewPlayer = Player#{fight_pid=>Pid},%maps:put(fight_pid, Pid, Player),
+    update_player(NewPlayer).
+
 is_in_fight(Player) ->
     Pid = maps:get(fight_pid, Player, undefined),
     Pid =/= undefined andalso is_process_alive(Pid) == true.

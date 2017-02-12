@@ -106,11 +106,8 @@ is_seat_alive(SeatId, State) ->
             false;
 
         _->
-            % Alivelist = get_alive_seat_list(State),
             DieList = (maps:get(out_seat_list, State) ++ maps:get(die, State) ++ 
                             [maps:get(quzhu, State)]) -- [maps:get(baichi, State)],
-            lager:info("out_die_player ~p ~p ~p ~p ~p", [DieList, maps:get(out_seat_list, State),
-                            maps:get(die, State),[maps:get(quzhu, State)],[maps:get(baichi, State)]]),
             not lists:member(SeatId, DieList)
     end.
 

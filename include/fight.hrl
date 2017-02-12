@@ -42,6 +42,7 @@
 -define(OP_SKILL_LANGREN, 2005).
 -define(OP_SKILL_EIXT_PART_JINGZHANG, 2006).
 -define(OP_SKILL_D_DELAY, 2007). %%默认延时操作
+-define(OP_SKILL_END_FIGHT, 2008). %%结束战斗
 
 -define(XUANJU_TYPE_JINGZHANG, 1).
 -define(XUANJU_TYPE_QUZHU, 2).

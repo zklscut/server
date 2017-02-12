@@ -73,8 +73,7 @@ player_online(Player) ->
         undefined ->
             ignore;
         Pid ->
-            ignore
-            % gen_fsm:send_all_state_event(Pid, {player_online, lib_player:get_player_id(Player)})
+            gen_fsm:send_all_state_event(Pid, {player_online, lib_player:get_player_id(Player)})
     end.    
 
 player_offline(Player) ->
@@ -82,8 +81,7 @@ player_offline(Player) ->
         undefined ->
             ignore;
         Pid ->
-            ignore
-            % gen_fsm:send_all_state_event(Pid, {player_offline, lib_player:get_player_id(Player)})
+            gen_fsm:send_all_state_event(Pid, {player_offline, lib_player:get_player_id(Player)})
     end.
 
 %% ====================================================================
@@ -872,6 +870,11 @@ state_over(start, State) ->
 state_name(_Event, _From, StateData) ->
     Reply = next_state,
     {reply, Reply, state_name, StateData}.
+
+
+handle_event({skill, PlayerId, ?OP_SKILL_END_FIGHT, OpList}, StateName, State) ->
+    send_event_inner(start),
+    {next_state, state_over, State};
 
 handle_event({skill, PlayerId, Op, OpList}, StateName, State) ->
     try 
