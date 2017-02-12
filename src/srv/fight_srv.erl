@@ -494,7 +494,7 @@ state_someone_die(start, State) ->
             StateAfterBoom = 
                 case maps:get(langren_boom, StateAfterDieOp) == 1 of
                     true->
-                        state_day;
+                        state_night;
                     false->
                         get_next_game_state(maps:get(pre_state_name, StateAfterDieOp))
                 end,
