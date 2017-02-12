@@ -773,7 +773,7 @@ state_toupiao(op_over, State) ->
                     notice_toupiao_out(Quzhu, NewState),
                     NewState
             end,
-            send_event_inner(start, b_fight_wait_op:get(state_toupiao)),
+            send_event_inner(wait_over, b_fight_wait_op:get(state_toupiao)),
             {next_state, state_toupiao, StateAfterQuzhu}
     end;
 
