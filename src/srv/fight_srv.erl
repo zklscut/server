@@ -480,7 +480,7 @@ state_someone_die(start, State) ->
             send_event_inner(op_over),
             state_someone_die;
         d_delay->
-            lager:info("state_someone_die22")
+            lager:info("state_someone_die22"),
             notice_game_status_change(state_someone_die, [?OP_SKILL_D_DELAY], StateAfterDieOp),
             send_event_inner(op_over, b_fight_op_wait:get(?OP_SKILL_D_DELAY)),
             {state_someone_die, maps:put(skill_d_delay, 1, StateAfterDieOp)};
