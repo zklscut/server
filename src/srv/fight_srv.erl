@@ -473,6 +473,7 @@ state_night_result(_, State) ->
 %% ====================================================================
 state_someone_die(start, State) ->
     {OpName, Op, StateAfterDieOp} = lib_fight:get_someone_die_op(State),
+    lager:info("state_someone_die  ~p", [OpName, Op]),
     NextState = 
     case OpName of
         op_over->

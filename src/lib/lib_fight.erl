@@ -624,11 +624,14 @@ get_someone_die_op(State)->
     StateAfterDelay = 
     case SkillDieList of
         []->
+            lager:info("get_someone_die_op1  ~p"),
             State;
         _->
+            lager:info("get_someone_die_op2  ~p"),
             maps:put(skill_d_delay, 0, State)
     end,
     try
+        lager:info("get_someone_die_op3  ~p"),
         case SkillDieList of
             [] ->
                 %%如果有人死并且没有发动技能并且猎人没有翻牌做默认延时
@@ -641,7 +644,7 @@ get_someone_die_op(State)->
             _ ->
                 ok
         end,
-
+        lager:info("get_someone_die_op4  ~p"),
         {DieType, Die} = hd(SkillDieList),
         %%白狼自爆发动技能
         DoBaiLang = (DieType == ?DIE_TYPE_BOOM),
@@ -651,7 +654,7 @@ get_someone_die_op(State)->
             false->
                 ignore
         end,
-
+        lager:info("get_someone_die_op5  ~p"),
         JingZhang = maps:get(jingzhang, StateAfterDelay),
         case (JingZhang =/= 0) andalso (not is_seat_alive(JingZhang, StateAfterDelay)) of
             true ->
@@ -659,7 +662,7 @@ get_someone_die_op(State)->
             false ->
                 ignore
         end,
-
+        lager:info("get_someone_die_op6  ~p"),
         Duty = lib_fight:get_duty_by_seat(Die, StateAfterDelay),
         DoLieren = (Duty == ?DUTY_LIEREN andalso DieType =/= ?DIE_TYPE_NVWU),
         case DoLieren of
@@ -668,7 +671,7 @@ get_someone_die_op(State)->
             false ->
                 ignore
         end,
-
+        lager:info("get_someone_die_op7  ~p"),
         %%猎人已经出局直接跳过
         FlopLieRen = maps:get(flop_lieren, StateAfterDelay),
         case FlopLieRen == 1 of
