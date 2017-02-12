@@ -763,7 +763,7 @@ state_toupiao(op_over, State) ->
     case IsDraw of
         true ->
             send_event_inner(start, b_fight_wait_op:get(state_toupiao)),
-            {next_state, state_fayan, maps:put(toupiao_draw_list, MaxSelectList, NewState)};
+            {next_state, state_fayan, maps:put(fayan_turn, MaxSelectList, NewState)};
         false ->   
             %%临时6秒
             StateAfterQuzhu = 
