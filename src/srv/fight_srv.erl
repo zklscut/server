@@ -884,7 +884,7 @@ handle_event({skill, PlayerId, Op, OpList}, StateName, State) ->
         NextState = get_skill_next_state(Op, StateName, State),
         lager:info("handle_event ~p", [[NextState, StateName, OpList, Op]]),
         NextStateAfterOver = 
-        case is_over(State) of
+        case is_over(NewState) of
             true ->
                 state_fight_over;
             false ->
