@@ -615,7 +615,7 @@ is_need_someone_die_default_delay(State)->
     Quzhu = maps:get(quzhu, State),
     BaiLang = maps:get(bailang, State),
     SkillDDelay = maps:get(skill_d_delay, State),
-    (FlopLieRen =/= 0) andalso (SkillDDelay =/= 0) andalso (BaiLang =/= 0) andalso (((QuzhuOp == 0) andalso (SafeNight == 1)) orelse ((QuzhuOp == 1) andalso (Quzhu =/= 0))).
+    (FlopLieRen == 0) andalso (SkillDDelay == 0) andalso (BaiLang == 0) andalso (((QuzhuOp == 0) andalso (SafeNight == 1)) orelse ((QuzhuOp == 1) andalso (Quzhu =/= 0))).
 
 
 
