@@ -1243,7 +1243,8 @@ notice_night_result(State) ->
 
 out_die_player(State) ->
     maps:put(out_seat_list, (maps:get(out_seat_list, State) ++ maps:get(die, State) ++ 
-                            [maps:get(quzhu, State)]) -- [maps:get(baichi, State)], State).
+                            [maps:get(quzhu, State)]) -- [maps:get(baichi, State)], State),
+    lager:info("out_die_player  ~p", [maps:get(out_seat_list, State),maps:get(die, State),[maps:get(quzhu, State)],[maps:get(baichi, State)]]).
 
 get_fight_result(State) ->
     LangrenAlive = lib_fight:get_duty_seat(?DUTY_LANGREN, State),
