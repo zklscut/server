@@ -515,6 +515,7 @@ state_someone_die(wait_op, State) ->
     StateAfterSkillSeat = maps:put(skill_seat, OpSeat, StateAfterDieOp),
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(Op)),
     notice_player_op(Op, [OpSeat], StateAfterSkillSeat),
+    lager:info("get_someone_die_op wait_op  ~p", [Op]),
     {next_state, state_someone_die, maps:put(cur_skill, Op, StateAfterSkillSeat)};
 
 state_someone_die(timeout, State) ->
@@ -535,7 +536,9 @@ state_someone_die(timeout, State) ->
                         [lib_fight:rand_in_alive_seat(State)];
                     false ->
                         [0]
-                end
+                end;
+            _->
+                [0]
         end,
     PlayerId = lib_fight:get_player_id_by_seat(SeatId, State),
     NewState = lib_fight:do_skill(PlayerId, Skill, OpList, State),
