@@ -500,7 +500,7 @@ state_someone_die(start, State) ->
             {state_someone_die, StateAfterDieOp}
     end,
     lager:info("state_someone_die33", [maps:get(skill_d_delay, StateAfterOp)]),
-    {next_state, NextState, StateAfterOp};
+    {next_state, NextState, maps:put(cur_skill, 0, StateAfterOp)};
 
 state_someone_die(wait_op, State) ->
     {_OpName, Op, StateAfterDieOp} = lib_fight:get_someone_die_op(State),
