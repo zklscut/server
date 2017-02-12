@@ -658,6 +658,7 @@ get_someone_die_op(State)->
         
         JingZhang = maps:get(jingzhang, StateAfterDelay),
         lager:info("get_someone_die_op5  ~p", [JingZhang]),
+        lager:info("get_someone_die_op511  ~p", get_alive_seat_list(State)),
         case (JingZhang =/= 0) andalso (not is_seat_alive(JingZhang, StateAfterDelay)) of
             true ->
                 throw(?OP_SKILL_CHANGE_JINGZHANG);
