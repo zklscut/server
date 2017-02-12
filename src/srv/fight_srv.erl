@@ -69,7 +69,7 @@ print_state(Pid) ->
     gen_fsm:send_all_state_event(Pid, print_state).
 
 player_online(Player) ->
-    case lib_fight:get_fight_pid(Player) of
+    case lib_player:get_fight_pid(Player) of
         undefined ->
             ignore;
         Pid ->
@@ -77,7 +77,7 @@ player_online(Player) ->
     end.    
 
 player_offline(Player) ->
-    case lib_fight:get_fight_pid(Player) of
+    case lib_player:get_fight_pid(Player) of
         undefined ->
             ignore;
         Pid ->
