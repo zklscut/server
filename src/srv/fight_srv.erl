@@ -426,7 +426,6 @@ state_xuanju_jingzhang({player_op, PlayerId, Op, OpList}, State) ->
 state_xuanju_jingzhang(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     case ?TEST of
-            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
         true ->
             send_event_inner({player_op, lib_fight:get_player_id_by_seat(lib_fight:rand_in_alive_seat(State), State), 
                               ?OP_XUANJU_JINGZHANG, [util:rand_in_list(maps:get(part_jingzhang, State))]});
