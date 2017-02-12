@@ -478,7 +478,7 @@ state_someone_die(start, State) ->
     case OpName of
         op_over->
             send_event_inner(op_over),
-            state_someone_die;
+            {state_someone_die, StateAfterDieOp};
         d_delay->
             lager:info("state_someone_die22"),
             notice_game_status_change(state_someone_die, [?OP_SKILL_D_DELAY], StateAfterDieOp),
