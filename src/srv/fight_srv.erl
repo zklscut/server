@@ -71,8 +71,10 @@ print_state(Pid) ->
 player_online(Player) ->
     case lib_player:get_fight_pid(Player) of
         undefined ->
+            lager:info("player_online1111111111"),
             ignore;
         Pid ->
+            lager:info("player_online22222222222222"),
             gen_fsm:send_all_state_event(Pid, {player_online, lib_player:get_player_id(Player)})
     end.    
 
