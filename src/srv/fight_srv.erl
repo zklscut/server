@@ -1065,13 +1065,13 @@ do_fayan_state_timeout(StateName, State) ->
 do_fayan_state_op_over(StateName, State) ->
     % StateAfterFayan = lib_fight:do_fayan_op(State),
     StateAfterFayan = lib_fight:clear_last_op(State),
-    case maps:get(fayan_turn, State) of
+    case maps:get(fayan_turn, StateAfterFayan) of
         [] ->
             send_event_inner(start),
-            {next_state, get_next_game_state(StateName), State};
+            {next_state, get_next_game_state(StateName), StateAfterFayan};
         _ ->
             send_event_inner(wait_op),
-            {next_state, StateName, State}
+            {next_state, StateName, StateAfterFayan}
     end.
 
 do_receive_fayan(PlayerId, Chat, State) ->
