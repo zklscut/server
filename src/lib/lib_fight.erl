@@ -104,10 +104,13 @@ is_seat_alive(SeatId, State) ->
     case SeatId of
         0 ->
             false;
+
         _->
             % Alivelist = get_alive_seat_list(State),
             DieList = (maps:get(out_seat_list, State) ++ maps:get(die, State) ++ 
                             [maps:get(quzhu, State)]) -- [maps:get(baichi, State)],
+            lager:info("out_die_player ~p ~p ~p ~p ~p", [DieList, maps:get(out_seat_list, State),
+                            maps:get(die, State),[maps:get(quzhu, State)],[maps:get(baichi, State)]]),
             lists:member(SeatId, DieList)
     end.
 
@@ -660,7 +663,7 @@ get_someone_die_op(State)->
         
         JingZhang = maps:get(jingzhang, StateAfterDelay),
         lager:info("get_someone_die_op5  ~p", [JingZhang]),
-        lager:info("get_someone_die_op511  ~p", [get_alive_seat_list(State),maps:get(out_seat_list, State)]),
+        lager:info("get_someone_die_op511  ~p", [[is_seat_alive(JingZhang, StateAfterDelay)]),
         case (JingZhang =/= 0) andalso (not is_seat_alive(JingZhang, StateAfterDelay)) of
             true ->
                 throw(?OP_SKILL_CHANGE_JINGZHANG);
