@@ -769,7 +769,7 @@ state_toupiao(op_over, State) ->
             case (Quzhu =/= 0) andalso (?DUTY_BAICHI == lib_fight:get_duty_by_seat(Quzhu, NewState)) of
                 true->
                     %%白痴直接翻牌
-                    StateAfterBaichi = lib_fight:do_skill(lib_fight:get_player_id_by_seat(Quzhu), ?OP_SKILL_BAICHI, [0], NewState),
+                    StateAfterBaichi = lib_fight:do_skill(lib_fight:get_player_id_by_seat(Quzhu, NewState), ?OP_SKILL_BAICHI, [0], NewState),
                     case maps:get(baichi, StateAfterBaichi) == 0 of
                         true->
                             notice_toupiao_out(Quzhu, NewState);
