@@ -779,14 +779,14 @@ state_toupiao(op_over, State) ->
                     StateAfterBaichi = lib_fight:do_skill(lib_fight:get_player_id_by_seat(Quzhu, NewState), ?OP_SKILL_BAICHI, [0], NewState),
                     case maps:get(baichi, StateAfterBaichi) == 0 of
                         true->
-                            notice_toupiao_out(Quzhu, StateAfterBaichi),
+                            notice_toupiao_out([Quzhu], StateAfterBaichi),
                             lib_fight:lover_die_judge(Quzhu, StateAfterBaichi);
                         false->
                             StateAfterBaichi
                     end;
                 false->
                     %%客户端根据通知结果判断是否平安日
-                    notice_toupiao_out(Quzhu, NewState),
+                    notice_toupiao_out([Quzhu], NewState),
                     lib_fight:lover_die_judge(Quzhu, NewState)
             end,
 
