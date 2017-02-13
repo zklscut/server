@@ -1368,7 +1368,7 @@ notice_toupiao_out([0], _) ->
     ignore;
 
 notice_toupiao_out(SeatList, State) ->  
-    notice_player_op(?OP_QUZHU, SeatList, State).
+    notice_player_op(?OP_QUZHU, SeatList, maps:keys(maps:get(player_seat_map, State)), State).
 
 notice_game_status_change(Status, State) ->
     notice_game_status_change(Status, [], State).
