@@ -103,7 +103,8 @@ init([RoomId, PlayerList, DutyList, State]) ->
 %% state_daozei
 %% ====================================================================
 state_daozei(start, State) ->
-    ?IF(?TEST, fight_test(state_daozei, State), do_duty_state_start(?DUTY_DAOZEI, state_daozei, State));
+    % ?IF(?TEST, fight_test(state_daozei, State), do_duty_state_start(?DUTY_DAOZEI, state_daozei, State));
+    do_duty_state_start(?DUTY_DAOZEI, state_daozei, State);
 
 state_daozei(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_DAOZEI, State),
@@ -133,7 +134,8 @@ state_daozei(op_over, State) ->
 %% state_qiubite
 %% ====================================================================
 state_qiubite(start, State) ->
-    ?IF(?TEST, fight_test(state_qiubite, State), do_duty_state_start(?DUTY_QIUBITE, state_qiubite, State));
+    % ?IF(?TEST, fight_test(state_qiubite, State), do_duty_state_start(?DUTY_QIUBITE, state_qiubite, State));
+    do_duty_state_start(?DUTY_QIUBITE, state_qiubite, State);
 
 state_qiubite(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_QIUBITE, State),
@@ -157,7 +159,8 @@ state_qiubite(op_over, State) ->
 %% state_hunxueer
 %% ====================================================================
 state_hunxueer(start, State) ->
-    ?IF(?TEST, fight_test(state_hunxueer, State), do_duty_state_start(?DUTY_HUNXUEER, state_hunxueer, State));
+    % ?IF(?TEST, fight_test(state_hunxueer, State), do_duty_state_start(?DUTY_HUNXUEER, state_hunxueer, State));
+    do_duty_state_start(?DUTY_HUNXUEER, state_hunxueer, State);
 
 state_hunxueer(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_HUNXUEER, State),
@@ -181,7 +184,8 @@ state_hunxueer(op_over, State) ->
 %% state_shouwei
 %% ====================================================================
 state_shouwei(start, State) ->
-    ?IF(?TEST, fight_test(state_shouwei, State), do_duty_state_start(?DUTY_SHOUWEI, state_shouwei, State));
+    %?IF(?TEST, fight_test(state_shouwei, State), do_duty_state_start(?DUTY_SHOUWEI, state_shouwei, State));
+    do_duty_state_start(?DUTY_SHOUWEI, state_shouwei, State);
 
 state_shouwei(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_SHOUWEI, State),
@@ -204,7 +208,8 @@ state_shouwei(op_over, State) ->
 %% state_langren
 %% ====================================================================
 state_langren(start, State) ->
-    ?IF(?TEST, fight_test(state_langren, State), do_duty_state_start(?DUTY_LANGREN, state_langren, State));
+    % ?IF(?TEST, fight_test(state_langren, State), do_duty_state_start(?DUTY_LANGREN, state_langren, State));
+    do_duty_state_start(?DUTY_LANGREN, state_langren, State);
 
 state_langren(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_LANGREN, State),
@@ -228,7 +233,8 @@ state_langren(op_over, State) ->
 %% state_nvwu
 %% ====================================================================
 state_nvwu(start, State) ->
-    ?IF(?TEST, fight_test(state_nvwu, State), do_duty_state_start(?DUTY_NVWU, state_nvwu, State));
+    % ?IF(?TEST, fight_test(state_nvwu, State), do_duty_state_start(?DUTY_NVWU, state_nvwu, State));
+    do_duty_state_start(?DUTY_NVWU, state_nvwu, State);
 
 state_nvwu(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_NVWU, State),
@@ -256,7 +262,8 @@ state_yuyanjia(start, State) ->
             send_event_inner(start),
             {next_state, state_day, State};
         false ->
-            ?IF(?TEST, fight_test(state_yuyanjia, State), do_duty_state_start(?DUTY_YUYANJIA, state_yuyanjia, State))
+            % ?IF(?TEST, fight_test(state_yuyanjia, State), do_duty_state_start(?DUTY_YUYANJIA, state_yuyanjia, State))
+            do_duty_state_start(?DUTY_YUYANJIA, state_yuyanjia, State)
     end;
 
 state_yuyanjia(wait_op, State) ->
@@ -357,7 +364,8 @@ state_part_fayan(start, State) ->
     Send = #m__fight__notice_part_jingzhang__s2l{seat_list = maps:get(part_jingzhang, State)},
     lib_fight:send_to_all_player(Send, State),
     
-    ?IF(?TEST, fight_test(state_part_fayan, State), do_fayan_state_start(maps:get(part_jingzhang, State), state_part_fayan, State));
+    % ?IF(?TEST, fight_test(state_part_fayan, State), do_fayan_state_start(maps:get(part_jingzhang, State), state_part_fayan, State));
+    do_fayan_state_start(maps:get(part_jingzhang, State), state_part_fayan, State);
 
 state_part_fayan(wait_op, State) ->
     do_fayan_state_wait_op(?OP_PART_FAYAN, state_part_fayan, State);
@@ -388,11 +396,14 @@ state_xuanju_jingzhang(start, State) ->
             send_event_inner(start),
             {next_state, get_next_game_state(state_xuanju_jingzhang), State};
         _ ->
-            ?IF(?TEST, fight_test(state_xuanju_jingzhang, State), fun() ->
-                notice_game_status_change(state_xuanju_jingzhang, State),
-                send_event_inner(wait_op, b_fight_state_wait:get(state_xuanju_jingzhang)),
-                {next_state, state_xuanju_jingzhang, State}
-            end)
+            % ?IF(?TEST, fight_test(state_xuanju_jingzhang, State), fun() ->
+            %     notice_game_status_change(state_xuanju_jingzhang, State),
+            %     send_event_inner(wait_op, b_fight_state_wait:get(state_xuanju_jingzhang)),
+            %     {next_state, state_xuanju_jingzhang, State}
+            % end)
+            notice_game_status_change(state_xuanju_jingzhang, State),
+            send_event_inner(wait_op, b_fight_state_wait:get(state_xuanju_jingzhang)),
+            {next_state, state_xuanju_jingzhang, State}
     end;
 
 state_xuanju_jingzhang(wait_op, State) ->
@@ -586,7 +597,19 @@ state_night_death_fayan(op_over, State) ->
 %% state_jingzhang
 %% ====================================================================
 state_jingzhang(start, State) ->
-    ?IF(?TEST, fight_test(state_jingzhang, State), fun() ->
+%     ?IF(?TEST, fight_test(state_jingzhang, State), fun() ->
+%     StateAfterZhuQuOp = maps:put(quzhu_op, 1, State),
+%     case maps:get(jingzhang, State, 0) of
+%         0 ->
+%             StateAfterNoJingZhangOp = lib_fight:do_no_jingzhang_op(StateAfterZhuQuOp),
+%             send_event_inner(start),
+%             {next_state, get_next_game_state(state_jingzhang), StateAfterNoJingZhangOp};
+%         _ ->
+%             notice_game_status_change(state_jingzhang, State),
+%             send_event_inner(wait_op, b_fight_state_wait:get(state_jingzhang)),
+%             {next_state, state_jingzhang, StateAfterZhuQuOp}
+%     end
+% end);
     StateAfterZhuQuOp = maps:put(quzhu_op, 1, State),
     case maps:get(jingzhang, State, 0) of
         0 ->
@@ -598,7 +621,6 @@ state_jingzhang(start, State) ->
             send_event_inner(wait_op, b_fight_state_wait:get(state_jingzhang)),
             {next_state, state_jingzhang, StateAfterZhuQuOp}
     end
-end);
 
 state_jingzhang(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_JINGZHANG_ZHIDING)),
@@ -651,7 +673,26 @@ state_fayan(_, State) ->
 %% state_guipiao
 %% ====================================================================
 state_guipiao(start, State) ->
-    ?IF(?TEST, fight_test(state_guipiao, State), fun() ->
+    % ?IF(?TEST, fight_test(state_guipiao, State), fun() ->
+    % case maps:get(jingzhang, State, 0) of
+    %     0 ->
+    %         send_event_inner(start),
+    %         {next_state, get_next_game_state(state_guipiao), State};
+    %     _ ->
+    %         DrawCnt = maps:get(xuanju_draw_cnt, State),
+    %         case DrawCnt of
+    %             0->
+    %                 notice_game_status_change(state_guipiao, State),
+    %                 send_event_inner(wait_op, b_fight_state_wait:get(state_guipiao)),
+    %                 {next_state, state_guipiao, State};
+    %             1->
+    %                 %%平票投票直接跳过归票
+    %                 send_event_inner(start),
+    %                 {next_state, get_next_game_state(state_guipiao), State}
+    %         end
+            
+    % end
+    % end);
     case maps:get(jingzhang, State, 0) of
         0 ->
             send_event_inner(start),
@@ -670,7 +711,6 @@ state_guipiao(start, State) ->
             end
             
     end
-    end);
 
 state_guipiao(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_GUIPIAO)),
@@ -697,11 +737,14 @@ state_guipiao(op_over, State) ->
 %% state_toupiao
 %% ====================================================================
 state_toupiao(start, State) ->
-    ?IF(?TEST, fight_test(state_toupiao, State), fun() ->
+    % ?IF(?TEST, fight_test(state_toupiao, State), fun() ->
+    % notice_game_status_change(state_toupiao, State),
+    % send_event_inner(wait_op, b_fight_state_wait:get(state_toupiao)),
+    % {next_state, state_toupiao, maps:put(lieren_kill, 0, State)}
+    % end);
     notice_game_status_change(state_toupiao, State),
     send_event_inner(wait_op, b_fight_state_wait:get(state_toupiao)),
-    {next_state, state_toupiao, maps:put(lieren_kill, 0, State)}
-    end);
+    {next_state, state_toupiao, maps:put(lieren_kill, 0, State)};
 
 state_toupiao(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_TOUPIAO)),
