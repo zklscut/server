@@ -16,7 +16,8 @@
          get_player_room_player_list/1,
          update_fight_pid/2,
          get_fight_pid_by_player/1,
-         get_room_duty_list/1]).
+         get_room_duty_list/1,
+         handle_online/1]).
 
 -include("game_pb.hrl").
 -include("ets.hrl").
@@ -101,6 +102,16 @@ get_fight_pid_by_player(Player) ->
 
 get_room_duty_list(RoomId) ->
     maps:get(duty_list, get_room(RoomId)).
+
+handle_online(Player) ->
+    RoomId = maps:get(room_id, Player, 0),
+    case RoomId of
+        0 ->
+            ignore;
+        _ ->
+            Room = lib_room:get_room(RoomId),
+            mod_room:notice_team_change(Room)
+    end.
 
 %%%====================================================================
 %%% Internal functions
