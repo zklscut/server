@@ -620,7 +620,7 @@ state_jingzhang(start, State) ->
             notice_game_status_change(state_jingzhang, State),
             send_event_inner(wait_op, b_fight_state_wait:get(state_jingzhang)),
             {next_state, state_jingzhang, StateAfterZhuQuOp}
-    end
+    end;
 
 state_jingzhang(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_JINGZHANG_ZHIDING)),
@@ -710,7 +710,7 @@ state_guipiao(start, State) ->
                     {next_state, get_next_game_state(state_guipiao), State}
             end
             
-    end
+    end;
 
 state_guipiao(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_GUIPIAO)),
