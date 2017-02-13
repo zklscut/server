@@ -28,6 +28,16 @@ leave_room(Player) ->
     RoomId = maps:get(room_id, Player, 0),
     gen_server:cast(?MODULE, {leave_room, RoomId, lib_player:get_player_id(Player)}).    
 
+handle_online(Player) ->
+    RoomId = maps:get(room_id, Player, 0),
+    case RoomId of
+        0 ->
+            ignore;
+        _ ->
+            Room = lib_room:get_room(RoomId),
+            mod_room:notice_team_change(Room)
+    end.
+
 %% ====================================================================
 %% Behavioural functions
 %% ====================================================================
