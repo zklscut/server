@@ -304,11 +304,14 @@ state_part_jingzhang(start, State) ->
     GameRound = maps:get(game_round, State),
     case GameRound of
         1 ->
-            ?IF(?TEST, fight_test(state_part_jingzhang, State), fun() ->
-                notice_game_status_change(state_part_jingzhang, State),
-                send_event_inner(wait_op, b_fight_state_wait:get(state_part_jingzhang)),
-                {next_state, state_part_jingzhang, State}
-            end);
+            % ?IF(?TEST, fight_test(state_part_jingzhang, State), fun() ->
+            %     notice_game_status_change(state_part_jingzhang, State),
+            %     send_event_inner(wait_op, b_fight_state_wait:get(state_part_jingzhang)),
+            %     {next_state, state_part_jingzhang, State}
+            % end);
+            notice_game_status_change(state_part_jingzhang, State),
+            send_event_inner(wait_op, b_fight_state_wait:get(state_part_jingzhang)),
+            {next_state, state_part_jingzhang, State}
         2 ->
             %%如果狼人自爆中断选举过程,第二天可以再次竞选警长,但是参与者按照第一天的算
             DoPoliceSelect = maps:get(do_police_select, State),
