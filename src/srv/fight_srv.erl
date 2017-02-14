@@ -94,16 +94,16 @@ player_offline(Player) ->
 init([RoomId, PlayerList, DutyList, State]) ->
     lib_room:update_fight_pid(RoomId, self()),
     NewState = lib_fight:init(RoomId, PlayerList, DutyList, State),
-    notice_game_status_change(start, NewState),
-    notice_duty(NewState),
+    NewStateAfterTest = ?IF(?TEST, fight_test_no_send(init, State), NewState),
+    notice_game_status_change(start, NewStateAfterTest),
+    notice_duty(NewStateAfterTest),
     send_event_inner(start, b_fight_state_wait:get(start)),
-    {ok, state_daozei, NewState}.
+    {ok, state_daozei, NewStateAfterTest}.
 
 %% ====================================================================
 %% state_daozei
 %% ====================================================================
 state_daozei(start, State) ->
-    % ?IF(?TEST, fight_test(state_daozei, State), do_duty_state_start(?DUTY_DAOZEI, state_daozei, State));
     do_duty_state_start(?DUTY_DAOZEI, state_daozei, State);
 
 state_daozei(wait_op, State) ->
@@ -134,7 +134,6 @@ state_daozei(op_over, State) ->
 %% state_qiubite
 %% ====================================================================
 state_qiubite(start, State) ->
-    % ?IF(?TEST, fight_test(state_qiubite, State), do_duty_state_start(?DUTY_QIUBITE, state_qiubite, State));
     do_duty_state_start(?DUTY_QIUBITE, state_qiubite, State);
 
 state_qiubite(wait_op, State) ->
@@ -159,7 +158,6 @@ state_qiubite(op_over, State) ->
 %% state_hunxueer
 %% ====================================================================
 state_hunxueer(start, State) ->
-    % ?IF(?TEST, fight_test(state_hunxueer, State), do_duty_state_start(?DUTY_HUNXUEER, state_hunxueer, State));
     do_duty_state_start(?DUTY_HUNXUEER, state_hunxueer, State);
 
 state_hunxueer(wait_op, State) ->
@@ -184,7 +182,6 @@ state_hunxueer(op_over, State) ->
 %% state_shouwei
 %% ====================================================================
 state_shouwei(start, State) ->
-    %?IF(?TEST, fight_test(state_shouwei, State), do_duty_state_start(?DUTY_SHOUWEI, state_shouwei, State));
     do_duty_state_start(?DUTY_SHOUWEI, state_shouwei, State);
 
 state_shouwei(wait_op, State) ->
@@ -208,7 +205,6 @@ state_shouwei(op_over, State) ->
 %% state_langren
 %% ====================================================================
 state_langren(start, State) ->
-    % ?IF(?TEST, fight_test(state_langren, State), do_duty_state_start(?DUTY_LANGREN, state_langren, State));
     do_duty_state_start(?DUTY_LANGREN, state_langren, State);
 
 state_langren(wait_op, State) ->
@@ -233,7 +229,6 @@ state_langren(op_over, State) ->
 %% state_nvwu
 %% ====================================================================
 state_nvwu(start, State) ->
-    % ?IF(?TEST, fight_test(state_nvwu, State), do_duty_state_start(?DUTY_NVWU, state_nvwu, State));
     do_duty_state_start(?DUTY_NVWU, state_nvwu, State);
 
 state_nvwu(wait_op, State) ->
@@ -262,7 +257,6 @@ state_yuyanjia(start, State) ->
             send_event_inner(start),
             {next_state, state_day, State};
         false ->
-            % ?IF(?TEST, fight_test(state_yuyanjia, State), do_duty_state_start(?DUTY_YUYANJIA, state_yuyanjia, State))
             do_duty_state_start(?DUTY_YUYANJIA, state_yuyanjia, State)
     end;
 
@@ -311,14 +305,14 @@ state_part_jingzhang(start, State) ->
     GameRound = maps:get(game_round, State),
     case GameRound of
         1 ->
-            % ?IF(?TEST, fight_test(state_part_jingzhang, State), fun() ->
-            %     notice_game_status_change(state_part_jingzhang, State),
-            %     send_event_inner(wait_op, b_fight_state_wait:get(state_part_jingzhang)),
-            %     {next_state, state_part_jingzhang, State}
-            % end);
-            notice_game_status_change(state_part_jingzhang, State),
-            send_event_inner(wait_op, b_fight_state_wait:get(state_part_jingzhang)),
-            {next_state, state_part_jingzhang, State};
+            case ?TEST of
+                true ->
+                    fight_test(state_part_jingzhang, State);
+                false ->
+                    notice_game_status_change(state_part_jingzhang, State),
+                    send_event_inner(wait_op, b_fight_state_wait:get(state_part_jingzhang)),
+                    {next_state, state_part_jingzhang, State}
+            end;
         2 ->
             %%如果狼人自爆中断选举过程,第二天可以再次竞选警长,但是参与者按照第一天的算
             DoPoliceSelect = maps:get(do_police_select, State),
@@ -364,7 +358,6 @@ state_part_fayan(start, State) ->
     Send = #m__fight__notice_part_jingzhang__s2l{seat_list = maps:get(part_jingzhang, State)},
     lib_fight:send_to_all_player(Send, State),
     
-    % ?IF(?TEST, fight_test(state_part_fayan, State), do_fayan_state_start(maps:get(part_jingzhang, State), state_part_fayan, State));
     do_fayan_state_start(maps:get(part_jingzhang, State), state_part_fayan, State);
 
 state_part_fayan(wait_op, State) ->
@@ -396,14 +389,14 @@ state_xuanju_jingzhang(start, State) ->
             send_event_inner(start),
             {next_state, get_next_game_state(state_xuanju_jingzhang), State};
         _ ->
-            % ?IF(?TEST, fight_test(state_xuanju_jingzhang, State), fun() ->
-            %     notice_game_status_change(state_xuanju_jingzhang, State),
-            %     send_event_inner(wait_op, b_fight_state_wait:get(state_xuanju_jingzhang)),
-            %     {next_state, state_xuanju_jingzhang, State}
-            % end)
-            notice_game_status_change(state_xuanju_jingzhang, State),
-            send_event_inner(wait_op, b_fight_state_wait:get(state_xuanju_jingzhang)),
-            {next_state, state_xuanju_jingzhang, State}
+            case ?TEST of
+                true ->
+                    fight_test(state_xuanju_jingzhang, State);
+                false ->
+                    notice_game_status_change(state_xuanju_jingzhang, State),
+                    send_event_inner(wait_op, b_fight_state_wait:get(state_xuanju_jingzhang)),
+                    {next_state, state_xuanju_jingzhang, State}
+            end
     end;
 
 state_xuanju_jingzhang(wait_op, State) ->
@@ -597,29 +590,21 @@ state_night_death_fayan(op_over, State) ->
 %% state_jingzhang
 %% ====================================================================
 state_jingzhang(start, State) ->
-%     ?IF(?TEST, fight_test(state_jingzhang, State), fun() ->
-%     StateAfterZhuQuOp = maps:put(quzhu_op, 1, State),
-%     case maps:get(jingzhang, State, 0) of
-%         0 ->
-%             StateAfterNoJingZhangOp = lib_fight:do_no_jingzhang_op(StateAfterZhuQuOp),
-%             send_event_inner(start),
-%             {next_state, get_next_game_state(state_jingzhang), StateAfterNoJingZhangOp};
-%         _ ->
-%             notice_game_status_change(state_jingzhang, State),
-%             send_event_inner(wait_op, b_fight_state_wait:get(state_jingzhang)),
-%             {next_state, state_jingzhang, StateAfterZhuQuOp}
-%     end
-% end);
-    StateAfterZhuQuOp = maps:put(quzhu_op, 1, State),
-    case maps:get(jingzhang, State, 0) of
-        0 ->
-            StateAfterNoJingZhangOp = lib_fight:do_no_jingzhang_op(StateAfterZhuQuOp),
-            send_event_inner(start),
-            {next_state, get_next_game_state(state_jingzhang), StateAfterNoJingZhangOp};
-        _ ->
-            notice_game_status_change(state_jingzhang, State),
-            send_event_inner(wait_op, b_fight_state_wait:get(state_jingzhang)),
-            {next_state, state_jingzhang, StateAfterZhuQuOp}
+    case ?TEST of
+        true ->
+            fight_test(state_jingzhang, State);
+        false ->
+            StateAfterZhuQuOp = maps:put(quzhu_op, 1, State),
+            case maps:get(jingzhang, State, 0) of
+                0 ->
+                    StateAfterNoJingZhangOp = lib_fight:do_no_jingzhang_op(StateAfterZhuQuOp),
+                    send_event_inner(start),
+                    {next_state, get_next_game_state(state_jingzhang), StateAfterNoJingZhangOp};
+                _ ->
+                    notice_game_status_change(state_jingzhang, State),
+                    send_event_inner(wait_op, b_fight_state_wait:get(state_jingzhang)),
+                    {next_state, state_jingzhang, StateAfterZhuQuOp}
+            end
     end;
 
 state_jingzhang(wait_op, State) ->
@@ -673,43 +658,28 @@ state_fayan(_, State) ->
 %% state_guipiao
 %% ====================================================================
 state_guipiao(start, State) ->
-    % ?IF(?TEST, fight_test(state_guipiao, State), fun() ->
-    % case maps:get(jingzhang, State, 0) of
-    %     0 ->
-    %         send_event_inner(start),
-    %         {next_state, get_next_game_state(state_guipiao), State};
-    %     _ ->
-    %         DrawCnt = maps:get(xuanju_draw_cnt, State),
-    %         case DrawCnt of
-    %             0->
-    %                 notice_game_status_change(state_guipiao, State),
-    %                 send_event_inner(wait_op, b_fight_state_wait:get(state_guipiao)),
-    %                 {next_state, state_guipiao, State};
-    %             1->
-    %                 %%平票投票直接跳过归票
-    %                 send_event_inner(start),
-    %                 {next_state, get_next_game_state(state_guipiao), State}
-    %         end
-            
-    % end
-    % end);
-    case maps:get(jingzhang, State, 0) of
-        0 ->
-            send_event_inner(start),
-            {next_state, get_next_game_state(state_guipiao), State};
-        _ ->
-            DrawCnt = maps:get(xuanju_draw_cnt, State),
-            case DrawCnt of
-                0->
-                    notice_game_status_change(state_guipiao, State),
-                    send_event_inner(wait_op, b_fight_state_wait:get(state_guipiao)),
-                    {next_state, state_guipiao, State};
-                1->
-                    %%平票投票直接跳过归票
+    case ?TEST of
+        true ->
+            fight_test(state_guipiao, State);
+        false ->
+            case maps:get(jingzhang, State, 0) of
+                0 ->
                     send_event_inner(start),
-                    {next_state, get_next_game_state(state_guipiao), State}
+                    {next_state, get_next_game_state(state_guipiao), State};
+                _ ->
+                    DrawCnt = maps:get(xuanju_draw_cnt, State),
+                    case DrawCnt of
+                        0->
+                            notice_game_status_change(state_guipiao, State),
+                            send_event_inner(wait_op, b_fight_state_wait:get(state_guipiao)),
+                            {next_state, state_guipiao, State};
+                        1->
+                            %%平票投票直接跳过归票
+                            send_event_inner(start),
+                            {next_state, get_next_game_state(state_guipiao), State}
+                    end
+                
             end
-            
     end;
 
 state_guipiao(wait_op, State) ->
@@ -737,14 +707,14 @@ state_guipiao(op_over, State) ->
 %% state_toupiao
 %% ====================================================================
 state_toupiao(start, State) ->
-    % ?IF(?TEST, fight_test(state_toupiao, State), fun() ->
-    % notice_game_status_change(state_toupiao, State),
-    % send_event_inner(wait_op, b_fight_state_wait:get(state_toupiao)),
-    % {next_state, state_toupiao, maps:put(lieren_kill, 0, State)}
-    % end);
-    notice_game_status_change(state_toupiao, State),
-    send_event_inner(wait_op, b_fight_state_wait:get(state_toupiao)),
-    {next_state, state_toupiao, maps:put(lieren_kill, 0, State)};
+    case ?TEST of
+        true ->
+            fight_test(state_toupiao, State);
+        false ->
+            notice_game_status_change(state_toupiao, State),
+            send_event_inner(wait_op, b_fight_state_wait:get(state_toupiao)),
+            {next_state, state_toupiao, maps:put(lieren_kill, 0, State)}
+    end;
 
 state_toupiao(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_TOUPIAO)),
@@ -1033,8 +1003,13 @@ do_duty_state_start(Duty, GameState, State) ->
             {next_state, get_next_game_state(GameState), State};
         _ ->
             notice_game_status_change(GameState, State),
-            send_event_inner(wait_op, b_fight_state_wait:get(GameState)),
-            {next_state, GameState, State}
+            case ?TEST of
+                true ->
+                    fight_test(GameState, State);
+                false ->
+                    send_event_inner(wait_op, b_fight_state_wait:get(GameState)),
+                    {next_state, GameState, State}
+            end
     end.
 
 do_duty_state_wait_op(Duty, State) ->
@@ -1084,11 +1059,16 @@ do_fayan_state_start(InitFayanList, StateName, State) ->
             send_event_inner(start),
             {next_state, get_next_game_state(StateName), State};
         false ->
-            DrawCnt = maps:get(xuanju_draw_cnt, State),
-            notice_game_status_change(StateName, [DrawCnt], State),
-            NewState = maps:put(fayan_turn, FayanList, State),
-            send_event_inner(wait_op, b_fight_state_wait:get(StateName)),
-            {next_state, StateName, NewState}
+            case ?TEST of
+                true ->
+                    fight_test(StateName, State);
+                false ->
+                    DrawCnt = maps:get(xuanju_draw_cnt, State),
+                    notice_game_status_change(StateName, [DrawCnt], State),
+                    NewState = maps:put(fayan_turn, FayanList, State),
+                    send_event_inner(wait_op, b_fight_state_wait:get(StateName)),
+                    {next_state, StateName, NewState}
+            end
     end.
 
 do_fayan_state_wait_op(Op, StateName, State) ->
@@ -1368,7 +1348,7 @@ notice_toupiao_out([0], _) ->
     ignore;
 
 notice_toupiao_out(SeatList, State) ->  
-    notice_player_op(?OP_QUZHU, SeatList, lib_fight:get_all_seat(State), State).
+    notice_player_op(?OP_QUZHU, SeatList, State).
 
 notice_game_status_change(Status, State) ->
     notice_game_status_change(Status, [], State).
@@ -1555,14 +1535,27 @@ get_status_id(GameState) ->
             20
     end.
 
+fight_test_no_send(StateName, State) ->
+    StateNthList = maps:get(state_nth_list, State, []),
+    StateNth = 
+        case lists:keyfind(StateName, 1, StateNthList) of
+            false ->
+                1;
+            {_, Nth} ->
+                Nth
+        end,
+    NewStateNthList = lists:keystore(StateName, 1, StateNthList, {StateName, StateNth + 1}),
+
+    StateAfterInnerData = fight_test_inner(StateNth, StateName, State),
+    maps:put(state_nth_list, NewStateNthList, StateAfterInnerData).
+
 fight_test(StateName, State) ->
-    Round = maps:get(game_round, State),
-    StateAfterInnerData = fight_test_inner(Round, StateName, State),
+    StateAfterInnerData = fight_test_no_send(StateName, State),
     send_event_inner(op_over),
     {next_state, StateName, StateAfterInnerData}.
 
-fight_test_inner(Round, StateName, State) ->
-    ReplaceDataList = b_fight_test:get({Round, StateName}),
+fight_test_inner(StateNth, StateName, State) ->
+    ReplaceDataList = b_fight_test:get({StateNth, StateName}),
     FunReplace = 
         fun({ReplaceKey, ReplaceData}, CurState) ->
                 maps:put(ReplaceKey, ReplaceData, CurState)
