@@ -25,8 +25,8 @@
 
 handle_after_login(#{id := PlayerId} = Player) ->
     lib_ets:update(?ETS_PLAYER_PID, PlayerId, self()),
-    fight_srv:player_online(Player),
     lib_room:handle_online(Player),
+    fight_srv:player_online(Player),
     Player.
 
 handle_after_logout(#{id := PlayerId} = Player) ->

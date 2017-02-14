@@ -553,8 +553,15 @@ state_someone_die(op_over, State) ->
             state_night_result
     end,
     send_event_inner(start),
-    {next_state, NextState, maps:put(skill_die_list, NewSkillDieList, State)}.
-    
+
+    NextStateAfterOver = 
+        case is_over(State) of
+            true ->
+                state_fight_over;
+            false ->
+                NextState
+        end,
+    {next_state, NextStateAfterOver, maps:put(skill_die_list, NewSkillDieList, State)}.
 
 %% ====================================================================
 %% state_night_death_fayan
@@ -892,6 +899,7 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     Round = maps:get(game_round, State),
     GameState = maps:get(game_state, State),
     DieList = maps:get(out_seat_list, State),
+    JingZhang = maps:get(jingzhang, State),
     {AttachData1, AttachData2} = get_online_attach_data(SeatId, DutyId, State),
 
     Send = #m__fight__online__s2l{duty = DutyId,
@@ -1389,16 +1397,19 @@ get_online_attach_data(_SeatId, ?DUTY_YUYANJIA, State) ->
     lists:unzip(maps:get(yuyanjia_op, State));
 
 get_online_attach_data(_SeatId, ?DUTY_LANGREN, State) ->
-    {lib_fight:get_duty_seat(State), []};
+    {lib_fight:get_duty_seat(false, ?DUTY_LANGREN, State) ++ lib_fight:get_duty_seat(false, ?DUTY_BAILANG, State), []};
 
 get_online_attach_data(_SeatId, ?DUTY_BAILANG, State) ->
-    {lib_fight:get_duty_seat(State), []};
+    {lib_fight:get_duty_seat(false, ?DUTY_LANGREN, State) ++ lib_fight:get_duty_seat(false, ?DUTY_BAILANG, State), []};
 
 get_online_attach_data(_SeatId, ?DUTY_SHOUWEI, State) ->
     {[maps:get(shouwei, State)], []};
 
 get_online_attach_data(_SeatId, ?DUTY_HUNXUEER, State) ->
     {[maps:get(hunxuer, State)], []};
+
+get_online_attach_data(_SeatId, ?DUTY_QIUBITE, State) ->
+    {[maps:get(lover, State)], []};
 
 get_online_attach_data(_, _, _) ->
     [].
