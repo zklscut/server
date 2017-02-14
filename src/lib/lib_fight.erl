@@ -232,7 +232,7 @@ get_langren_hunxuer_seat(State)->
             HunxuerDuty = get_duty_by_seat(Hunxuer, State),
             case lists:member(HunxuerDuty, LangRenList) of
                 true->
-                    [Hunxuer];
+                    get_duty_seat(false, ?DUTY_HUNXUEER, State);
                 false->
                     []
             end;
@@ -250,7 +250,7 @@ get_haoren_hunxuer_seat(State)->
                 true->
                     [];
                 false->
-                    [Hunxuer]
+                    get_duty_seat(false, ?DUTY_HUNXUEER, State);
             end;
         false->
             []
