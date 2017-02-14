@@ -250,7 +250,7 @@ get_haoren_hunxuer_seat(State)->
                 true->
                     [];
                 false->
-                    get_duty_seat(false, ?DUTY_HUNXUEER, State);
+                    get_duty_seat(false, ?DUTY_HUNXUEER, State)
             end;
         false->
             []
