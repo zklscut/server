@@ -722,11 +722,11 @@ state_toupiao(start, State) ->
             send_event_inner(wait_op, b_fight_state_wait:get(state_toupiao)),
             {next_state, state_toupiao, maps:put(lieren_kill, 0, State)}
     end;
-
+    
 state_toupiao(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_TOUPIAO)),
     notice_toupiao(State),
-    WaitList = lib_fight:get_alive_seat_list(State) -- [maps:get(baichi, State)],
+    WaitList = (lib_fight:get_alive_seat_list(State) -- [maps:get(baichi, State)]) -- maps:get(die, State),
     StateAfterWait = do_set_wait_op(WaitList, State),
     {next_state, state_toupiao, StateAfterWait};    
     
