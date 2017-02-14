@@ -862,13 +862,19 @@ rand_target_in_op(OpData) ->
             end
         end,
     CountSelectList = lists:foldl(FunCout, [], maps:to_list(OpData)),
-    {_, MaxSelectNum} = lists:last(lists:keysort(2, CountSelectList)),
-    RandSeatList = [CurSeatId || {CurSeatId, CurSelectNum} <- CountSelectList, CurSelectNum == MaxSelectNum],
-    case RandSeatList of
-        [] ->
+    SeatListAfterKeysort = lists:keysort(2, CountSelectList),
+    case SeatListAfterKeysort of
+        []->
             0;
-        _ ->
-            util:rand_in_list(RandSeatList)
+        _->
+            {_, MaxSelectNum} = lists:last(SeatListAfterKeysort),
+            RandSeatList = [CurSeatId || {CurSeatId, CurSelectNum} <- CountSelectList, CurSelectNum == MaxSelectNum],
+            case RandSeatList of
+                [] ->
+                    0;
+                _ ->
+                    util:rand_in_list(RandSeatList)
+            end
     end.
 
 notice_lover(Seat1, Seat2, QiubiteSeat, State) ->
