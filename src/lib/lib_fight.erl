@@ -378,14 +378,17 @@ do_nvwu_op(State) ->
     clear_last_op(StateAfterNvKill).        
 
 do_langren_op(State) ->
+    lager:info("do_langren_op1111111111111"),
     LastOpData = get_last_op(State),
     KillSeat = 
         case maps:to_list(LastOpData) of
             [] ->
                 0;
             _ ->
+                lager:info("do_langren_op22222222"),
                 rand_target_in_op(filter_last_op(LastOpData))
         end,
+    lager:info("do_langren_op3333333333333"),
     StateAfterLangren = maps:put(langren, KillSeat, State),
     StateAfterUpdateDie = do_set_die_list(StateAfterLangren),
 
@@ -852,6 +855,7 @@ clear_last_op(State) ->
     maps:put(last_op_data, #{}, State).
 
 rand_target_in_op(OpData) ->
+    lager:info("rand_target_in_op211111111111"),
     FunCout = 
         fun({_, [SeatId]}, CurList) ->
             case lists:keyfind(SeatId, 1, CurList) of
@@ -863,10 +867,12 @@ rand_target_in_op(OpData) ->
         end,
     CountSelectList = lists:foldl(FunCout, [], maps:to_list(OpData)),
     SeatListAfterKeysort = lists:keysort(2, CountSelectList),
+    lager:info("rand_target_in_op22222222222222222222"),
     case SeatListAfterKeysort of
         []->
             0;
         _->
+            lager:info("rand_target_in_op333333333333333333333"),
             {_, MaxSelectNum} = lists:last(SeatListAfterKeysort),
             RandSeatList = [CurSeatId || {CurSeatId, CurSelectNum} <- CountSelectList, CurSelectNum == MaxSelectNum],
             case RandSeatList of
