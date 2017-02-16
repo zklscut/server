@@ -60,6 +60,7 @@ get_player_id(Player) ->
     maps:get(id, Player, 0).
 
 update_fight_pid(Pid, Player) ->
+    lager:info("update_fight_pid ~p", [Pid]),
     NewPlayer = Player#{fight_pid=>Pid},%maps:put(fight_pid, Pid, Player),
     update_player(NewPlayer).
 
