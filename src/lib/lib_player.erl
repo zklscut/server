@@ -75,7 +75,7 @@ get_fight_pid(Player) ->
             undefined
     end.
 
-get_name(PlayerId) when is_integer(player_id) ->
+get_name(PlayerId) when is_integer(PlayerId) ->
     get_name(get_player(PlayerId));
 
 get_name(Player) ->
