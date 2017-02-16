@@ -16,7 +16,8 @@
          get_player_id/1,
          update_fight_pid/2,
          is_in_fight/1,
-         get_fight_pid/1]).
+         get_fight_pid/1,
+         get_name/1]).
 
 
 %% ====================================================================
@@ -73,6 +74,13 @@ get_fight_pid(Player) ->
         false ->
             undefined
     end.
+
+get_name(PlayerId) when is_integer(player_id) ->
+    get_name(get_player(PlayerId));
+
+get_name(Player) ->
+    maps:get(nick_name, Player).
+
 
 
 %%%====================================================================

@@ -9,6 +9,7 @@
 -export([enter_room/2, create_room/4, leave_room/1]).
 
 -include("room.hrl").
+-include("chat.hrl").
 
 %% ====================================================================
 %% API functions
@@ -109,6 +110,8 @@ handle_cast_inner({enter_room, RoomId, PlayerId}, State) ->
 
     global_op_srv:player_op(PlayerId, {mod_room, handle_enter_room, [NewRoom]}),
     mod_room:notice_team_change(NewRoom),
+
+    mod_chat:send_system_room_chat(?SYSTEM_CHAT_ROOM_ENTER, lib_player:get_name(PlayerId), RoomId),
     {noreply, State};
 
 handle_cast_inner({create_room, MaxPlayerNum, RoomName, DutyList, Player}, State) ->
@@ -144,6 +147,7 @@ handle_cast_inner({leave_room, RoomId, PlayerId}, State) ->
             NewRoom = Room#{player_list := NewPlayerList,
                             owner := Owner},
             mod_room:notice_team_change(NewRoom),
+            mod_chat:send_system_room_chat(?SYSTEM_CHAT_ROOM_LEAVE, lib_player:get_name(PlayerId), RoomId),
             lib_room:update_room(RoomId, NewRoom)
     end,
     global_op_srv:player_op(PlayerId, {mod_room, handle_leave_room, []}),
