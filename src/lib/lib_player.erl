@@ -65,6 +65,7 @@ update_fight_pid(Pid, Player) ->
 
 is_in_fight(Player) ->
     Pid = maps:get(fight_pid, Player, undefined),
+    lager:info("is_in_fight ~p", [Pid]),
     Pid =/= undefined andalso is_process_alive(Pid) == true.
 
 get_fight_pid(Player) ->
