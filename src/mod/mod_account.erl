@@ -15,7 +15,7 @@
 login(#m__account__login__l2s{account_name = AccountName}, 
     #{socket := Socket} = Player) ->
     {_IsCreate, NewPlayer} = create_or_get_player(AccountName, Player),
-
+    lager:info("login0 ~p", [lib_player:get_fight_pid(NewPlayer)]),
     PlayerId = lib_player:get_player_id(NewPlayer),
     case lib_player:get_player_pid(PlayerId) of
         undefined ->
