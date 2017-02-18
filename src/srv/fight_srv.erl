@@ -909,7 +909,8 @@ handle_event({player_online, PlayerId}, StateName, State) ->
                                   speak_id = 0,
                                   die_list = DieList,
                                   attach_data1 = AttachData1,
-                                  attach_data2 = AttachData2
+                                  attach_data2 = AttachData2,
+                                  offline_list = NewOfflineList
                                   },
     net_send:send(Send, PlayerId),
 
@@ -919,6 +920,10 @@ handle_event({player_offline, PlayerId}, StateName, State) ->
     OfflineList = maps:get(offline_list, State),
     NewOfflineList = util:add_element_single(PlayerId, OfflineList),
     NewState =  maps:put(offline_list, NewOfflineList, State),
+    SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
+    Send = #m__fight__offline_s2l{
+                       offline_list = OfflineList  
+                    },
     {next_state, StateName, NewState};
 
 handle_event(print_state, StateName, StateData) ->
