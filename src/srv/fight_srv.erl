@@ -911,7 +911,7 @@ handle_event({player_online, PlayerId}, StateName, State) ->
                                   attach_data1 = AttachData1,
                                   attach_data2 = AttachData2
                                   },
-    mod_send:send(Send, PlayerId),
+    net_send:send(Send, PlayerId),
 
     {next_state, StateName, NewState};
 
