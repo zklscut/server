@@ -119,7 +119,7 @@ handle_cast_inner({apply, {M, F, A}, _PlayerId}, State) ->
                 {ok, State}
         end,
     do_cache_op(Op, NewState),
-    lager:info("apply new state ~p", [NewState]),
+    lager:info("apply new state ~p", [{{M, F, A}, apply(M, F, A ++ [State])}]),
     {noreply, NewState};
 
 handle_cast_inner({kick, Reason}, State) ->
