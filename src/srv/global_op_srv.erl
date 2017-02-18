@@ -22,6 +22,7 @@ player_op(PlayerId, Op) ->
             Pid ->
                 Pid
         end,
+    lager:info("global op id~p", [OpPid]),
     gen_server:cast(OpPid, {apply, Op, PlayerId}).
 
 %% ====================================================================
