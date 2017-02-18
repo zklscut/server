@@ -16,10 +16,10 @@
 -record(m__room__rand_enter__l2s, {msg_id=13009}).
 -record(m__room__start_fight__l2s, {msg_id=13011}).
 -record(m__room__notice_member_change__s2l, {msg_id=13012, room_info, member_list}).
--record(p_chat, {player_show_base, voice, content, length, compress, chat_type, room_id}).
+-record(p_chat, {player_show_base, voice, content, length, compress, chat_type, room_id, msg_type}).
 -record(m__chat__public_speak__l2s, {msg_id=14001, chat}).
 -record(m__chat__public_speak__s2l, {msg_id=14002, chat}).
--record(m__fight__game_state_change__s2l, {msg_id=15001, game_status}).
+-record(m__fight__game_state_change__s2l, {msg_id=15001, game_status, attach_data}).
 -record(m__fight__notice_duty__s2l, {msg_id=15002, duty, seat_id}).
 -record(m__fight__notice_op__s2l, {msg_id=15003, op, attach_data}).
 -record(m__fight__notice_op__l2s, {msg_id=15004, op, op_list}).
@@ -37,3 +37,7 @@
 -record(m__fight__stop_fayan__s2l, {msg_id=15014, seat_id}).
 -record(m__fight__notice_hunxuer__s2l, {msg_id=15015, select_seat}).
 -record(m__fight__notice_part_jingzhang__s2l, {msg_id=15016, seat_list}).
+-record(m__fight__notice_skill__s2l, {msg_id=15017, op, op_list, seat_id}).
+-record(m__fight__do_skill__l2s, {msg_id=15018, op, op_list}).
+-record(m__fight__online__s2l, {msg_id=15019, duty, game_state, round, speak_id, die_list, seat_id, attach_data1, attach_data2, offline_list}).
+-record(m__fight__offline_s2l, {msg_id=15020, offline_list}).
