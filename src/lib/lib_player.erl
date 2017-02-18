@@ -33,8 +33,8 @@ handle_after_login(#{id := PlayerId} = Player) ->
 handle_after_logout(#{id := PlayerId} = Player) ->
     lib_ets:delete(?ETS_PLAYER_PID, PlayerId),
     fight_srv:player_offline(Player),
-    room_srv:leave_room(Player),
-    lib_room:update_player_room_id(0, Player);
+    room_srv:leave_room(Player).
+    % lib_room:update_player_room_id(0, Player);
 
 handle_after_logout(Player) ->
     Player.
