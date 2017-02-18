@@ -1,6 +1,14 @@
 -module(game_pb).
 
 -export([encode/1, encode/2, decode/2,
+	 encode_m__fight__offline_s2l/1,
+	 decode_m__fight__offline_s2l/1,
+	 encode_m__fight__online__s2l/1,
+	 decode_m__fight__online__s2l/1,
+	 encode_m__fight__do_skill__l2s/1,
+	 decode_m__fight__do_skill__l2s/1,
+	 encode_m__fight__notice_skill__s2l/1,
+	 decode_m__fight__notice_skill__s2l/1,
 	 encode_m__fight__notice_part_jingzhang__s2l/1,
 	 decode_m__fight__notice_part_jingzhang__s2l/1,
 	 encode_m__fight__notice_hunxuer__s2l/1,
@@ -74,6 +82,17 @@
 	 encode_p_player_show_base/1,
 	 decode_p_player_show_base/1]).
 
+-record(m__fight__offline_s2l, {msg_id, offline_list}).
+
+-record(m__fight__online__s2l,
+	{msg_id, duty, game_state, round, speak_id, die_list,
+	 seat_id, attach_data1, attach_data2, offline_list}).
+
+-record(m__fight__do_skill__l2s, {msg_id, op, op_list}).
+
+-record(m__fight__notice_skill__s2l,
+	{msg_id, op, op_list, seat_id}).
+
 -record(m__fight__notice_part_jingzhang__s2l,
 	{msg_id, seat_list}).
 
@@ -119,7 +138,7 @@
 	{msg_id, duty, seat_id}).
 
 -record(m__fight__game_state_change__s2l,
-	{msg_id, game_status}).
+	{msg_id, game_status, attach_data}).
 
 -record(m__chat__public_speak__s2l, {msg_id, chat}).
 
@@ -127,7 +146,7 @@
 
 -record(p_chat,
 	{player_show_base, voice, content, length, compress,
-	 chat_type, room_id}).
+	 chat_type, room_id, msg_type}).
 
 -record(m__room__notice_member_change__s2l,
 	{msg_id, room_info, member_list}).
@@ -172,6 +191,22 @@
 
 encode(Record) ->
     encode(erlang:element(1, Record), Record).
+
+encode_m__fight__offline_s2l(Record)
+    when is_record(Record, m__fight__offline_s2l) ->
+    encode(m__fight__offline_s2l, Record).
+
+encode_m__fight__online__s2l(Record)
+    when is_record(Record, m__fight__online__s2l) ->
+    encode(m__fight__online__s2l, Record).
+
+encode_m__fight__do_skill__l2s(Record)
+    when is_record(Record, m__fight__do_skill__l2s) ->
+    encode(m__fight__do_skill__l2s, Record).
+
+encode_m__fight__notice_skill__s2l(Record)
+    when is_record(Record, m__fight__notice_skill__s2l) ->
+    encode(m__fight__notice_skill__s2l, Record).
 
 encode_m__fight__notice_part_jingzhang__s2l(Record)
     when is_record(Record,
@@ -517,6 +552,9 @@ encode(p_chat, _Record) ->
 			   []),
 		      pack(7, optional,
 			   with_default(_Record#p_chat.room_id, none), int32,
+			   []),
+		      pack(8, required,
+			   with_default(_Record#p_chat.msg_type, none), int32,
 			   [])]);
 encode(m__chat__public_speak__l2s, _Record) ->
     iolist_to_binary([pack(1, required,
@@ -543,6 +581,10 @@ encode(m__fight__game_state_change__s2l, _Record) ->
 			   int32, []),
 		      pack(2, required,
 			   with_default(_Record#m__fight__game_state_change__s2l.game_status,
+					none),
+			   int32, []),
+		      pack(3, repeated,
+			   with_default(_Record#m__fight__game_state_change__s2l.attach_data,
 					none),
 			   int32, [])]);
 encode(m__fight__notice_duty__s2l, _Record) ->
@@ -735,6 +777,86 @@ encode(m__fight__notice_part_jingzhang__s2l, _Record) ->
 		      pack(2, repeated,
 			   with_default(_Record#m__fight__notice_part_jingzhang__s2l.seat_list,
 					none),
+			   int32, [])]);
+encode(m__fight__notice_skill__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__notice_skill__s2l.msg_id,
+					15017),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__fight__notice_skill__s2l.op,
+					none),
+			   int32, []),
+		      pack(3, repeated,
+			   with_default(_Record#m__fight__notice_skill__s2l.op_list,
+					none),
+			   int32, []),
+		      pack(4, required,
+			   with_default(_Record#m__fight__notice_skill__s2l.seat_id,
+					none),
+			   int32, [])]);
+encode(m__fight__do_skill__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__do_skill__l2s.msg_id,
+					15018),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__fight__do_skill__l2s.op,
+					none),
+			   int32, []),
+		      pack(3, repeated,
+			   with_default(_Record#m__fight__do_skill__l2s.op_list,
+					none),
+			   int32, [])]);
+encode(m__fight__online__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__online__s2l.msg_id,
+					15019),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__fight__online__s2l.duty,
+					none),
+			   int32, []),
+		      pack(3, required,
+			   with_default(_Record#m__fight__online__s2l.game_state,
+					none),
+			   int32, []),
+		      pack(4, required,
+			   with_default(_Record#m__fight__online__s2l.round,
+					none),
+			   int32, []),
+		      pack(5, required,
+			   with_default(_Record#m__fight__online__s2l.speak_id,
+					none),
+			   int32, []),
+		      pack(6, repeated,
+			   with_default(_Record#m__fight__online__s2l.die_list,
+					none),
+			   int32, []),
+		      pack(7, required,
+			   with_default(_Record#m__fight__online__s2l.seat_id,
+					none),
+			   int32, []),
+		      pack(8, repeated,
+			   with_default(_Record#m__fight__online__s2l.attach_data1,
+					none),
+			   int32, []),
+		      pack(9, repeated,
+			   with_default(_Record#m__fight__online__s2l.attach_data2,
+					none),
+			   int32, []),
+		      pack(10, repeated,
+			   with_default(_Record#m__fight__online__s2l.offline_list,
+					none),
+			   int32, [])]);
+encode(m__fight__offline_s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__offline_s2l.msg_id,
+					15020),
+			   int32, []),
+		      pack(2, repeated,
+			   with_default(_Record#m__fight__offline_s2l.offline_list,
+					none),
 			   int32, [])]).
 
 with_default(undefined, none) -> undefined;
@@ -755,6 +877,18 @@ pack(FNum, _, Data, _, _) when is_tuple(Data) ->
     protobuffs:encode(FNum, encode(RecName, Data), bytes);
 pack(FNum, _, Data, Type, _) ->
     protobuffs:encode(FNum, Data, Type).
+
+decode_m__fight__offline_s2l(Bytes) ->
+    decode(m__fight__offline_s2l, Bytes).
+
+decode_m__fight__online__s2l(Bytes) ->
+    decode(m__fight__online__s2l, Bytes).
+
+decode_m__fight__do_skill__l2s(Bytes) ->
+    decode(m__fight__do_skill__l2s, Bytes).
+
+decode_m__fight__notice_skill__s2l(Bytes) ->
+    decode(m__fight__notice_skill__s2l, Bytes).
 
 decode_m__fight__notice_part_jingzhang__s2l(Bytes) ->
     decode(m__fight__notice_part_jingzhang__s2l, Bytes).
@@ -965,10 +1099,10 @@ decode(m__room__notice_member_change__s2l, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__notice_member_change__s2l, Decoded);
 decode(p_chat, Bytes) ->
-    Types = [{7, room_id, int32, []},
-	     {6, chat_type, int32, []}, {5, compress, int32, []},
-	     {4, length, int32, []}, {3, content, string, []},
-	     {2, voice, bytes, []},
+    Types = [{8, msg_type, int32, []},
+	     {7, room_id, int32, []}, {6, chat_type, int32, []},
+	     {5, compress, int32, []}, {4, length, int32, []},
+	     {3, content, string, []}, {2, voice, bytes, []},
 	     {1, player_show_base, p_player_show_base, [is_record]}],
     Decoded = decode(Bytes, Types, []),
     to_record(p_chat, Decoded);
@@ -983,8 +1117,8 @@ decode(m__chat__public_speak__s2l, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__chat__public_speak__s2l, Decoded);
 decode(m__fight__game_state_change__s2l, Bytes) ->
-    Types = [{2, game_status, int32, []},
-	     {1, msg_id, int32, []}],
+    Types = [{3, attach_data, int32, [repeated]},
+	     {2, game_status, int32, []}, {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__game_state_change__s2l, Decoded);
 decode(m__fight__notice_duty__s2l, Bytes) ->
@@ -1078,7 +1212,34 @@ decode(m__fight__notice_part_jingzhang__s2l, Bytes) ->
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__notice_part_jingzhang__s2l,
-	      Decoded).
+	      Decoded);
+decode(m__fight__notice_skill__s2l, Bytes) ->
+    Types = [{4, seat_id, int32, []},
+	     {3, op_list, int32, [repeated]}, {2, op, int32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__notice_skill__s2l, Decoded);
+decode(m__fight__do_skill__l2s, Bytes) ->
+    Types = [{3, op_list, int32, [repeated]},
+	     {2, op, int32, []}, {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__do_skill__l2s, Decoded);
+decode(m__fight__online__s2l, Bytes) ->
+    Types = [{10, offline_list, int32, [repeated]},
+	     {9, attach_data2, int32, [repeated]},
+	     {8, attach_data1, int32, [repeated]},
+	     {7, seat_id, int32, []},
+	     {6, die_list, int32, [repeated]},
+	     {5, speak_id, int32, []}, {4, round, int32, []},
+	     {3, game_state, int32, []}, {2, duty, int32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__online__s2l, Decoded);
+decode(m__fight__offline_s2l, Bytes) ->
+    Types = [{2, offline_list, int32, [repeated]},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__offline_s2l, Decoded).
 
 decode(<<>>, _, Acc) -> Acc;
 decode(<<Bytes/binary>>, Types, Acc) ->
@@ -1393,7 +1554,35 @@ to_record(m__fight__notice_part_jingzhang__s2l,
 						     m__fight__notice_part_jingzhang__s2l),
 					 Record, Name, Val)
 		end,
-		#m__fight__notice_part_jingzhang__s2l{}, DecodedTuples).
+		#m__fight__notice_part_jingzhang__s2l{}, DecodedTuples);
+to_record(m__fight__notice_skill__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__notice_skill__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__notice_skill__s2l{}, DecodedTuples);
+to_record(m__fight__do_skill__l2s, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__do_skill__l2s),
+					 Record, Name, Val)
+		end,
+		#m__fight__do_skill__l2s{}, DecodedTuples);
+to_record(m__fight__online__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__online__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__online__s2l{}, DecodedTuples);
+to_record(m__fight__offline_s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__offline_s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__offline_s2l{}, DecodedTuples).
 
 set_record_field(Fields, Record, Field, Value) ->
     Index = list_index(Field, Fields),
