@@ -1412,7 +1412,7 @@ get_online_attach_data(_SeatId, ?DUTY_QIUBITE, State) ->
     {[maps:get(lover, State)], []};
 
 get_online_attach_data(_, _, _) ->
-    [].
+    {[],[]}.
 
 get_next_game_state(GameState) ->
     case GameState of
