@@ -35,4 +35,7 @@ get(15013) -> {m__fight__notice_fayan__s2l, mod_fight, notice_fayan};
 get(15014) -> {m__fight__stop_fayan__s2l, mod_fight, stop_fayan}; 
 get(15015) -> {m__fight__notice_hunxuer__s2l, mod_fight, notice_hunxuer}; 
 get(15016) -> {m__fight__notice_part_jingzhang__s2l, mod_fight, notice_part_jingzhang}; 
+get(15017) -> {m__fight__notice_skill__s2l, mod_fight, notice_skill}; 
+get(15018) -> {m__fight__do_skill__l2s, mod_fight, do_skill}; 
+get(15019) -> {m__fight__online__s2l, mod_fight, online}; 
 get(_) -> undefined. 
