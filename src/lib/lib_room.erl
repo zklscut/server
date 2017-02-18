@@ -105,6 +105,7 @@ get_room_duty_list(RoomId) ->
 
 handle_online(Player) ->
     RoomId = maps:get(room_id, Player, 0),
+    lager:info("handle_online ~p", [RoomId]),
     case RoomId of
         0 ->
             ignore;
