@@ -893,15 +893,14 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     OfflineList = maps:get(offline_list, State),
     NewOfflineList = OfflineList -- [PlayerId],
     NewState =  maps:put(offline_list, NewOfflineList, State),
-
     SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
     DutyId = lib_fight:get_duty_by_seat(SeatId, State),
     Round = maps:get(game_round, State),
     GameState = maps:get(game_state, State),
     DieList = maps:get(out_seat_list, State),
     JingZhang = maps:get(jingzhang, State),
+    FlopList = maps:get(flop_list, State),
     {AttachData1, AttachData2} = get_online_attach_data(SeatId, DutyId, State),
-
     Send = #m__fight__online__s2l{duty = DutyId,
                                   seat_id = SeatId,
                                   game_state =GameState,
@@ -913,7 +912,6 @@ handle_event({player_online, PlayerId}, StateName, State) ->
                                   offline_list = NewOfflineList
                                   },
     net_send:send(Send, PlayerId),
-
     {next_state, StateName, NewState};
 
 handle_event({player_offline, PlayerId}, StateName, State) ->
@@ -1132,8 +1130,10 @@ notice_player_op(Op, SeatList, State) ->
     notice_player_op(Op, SeatList, SeatList, State).
 
 notice_player_op(Op, AttachData, SeatList, State) ->
+    WaitTime = b_fight_op_wait:get(Op),
     Send = #m__fight__notice_op__s2l{op = Op,
                                      attach_data = AttachData},
+    
     FunNotice = 
         fun(SeatId) ->
             lib_fight:send_to_seat(Send, SeatId, State)
