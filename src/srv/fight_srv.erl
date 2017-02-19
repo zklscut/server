@@ -1133,12 +1133,19 @@ notice_player_op(Op, AttachData, SeatList, State) ->
     WaitTime = b_fight_op_wait:get(Op),
     Send = #m__fight__notice_op__s2l{op = Op,
                                      attach_data = AttachData},
-    
     FunNotice = 
         fun(SeatId) ->
             lib_fight:send_to_seat(Send, SeatId, State)
         end,
-    lists:foreach(FunNotice, SeatList).
+    lists:foreach(FunNotice, SeatList),
+    case WaitTime > 0 of
+        true->
+            WaitTimeSend = #m__fight__op_timetick__s2l{timetick = WaitTime},
+            lib_fight:send_to_all_player(WaitTimeSend, State);
+        _->
+            ignore;
+    end
+    .
 
 do_set_wait_op(SeatIdList, State) ->
     maps:put(wait_op_list, SeatIdList, State).
