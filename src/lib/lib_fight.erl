@@ -563,7 +563,7 @@ do_skill_inner(SeatId, ?OP_SKILL_BAICHI, _, State) ->
     StateAfterFlop = 
     case SeatIdAfterBaichi =/= 0 of
         true->
-            maps:put(flop_list, maps:get(flop_list, State) ++ [SeatId], State);
+            maps:put(flop_list, maps:get(flop_list, State) ++ [{SeatId, ?DUTY_BAICHI}], State);
         false->
             lover_die_judge(SeatId, State)
     end,
@@ -593,7 +593,8 @@ do_skill_inner(_SeatId, ?OP_SKILL_LIEREN, [SelectSeat], State) ->
             SkillDieListPre = maps:get(skill_die_list, State),
             StateAfterSetFlop = maps:put(flop_lieren, 1, StateAfterLieRen),
             StateAfterDieList = maps:put(skill_die_list, SkillDieListPre ++ [{?DIE_TYPE_LIEREN, SelectSeat}] , StateAfterSetFlop),
-            lover_die_judge(SelectSeat, StateAfterDieList)
+            StateAfterSetFlopList = maps:put(flop_list, maps:get(flop_list, StateAfterDieList) ++ [{SeatId, ?DUTY_LIEREN}], StateAfterDieList),
+            lover_die_judge(SelectSeat, StateAfterSetFlopList)
     end,
     check_set_baichi_die(SelectSeat, StateAfterFlopLieRen);
 
@@ -618,7 +619,8 @@ do_skill_inner(SeatId, ?OP_SKILL_BAILANG, [SelectId], State) ->
     case is_seat_alive(SeatId, NewState) of
         true->
             StateAfterBoomDieList = maps:put(skill_die_list,  [{?DIE_TYPE_BOOM, SeatId}] ++ SkillDieListPre , NewState),
-            lover_die_judge(SeatId, StateAfterBoomDieList);
+            StateAfterSetFlopList = maps:put(flop_list, maps:get(flop_list, StateAfterBoomDieList) ++ [{SeatId, ?DUTY_BAILANG}], StateAfterBoomDieList),
+            lover_die_judge(SeatId, StateAfterSetFlopList);
         false->
             NewState
     end,
@@ -630,7 +632,8 @@ do_skill_inner(SeatId, ?OP_SKILL_BAILANG, [SelectId], State) ->
 do_skill_inner(SeatId, ?OP_SKILL_LANGREN, _, State) ->
     StateAfterDie = maps:put(die, maps:get(die, State) ++ [SeatId], State),
     StateAfterBoom = maps:put(langren_boom, 1, StateAfterDie),
-    lover_die_judge(SeatId, StateAfterBoom);
+    StateAfterSetFlopList = maps:put(flop_list, maps:get(flop_list, StateAfterBoom) ++ [{SeatId, ?DUTY_LANGREN}], StateAfterBoom),
+    lover_die_judge(SeatId, StateAfterSetFlopList);
 
 do_skill_inner(_SeatId, ?OP_SKILL_CHANGE_JINGZHANG, [SelectId], State) ->
     maps:put(jingzhang, SelectId, State);
