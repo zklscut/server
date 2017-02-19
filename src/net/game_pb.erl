@@ -871,7 +871,7 @@ encode(m__fight__op_timetick__s2l, _Record) ->
 			   with_default(_Record#m__fight__op_timetick__s2l.msg_id,
 					15021),
 			   int32, []),
-		      pack(2, repeated,
+		      pack(2, required,
 			   with_default(_Record#m__fight__op_timetick__s2l.timetick,
 					none),
 			   int32, [])]).
@@ -1261,7 +1261,7 @@ decode(m__fight__offline__s2l, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__offline__s2l, Decoded);
 decode(m__fight__op_timetick__s2l, Bytes) ->
-    Types = [{2, timetick, int32, [repeated]},
+    Types = [{2, timetick, int32, []},
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__op_timetick__s2l, Decoded).
