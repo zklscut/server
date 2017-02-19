@@ -1143,9 +1143,8 @@ notice_player_op(Op, AttachData, SeatList, State) ->
             WaitTimeSend = #m__fight__op_timetick__s2l{timetick = WaitTime},
             lib_fight:send_to_all_player(WaitTimeSend, State);
         _->
-            ignore;
-    end
-    .
+            ignore
+    end.
 
 do_set_wait_op(SeatIdList, State) ->
     maps:put(wait_op_list, SeatIdList, State).
