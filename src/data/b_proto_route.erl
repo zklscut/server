@@ -38,4 +38,6 @@ get(15016) -> {m__fight__notice_part_jingzhang__s2l, mod_fight, notice_part_jing
 get(15017) -> {m__fight__notice_skill__s2l, mod_fight, notice_skill}; 
 get(15018) -> {m__fight__do_skill__l2s, mod_fight, do_skill}; 
 get(15019) -> {m__fight__online__s2l, mod_fight, online}; 
+get(15020) -> {m__fight__offline__s2l, mod_fight, offline}; 
+get(15021) -> {m__fight__op_timetick__s2l, mod_fight, op_timetick}; 
 get(_) -> undefined. 
