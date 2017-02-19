@@ -1,8 +1,10 @@
 -module(game_pb).
 
 -export([encode/1, encode/2, decode/2,
-	 encode_m__fight__offline_s2l/1,
-	 decode_m__fight__offline_s2l/1,
+	 encode_m__fight__op_timetick__s2l/1,
+	 decode_m__fight__op_timetick__s2l/1,
+	 encode_m__fight__offline__s2l/1,
+	 decode_m__fight__offline__s2l/1,
 	 encode_m__fight__online__s2l/1,
 	 decode_m__fight__online__s2l/1,
 	 encode_m__fight__do_skill__l2s/1,
@@ -82,7 +84,9 @@
 	 encode_p_player_show_base/1,
 	 decode_p_player_show_base/1]).
 
--record(m__fight__offline_s2l, {msg_id, offline_list}).
+-record(m__fight__op_timetick__s2l, {msg_id, timetick}).
+
+-record(m__fight__offline__s2l, {msg_id, offline_list}).
 
 -record(m__fight__online__s2l,
 	{msg_id, duty, game_state, round, speak_id, die_list,
@@ -192,9 +196,13 @@
 encode(Record) ->
     encode(erlang:element(1, Record), Record).
 
-encode_m__fight__offline_s2l(Record)
-    when is_record(Record, m__fight__offline_s2l) ->
-    encode(m__fight__offline_s2l, Record).
+encode_m__fight__op_timetick__s2l(Record)
+    when is_record(Record, m__fight__op_timetick__s2l) ->
+    encode(m__fight__op_timetick__s2l, Record).
+
+encode_m__fight__offline__s2l(Record)
+    when is_record(Record, m__fight__offline__s2l) ->
+    encode(m__fight__offline__s2l, Record).
 
 encode_m__fight__online__s2l(Record)
     when is_record(Record, m__fight__online__s2l) ->
@@ -849,13 +857,22 @@ encode(m__fight__online__s2l, _Record) ->
 			   with_default(_Record#m__fight__online__s2l.offline_list,
 					none),
 			   int32, [])]);
-encode(m__fight__offline_s2l, _Record) ->
+encode(m__fight__offline__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
-			   with_default(_Record#m__fight__offline_s2l.msg_id,
+			   with_default(_Record#m__fight__offline__s2l.msg_id,
 					15020),
 			   int32, []),
 		      pack(2, repeated,
-			   with_default(_Record#m__fight__offline_s2l.offline_list,
+			   with_default(_Record#m__fight__offline__s2l.offline_list,
+					none),
+			   int32, [])]);
+encode(m__fight__op_timetick__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__op_timetick__s2l.msg_id,
+					15021),
+			   int32, []),
+		      pack(2, repeated,
+			   with_default(_Record#m__fight__op_timetick__s2l.timetick,
 					none),
 			   int32, [])]).
 
@@ -878,8 +895,11 @@ pack(FNum, _, Data, _, _) when is_tuple(Data) ->
 pack(FNum, _, Data, Type, _) ->
     protobuffs:encode(FNum, Data, Type).
 
-decode_m__fight__offline_s2l(Bytes) ->
-    decode(m__fight__offline_s2l, Bytes).
+decode_m__fight__op_timetick__s2l(Bytes) ->
+    decode(m__fight__op_timetick__s2l, Bytes).
+
+decode_m__fight__offline__s2l(Bytes) ->
+    decode(m__fight__offline__s2l, Bytes).
 
 decode_m__fight__online__s2l(Bytes) ->
     decode(m__fight__online__s2l, Bytes).
@@ -1235,11 +1255,16 @@ decode(m__fight__online__s2l, Bytes) ->
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__online__s2l, Decoded);
-decode(m__fight__offline_s2l, Bytes) ->
+decode(m__fight__offline__s2l, Bytes) ->
     Types = [{2, offline_list, int32, [repeated]},
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
-    to_record(m__fight__offline_s2l, Decoded).
+    to_record(m__fight__offline__s2l, Decoded);
+decode(m__fight__op_timetick__s2l, Bytes) ->
+    Types = [{2, timetick, int32, [repeated]},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__op_timetick__s2l, Decoded).
 
 decode(<<>>, _, Acc) -> Acc;
 decode(<<Bytes/binary>>, Types, Acc) ->
@@ -1576,13 +1601,20 @@ to_record(m__fight__online__s2l, DecodedTuples) ->
 					 Record, Name, Val)
 		end,
 		#m__fight__online__s2l{}, DecodedTuples);
-to_record(m__fight__offline_s2l, DecodedTuples) ->
+to_record(m__fight__offline__s2l, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields,
-						     m__fight__offline_s2l),
+						     m__fight__offline__s2l),
 					 Record, Name, Val)
 		end,
-		#m__fight__offline_s2l{}, DecodedTuples).
+		#m__fight__offline__s2l{}, DecodedTuples);
+to_record(m__fight__op_timetick__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__op_timetick__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__op_timetick__s2l{}, DecodedTuples).
 
 set_record_field(Fields, Record, Field, Value) ->
     Index = list_index(Field, Fields),
