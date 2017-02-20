@@ -1,7 +1,7 @@
 % @Author: anchen
 % @Date:   2017-02-20 14:35:57
 % @Last Modified by:   anchen
-% @Last Modified time: 2017-02-20 16:02:48
+% @Last Modified time: 2017-02-20 16:05:33
 
 -module(mod_resource).
 
@@ -23,7 +23,7 @@ increase(ResourceId, Num, LogAction, PlayerId) when is_integer(PlayerId) ->
 
 increase(ResourceId, Num, LogAction, Player) ->
     PreNum = get_num(ResourceId, Player),
-    NumNum = PreNum + Num,
+    NewNum = PreNum + Num,
     PlayerAfterIncrease = set_num(ResourceId, NewNum, LogAction, Player),
     PlayerAfterHandler = handle_after_increase(ResourceId, PreNum, NewNum, PlayerAfterIncrease),
     add_resource_log(ResourceId, PreNum, NewNum, PlayerAfterHandler),
@@ -46,7 +46,7 @@ decrease(ResourceId, Num, LogAction, Player) ->
     case is_enough(ResourceId, Num, Player) of
         true ->
             PreNum = get_num(ResourceId, Player),
-            NumNum = PreNum - Num,
+            NewNum = PreNum - Num,
             PlayerAfterDecrease = set_num(ResourceId, NewNum, LogAction, Player),
             PlayerAfterHandler = handle_after_decrease(ResourceId, PreNum, NewNum, PlayerAfterDecrease),
             add_resource_log(ResourceId, PreNum, NewNum, PlayerAfterHandler),
@@ -93,8 +93,8 @@ get_resource_list(Player) ->
     maps:get(resource, maps:get(data, Player), #{}).
 
 update_resource_list(Resource, Player) ->
-    NewData = maps:put(resource, Resource, maps:get(data, Role)),
-    maps:put(data, NewData, Role).
+    NewData = maps:put(resource, Resource, maps:get(data, Player)),
+    maps:put(data, NewData, Player).
 
 handle_after_increase(?RESOURCE_EXP, _PreNum, NewNum, Player) ->
     CurLv = get_num(?RESOURCE_LV, Player),
