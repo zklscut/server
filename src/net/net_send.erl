@@ -1,7 +1,7 @@
 % @Author: anchen
 % @Date:   2016-12-06 14:52:58
 % @Last Modified by:   anchen
-% @Last Modified time: 2017-02-20 16:07:58
+% @Last Modified time: 2017-02-20 16:11:40
 
 -module(net_send).
 
@@ -24,7 +24,8 @@ send(Send, PlayerId) when is_integer(PlayerId) ->
 	global_op_srv:player_op(PlayerId, {?MODULE, send, [Send]}),
     ok;
 
-send(_, _) ->
+send(Send, _) ->
+    lager:info("un send ~p", [Send]),
     ok.
 
 send_errcode(ErrCode, PlayerId) when is_integer(PlayerId) ->
