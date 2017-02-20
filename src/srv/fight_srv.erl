@@ -1392,7 +1392,7 @@ send_fight_result(Winner, State) ->
                         {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, State))],
 
      [ mod_player:handle_fight_result(ResultDutyId, get_win_count(ResultSeatId, Winner) ,
-                lib_fight:get_player_id_by_seat(ResultSeatId))
+                lib_fight:get_player_id_by_seat(ResultSeatId, State))
                  || {ResultSeatId, ResultDutyId} <- maps:to_list(maps:get(seat_duty_map, State))],                   
 
     #{lover := Lover,
