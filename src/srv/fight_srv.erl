@@ -1378,10 +1378,22 @@ notice_game_status_change(Status, AttachData, State) ->
                                              attach_data = AttachData},
     lib_fight:send_to_all_player(Send, State).
 
+get_win_count(SeatId, Winner)->
+    case lists:member(SeatId, Winner) of
+        true->
+            1;
+        _->
+            0
+    end.
+
 send_fight_result(Winner, State) ->
     DutyList = [#p_duty{seat_id = SeatId,
                         duty_id = DutyId} || 
                         {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, State))],
+
+     [ mod_player:handle_fight_result(ResultDutyId, get_win_count(ResultSeatId, Winner) ,
+                lib_fight:get_player_id_by_seat(ResultSeatId))
+                 || {ResultSeatId, ResultDutyId} <- maps:to_list(maps:get(seat_duty_map, State))],                   
 
     #{lover := Lover,
       hunxuer := Hunxuer} = State,
