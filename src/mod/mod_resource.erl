@@ -1,7 +1,7 @@
 % @Author: anchen
 % @Date:   2017-02-20 14:35:57
 % @Last Modified by:   anchen
-% @Last Modified time: 2017-02-20 16:05:33
+% @Last Modified time: 2017-02-20 16:07:00
 
 -module(mod_resource).
 
@@ -25,7 +25,7 @@ increase(ResourceId, Num, LogAction, Player) ->
     PreNum = get_num(ResourceId, Player),
     NewNum = PreNum + Num,
     PlayerAfterIncrease = set_num(ResourceId, NewNum, LogAction, Player),
-    PlayerAfterHandler = handle_after_increase(ResourceId, PreNum, NewNum, PlayerAfterIncrease),
+    PlayerAfterHandler = handle_after_increase(ResourceId, PreNum, NewNum, LogAction, PlayerAfterIncrease),
     add_resource_log(ResourceId, PreNum, NewNum, PlayerAfterHandler),
     PlayerAfterHandler.
 
@@ -48,7 +48,7 @@ decrease(ResourceId, Num, LogAction, Player) ->
             PreNum = get_num(ResourceId, Player),
             NewNum = PreNum - Num,
             PlayerAfterDecrease = set_num(ResourceId, NewNum, LogAction, Player),
-            PlayerAfterHandler = handle_after_decrease(ResourceId, PreNum, NewNum, PlayerAfterDecrease),
+            PlayerAfterHandler = handle_after_decrease(ResourceId, PreNum, NewNum, LogAction, PlayerAfterDecrease),
             add_resource_log(ResourceId, PreNum, NewNum, PlayerAfterHandler),
             PlayerAfterHandler;
         false ->
@@ -96,18 +96,18 @@ update_resource_list(Resource, Player) ->
     NewData = maps:put(resource, Resource, maps:get(data, Player)),
     maps:put(data, NewData, Player).
 
-handle_after_increase(?RESOURCE_EXP, _PreNum, NewNum, Player) ->
+handle_after_increase(?RESOURCE_EXP, _PreNum, NewNum, LogAction, Player) ->
     CurLv = get_num(?RESOURCE_LV, Player),
     case NewNum > b_exp:get(CurLv) of
         true ->
-            set_num(?RESOURCE_LV, CurLv + 1, Player);
+            set_num(?RESOURCE_LV, CurLv + 1, LogAction, Player);
         false ->
             Player
     end;
-handle_after_increase(_, _, _, Player) ->
+handle_after_increase(_, _, _, _, Player) ->
     Player.
 
-handle_after_decrease(_, _, _, Player) ->
+handle_after_decrease(_, _, _, _, Player) ->
     Player.
 
 add_resource_log(_, _, _, _) ->
