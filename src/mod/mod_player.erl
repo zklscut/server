@@ -22,7 +22,7 @@ info(#m__player__info__l2s{}, Player) ->
                                    month_vip = 0,
                                    equip = 0,
                                    resource_list = mod_resource:get_p_resource_list(Player),
-                                   win_rate_list = get_p_resource_list(Player)},
+                                   win_rate_list = get_p_fight_rate_list(Player)},
     net_send:send(Return, Player),
 
     NewPlayer = lib_player:handle_after_login(Player),
