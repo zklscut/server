@@ -1,9 +1,12 @@
 % @Author: anchen
 % @Date:   2016-12-06 14:52:58
 % @Last Modified by:   anchen
-% @Last Modified time: 2017-01-07 13:51:49
+% @Last Modified time: 2017-02-20 15:37:03
 
 -module(net_send).
+
+-include("game_pb.hrl").
+
 -export([send/2,
          send_errcode/2]).
 
@@ -29,5 +32,6 @@ send_errcode(ErrCode, PlayerId) when is_integer(PlayerId) ->
     ok;    
 
 send_errcode(ErrCode, Player) ->
-    mod_player:send_errcode(ErrCode, Player),
+    Return = #m__player__errcode__s2l{errcode = Errcode},
+    net_send:send(Return, Player),
     ok.
