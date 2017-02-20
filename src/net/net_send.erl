@@ -1,7 +1,7 @@
 % @Author: anchen
 % @Date:   2016-12-06 14:52:58
 % @Last Modified by:   anchen
-% @Last Modified time: 2017-02-20 15:37:03
+% @Last Modified time: 2017-02-20 16:07:58
 
 -module(net_send).
 
@@ -32,6 +32,6 @@ send_errcode(ErrCode, PlayerId) when is_integer(PlayerId) ->
     ok;    
 
 send_errcode(ErrCode, Player) ->
-    Return = #m__player__errcode__s2l{errcode = Errcode},
+    Return = #m__player__errcode__s2l{errcode = ErrCode},
     net_send:send(Return, Player),
     ok.
