@@ -1,7 +1,7 @@
 % @Author: anchen
 % @Date:   2017-02-20 14:35:57
 % @Last Modified by:   anchen
-% @Last Modified time: 2017-02-20 15:34:52
+% @Last Modified time: 2017-02-20 16:02:48
 
 -module(mod_resource).
 
@@ -47,7 +47,7 @@ decrease(ResourceId, Num, LogAction, Player) ->
         true ->
             PreNum = get_num(ResourceId, Player),
             NumNum = PreNum - Num,
-            PlayerAfterDecrease = set_num(ResourceId, NewNum. LogAction, Player),
+            PlayerAfterDecrease = set_num(ResourceId, NewNum, LogAction, Player),
             PlayerAfterHandler = handle_after_decrease(ResourceId, PreNum, NewNum, PlayerAfterDecrease),
             add_resource_log(ResourceId, PreNum, NewNum, PlayerAfterHandler),
             PlayerAfterHandler;
@@ -58,7 +58,7 @@ decrease(ResourceId, Num, LogAction, Player) ->
 is_enough(ResourceId, Num, Player) ->
     get_num(ResourceId, Player) >= Num.
 
-get_num(ResourceId, PlayerId) where is_integer(PlayerId) ->
+get_num(ResourceId, PlayerId) when is_integer(PlayerId) ->
     get_num(ResourceId, lib_player:get_player(PlayerId));
 
 get_num(ResourceId, Player) ->
