@@ -24,7 +24,7 @@ info(#m__player__info__l2s{}, Player) ->
                                    resource_list = mod_resource:get_p_resource_list(Player),
                                    win_rate_list = get_p_fight_rate_list(Player)},
     net_send:send(Return, Player),
-    
+
     NewPlayer = lib_player:handle_after_login(Player),
     {save, NewPlayer}.
 
@@ -60,7 +60,7 @@ do_fight_rate(DutyId, IsWin, Player) ->
     {AllDutyWinCnt, AllDutyCnt} = maps:get(0, WinRateList, {0, 0}),
     {DutyWinCnt, DutyCnt} = maps:get(DutyId, WinRateList, {0, 0}),
     NewWinList = WinRateList#{0 => {AllDutyWinCnt + IsWin, AllDutyCnt + 1},
-                              DutyId => {DutyWinCnt + 1, DutyCnt + 1}},
+                              DutyId => {DutyWinCnt + IsWin, DutyCnt + 1}},
     NewData = maps:put(win_rate_list, NewWinList, maps:get(data, Player)),
     maps:put(data, NewData, Player).
 
