@@ -1,6 +1,8 @@
 -module(game_pb).
 
 -export([encode/1, encode/2, decode/2,
+	 encode_m__resource__push__s2l/1,
+	 decode_m__resource__push__s2l/1,
 	 encode_m__fight__op_timetick__s2l/1,
 	 decode_m__fight__op_timetick__s2l/1,
 	 encode_m__fight__offline__s2l/1,
@@ -71,18 +73,23 @@
 	 decode_m__room__get_list__s2l/1, encode_p_room/1,
 	 decode_p_room/1, encode_m__room__get_list__l2s/1,
 	 decode_m__room__get_list__l2s/1,
+	 encode_m__player__other_info__l2s/1,
+	 decode_m__player__other_info__l2s/1,
 	 encode_m__player__errcode__s2l/1,
 	 decode_m__player__errcode__s2l/1,
 	 encode_m__player__info__s2l/1,
-	 decode_m__player__info__s2l/1,
-	 encode_m__player__info__l2s/1,
+	 decode_m__player__info__s2l/1, encode_p_win_rate/1,
+	 decode_p_win_rate/1, encode_m__player__info__l2s/1,
 	 decode_m__player__info__l2s/1,
 	 encode_m__account__login__s2l/1,
 	 decode_m__account__login__s2l/1,
 	 encode_m__account__login__l2s/1,
-	 decode_m__account__login__l2s/1,
-	 encode_p_player_show_base/1,
+	 decode_m__account__login__l2s/1, encode_p_resource/1,
+	 decode_p_resource/1, encode_p_player_show_base/1,
 	 decode_p_player_show_base/1]).
+
+-record(m__resource__push__s2l,
+	{msg_id, resource_id, num, action_id}).
 
 -record(m__fight__op_timetick__s2l, {msg_id, timetick}).
 
@@ -181,9 +188,16 @@
 
 -record(m__room__get_list__l2s, {msg_id}).
 
+-record(m__player__other_info__l2s,
+	{msg_id, player_id}).
+
 -record(m__player__errcode__s2l, {msg_id, errcode}).
 
--record(m__player__info__s2l, {msg_id, player_id}).
+-record(m__player__info__s2l,
+	{msg_id, player_id, nick_name, grade, month_vip, equip,
+	 resource_list, win_rate_list}).
+
+-record(p_win_rate, {duty_id, win_cnt, all_cnt}).
 
 -record(m__player__info__l2s, {msg_id}).
 
@@ -191,10 +205,16 @@
 
 -record(m__account__login__l2s, {msg_id, account_name}).
 
+-record(p_resource, {resource_id, num}).
+
 -record(p_player_show_base, {player_id, nick_name}).
 
 encode(Record) ->
     encode(erlang:element(1, Record), Record).
+
+encode_m__resource__push__s2l(Record)
+    when is_record(Record, m__resource__push__s2l) ->
+    encode(m__resource__push__s2l, Record).
 
 encode_m__fight__op_timetick__s2l(Record)
     when is_record(Record, m__fight__op_timetick__s2l) ->
@@ -349,6 +369,10 @@ encode_m__room__get_list__l2s(Record)
     when is_record(Record, m__room__get_list__l2s) ->
     encode(m__room__get_list__l2s, Record).
 
+encode_m__player__other_info__l2s(Record)
+    when is_record(Record, m__player__other_info__l2s) ->
+    encode(m__player__other_info__l2s, Record).
+
 encode_m__player__errcode__s2l(Record)
     when is_record(Record, m__player__errcode__s2l) ->
     encode(m__player__errcode__s2l, Record).
@@ -356,6 +380,10 @@ encode_m__player__errcode__s2l(Record)
 encode_m__player__info__s2l(Record)
     when is_record(Record, m__player__info__s2l) ->
     encode(m__player__info__s2l, Record).
+
+encode_p_win_rate(Record)
+    when is_record(Record, p_win_rate) ->
+    encode(p_win_rate, Record).
 
 encode_m__player__info__l2s(Record)
     when is_record(Record, m__player__info__l2s) ->
@@ -368,6 +396,10 @@ encode_m__account__login__s2l(Record)
 encode_m__account__login__l2s(Record)
     when is_record(Record, m__account__login__l2s) ->
     encode(m__account__login__l2s, Record).
+
+encode_p_resource(Record)
+    when is_record(Record, p_resource) ->
+    encode(p_resource, Record).
 
 encode_p_player_show_base(Record)
     when is_record(Record, p_player_show_base) ->
@@ -382,6 +414,13 @@ encode(p_player_show_base, _Record) ->
 			   with_default(_Record#p_player_show_base.nick_name,
 					none),
 			   string, [])]);
+encode(p_resource, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#p_resource.resource_id, none),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#p_resource.num, none), int32,
+			   [])]);
 encode(m__account__login__l2s, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__account__login__l2s.msg_id,
@@ -405,6 +444,16 @@ encode(m__player__info__l2s, _Record) ->
 			   with_default(_Record#m__player__info__l2s.msg_id,
 					12001),
 			   int32, [])]);
+encode(p_win_rate, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#p_win_rate.duty_id, none),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#p_win_rate.win_cnt, none),
+			   int32, []),
+		      pack(3, required,
+			   with_default(_Record#p_win_rate.all_cnt, none),
+			   int32, [])]);
 encode(m__player__info__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__player__info__s2l.msg_id,
@@ -413,7 +462,31 @@ encode(m__player__info__s2l, _Record) ->
 		      pack(2, required,
 			   with_default(_Record#m__player__info__s2l.player_id,
 					none),
-			   uint32, [])]);
+			   uint32, []),
+		      pack(3, required,
+			   with_default(_Record#m__player__info__s2l.nick_name,
+					none),
+			   string, []),
+		      pack(4, required,
+			   with_default(_Record#m__player__info__s2l.grade,
+					none),
+			   int32, []),
+		      pack(5, required,
+			   with_default(_Record#m__player__info__s2l.month_vip,
+					none),
+			   int32, []),
+		      pack(6, required,
+			   with_default(_Record#m__player__info__s2l.equip,
+					none),
+			   int32, []),
+		      pack(8, repeated,
+			   with_default(_Record#m__player__info__s2l.resource_list,
+					none),
+			   p_resource, []),
+		      pack(9, repeated,
+			   with_default(_Record#m__player__info__s2l.win_rate_list,
+					none),
+			   p_win_rate, [])]);
 encode(m__player__errcode__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__player__errcode__s2l.msg_id,
@@ -423,6 +496,15 @@ encode(m__player__errcode__s2l, _Record) ->
 			   with_default(_Record#m__player__errcode__s2l.errcode,
 					none),
 			   int32, [])]);
+encode(m__player__other_info__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__player__other_info__l2s.msg_id,
+					12005),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__player__other_info__l2s.player_id,
+					none),
+			   uint32, [])]);
 encode(m__room__get_list__l2s, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__room__get_list__l2s.msg_id,
@@ -874,6 +956,23 @@ encode(m__fight__op_timetick__s2l, _Record) ->
 		      pack(2, required,
 			   with_default(_Record#m__fight__op_timetick__s2l.timetick,
 					none),
+			   int32, [])]);
+encode(m__resource__push__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__resource__push__s2l.msg_id,
+					16001),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__resource__push__s2l.resource_id,
+					none),
+			   int32, []),
+		      pack(3, required,
+			   with_default(_Record#m__resource__push__s2l.num,
+					none),
+			   int32, []),
+		      pack(4, required,
+			   with_default(_Record#m__resource__push__s2l.action_id,
+					none),
 			   int32, [])]).
 
 with_default(undefined, none) -> undefined;
@@ -894,6 +993,9 @@ pack(FNum, _, Data, _, _) when is_tuple(Data) ->
     protobuffs:encode(FNum, encode(RecName, Data), bytes);
 pack(FNum, _, Data, Type, _) ->
     protobuffs:encode(FNum, Data, Type).
+
+decode_m__resource__push__s2l(Bytes) ->
+    decode(m__resource__push__s2l, Bytes).
 
 decode_m__fight__op_timetick__s2l(Bytes) ->
     decode(m__fight__op_timetick__s2l, Bytes).
@@ -1006,11 +1108,16 @@ decode_p_room(Bytes) -> decode(p_room, Bytes).
 decode_m__room__get_list__l2s(Bytes) ->
     decode(m__room__get_list__l2s, Bytes).
 
+decode_m__player__other_info__l2s(Bytes) ->
+    decode(m__player__other_info__l2s, Bytes).
+
 decode_m__player__errcode__s2l(Bytes) ->
     decode(m__player__errcode__s2l, Bytes).
 
 decode_m__player__info__s2l(Bytes) ->
     decode(m__player__info__s2l, Bytes).
+
+decode_p_win_rate(Bytes) -> decode(p_win_rate, Bytes).
 
 decode_m__player__info__l2s(Bytes) ->
     decode(m__player__info__l2s, Bytes).
@@ -1021,6 +1128,8 @@ decode_m__account__login__s2l(Bytes) ->
 decode_m__account__login__l2s(Bytes) ->
     decode(m__account__login__l2s, Bytes).
 
+decode_p_resource(Bytes) -> decode(p_resource, Bytes).
+
 decode_p_player_show_base(Bytes) ->
     decode(p_player_show_base, Bytes).
 
@@ -1029,6 +1138,11 @@ decode(p_player_show_base, Bytes) ->
 	     {1, player_id, uint32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(p_player_show_base, Decoded);
+decode(p_resource, Bytes) ->
+    Types = [{2, num, int32, []},
+	     {1, resource_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(p_resource, Decoded);
 decode(m__account__login__l2s, Bytes) ->
     Types = [{2, account_name, string, []},
 	     {1, msg_id, int32, []}],
@@ -1043,9 +1157,18 @@ decode(m__player__info__l2s, Bytes) ->
     Types = [{1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__player__info__l2s, Decoded);
+decode(p_win_rate, Bytes) ->
+    Types = [{3, all_cnt, int32, []},
+	     {2, win_cnt, int32, []}, {1, duty_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(p_win_rate, Decoded);
 decode(m__player__info__s2l, Bytes) ->
-    Types = [{2, player_id, uint32, []},
-	     {1, msg_id, int32, []}],
+    Types = [{9, win_rate_list, p_win_rate,
+	      [is_record, repeated]},
+	     {8, resource_list, p_resource, [is_record, repeated]},
+	     {6, equip, int32, []}, {5, month_vip, int32, []},
+	     {4, grade, int32, []}, {3, nick_name, string, []},
+	     {2, player_id, uint32, []}, {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__player__info__s2l, Decoded);
 decode(m__player__errcode__s2l, Bytes) ->
@@ -1053,6 +1176,11 @@ decode(m__player__errcode__s2l, Bytes) ->
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__player__errcode__s2l, Decoded);
+decode(m__player__other_info__l2s, Bytes) ->
+    Types = [{2, player_id, uint32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__player__other_info__l2s, Decoded);
 decode(m__room__get_list__l2s, Bytes) ->
     Types = [{1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
@@ -1264,7 +1392,12 @@ decode(m__fight__op_timetick__s2l, Bytes) ->
     Types = [{2, timetick, int32, []},
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
-    to_record(m__fight__op_timetick__s2l, Decoded).
+    to_record(m__fight__op_timetick__s2l, Decoded);
+decode(m__resource__push__s2l, Bytes) ->
+    Types = [{4, action_id, int32, []}, {3, num, int32, []},
+	     {2, resource_id, int32, []}, {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__resource__push__s2l, Decoded).
 
 decode(<<>>, _, Acc) -> Acc;
 decode(<<Bytes/binary>>, Types, Acc) ->
@@ -1311,6 +1444,12 @@ to_record(p_player_show_base, DecodedTuples) ->
 					 Record, Name, Val)
 		end,
 		#p_player_show_base{}, DecodedTuples);
+to_record(p_resource, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields, p_resource),
+					 Record, Name, Val)
+		end,
+		#p_resource{}, DecodedTuples);
 to_record(m__account__login__l2s, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields,
@@ -1332,6 +1471,12 @@ to_record(m__player__info__l2s, DecodedTuples) ->
 					 Record, Name, Val)
 		end,
 		#m__player__info__l2s{}, DecodedTuples);
+to_record(p_win_rate, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields, p_win_rate),
+					 Record, Name, Val)
+		end,
+		#p_win_rate{}, DecodedTuples);
 to_record(m__player__info__s2l, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields,
@@ -1346,6 +1491,13 @@ to_record(m__player__errcode__s2l, DecodedTuples) ->
 					 Record, Name, Val)
 		end,
 		#m__player__errcode__s2l{}, DecodedTuples);
+to_record(m__player__other_info__l2s, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__player__other_info__l2s),
+					 Record, Name, Val)
+		end,
+		#m__player__other_info__l2s{}, DecodedTuples);
 to_record(m__room__get_list__l2s, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields,
@@ -1614,7 +1766,14 @@ to_record(m__fight__op_timetick__s2l, DecodedTuples) ->
 						     m__fight__op_timetick__s2l),
 					 Record, Name, Val)
 		end,
-		#m__fight__op_timetick__s2l{}, DecodedTuples).
+		#m__fight__op_timetick__s2l{}, DecodedTuples);
+to_record(m__resource__push__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__resource__push__s2l),
+					 Record, Name, Val)
+		end,
+		#m__resource__push__s2l{}, DecodedTuples).
 
 set_record_field(Fields, Record, Field, Value) ->
     Index = list_index(Field, Fields),
