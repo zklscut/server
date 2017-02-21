@@ -4,7 +4,7 @@
 -record(m__account__login__s2l, {msg_id=10002, result}).
 -record(m__player__info__l2s, {msg_id=12001}).
 -record(p_win_rate, {duty_id, win_cnt, all_cnt}).
--record(m__player__info__s2l, {msg_id=12002, player_id, nick_name, grade, month_vip, equip, resource_list, win_rate_list}).
+-record(m__player__info__s2l, {msg_id=12002, player_id, nick_name, grade, month_vip, equip, resource_list, win_rate_list, other_player}).
 -record(m__player__errcode__s2l, {msg_id=12004, errcode}).
 -record(m__player__other_info__l2s, {msg_id=12005, player_id}).
 -record(m__room__get_list__l2s, {msg_id=13001}).
