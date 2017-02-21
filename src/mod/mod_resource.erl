@@ -1,7 +1,7 @@
 % @Author: anchen
 % @Date:   2017-02-20 14:35:57
 % @Last Modified by:   anchen
-% @Last Modified time: 2017-02-20 16:07:00
+% @Last Modified time: 2017-02-21 17:48:14
 
 -module(mod_resource).
 
@@ -10,6 +10,7 @@
 
 -export([increase/4,
          increase_list/3,
+         decrease/4,
          is_enough/3,
          get_num/2,
          get_p_resource_list/1]).
