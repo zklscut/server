@@ -195,7 +195,7 @@
 
 -record(m__player__info__s2l,
 	{msg_id, player_id, nick_name, grade, month_vip, equip,
-	 resource_list, win_rate_list}).
+	 resource_list, win_rate_list, other_player}).
 
 -record(p_win_rate, {duty_id, win_cnt, all_cnt}).
 
@@ -486,7 +486,11 @@ encode(m__player__info__s2l, _Record) ->
 		      pack(9, repeated,
 			   with_default(_Record#m__player__info__s2l.win_rate_list,
 					none),
-			   p_win_rate, [])]);
+			   p_win_rate, []),
+		      pack(10, required,
+			   with_default(_Record#m__player__info__s2l.other_player,
+					none),
+			   int32, [])]);
 encode(m__player__errcode__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__player__errcode__s2l.msg_id,
@@ -1163,8 +1167,8 @@ decode(p_win_rate, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(p_win_rate, Decoded);
 decode(m__player__info__s2l, Bytes) ->
-    Types = [{9, win_rate_list, p_win_rate,
-	      [is_record, repeated]},
+    Types = [{10, other_player, int32, []},
+	     {9, win_rate_list, p_win_rate, [is_record, repeated]},
 	     {8, resource_list, p_resource, [is_record, repeated]},
 	     {6, equip, int32, []}, {5, month_vip, int32, []},
 	     {4, grade, int32, []}, {3, nick_name, string, []},
