@@ -6,6 +6,7 @@ get(10002) -> {m__account__login__s2l, mod_account, login};
 get(12001) -> {m__player__info__l2s, mod_player, info}; 
 get(12002) -> {m__player__info__s2l, mod_player, info}; 
 get(12004) -> {m__player__errcode__s2l, mod_player, errcode}; 
+get(12005) -> {m__player__other_info__l2s, mod_player, other_info}; 
 get(13001) -> {m__room__get_list__l2s, mod_room, get_list}; 
 get(13002) -> {m__room__get_list__s2l, mod_room, get_list}; 
 get(13003) -> {m__room__enter_room__l2s, mod_room, enter_room}; 
@@ -40,4 +41,5 @@ get(15018) -> {m__fight__do_skill__l2s, mod_fight, do_skill};
 get(15019) -> {m__fight__online__s2l, mod_fight, online}; 
 get(15020) -> {m__fight__offline__s2l, mod_fight, offline}; 
 get(15021) -> {m__fight__op_timetick__s2l, mod_fight, op_timetick}; 
+get(16001) -> {m__resource__push__s2l, mod_resource, push}; 
 get(_) -> undefined. 
