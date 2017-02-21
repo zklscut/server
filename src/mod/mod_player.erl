@@ -17,13 +17,13 @@
 %% ====================================================================
 
 info(#m__player__info__l2s{}, Player) ->
-    Send = get_send_player_info(Player),
+    Send = get_send_player_info(Player, 0),
     net_send:send(Send, Player),
     NewPlayer = lib_player:handle_after_login(Player),
     {save, NewPlayer}.
 
 other_info(#m__player__other_info__l2s{player_id = PlayerId}, Player) ->
-    Send = get_send_player_info(lib_player:get_player(PlayerId)),
+    Send = get_send_player_info(lib_player:get_player(PlayerId), 1),
     net_send:send(Send, Player),
     {ok, Player}.
 
@@ -74,12 +74,13 @@ get_p_fight_rate_list(Player) ->
         end,
     lists:map(FunConver, maps:keys(WinRateList)).
 
-get_send_player_info(Player) ->
+get_send_player_info(Player, OtherPlayer) ->
     #m__player__info__s2l{player_id = lib_player:get_player_id(Player),
                           nick_name = maps:get(nick_name, Player),
                           grade = 0,
                           month_vip = 0,
                           equip = 0,
+                          other_player = OtherPlayer,
                           resource_list = mod_resource:get_p_resource_list(Player),
                           win_rate_list = get_p_fight_rate_list(Player)}.
     
