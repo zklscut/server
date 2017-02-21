@@ -4,6 +4,7 @@
 
 -module(mod_player).
 -export([info/2,
+         other_info/2,
          handle_fight_result/3,
          handle_fight_result_local/3]).
 
@@ -16,17 +17,15 @@
 %% ====================================================================
 
 info(#m__player__info__l2s{}, Player) ->
-    Return = #m__player__info__s2l{player_id = lib_player:get_player_id(Player),
-                                   nick_name = maps:get(nick_name, Player),
-                                   grade = 0,
-                                   month_vip = 0,
-                                   equip = 0,
-                                   resource_list = mod_resource:get_p_resource_list(Player),
-                                   win_rate_list = get_p_fight_rate_list(Player)},
-    net_send:send(Return, Player),
-
+    Send = get_send_player_info(Player),
+    net_send:send(Send, Player),
     NewPlayer = lib_player:handle_after_login(Player),
     {save, NewPlayer}.
+
+other_info(#m__player__other_info__l2s{player_id = PlayerId}, Player) ->
+    Send = get_send_player_info(lib_player:get_player(PlayerId)),
+    net_send:send(Send, Player),
+    {ok, Player}.
 
 handle_fight_result(DutyId, IsWin, PlayerId) ->
     global_op_srv:player_op(PlayerId, {?MODULE, handle_fight_result_local, [DutyId, IsWin]}).
@@ -74,3 +73,13 @@ get_p_fight_rate_list(Player) ->
                         all_cnt = AllCnt}
         end,
     lists:map(FunConver, maps:keys(WinRateList)).
+
+get_send_player_info(Player) ->
+    #m__player__info__s2l{player_id = lib_player:get_player_id(Player),
+                          nick_name = maps:get(nick_name, Player),
+                          grade = 0,
+                          month_vip = 0,
+                          equip = 0,
+                          resource_list = mod_resource:get_p_resource_list(Player),
+                          win_rate_list = get_p_fight_rate_list(Player)}.
+    
