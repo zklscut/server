@@ -23,6 +23,8 @@
 -record(m__room__want_chat__s2l, {msg_id=13014, wait_list}).
 -record(m__room__notice_start_chat__s2l, {msg_id=13015, start_id, wait_list}).
 -record(m__room__end_chat__l2s, {msg_id=13016}).
+-record(m__room__want_chat_list__l2s, {msg_id=13017}).
+-record(m__room__want_chat_list__s2l, {msg_id=13018, wait_list}).
 -record(p_chat, {player_show_base, voice, content, length, compress, chat_type, room_id, msg_type}).
 -record(m__chat__public_speak__l2s, {msg_id=14001, chat}).
 -record(m__chat__public_speak__s2l, {msg_id=14002, chat}).
