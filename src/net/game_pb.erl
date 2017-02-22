@@ -721,7 +721,7 @@ encode(m__room__want_chat_list__s2l, _Record) ->
 		      pack(2, repeated,
 			   with_default(_Record#m__room__want_chat_list__s2l.wait_list,
 					none),
-			   uint32, [])]);
+			   string, [])]);
 encode(p_chat, _Record) ->
     iolist_to_binary([pack(1, optional,
 			   with_default(_Record#p_chat.player_show_base, none),
@@ -1387,7 +1387,7 @@ decode(m__room__want_chat_list__l2s, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__want_chat_list__l2s, Decoded);
 decode(m__room__want_chat_list__s2l, Bytes) ->
-    Types = [{2, wait_list, uint32, [repeated]},
+    Types = [{2, wait_list, string, [repeated]},
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__want_chat_list__s2l, Decoded);
