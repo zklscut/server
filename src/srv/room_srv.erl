@@ -238,7 +238,7 @@ do_start_chat(PlayerId, Room) ->
 
 do_end_chat(RoomId, PlayerId) ->
     try 
-        assert_room_exist(RoomId),
+        lib_room:assert_room_exist(RoomId),
         Room = lib_room:get_room(RoomId),
 
         WantChatList = maps:get(want_chat_list, Room),
