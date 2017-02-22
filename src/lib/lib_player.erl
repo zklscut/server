@@ -37,9 +37,9 @@ handle_after_logout(#{id := PlayerId} = Player) ->
         true->
             Player;
         false->
-            room_srv:leave_room(Player)
+            room_srv:leave_room(Player),
+            lib_room:update_player_room_id(0, Player)
     end;
-    % lib_room:update_player_room_id(0, Player);
 
 handle_after_logout(Player) ->
     Player.
