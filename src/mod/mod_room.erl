@@ -98,7 +98,17 @@ want_chat(#m__room__want_chat__l2s{}, Player) ->
 
 end_chat(#m__room__end_chat__l2s{}, Player) ->
     room_srv:end_chat(Player),
-    {ok, Player}.    
+    {ok, Player}. 
+
+want_chat_list(#m__room__want_chat_list__l2s{}, Player)->
+    RoomId = maps:get(room_id, Player, 0),
+    lib_room:assert_room_exist(RoomId),
+    Room = lib_room:get_room(RoomId),
+    WantChatList = maps:get(want_chat_list, Room),
+    WaitList = [lib_player:get_name(PlayerId) || PlayerId<-WantChatList],
+    Send = #m__room__want_chat_list__s2l{wait_list = WaitList},
+    net_send:send(Send, Player),
+    {ok, Player}.   
 
 %%%====================================================================
 %%% Internal functions
