@@ -102,11 +102,17 @@ end_chat(#m__room__end_chat__l2s{}, Player) ->
     {ok, Player}. 
 
 want_chat_list(#m__room__want_chat_list__l2s{}, Player)->
+    lager:info("want_chat_list  1"),
     RoomId = maps:get(room_id, Player, 0),
+    lager:info("want_chat_list  2"),
     lib_room:assert_room_exist(RoomId),
+    lager:info("want_chat_list  3"),
     Room = lib_room:get_room(RoomId),
+    lager:info("want_chat_list  4"),
     WantChatList = maps:get(want_chat_list, Room),
+    lager:info("want_chat_list  5"),
     WaitList = [lib_player:get_name(PlayerId) || PlayerId<-WantChatList],
+    lager:info("want_chat_list  6"),
     Send = #m__room__want_chat_list__s2l{wait_list = WaitList},
     net_send:send(Send, Player),
     {ok, Player}.   
