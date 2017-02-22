@@ -140,7 +140,6 @@ handle_cast_inner({create_room, MaxPlayerNum, RoomName, DutyList, Player}, State
 handle_cast_inner({leave_room, RoomId, PlayerId}, State) ->
     lib_room:assert_room_exist(RoomId),
     Room = lib_room:get_room(RoomId),
-
     PlayerList = maps:get(player_list, Room),
     case PlayerList -- [PlayerId] of
         [] ->
@@ -160,7 +159,7 @@ handle_cast_inner({leave_room, RoomId, PlayerId}, State) ->
             lib_room:update_room(RoomId, NewRoom)
     end,
     global_op_srv:player_op(PlayerId, {mod_room, handle_leave_room, []}),
-
+    do_exit_chat(PlayerId, RoomId),
     {noreply, State};
 
 handle_cast_inner({want_chat, RoomId, PlayerId}, State) ->
@@ -235,6 +234,17 @@ do_start_chat(PlayerId, Room) ->
                                             wait_list = WantChatList},
     mod_room:send_to_room(Send, Room),
     erlang:send_after(60000, self(), {chat_timeout, PlayerId}).
+
+do_exit_chat(PlayerId, RoomId)->
+    Room = lib_room:get_room(RoomId),
+    WantChatList = maps:get(want_chat_list, Room),
+    case WantChatList =/= [] andalso hd(WantChatList) == PlayerId of
+        true ->
+            do_end_chat(RoomId, PlayerId);
+        false ->
+            NewRoom = maps:put(want_chat_list, WantChatList -- [PlayerId], Room),
+            lib_room:update_room(RoomId, NewRoom)
+    end.
 
 do_end_chat(RoomId, PlayerId) ->
     try 
