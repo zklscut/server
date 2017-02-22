@@ -6,10 +6,11 @@
 -behaviour(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--export([enter_room/2, create_room/4, leave_room/1]).
+-export([enter_room/2, create_room/4, leave_room/1, want_chat/1, end_chat/1]).
 
 -include("room.hrl").
 -include("chat.hrl").
+-include("game_pb.hrl").
 
 %% ====================================================================
 %% API functions
@@ -28,6 +29,14 @@ create_room(MaxPlayerNum, RoomName, DutyList, Player) ->
 leave_room(Player) ->
     RoomId = maps:get(room_id, Player, 0),
     gen_server:cast(?MODULE, {leave_room, RoomId, lib_player:get_player_id(Player)}).    
+
+want_chat(Player) ->
+    RoomId = maps:get(room_id, Player, 0),
+    gen_server:cast(?MODULE, {want_chat, RoomId, lib_player:get_player_id(Player)}).        
+
+end_chat(Player) ->
+    RoomId = maps:get(room_id, Player, 0),
+    gen_server:cast(?MODULE, {end_chat, RoomId, lib_player:get_player_id(Player)}).            
 
 %% ====================================================================
 %% Behavioural functions
@@ -152,6 +161,25 @@ handle_cast_inner({leave_room, RoomId, PlayerId}, State) ->
     end,
     global_op_srv:player_op(PlayerId, {mod_room, handle_leave_room, []}),
 
+    {noreply, State};
+
+handle_cast_inner({want_chat, RoomId, PlayerId}, State) ->
+    lib_room:assert_room_exist(RoomId),
+    Room = lib_room:get_room(RoomId),
+    WantChatList = maps:get(want_chat_list, Room),
+    NewWantChatList = util:add_element_single(PlayerId, WantChatList),
+    NewRoom = maps:put(want_chat_list, NewWantChatList, Room),
+    lib_room:update_room(RoomId, NewRoom),
+    case WantChatList of
+        [] ->
+            do_start_chat(PlayerId, NewRoom);
+        _ ->
+            ignore
+    end,
+    {noreply, State};
+
+handle_cast_inner({end_chat, RoomId, PlayerId}, State) ->
+    do_end_chat(RoomId, PlayerId),
     {noreply, State}.
 
 %% handle_info/2
@@ -165,9 +193,13 @@ handle_cast_inner({leave_room, RoomId, PlayerId}, State) ->
     NewState :: term(),
     Timeout :: non_neg_integer() | infinity.
 %% ====================================================================
+
+handle_info({chat_timeout, PlayerId, RoomId}, State) ->
+    do_end_chat(RoomId, PlayerId),
+    {noreply, State};
+
 handle_info(_Info, State) ->
     {noreply, State}.
-
 
 %% terminate/2
 %% ====================================================================
@@ -193,9 +225,40 @@ terminate(_Reason, _State) ->
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
-
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
 
+do_start_chat(PlayerId, Room) ->
+    WantChatList = maps:get(want_chat_list, Room),
+    Send = #m__room__notice_start_chat__s2l{start_id = PlayerId,
+                                            wait_list = WantChatList},
+    mod_room:send_to_room(Send, Room),
+    erlang:send_after(60000, self(), {chat_timeout, PlayerId}).
 
+do_end_chat(RoomId, PlayerId) ->
+    try 
+        assert_room_exist(RoomId),
+        Room = lib_room:get_room(RoomId),
+
+        WantChatList = maps:get(want_chat_list, Room),
+        case WantChatList =/= [] andalso hd(WantChatList) == PlayerId of
+            true ->
+                ok;
+            false ->
+                throw(ignore)
+        end,
+
+        NewWantChatList = tl(WantChatList),
+        NewRoom = maps:put(want_chat_list, NewWantChatList, Room),
+        lib_room:update_room(RoomId, NewRoom),
+        case NewWantChatList of
+            [] ->
+                ignore;
+            _ ->
+                do_start_chat(hd(NewWantChatList), NewRoom)
+        end
+    catch
+        _:_ ->
+            ignore
+    end.

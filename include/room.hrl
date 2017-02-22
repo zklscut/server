@@ -7,7 +7,8 @@
                 max_player_num => 0,
                 room_name => "",
                 room_status => "",
-                duty_list => []}).
+                duty_list => [],
+                want_chat_list => []}).
 
 -endif.
 

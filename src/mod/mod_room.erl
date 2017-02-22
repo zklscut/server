@@ -11,7 +11,10 @@
          leave_room/2,
          handle_leave_room/1,
          start_fight/2,
-         notice_team_change/1]).
+         notice_team_change/1,
+         send_to_room/2,
+         want_chat/2,
+         end_chat/2]).
 
 -include("game_pb.hrl").
 -include("ets.hrl").
@@ -83,8 +86,19 @@ notice_team_change(Room) ->
 
     Send = #m__room__notice_member_change__s2l{room_info = conver_to_p_room(Room),
                                                  member_list = MemberList},
+    send_to_room(Send, Room).
+
+send_to_room(Send, Room) ->
+    #{player_list := PlayerList} = Room,
     [net_send:send(Send, PlayerId) || PlayerId <- PlayerList].
 
+want_chat(#m__room__want_chat__l2s{}, Player) ->
+    room_srv:want_chat(Player),
+    {ok, Player}.
+
+end_chat(#m__room__end_chat__l2s{}, Player) ->
+    room_srv:end_chat(Player),
+    {ok, Player}.    
 
 %%%====================================================================
 %%% Internal functions
