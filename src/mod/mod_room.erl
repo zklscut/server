@@ -98,6 +98,7 @@ send_gift(#m__room__send_gift__l2s{
             send_to_room(#m__room__send_gift__s2l{
                     result = 1,
                     gift_id = GiftId,
+                    luck_add = b_gift_effects:get(GiftId),
                     player_id = ReceivePlayerId
                 }, Room);    
         false->
@@ -107,7 +108,6 @@ send_gift(#m__room__send_gift__l2s{
                     player_id = ReceivePlayerId
                 }, Player)
     end,
-    ReceivePlayer = lib_player:get_player(ReceivePlayerId),
     {ok, Player}.
 
 notice_team_change(Room) ->
