@@ -22,6 +22,9 @@
 increase(ResourceId, Num, LogAction, PlayerId) when is_integer(PlayerId) ->
     increase(ResourceId, Num, LogAction, lib_player:get_player(PlayerId));
 
+increase(_, 0, _, Player) ->
+    Player;
+
 increase(ResourceId, Num, LogAction, Player) ->
     PreNum = get_num(ResourceId, Player),
     NewNum = PreNum + Num,
@@ -44,17 +47,18 @@ decrease(_, 0, _, Player) ->
     Player;
 
 decrease(ResourceId, Num, LogAction, Player) ->
-    case is_enough(ResourceId, Num, Player) of
-        true ->
-            PreNum = get_num(ResourceId, Player),
-            NewNum = PreNum - Num,
-            PlayerAfterDecrease = set_num(ResourceId, NewNum, LogAction, Player),
-            PlayerAfterHandler = handle_after_decrease(ResourceId, PreNum, NewNum, LogAction, PlayerAfterDecrease),
-            add_resource_log(ResourceId, PreNum, NewNum, PlayerAfterHandler),
-            PlayerAfterHandler;
-        false ->
-            false
-    end.
+    PreNum = get_num(ResourceId, Player),
+    NewNum = 
+        case PreNum >= Num of
+            true ->
+                NewNum = PreNum - Num;
+            false ->
+                0
+        end,
+    PlayerAfterDecrease = set_num(ResourceId, NewNum, LogAction, Player),   
+    PlayerAfterHandler = handle_after_decrease(ResourceId, PreNum, NewNum, LogAction, PlayerAfterDecrease), 
+    add_resource_log(ResourceId, PreNum, NewNum, PlayerAfterHandler),
+    PlayerAfterHandler.
 
 is_enough(ResourceId, Num, Player) ->
     get_num(ResourceId, Player) >= Num.

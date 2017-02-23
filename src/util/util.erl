@@ -107,6 +107,9 @@ add_element_single(Elem, List) ->
         List ++ [Elem]
   end.
 
+get_micro_time()->
+  {MegaSecs, Secs, MicroSecs} = erlang:now(),
+  1000000000 * MegaSecs + Secs * 1000 + MicroSecs div 1000.
 
 %%%====================================================================
 %%% Internal functions

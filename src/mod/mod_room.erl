@@ -81,6 +81,35 @@ start_fight(#m__room__start_fight__l2s{}, Player) ->
     fight_srv:start_link(RoomId, PlayerList, DutyList),
     {ok, Player}.
 
+send_gift(#m__room__send_gift__l2s{    
+                                        player_id = ReceivePlayerId, 
+                                        gift_id = GiftId      
+                                    }, Player)->
+    %%判断送礼包条件是否成立
+    {Coin, Diamond} = b_gift_consume:get(GiftId),
+    CoinEnough = mod_resource:is_enough(?RESOURCE_COIN, Coin, Player),
+    DiamondEnough = mod_resource:is_enough(?RESOURCE_DIAMOND, Diamond, Player),
+    case CoinEnough and DiamondEnough of 
+        true->
+            RoomId = lib_room:get_player_room_id(Player),
+            Room = lib_room:get_room(RoomId),
+            mod_player:handle_consume_gift(GiftId, lib_player:get_player_id(Player)),
+            mod_player:handle_receive_gift(GiftId, lib_player:get_player_id(Player)),
+            send_to_room(#m__room__send_gift__s2l{
+                    result = 1,
+                    gift_id = GiftId,
+                    player_id = ReceivePlayerId
+                }, Room);    
+        false->
+            send_to_player(#m__room__send_gift__s2l{
+                    result = 0,
+                    gift_id = GiftId,
+                    player_id = ReceivePlayerId
+                }, Player)
+    end,
+    ReceivePlayer = lib_player:get_player(ReceivePlayerId),
+    {ok, Player}.
+
 notice_team_change(Room) ->
     #{player_list := PlayerList} = Room,
     MemberList = [lib_player:get_player_show_base(PlayerId) || PlayerId <- PlayerList],
@@ -93,6 +122,12 @@ send_to_room(Send, Room) ->
     #{player_list := PlayerList} = Room,
     [net_send:send(Send, PlayerId) || PlayerId <- PlayerList].
 
+send_to_player(Send, PlayerId)  when is_integer(PlayerId)  ->
+    net_send:send(Send, PlayerId);
+
+send_to_player(Send, Player) ->
+    net_send:send(Send, Player).
+
 want_chat(#m__room__want_chat__l2s{}, Player) ->
     room_srv:want_chat(Player),
     {ok, Player}.
@@ -102,17 +137,11 @@ end_chat(#m__room__end_chat__l2s{}, Player) ->
     {ok, Player}. 
 
 want_chat_list(#m__room__want_chat_list__l2s{}, Player)->
-    lager:info("want_chat_list  1"),
     RoomId = maps:get(room_id, Player, 0),
-    lager:info("want_chat_list  2"),
     lib_room:assert_room_exist(RoomId),
-    lager:info("want_chat_list  3"),
     Room = lib_room:get_room(RoomId),
-    lager:info("want_chat_list  4"),
     WantChatList = maps:get(want_chat_list, Room),
-    lager:info("want_chat_list  5"),
     WaitList = [lib_player:get_name(PlayerId) || PlayerId<-WantChatList],
-    lager:info("want_chat_list  6"),
     Send = #m__room__want_chat_list__s2l{wait_list = WaitList},
     net_send:send(Send, Player),
     {ok, Player}.   

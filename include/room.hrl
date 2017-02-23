@@ -8,6 +8,7 @@
                 room_name => "",
                 room_status => "",
                 duty_list => [],
+                chat_start_time => 0,
                 want_chat_list => []}).
 
 -endif.

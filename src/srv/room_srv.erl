@@ -121,6 +121,10 @@ handle_cast_inner({enter_room, RoomId, PlayerId}, State) ->
     mod_room:notice_team_change(NewRoom),
 
     mod_chat:send_system_room_chat(?SYSTEM_CHAT_ROOM_ENTER, lib_player:get_name(PlayerId), RoomId),
+
+    %%通知正在发言的人
+    notice_chat_info(),
+
     {noreply, State};
 
 handle_cast_inner({create_room, MaxPlayerNum, RoomName, DutyList, Player}, State) ->
@@ -228,11 +232,28 @@ code_change(_OldVsn, State, _Extra) ->
 %% Internal functions
 %% ====================================================================
 
+notice_chat_info(PlayerId, Room)->
+    WantChatList = maps:get(want_chat_list, Room),
+    case WantChatList of
+        []->
+            ignore;
+        _->
+            ChatStartTime = maps:get(chat_start_time, Room),
+            CurTime = util:get_micro_time(),
+            Send = #m__room__notice_chat_info__s2l{
+                                            player_id = hd(WantChatList),
+                                            wait_time = CurTime + 60000 - ChatStartTime
+                                        },
+            mod_room:send_to_player(Send, PlayerId)
+    end.
+    
+
 do_start_chat(PlayerId, Room) ->
     WantChatList = maps:get(want_chat_list, Room),
     Send = #m__room__notice_start_chat__s2l{start_id = PlayerId,
                                             wait_list = WantChatList},
     mod_room:send_to_room(Send, Room),
+    lib_room:update_room(RoomId, maps:put(chat_start_time, util:get_micro_time(), Room)),
     erlang:send_after(60000, self(), {chat_timeout, PlayerId}).
 
 do_exit_chat(PlayerId, RoomId)->

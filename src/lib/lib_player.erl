@@ -52,7 +52,6 @@ get_player(PlayerId) ->
 
 update_player(Player) ->
     lager:info("update player ~p", [{Player, erlang:get_stacktrace()}]),
-    % lager:info("update_player ~p", [[get_player_id(Player),  maps:get(fight_pid, Player)]),
     cache_store_bhv:write(cache_store_player, {get_player_id(Player), Player}).
 
 get_player_show_base(PlayerId) when is_integer(PlayerId) ->

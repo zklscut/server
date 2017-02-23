@@ -36,6 +36,23 @@ handle_fight_result_local(DutyId, IsWin, Player) ->
     PlayerAfterWinRate = do_fight_rate(DutyId, IsWin, PlayerAfterExp),
     {save, PlayerAfterWinRate}.
 
+handle_consume_gift(GiftId, PlayerId) ->
+  global_op_srv:player_op(PlayerId, {?MODULE, handle_consume_gift_local, [GiftId]}).
+
+handle_consume_gift_local(GiftId, Player) ->
+  {Coin, Diamond} = b_gift_consume:get(GiftId),
+  PlayerAfterCoin = mod_resource:decrease(?RESOURCE_COIN, Coin, ?LOG_ACTION_FIGHT, Player),
+  PlayerAfterCoinDiamond = mod_resource:decrease(?RESOURCE_DIAMOND, Diamond, ?LOG_ACTION_FIGHT, PlayerAfterCoin),
+  {save, PlayerAfterCoinDiamond}.
+
+handle_receive_gift(GiftId, PlayerId)->
+  global_op_srv:player_op(PlayerId, {?MODULE, handle_receive_gift_local, [GiftId]}).
+
+handle_receive_gift_local(GiftId, Player) ->
+  LuckAdd = b_gift_effects:get(GiftId),
+  PlayerAfterLuck = mod_resource:increase(?RESOURCE_LUCK, LuckAdd, ?LOG_ACTION_FIGHT, Player),
+  {save, PlayerAfterLuck}.
+
 %%%====================================================================
 %%% Internal functions
 %%%====================================================================
