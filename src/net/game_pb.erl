@@ -50,7 +50,13 @@
 	 decode_m__chat__public_speak__s2l/1,
 	 encode_m__chat__public_speak__l2s/1,
 	 decode_m__chat__public_speak__l2s/1, encode_p_chat/1,
-	 decode_p_chat/1, encode_m__room__want_chat_list__s2l/1,
+	 decode_p_chat/1, encode_m__room__send_gift__s2l/1,
+	 decode_m__room__send_gift__s2l/1,
+	 encode_m__room__send_gift__l2s/1,
+	 decode_m__room__send_gift__l2s/1,
+	 encode_m__room__notice_chat_info__s2l/1,
+	 decode_m__room__notice_chat_info__s2l/1,
+	 encode_m__room__want_chat_list__s2l/1,
 	 decode_m__room__want_chat_list__s2l/1,
 	 encode_m__room__want_chat_list__l2s/1,
 	 decode_m__room__want_chat_list__l2s/1,
@@ -169,6 +175,15 @@
 -record(p_chat,
 	{player_show_base, voice, content, length, compress,
 	 chat_type, room_id, msg_type}).
+
+-record(m__room__send_gift__s2l,
+	{msg_id, gift_id, player_id, result, luck_add}).
+
+-record(m__room__send_gift__l2s,
+	{msg_id, gift_id, player_id}).
+
+-record(m__room__notice_chat_info__s2l,
+	{msg_id, player_id, wait_time}).
 
 -record(m__room__want_chat_list__s2l,
 	{msg_id, wait_list}).
@@ -345,6 +360,19 @@ encode_m__chat__public_speak__l2s(Record)
 
 encode_p_chat(Record) when is_record(Record, p_chat) ->
     encode(p_chat, Record).
+
+encode_m__room__send_gift__s2l(Record)
+    when is_record(Record, m__room__send_gift__s2l) ->
+    encode(m__room__send_gift__s2l, Record).
+
+encode_m__room__send_gift__l2s(Record)
+    when is_record(Record, m__room__send_gift__l2s) ->
+    encode(m__room__send_gift__l2s, Record).
+
+encode_m__room__notice_chat_info__s2l(Record)
+    when is_record(Record,
+		   m__room__notice_chat_info__s2l) ->
+    encode(m__room__notice_chat_info__s2l, Record).
 
 encode_m__room__want_chat_list__s2l(Record)
     when is_record(Record, m__room__want_chat_list__s2l) ->
@@ -722,6 +750,53 @@ encode(m__room__want_chat_list__s2l, _Record) ->
 			   with_default(_Record#m__room__want_chat_list__s2l.wait_list,
 					none),
 			   string, [])]);
+encode(m__room__notice_chat_info__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__room__notice_chat_info__s2l.msg_id,
+					13019),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__room__notice_chat_info__s2l.player_id,
+					none),
+			   uint32, []),
+		      pack(3, required,
+			   with_default(_Record#m__room__notice_chat_info__s2l.wait_time,
+					none),
+			   uint32, [])]);
+encode(m__room__send_gift__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__room__send_gift__l2s.msg_id,
+					13020),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__room__send_gift__l2s.gift_id,
+					none),
+			   uint32, []),
+		      pack(3, required,
+			   with_default(_Record#m__room__send_gift__l2s.player_id,
+					none),
+			   uint32, [])]);
+encode(m__room__send_gift__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__room__send_gift__s2l.msg_id,
+					13020),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__room__send_gift__s2l.gift_id,
+					none),
+			   uint32, []),
+		      pack(3, required,
+			   with_default(_Record#m__room__send_gift__s2l.player_id,
+					none),
+			   uint32, []),
+		      pack(4, required,
+			   with_default(_Record#m__room__send_gift__s2l.result,
+					none),
+			   uint32, []),
+		      pack(5, required,
+			   with_default(_Record#m__room__send_gift__s2l.luck_add,
+					none),
+			   uint32, [])]);
 encode(p_chat, _Record) ->
     iolist_to_binary([pack(1, optional,
 			   with_default(_Record#p_chat.player_show_base, none),
@@ -1173,6 +1248,15 @@ decode_m__chat__public_speak__l2s(Bytes) ->
 
 decode_p_chat(Bytes) -> decode(p_chat, Bytes).
 
+decode_m__room__send_gift__s2l(Bytes) ->
+    decode(m__room__send_gift__s2l, Bytes).
+
+decode_m__room__send_gift__l2s(Bytes) ->
+    decode(m__room__send_gift__l2s, Bytes).
+
+decode_m__room__notice_chat_info__s2l(Bytes) ->
+    decode(m__room__notice_chat_info__s2l, Bytes).
+
 decode_m__room__want_chat_list__s2l(Bytes) ->
     decode(m__room__want_chat_list__s2l, Bytes).
 
@@ -1391,6 +1475,22 @@ decode(m__room__want_chat_list__s2l, Bytes) ->
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__want_chat_list__s2l, Decoded);
+decode(m__room__notice_chat_info__s2l, Bytes) ->
+    Types = [{3, wait_time, uint32, []},
+	     {2, player_id, uint32, []}, {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__room__notice_chat_info__s2l, Decoded);
+decode(m__room__send_gift__l2s, Bytes) ->
+    Types = [{3, player_id, uint32, []},
+	     {2, gift_id, uint32, []}, {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__room__send_gift__l2s, Decoded);
+decode(m__room__send_gift__s2l, Bytes) ->
+    Types = [{5, luck_add, uint32, []},
+	     {4, result, uint32, []}, {3, player_id, uint32, []},
+	     {2, gift_id, uint32, []}, {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__room__send_gift__s2l, Decoded);
 decode(p_chat, Bytes) ->
     Types = [{8, msg_type, int32, []},
 	     {7, room_id, int32, []}, {6, chat_type, int32, []},
@@ -1772,6 +1872,28 @@ to_record(m__room__want_chat_list__s2l,
 					 Record, Name, Val)
 		end,
 		#m__room__want_chat_list__s2l{}, DecodedTuples);
+to_record(m__room__notice_chat_info__s2l,
+	  DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__room__notice_chat_info__s2l),
+					 Record, Name, Val)
+		end,
+		#m__room__notice_chat_info__s2l{}, DecodedTuples);
+to_record(m__room__send_gift__l2s, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__room__send_gift__l2s),
+					 Record, Name, Val)
+		end,
+		#m__room__send_gift__l2s{}, DecodedTuples);
+to_record(m__room__send_gift__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__room__send_gift__s2l),
+					 Record, Name, Val)
+		end,
+		#m__room__send_gift__s2l{}, DecodedTuples);
 to_record(p_chat, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields, p_chat), Record,
