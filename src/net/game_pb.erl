@@ -90,6 +90,10 @@
 	 decode_m__room__get_list__s2l/1, encode_p_room/1,
 	 decode_p_room/1, encode_m__room__get_list__l2s/1,
 	 decode_m__room__get_list__l2s/1,
+	 encode_m__player__add_diamond__l2s/1,
+	 decode_m__player__add_diamond__l2s/1,
+	 encode_m__player__add_coin__l2s/1,
+	 decode_m__player__add_coin__l2s/1,
 	 encode_m__player__other_info__l2s/1,
 	 decode_m__player__other_info__l2s/1,
 	 encode_m__player__errcode__s2l/1,
@@ -227,6 +231,10 @@
 	 room_name, room_status, duty_list}).
 
 -record(m__room__get_list__l2s, {msg_id}).
+
+-record(m__player__add_diamond__l2s, {msg_id}).
+
+-record(m__player__add_coin__l2s, {msg_id}).
 
 -record(m__player__other_info__l2s,
 	{msg_id, player_id}).
@@ -447,6 +455,14 @@ encode_m__room__get_list__l2s(Record)
     when is_record(Record, m__room__get_list__l2s) ->
     encode(m__room__get_list__l2s, Record).
 
+encode_m__player__add_diamond__l2s(Record)
+    when is_record(Record, m__player__add_diamond__l2s) ->
+    encode(m__player__add_diamond__l2s, Record).
+
+encode_m__player__add_coin__l2s(Record)
+    when is_record(Record, m__player__add_coin__l2s) ->
+    encode(m__player__add_coin__l2s, Record).
+
 encode_m__player__other_info__l2s(Record)
     when is_record(Record, m__player__other_info__l2s) ->
     encode(m__player__other_info__l2s, Record).
@@ -587,6 +603,16 @@ encode(m__player__other_info__l2s, _Record) ->
 			   with_default(_Record#m__player__other_info__l2s.player_id,
 					none),
 			   uint32, [])]);
+encode(m__player__add_coin__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__player__add_coin__l2s.msg_id,
+					12006),
+			   int32, [])]);
+encode(m__player__add_diamond__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__player__add_diamond__l2s.msg_id,
+					12007),
+			   int32, [])]);
 encode(m__room__get_list__l2s, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__room__get_list__l2s.msg_id,
@@ -1310,6 +1336,12 @@ decode_p_room(Bytes) -> decode(p_room, Bytes).
 decode_m__room__get_list__l2s(Bytes) ->
     decode(m__room__get_list__l2s, Bytes).
 
+decode_m__player__add_diamond__l2s(Bytes) ->
+    decode(m__player__add_diamond__l2s, Bytes).
+
+decode_m__player__add_coin__l2s(Bytes) ->
+    decode(m__player__add_coin__l2s, Bytes).
+
 decode_m__player__other_info__l2s(Bytes) ->
     decode(m__player__other_info__l2s, Bytes).
 
@@ -1383,6 +1415,14 @@ decode(m__player__other_info__l2s, Bytes) ->
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__player__other_info__l2s, Decoded);
+decode(m__player__add_coin__l2s, Bytes) ->
+    Types = [{1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__player__add_coin__l2s, Decoded);
+decode(m__player__add_diamond__l2s, Bytes) ->
+    Types = [{1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__player__add_diamond__l2s, Decoded);
 decode(m__room__get_list__l2s, Bytes) ->
     Types = [{1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
@@ -1743,6 +1783,20 @@ to_record(m__player__other_info__l2s, DecodedTuples) ->
 					 Record, Name, Val)
 		end,
 		#m__player__other_info__l2s{}, DecodedTuples);
+to_record(m__player__add_coin__l2s, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__player__add_coin__l2s),
+					 Record, Name, Val)
+		end,
+		#m__player__add_coin__l2s{}, DecodedTuples);
+to_record(m__player__add_diamond__l2s, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__player__add_diamond__l2s),
+					 Record, Name, Val)
+		end,
+		#m__player__add_diamond__l2s{}, DecodedTuples);
 to_record(m__room__get_list__l2s, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields,
