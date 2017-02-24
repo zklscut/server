@@ -3,6 +3,8 @@
 
 get(10001) -> {m__account__login__l2s, mod_account, login}; 
 get(10002) -> {m__account__login__s2l, mod_account, login}; 
+get(10003) -> {m__account__heart_beat__l2s, mod_account, heart_beat}; 
+get(10004) -> {m__account__heart_beat__s2l, mod_account, heart_beat}; 
 get(12001) -> {m__player__info__l2s, mod_player, info}; 
 get(12002) -> {m__player__info__s2l, mod_player, info}; 
 get(12004) -> {m__player__errcode__s2l, mod_player, errcode}; 
