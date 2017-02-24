@@ -175,7 +175,7 @@ handle_cast_inner({want_chat, RoomId, PlayerId}, State) ->
     lib_room:update_room(RoomId, NewRoom),
     case WantChatList of
         [] ->
-            do_start_chat(PlayerId, NewRoom);
+            do_start_chat(PlayerId, NewRoom, RoomId);
         _ ->
             ignore
     end,
@@ -248,7 +248,7 @@ notice_chat_info(PlayerId, Room)->
     end.
     
 
-do_start_chat(PlayerId, Room) ->
+do_start_chat(PlayerId, Room, RoomId) ->
     WantChatList = maps:get(want_chat_list, Room),
     Send = #m__room__notice_start_chat__s2l{start_id = PlayerId,
                                             wait_list = WantChatList},
@@ -287,7 +287,7 @@ do_end_chat(RoomId, PlayerId) ->
             [] ->
                 ignore;
             _ ->
-                do_start_chat(hd(NewWantChatList), NewRoom)
+                do_start_chat(hd(NewWantChatList), NewRoom, RoomId)
         end
     catch
         _:_ ->

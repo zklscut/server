@@ -15,7 +15,8 @@
          send_to_room/2,
          want_chat/2,
          end_chat/2,
-         want_chat_list/2]).
+         want_chat_list/2,
+         send_gift/2]).
 
 -include("game_pb.hrl").
 -include("ets.hrl").
