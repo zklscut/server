@@ -7,7 +7,7 @@
 -module(b_gift_consume).
 -export([get/1]).
 get(1)->
-    {1,1};
+    {0,0};
 get(2) ->
     {1,1};
 get(3) ->
