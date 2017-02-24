@@ -7,6 +7,8 @@
 -record(m__player__info__s2l, {msg_id=12002, player_id, nick_name, grade, month_vip, equip, resource_list, win_rate_list, other_player}).
 -record(m__player__errcode__s2l, {msg_id=12004, errcode}).
 -record(m__player__other_info__l2s, {msg_id=12005, player_id}).
+-record(m__player__add_coin__l2s, {msg_id=12006}).
+-record(m__player__add_diamond__l2s, {msg_id=12007}).
 -record(m__room__get_list__l2s, {msg_id=13001}).
 -record(p_room, {room_id, cur_player_num, max_player_num, owner, room_name, room_status, duty_list}).
 -record(m__room__get_list__s2l, {msg_id=13002, room_list}).
