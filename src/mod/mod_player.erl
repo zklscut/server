@@ -5,6 +5,8 @@
 -module(mod_player).
 -export([info/2,
          other_info/2,
+         add_coin/2,
+         add_diamond/2,
          handle_fight_result/3,
          handle_fight_result_local/3,
          handle_consume_gift/2,
