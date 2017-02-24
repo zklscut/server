@@ -31,6 +31,12 @@ other_info(#m__player__other_info__l2s{player_id = PlayerId}, Player) ->
     net_send:send(Send, Player),
     {ok, Player}.
 
+add_coin(#m__player__add_coin__l2s{}, Player) ->
+  mod_resource:decrease(?RESOURCE_COIN, 50, ?LOG_ACTION_FIGHT, Player).
+
+add_diamond(#m__player__add_diamond__l2s{}, Player) ->
+  mod_resource:decrease(?RESOURCE_DIAMOND, 50, ?LOG_ACTION_FIGHT, Player).
+
 handle_fight_result(DutyId, IsWin, PlayerId) ->
     global_op_srv:player_op(PlayerId, {?MODULE, handle_fight_result_local, [DutyId, IsWin]}).
 
