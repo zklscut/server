@@ -102,6 +102,10 @@
 	 decode_m__player__info__s2l/1, encode_p_win_rate/1,
 	 decode_p_win_rate/1, encode_m__player__info__l2s/1,
 	 decode_m__player__info__l2s/1,
+	 encode_m__account__heart_beat__s2l/1,
+	 decode_m__account__heart_beat__s2l/1,
+	 encode_m__account__heart_beat__l2s/1,
+	 decode_m__account__heart_beat__l2s/1,
 	 encode_m__account__login__s2l/1,
 	 decode_m__account__login__s2l/1,
 	 encode_m__account__login__l2s/1,
@@ -248,6 +252,10 @@
 -record(p_win_rate, {duty_id, win_cnt, all_cnt}).
 
 -record(m__player__info__l2s, {msg_id}).
+
+-record(m__account__heart_beat__s2l, {msg_id}).
+
+-record(m__account__heart_beat__l2s, {msg_id}).
 
 -record(m__account__login__s2l, {msg_id, result}).
 
@@ -483,6 +491,14 @@ encode_m__player__info__l2s(Record)
     when is_record(Record, m__player__info__l2s) ->
     encode(m__player__info__l2s, Record).
 
+encode_m__account__heart_beat__s2l(Record)
+    when is_record(Record, m__account__heart_beat__s2l) ->
+    encode(m__account__heart_beat__s2l, Record).
+
+encode_m__account__heart_beat__l2s(Record)
+    when is_record(Record, m__account__heart_beat__l2s) ->
+    encode(m__account__heart_beat__l2s, Record).
+
 encode_m__account__login__s2l(Record)
     when is_record(Record, m__account__login__s2l) ->
     encode(m__account__login__s2l, Record).
@@ -532,6 +548,16 @@ encode(m__account__login__s2l, _Record) ->
 		      pack(2, required,
 			   with_default(_Record#m__account__login__s2l.result,
 					none),
+			   int32, [])]);
+encode(m__account__heart_beat__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__account__heart_beat__l2s.msg_id,
+					10003),
+			   int32, [])]);
+encode(m__account__heart_beat__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__account__heart_beat__s2l.msg_id,
+					10004),
 			   int32, [])]);
 encode(m__player__info__l2s, _Record) ->
     iolist_to_binary([pack(1, required,
@@ -1356,6 +1382,12 @@ decode_p_win_rate(Bytes) -> decode(p_win_rate, Bytes).
 decode_m__player__info__l2s(Bytes) ->
     decode(m__player__info__l2s, Bytes).
 
+decode_m__account__heart_beat__s2l(Bytes) ->
+    decode(m__account__heart_beat__s2l, Bytes).
+
+decode_m__account__heart_beat__l2s(Bytes) ->
+    decode(m__account__heart_beat__l2s, Bytes).
+
 decode_m__account__login__s2l(Bytes) ->
     decode(m__account__login__s2l, Bytes).
 
@@ -1387,6 +1419,14 @@ decode(m__account__login__s2l, Bytes) ->
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__account__login__s2l, Decoded);
+decode(m__account__heart_beat__l2s, Bytes) ->
+    Types = [{1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__account__heart_beat__l2s, Decoded);
+decode(m__account__heart_beat__s2l, Bytes) ->
+    Types = [{1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__account__heart_beat__s2l, Decoded);
 decode(m__player__info__l2s, Bytes) ->
     Types = [{1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
@@ -1749,6 +1789,20 @@ to_record(m__account__login__s2l, DecodedTuples) ->
 					 Record, Name, Val)
 		end,
 		#m__account__login__s2l{}, DecodedTuples);
+to_record(m__account__heart_beat__l2s, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__account__heart_beat__l2s),
+					 Record, Name, Val)
+		end,
+		#m__account__heart_beat__l2s{}, DecodedTuples);
+to_record(m__account__heart_beat__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__account__heart_beat__s2l),
+					 Record, Name, Val)
+		end,
+		#m__account__heart_beat__s2l{}, DecodedTuples);
 to_record(m__player__info__l2s, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields,
