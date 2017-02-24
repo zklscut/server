@@ -123,7 +123,7 @@ handle_cast_inner({enter_room, RoomId, PlayerId}, State) ->
     mod_chat:send_system_room_chat(?SYSTEM_CHAT_ROOM_ENTER, lib_player:get_name(PlayerId), RoomId),
 
     %%通知正在发言的人
-    notice_chat_info(),
+    notice_chat_info(PlayerId, NewRoom),
 
     {noreply, State};
 
