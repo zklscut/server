@@ -6,7 +6,8 @@
 -export([info/2,
          other_info/2,
          handle_fight_result/3,
-         handle_fight_result_local/3]).
+         handle_consume_gift/2,
+         handle_receive_gift/2]).
 
 -include("game_pb.hrl").
 -include("resource.hrl").
