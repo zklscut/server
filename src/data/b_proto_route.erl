@@ -7,6 +7,8 @@ get(12001) -> {m__player__info__l2s, mod_player, info};
 get(12002) -> {m__player__info__s2l, mod_player, info}; 
 get(12004) -> {m__player__errcode__s2l, mod_player, errcode}; 
 get(12005) -> {m__player__other_info__l2s, mod_player, other_info}; 
+get(12006) -> {m__player__add_coin__l2s, mod_player, add_coin}; 
+get(12007) -> {m__player__add_diamond__l2s, mod_player, add_diamond}; 
 get(13001) -> {m__room__get_list__l2s, mod_room, get_list}; 
 get(13002) -> {m__room__get_list__s2l, mod_room, get_list}; 
 get(13003) -> {m__room__enter_room__l2s, mod_room, enter_room}; 
