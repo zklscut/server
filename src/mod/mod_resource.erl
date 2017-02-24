@@ -51,8 +51,8 @@ decrease(ResourceId, Num, LogAction, Player) ->
     NewNum = 
         case PreNum >= Num of
             true ->
-                NewNum = PreNum - Num;
-            false ->
+                PreNum - Num;
+            _ ->
                 0
         end,
     PlayerAfterDecrease = set_num(ResourceId, NewNum, LogAction, Player),   
