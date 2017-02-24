@@ -20,6 +20,7 @@
 -include("game_pb.hrl").
 -include("ets.hrl").
 -include("errcode.hrl").
+-include("resource.hrl")
 
 %% ====================================================================
 %% API functions
