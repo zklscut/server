@@ -6,7 +6,7 @@
 -export([init/4,
          send_to_all_player/2,
          send_to_seat/3,
-         is_active_in_fight/2,
+         is_active_in_fight/1,
          get_player_id_by_seat/2,
          get_seat_id_by_player_id/2,
          get_duty_by_seat/2,
@@ -65,18 +65,18 @@ init(RoomId, PlayerList, DutyList, State) ->
 
 send_to_all_player(Send, State) ->
     [net_send:send(Send, PlayerId) || PlayerId <- maps:keys(maps:get(player_seat_map, State)),
-     is_active_in_fight(PlayerId, State)].
+     is_active_in_fight(PlayerId)].
 
 send_to_seat(Send, SeatId, State) ->
     PlayerId = get_player_id_by_seat(SeatId, State),
-    case is_active_in_fight(PlayerId, State) of
+    case is_active_in_fight(PlayerId) of
         true ->
             net_send:send(Send, State);
         false ->
             ignore
     end.
 
-is_active_in_fight(PlayerId, State) ->
+is_active_in_fight(PlayerId) ->
     Player = lib_player:get_player(PlayerId),
     lib_player:get_fight_pid(Player) == self().
 
