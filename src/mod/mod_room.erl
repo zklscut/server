@@ -74,7 +74,9 @@ leave_room(#m__room__leave_room__l2s{}, Player) ->
 handle_leave_room(Player) ->
     Return = #m__room__leave_room__s2l{},
     net_send:send(Return, Player),
-    {save, lib_room:update_player_room_id(0, Player)}.
+    PlayerAfterLeaveRoom = lib_room:update_player_room_id(0, Player),
+    PlayerAfterLeaveFight = lib_player:update_fight_pid(undefined, PlayerAfterLeaveRoom),
+    {save, PlayerAfterLeaveFight}.
 
 start_fight(#m__room__start_fight__l2s{}, Player) ->
     RoomId = lib_room:get_player_room_id(Player),
