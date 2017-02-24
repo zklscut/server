@@ -107,6 +107,7 @@ send_gift(#m__room__send_gift__l2s{
             send_to_player(#m__room__send_gift__s2l{
                     result = 0,
                     gift_id = GiftId,
+                    luck_add = 0,
                     player_id = ReceivePlayerId
                 }, Player)
     end,
