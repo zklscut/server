@@ -2,6 +2,8 @@
 -record(p_resource, {resource_id, num}).
 -record(m__account__login__l2s, {msg_id=10001, account_name}).
 -record(m__account__login__s2l, {msg_id=10002, result}).
+-record(m__account__heart_beat__l2s, {msg_id=10003}).
+-record(m__account__heart_beat__s2l, {msg_id=10004}).
 -record(m__player__info__l2s, {msg_id=12001}).
 -record(p_win_rate, {duty_id, win_cnt, all_cnt}).
 -record(m__player__info__s2l, {msg_id=12002, player_id, nick_name, grade, month_vip, equip, resource_list, win_rate_list, other_player}).
