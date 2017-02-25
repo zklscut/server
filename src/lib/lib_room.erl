@@ -103,7 +103,7 @@ is_in_fight(RoomId) ->
             false;
         Room ->
             Pid = maps:get(fight_pid, Room, undefined),
-            Pid =/= undefined andalso is_process_alive(Pid) == true.
+            Pid =/= undefined andalso is_process_alive(Pid) == true
     end.
 
 get_fight_pid_by_player(Player) ->
