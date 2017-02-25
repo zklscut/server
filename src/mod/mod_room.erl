@@ -34,8 +34,11 @@ get_list(#m__room__get_list__l2s{}, Player) ->
     {ok, Player}.
 
 enter_room(#m__room__enter_room__l2s{room_id = RoomId}, Player) ->
+    lager:info("mod_enter_room1"),
     lib_room:assert_not_have_room(Player),
+    lager:info("mod_enter_room2"),
     room_srv:enter_room(RoomId, Player),
+    lager:info("mod_enter_room3"),
     {ok, Player}.
 
 handle_enter_room(Room, Player) ->
@@ -72,10 +75,14 @@ leave_room(#m__room__leave_room__l2s{}, Player) ->
     {ok, Player}.
 
 handle_leave_room(Player) ->
+    lager:info("handle_leave_room1"),
     Return = #m__room__leave_room__s2l{},
     net_send:send(Return, Player),
+    lager:info("handle_leave_room2"),
     PlayerAfterLeaveRoom = lib_room:update_player_room_id(0, Player),
+    lager:info("handle_leave_room3"),
     PlayerAfterLeaveFight = lib_player:update_fight_pid(undefined, PlayerAfterLeaveRoom),
+    lager:info("handle_leave_room4"),
     {save, PlayerAfterLeaveFight}.
 
 start_fight(#m__room__start_fight__l2s{}, Player) ->
