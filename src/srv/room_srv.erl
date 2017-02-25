@@ -287,7 +287,7 @@ do_end_chat(RoomId, PlayerId) ->
             true ->
                 ok;
             false ->
-                Send = #m__room__notice_start_chat__s2l{start_id = 0},
+                Send = #m__room__notice_start_chat__s2l{start_id = 0,wait_list=[]},
                 mod_room:send_to_room(Send, Room),
                 throw(ignore)
         end,
@@ -297,7 +297,7 @@ do_end_chat(RoomId, PlayerId) ->
         lib_room:update_room(RoomId, NewRoom),
         case NewWantChatList of
             [] ->
-                SendEmpty = #m__room__notice_start_chat__s2l{start_id = 0},
+                SendEmpty = #m__room__notice_start_chat__s2l{start_id = 0,wait_list=[]},
                 mod_room:send_to_room(SendEmpty, Room);
             _ ->
                 do_start_chat(hd(NewWantChatList), NewRoom, RoomId)
