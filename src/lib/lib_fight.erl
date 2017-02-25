@@ -77,8 +77,9 @@ send_to_seat(Send, SeatId, State) ->
     end.
 
 is_active_in_fight(PlayerId) ->
-    Player = lib_player:get_player(PlayerId),
-    lib_player:get_fight_pid(Player) == self().
+    true.
+    % Player = lib_player:get_player(PlayerId),
+    % lib_player:get_fight_pid(Player) == self().
 
 get_player_id_by_seat(SeatId, State) ->
     maps:get(SeatId, maps:get(seat_player_map, State)).
