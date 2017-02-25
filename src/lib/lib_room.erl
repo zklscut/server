@@ -17,6 +17,7 @@
          update_fight_pid/2,
          get_fight_pid_by_player/1,
          get_room_duty_list/1,
+         is_in_fight/1,
          handle_online/1]).
 
 -include("game_pb.hrl").
