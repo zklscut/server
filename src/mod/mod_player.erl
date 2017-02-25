@@ -16,6 +16,7 @@
 
 -include("game_pb.hrl").
 -include("resource.hrl").
+-include("fight.hrl").
 -include("log.hrl").
 
 %% ====================================================================
