@@ -92,11 +92,11 @@ player_offline(Player) ->
 init([RoomId, PlayerList, DutyList, State]) ->
     lib_room:update_fight_pid(RoomId, self()),
     NewState = lib_fight:init(RoomId, PlayerList, DutyList, State),
-    NewStateAfterTest = ?IF(?TEST, fight_test_no_send(init, State), NewState),
-    notice_game_status_change(start, NewStateAfterTest),
-    notice_duty(NewStateAfterTest),
+    % NewStateAfterTest = ?IF(?TEST, fight_test_no_send(init, State), NewState),
+    notice_game_status_change(start, NewState),
+    notice_duty(NewState),
     send_event_inner(start, b_fight_state_wait:get(start)),
-    {ok, state_daozei, NewStateAfterTest}.
+    {ok, state_daozei, NewState}.
 
 %% ====================================================================
 %% state_daozei
