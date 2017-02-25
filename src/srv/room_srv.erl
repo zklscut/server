@@ -38,6 +38,8 @@ end_chat(Player) ->
     RoomId = maps:get(room_id, Player, 0),
     gen_server:cast(?MODULE, {end_chat, RoomId, lib_player:get_player_id(Player)}).            
 
+
+
 %% ====================================================================
 %% Behavioural functions
 %% ====================================================================
@@ -167,16 +169,10 @@ handle_cast_inner({leave_room, RoomId, PlayerId}, State) ->
     {noreply, State};
 
 handle_cast_inner({want_chat, RoomId, PlayerId}, State) ->
-    lib_room:assert_room_exist(RoomId),
-    Room = lib_room:get_room(RoomId),
-    WantChatList = maps:get(want_chat_list, Room),
-    NewWantChatList = util:add_element_single(PlayerId, WantChatList),
-    NewRoom = maps:put(want_chat_list, NewWantChatList, Room),
-    lib_room:update_room(RoomId, NewRoom),
-    case WantChatList of
-        [] ->
-            do_start_chat(PlayerId, NewRoom, RoomId);
-        _ ->
+    case lib_room:is_in_fight(RoomId) of
+        false->
+            want_chat_local(RoomId, PlayerId);
+        _->
             ignore
     end,
     {noreply, State};
@@ -231,6 +227,20 @@ code_change(_OldVsn, State, _Extra) ->
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
+
+want_chat_local(RoomId, PlayerId)->
+    lib_room:assert_room_exist(RoomId),
+    Room = lib_room:get_room(RoomId),
+    WantChatList = maps:get(want_chat_list, Room),
+    NewWantChatList = util:add_element_single(PlayerId, WantChatList),
+    NewRoom = maps:put(want_chat_list, NewWantChatList, Room),
+    lib_room:update_room(RoomId, NewRoom),
+    case WantChatList of
+        [] ->
+            do_start_chat(PlayerId, NewRoom, RoomId);
+        _ ->
+            ignore
+    end.
 
 notice_chat_info(PlayerId, Room)->
     WantChatList = maps:get(want_chat_list, Room),

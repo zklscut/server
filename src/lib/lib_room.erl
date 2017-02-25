@@ -94,7 +94,16 @@ update_fight_pid(RoomId, Pid) ->
             ignore;
         Room ->
             [global_op_srv:player_op(PlayerId, {lib_player, update_fight_pid, [Pid]}) || PlayerId <- maps:get(player_list, Room)],
-            update_room(RoomId, Room#{fight_pid=>Pid})
+            update_room(RoomId, Room#{fight_pid=>Pid, want_chat_list=>[]})
+    end.
+
+is_in_fight(RoomId) ->
+    case get_room(RoomId) of
+        undefined ->
+            false;
+        Room ->
+            Pid = maps:get(fight_pid, Room, undefined),
+            Pid =/= undefined andalso is_process_alive(Pid) == true.
     end.
 
 get_fight_pid_by_player(Player) ->
