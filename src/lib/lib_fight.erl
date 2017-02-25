@@ -71,7 +71,7 @@ send_to_seat(Send, SeatId, State) ->
     PlayerId = get_player_id_by_seat(SeatId, State),
     case is_active_in_fight(PlayerId) of
         true ->
-            net_send:send(Send, State);
+            net_send:send(Send, PlayerId);
         false ->
             ignore
     end.
