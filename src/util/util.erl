@@ -10,7 +10,8 @@
          index_of_list/2,
          part_list/2,
          conver_bool_to_int/1,
-         add_element_single/2]).
+         add_element_single/2,
+         get_micro_time/0]).
 
 
 %% ====================================================================
