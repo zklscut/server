@@ -1384,7 +1384,7 @@ get_win_count(SeatId, Winner)->
             0
     end.
 
-is_mvp(SeatId, MvpSeat)
+is_mvp(SeatId, MvpSeat)->
     case SeatId == MvpSeat of
         true->
             1;
@@ -1392,7 +1392,7 @@ is_mvp(SeatId, MvpSeat)
             0
     end.
 
-is_carry(SeatId, CarrySeat)
+is_carry(SeatId, CarrySeat)->
     case SeatId == CarrySeat of
         true->
             1;

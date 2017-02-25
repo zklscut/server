@@ -72,7 +72,7 @@ handle_receive_gift_local(GiftId, Player) ->
 %%% Internal functions
 %%%====================================================================
 
-increase_fight_coin(DutyId, IsWin, IsMvp, IsCarry, TotalTime, ThirdParty, Player) ->
+increase_fight_coin(DutyId, IsWin, IsMvp, IsCarry, _TotalTime, ThirdParty, Player) ->
     Coin = get_extra_coin(IsWin, IsMvp, IsCarry, ThirdParty) + get_fight_coin(DutyId, IsWin, ThirdParty),
     mod_resource:increase(?RESOURCE_COIN, Coin, ?LOG_ACTION_FIGHT, Player).
 
@@ -105,7 +105,7 @@ get_fight_coin(_DutyId, 1, false) ->
 get_fight_coin(_DutyId, _IsWin, _Third) ->
     0.
 
-increase_fight_exp(DutyId, IsWin, IsMvp, IsCarry, TotalTime, ThirdParty, Player) ->
+increase_fight_exp(DutyId, IsWin, IsMvp, IsCarry, _TotalTime, ThirdParty, Player) ->
     Exp = get_extra_exp(IsWin, IsMvp, IsCarry, ThirdParty) + get_fight_exp(DutyId, IsWin, ThirdParty),
     mod_resource:increase(?RESOURCE_EXP, Exp, ?LOG_ACTION_FIGHT, Player).
 
@@ -120,10 +120,7 @@ get_extra_exp(1, _IsMvp, _IsCarry, true)->
     200; 
 
 get_extra_exp(_IsWin, _IsMvp, _IsCarry, _IsThird)->
-    0.
-
-get_fight_exp(_DutyId, _IsWin) ->
-    100.    
+    0. 
 
 %%duty, iswin, third(职责，是否胜利，是否第三方)
 get_fight_exp(_DutyId, 0, _Third) ->
