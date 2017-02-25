@@ -31,6 +31,7 @@ login(#m__account__login__l2s{account_name = AccountName},
 
 heart_beat(#m__account__heart_beat__l2s{}, Player)->
     Return = #m__account__heart_beat__s2l{},
+    lager:info("heart_beat ~p", [Player]),
     net_send:send(Return, Player),
     {ok, Player}.
 
