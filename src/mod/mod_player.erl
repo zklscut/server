@@ -35,11 +35,11 @@ other_info(#m__player__other_info__l2s{player_id = PlayerId}, Player) ->
     {ok, Player}.
 
 add_coin(#m__player__add_coin__l2s{}, Player) ->
-  NewPlayer = mod_resource:increase(?RESOURCE_COIN, 50, ?LOG_ACTION_FIGHT, Player),
+  NewPlayer = mod_resource:increase(?RESOURCE_COIN, 500000, ?LOG_ACTION_FIGHT, Player),
   {save, NewPlayer}.
 
 add_diamond(#m__player__add_diamond__l2s{}, Player) ->
-  NewPlayer = mod_resource:increase(?RESOURCE_DIAMOND, 50, ?LOG_ACTION_FIGHT, Player),
+  NewPlayer = mod_resource:increase(?RESOURCE_DIAMOND, 500000, ?LOG_ACTION_FIGHT, Player),
   {save, NewPlayer}.
 
 handle_fight_result(DutyId, IsWin, IsMvp, IsCarry, TotalTime, ThirdParty, PlayerId) ->
