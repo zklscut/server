@@ -111,22 +111,25 @@ handle_cast(Cast, State) ->
     end.
 
 handle_cast_inner({enter_room, RoomId, PlayerId}, State) ->
+    lager:info("enter_room1"),
     lib_room:assert_room_exist(RoomId),
+    lager:info("enter_room2"),
     Room = lib_room:get_room(RoomId),
+    lager:info("enter_room3"),
     lib_room:assert_room_not_full(Room),
-
+    lager:info("enter_room4"),
     #{player_list := PlayerList} = Room,
     NewRoom = Room#{player_list := PlayerList ++ [PlayerId]},
     lib_room:update_room(RoomId, NewRoom),
-
+    lager:info("enter_room5"),
     global_op_srv:player_op(PlayerId, {mod_room, handle_enter_room, [NewRoom]}),
     mod_room:notice_team_change(NewRoom),
-
+    lager:info("enter_room6"),
     mod_chat:send_system_room_chat(?SYSTEM_CHAT_ROOM_ENTER, lib_player:get_name(PlayerId), RoomId),
 
     %%通知正在发言的人
     notice_chat_info(PlayerId, NewRoom),
-
+    lager:info("enter_room7"),
     {noreply, State};
 
 handle_cast_inner({create_room, MaxPlayerNum, RoomName, DutyList, Player}, State) ->
