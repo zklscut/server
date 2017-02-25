@@ -110,8 +110,10 @@
                   safe_night => 1,       %%平安夜
                   safe_day => 1,         %%平安日
                   skill_d_delay => 0,     %%释放技能是否做过默认延时
-                  skill_die_list => [],
-                  cur_skill => 0
+                  skill_die_list => [],   %%释放技能的死亡列表
+                  mvp => 0,               %%谁获得mvp      
+                  carry => 0,             %%谁获得carry
+                  cur_skill => 0          %%当前释放的技能
                   }).
 
 -endif.

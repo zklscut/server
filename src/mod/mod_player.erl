@@ -41,13 +41,13 @@ add_diamond(#m__player__add_diamond__l2s{}, Player) ->
   NewPlayer = mod_resource:increase(?RESOURCE_DIAMOND, 50, ?LOG_ACTION_FIGHT, Player),
   {save, NewPlayer}.
 
-handle_fight_result(DutyId, IsWin, PlayerId) ->
-    global_op_srv:player_op(PlayerId, {?MODULE, handle_fight_result_local, [DutyId, IsWin]}).
+handle_fight_result(DutyId, IsWin, IsMvp, IsCarry, TotalTime, ThirdParty, PlayerId) ->
+    global_op_srv:player_op(PlayerId, {?MODULE, handle_fight_result_local, [DutyId, IsWin, IsMvp, IsCarry, TotalTime, ThirdParty]}).
 
-handle_fight_result_local(DutyId, IsWin, Player) ->
-    PlayerAfterCoin = increase_fight_coin(DutyId, IsWin, Player),
-    PlayerAfterExp = increase_fight_exp(DutyId, IsWin, PlayerAfterCoin),
-    PlayerAfterWinRate = do_fight_rate(DutyId, IsWin, PlayerAfterExp),
+handle_fight_result_local(DutyId, IsWin, IsMvp, IsCarry, TotalTime, ThirdParty, Player) ->
+    PlayerAfterCoin = increase_fight_coin(DutyId, IsWin, IsMvp, IsCarry, TotalTime,ThirdParty, Player),
+    PlayerAfterExp = increase_fight_exp(DutyId, IsWin, IsMvp, IsCarry, TotalTime, ThirdParty, PlayerAfterCoin),
+    PlayerAfterWinRate = do_fight_rate(DutyId, IsWin, IsMvp, IsCarry, TotalTime, ThirdParty, PlayerAfterExp),
     {save, PlayerAfterWinRate}.
 
 handle_consume_gift(GiftId, PlayerId) ->
@@ -71,19 +71,74 @@ handle_receive_gift_local(GiftId, Player) ->
 %%% Internal functions
 %%%====================================================================
 
-increase_fight_coin(DutyId, IsWin, Player) ->
-    Coin = get_fight_coin(DutyId, IsWin),
+increase_fight_coin(DutyId, IsWin, IsMvp, IsCarry, TotalTime, ThirdParty) ->
+    Coin = get_extra_coin(IsWin, IsMvp, IsCarry, ThirdParty) + get_fight_coin(DutyId, IsWin, ThirdParty),
     mod_resource:increase(?RESOURCE_COIN, Coin, ?LOG_ACTION_FIGHT, Player).
 
-get_fight_coin(_DutyId, _IsWin) ->
-    100.
+%%iswin, mvp, carry, third(是否胜利，是否mvp，是否carry，是否第三方)
+get_extra_coin(1, 1, _IsCarry, _IsThird)->
+    100;
+ 
+get_extra_coin(0, _IsMvp, 1, _IsThird)->
+    100;  
 
-increase_fight_exp(DutyId, IsWin, Player) ->
-    Exp = get_fight_exp(DutyId, IsWin),
+get_extra_coin(1, _IsMvp, _IsCarry, true)->
+    200; 
+
+get_extra_coin(_IsWin, _IsMvp, _IsCarry, _IsThird)->
+    0.
+
+%%duty, iswin, third(职责，是否胜利，是否第三方)
+get_fight_coin(_DutyId, 0, false) ->
+    80;
+
+get_fight_coin(?DUTY_BAILANG, 1, false) ->
+    150;
+
+get_fight_coin(?DUTY_LANGREN, 1, false) ->
+    150;
+
+get_fight_coin(_DutyId, 1, false) ->
+    100;
+
+get_fight_coin(_DutyId, _IsWin, _Third) ->
+    0.
+
+increase_fight_exp(DutyId, IsWin, IsMvp, IsCarry, TotalTime, ThirdParty) ->
+    Exp = get_extra_exp(IsWin, IsMvp, IsCarry, ThirdParty) + get_fight_exp(DutyId, IsWin, ThirdParty),
     mod_resource:increase(?RESOURCE_EXP, Exp, ?LOG_ACTION_FIGHT, Player).
+
+%%iswin, mvp, carry, third(是否胜利，是否mvp，是否carry，是否第三方)
+get_extra_exp(1, 1, _IsCarry, _IsThird)->
+    100;
+ 
+get_extra_exp(0, _IsMvp, 1, _IsThird)->
+    100;  
+
+get_extra_exp(1, _IsMvp, _IsCarry, true)->
+    200; 
+
+get_extra_exp(_IsWin, _IsMvp, _IsCarry, _IsThird)->
+    0.
 
 get_fight_exp(_DutyId, _IsWin) ->
     100.    
+
+%%duty, iswin, third(职责，是否胜利，是否第三方)
+get_fight_exp(_DutyId, 0, _Third) ->
+    80;
+
+get_fight_exp(?DUTY_BAILANG, 1, false) ->
+    150;
+
+get_fight_exp(?DUTY_LANGREN, 1, false) ->
+    150;
+
+get_fight_exp(_DutyId, 1, false) ->
+    100;
+
+get_fight_exp(_DutyId, _IsWin, _Third) ->
+    0.
 
 do_fight_rate(DutyId, IsWin, Player) ->
     WinRateList = maps:get(win_rate_list, maps:get(data, Player), #{}),

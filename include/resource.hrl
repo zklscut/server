@@ -8,4 +8,6 @@
 -define(RESOURCE_EXP, 4).
 -define(RESOURCE_LV, 5).
 
+-define(RESOURCE_MAX_LV, 30).
+
 -endif.

@@ -1384,12 +1384,36 @@ get_win_count(SeatId, Winner)->
             0
     end.
 
+is_mvp(SeatId, MvpSeat)
+    case SeatId == MvpSeat of
+        true->
+            1;
+        _->
+            0
+    end.
+
+is_carry(SeatId, CarrySeat)
+    case SeatId == CarrySeat of
+        true->
+            1;
+        _->
+            0
+    end.
+
 send_fight_result(Winner, State) ->
     DutyList = [#p_duty{seat_id = SeatId,
                         duty_id = DutyId} || 
                         {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, State))],
-
-     [ mod_player:handle_fight_result(ResultDutyId, get_win_count(ResultSeatId, Winner) ,
+    MvpSeat = maps:get(mvp, State),
+    CarrySeat = maps:get(carry, State),
+    ThirdPartyList = lib_fight:get_third_part_seat(State),
+     [ mod_player:handle_fight_result(
+                ResultDutyId, 
+                get_win_count(ResultSeatId, Winner),
+                is_mvp(ResultSeatId, MvpSeat),
+                is_carry(ResultSeatId, CarrySeat),
+                0,
+                lists:member(ResultSeatId, ThirdPartyList),    
                 lib_fight:get_player_id_by_seat(ResultSeatId, State))
                  || {ResultSeatId, ResultDutyId} <- maps:to_list(maps:get(seat_duty_map, State))],                   
 

@@ -83,7 +83,10 @@ get_p_resource_list(Player) ->
 %%% Internal functions
 %%%====================================================================
 
-get_init_num(_) ->
+get_init_num(?RESOURCE_LV) ->
+    1;
+
+get_init_num(_)->
     0.
 
 set_num(ResourceId, Num, LogAction, Player) ->
@@ -103,7 +106,7 @@ update_resource_list(Resource, Player) ->
 
 handle_after_increase(?RESOURCE_EXP, _PreNum, NewNum, LogAction, Player) ->
     CurLv = get_num(?RESOURCE_LV, Player),
-    case NewNum > b_exp:get(CurLv) of
+    case (CurLv < RESOURCE_MAX_LV) andalso (NewNum > b_exp:get(CurLv)) of
         true ->
             set_num(?RESOURCE_LV, CurLv + 1, LogAction, Player);
         false ->
