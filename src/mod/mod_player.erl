@@ -65,7 +65,7 @@ handle_receive_gift(GiftId, PlayerId)->
 
 handle_receive_gift_local(GiftId, Player) ->
   {Op, LuckNum}= b_gift_effects:get(GiftId),
-  PlayerAfterLuck
+  PlayerAfterLuck = 
   case Op == 0 of 
       true->
           mod_resource:increase(?RESOURCE_LUCK, LuckAdd, ?LOG_ACTION_FIGHT, Player);
