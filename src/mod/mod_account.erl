@@ -3,7 +3,9 @@
 %% 2016
 
 -module(mod_account).
--export([login/2, handle_send_login_result/1]).
+-export([login/2, 
+        heart_beat/2,
+        handle_send_login_result/1]).
 
 -include("game_pb.hrl").
 -include("ets.hrl").
