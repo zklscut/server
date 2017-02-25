@@ -48,7 +48,7 @@ handle_fight_result(DutyId, IsWin, IsMvp, IsCarry, TotalTime, ThirdParty, Player
 handle_fight_result_local(DutyId, IsWin, IsMvp, IsCarry, TotalTime, ThirdParty, Player) ->
     PlayerAfterCoin = increase_fight_coin(DutyId, IsWin, IsMvp, IsCarry, TotalTime,ThirdParty, Player),
     PlayerAfterExp = increase_fight_exp(DutyId, IsWin, IsMvp, IsCarry, TotalTime, ThirdParty, PlayerAfterCoin),
-    PlayerAfterWinRate = do_fight_rate(DutyId, IsWin, IsMvp, IsCarry, TotalTime, ThirdParty, PlayerAfterExp),
+    PlayerAfterWinRate = do_fight_rate(DutyId, IsWin, PlayerAfterExp),
     {save, PlayerAfterWinRate}.
 
 handle_consume_gift(GiftId, PlayerId) ->
@@ -105,7 +105,7 @@ get_fight_coin(_DutyId, 1, false) ->
 get_fight_coin(_DutyId, _IsWin, _Third) ->
     0.
 
-increase_fight_exp(DutyId, IsWin, IsMvp, IsCarry, TotalTime, ThirdParty) ->
+increase_fight_exp(DutyId, IsWin, IsMvp, IsCarry, TotalTime, ThirdParty, Player) ->
     Exp = get_extra_exp(IsWin, IsMvp, IsCarry, ThirdParty) + get_fight_exp(DutyId, IsWin, ThirdParty),
     mod_resource:increase(?RESOURCE_EXP, Exp, ?LOG_ACTION_FIGHT, Player).
 
