@@ -105,7 +105,7 @@ send_gift(#m__room__send_gift__l2s{
             RoomId = lib_room:get_player_room_id(Player),
             Room = lib_room:get_room(RoomId),
             mod_player:handle_consume_gift(GiftId, lib_player:get_player_id(Player)),
-            mod_player:handle_receive_gift(GiftId, lib_player:get_player_id(ReceivePlayerId)),
+            mod_player:handle_receive_gift(GiftId, ReceivePlayerId),
             {_Op, LuckNum}= b_gift_effects:get(GiftId),
             send_to_room(#m__room__send_gift__s2l{
                     result = 1,
