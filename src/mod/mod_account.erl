@@ -27,6 +27,11 @@ login(#m__account__login__l2s{account_name = AccountName},
     
     {save, NewPlayer}.
 
+heart_beat(#m__account__heart_beat__l2s{}, Player)->
+    % Return = #m__account__heart_beat__s2l{},
+    % net_send:send(Return, Player),
+    {ok, Player}.
+
 handle_send_login_result(Player) ->
     handle_send_login_result(1, Player).
 
