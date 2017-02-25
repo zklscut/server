@@ -72,7 +72,7 @@ handle_receive_gift_local(GiftId, Player) ->
 %%% Internal functions
 %%%====================================================================
 
-increase_fight_coin(DutyId, IsWin, IsMvp, IsCarry, TotalTime, ThirdParty) ->
+increase_fight_coin(DutyId, IsWin, IsMvp, IsCarry, TotalTime, ThirdParty, Player) ->
     Coin = get_extra_coin(IsWin, IsMvp, IsCarry, ThirdParty) + get_fight_coin(DutyId, IsWin, ThirdParty),
     mod_resource:increase(?RESOURCE_COIN, Coin, ?LOG_ACTION_FIGHT, Player).
 
