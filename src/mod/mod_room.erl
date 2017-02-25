@@ -106,10 +106,11 @@ send_gift(#m__room__send_gift__l2s{
             Room = lib_room:get_room(RoomId),
             mod_player:handle_consume_gift(GiftId, lib_player:get_player_id(Player)),
             mod_player:handle_receive_gift(GiftId, lib_player:get_player_id(Player)),
+            {Op, LuckNum}= b_gift_effects:get(GiftId),
             send_to_room(#m__room__send_gift__s2l{
                     result = 1,
                     gift_id = GiftId,
-                    luck_add = b_gift_effects:get(GiftId),
+                    luck_add = LuckNum,
                     player_id = ReceivePlayerId
                 }, Room);    
         false->
@@ -140,7 +141,7 @@ want_chat_list(#m__room__want_chat_list__l2s{}, Player)->
     net_send:send(Send, Player),
     {ok, Player}.
 
-notice_team_change(Room) ->
+notice_team_change(Room)->
     #{player_list := PlayerList} = Room,
     MemberList = [lib_player:get_player_show_base(PlayerId) || PlayerId <- PlayerList],
 

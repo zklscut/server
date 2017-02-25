@@ -64,8 +64,14 @@ handle_receive_gift(GiftId, PlayerId)->
   global_op_srv:player_op(PlayerId, {?MODULE, handle_receive_gift_local, [GiftId]}).
 
 handle_receive_gift_local(GiftId, Player) ->
-  LuckAdd = b_gift_effects:get(GiftId),
-  PlayerAfterLuck = mod_resource:increase(?RESOURCE_LUCK, LuckAdd, ?LOG_ACTION_FIGHT, Player),
+  {Op, LuckNum}= b_gift_effects:get(GiftId),
+  PlayerAfterLuck
+  case Op == 0 of 
+      true->
+          mod_resource:increase(?RESOURCE_LUCK, LuckAdd, ?LOG_ACTION_FIGHT, Player);
+      _-> 
+          mod_resource:decrease(?RESOURCE_LUCK, LuckAdd, ?LOG_ACTION_FIGHT, Player)
+  end,
   {save, PlayerAfterLuck}.
 
 %%%====================================================================
