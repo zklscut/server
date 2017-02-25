@@ -68,9 +68,9 @@ handle_receive_gift_local(GiftId, Player) ->
   PlayerAfterLuck = 
   case Op == 0 of 
       true->
-          mod_resource:increase(?RESOURCE_LUCK, LuckAdd, ?LOG_ACTION_FIGHT, Player);
+          mod_resource:increase(?RESOURCE_LUCK, LuckNum, ?LOG_ACTION_FIGHT, Player);
       _-> 
-          mod_resource:decrease(?RESOURCE_LUCK, LuckAdd, ?LOG_ACTION_FIGHT, Player)
+          mod_resource:decrease(?RESOURCE_LUCK, LuckNum, ?LOG_ACTION_FIGHT, Player)
   end,
   {save, PlayerAfterLuck}.
 
