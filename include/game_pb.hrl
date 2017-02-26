@@ -33,7 +33,7 @@
 -record(m__room__send_gift__l2s, {msg_id=13020, gift_id, player_id}).
 -record(m__room__send_gift__s2l, {msg_id=13020, gift_id, player_id, result, luck_add}).
 -record(m__room__kick_player__l2s, {msg_id=13021, kicked_player_id}).
--record(m__room__kick_player__s2l, {msg_id=13022, kicked_player_id, player_name}).
+-record(m__room__kick_player__s2l, {msg_id=13022, kicked_player_id, player_name, result}).
 -record(p_chat, {player_show_base, voice, content, length, compress, chat_type, room_id, msg_type}).
 -record(m__chat__public_speak__l2s, {msg_id=14001, chat}).
 -record(m__chat__public_speak__s2l, {msg_id=14002, chat}).
