@@ -87,7 +87,7 @@ player_offline(Player) ->
     end.
 
 player_leave(Pid, PlayerId) ->
-    case lib_player:get_fight_pid(Player) of
+    case Pid of
         undefined ->
             ignore;
         Pid ->
