@@ -90,6 +90,7 @@ handle_leave_room(Player) ->
 
 handle_kick_player(Player, OpName)->
     Send = #m__room__kick_player__s2l{player_name = OpName, 
+                        result = 0,
                         kicked_player_id = lib_player:get_player_id(Player)},
     net_send:send(Send, Player),
     PlayerAfterLeaveRoom = lib_room:update_player_room_id(0, Player),
