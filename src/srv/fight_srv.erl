@@ -825,7 +825,7 @@ state_night(start, State) ->
             send_event_inner(start, b_fight_state_wait:get(state_night)),
             {next_state, state_over, NewState};
         false ->
-            StateAfterClear = clear_night_op(NewState)
+            StateAfterClear = clear_night_op(NewState),
             lib_room:update_room_status(maps:get(room_id, StateAfterClear), 1, maps:get(game_round, StateAfterClear), 1, 0),
             notice_game_status_change(state_night, State),
             send_event_inner(over, b_fight_state_wait:get(state_night)),
@@ -834,7 +834,7 @@ state_night(start, State) ->
 
 state_night(over, State)->
     send_event_inner(start),
-    {next_state, get_next_game_state(state_night), clear_night_op(State)}.
+    {next_state, get_next_game_state(state_night), State}.
 
 %% ====================================================================
 %% state_fight_over
