@@ -213,7 +213,7 @@ state_langren(wait_op, State) ->
 state_langren({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
     %%发给狼队友
     LangRenList = lib_fight:get_duty_seat(?DUTY_LANGREN, false, State),
-    lib_fight:do_send_langren_team_fayan(PlayerId, Chat, LangRenList,, State),
+    lib_fight:do_send_langren_team_fayan(PlayerId, Chat, LangRenList, State),
     {next_state, state_langren, State};
 
 state_langren({player_op, PlayerId, Op, OpList}, State) ->
