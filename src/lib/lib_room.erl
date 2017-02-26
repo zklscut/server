@@ -96,17 +96,12 @@ update_fight_pid(RoomId, Pid) ->
             ignore;
         Room ->
             [global_op_srv:player_op(PlayerId, {lib_player, update_fight_pid, [Pid]}) || PlayerId <- maps:get(player_list, Room)],
-            update_room(RoomId, Room#{fight_pid=>Pid, want_chat_list=>[]})
+            room_srv:update_room_fight_pid(RoomId, Pid),
     end.
 
 %%如果是白天night传1如果是晚上day传0
 update_room_status(RoomId, BaseStatus, GameRound, Night, Day)->
-    case get_room(RoomId) of
-        undefined ->
-            ignore;
-        Room ->
-            update_room(RoomId, Room#{room_status=>(BaseStatus + GameRound * 2 + Night + Day)})
-    end.
+    room_srv:update_room_status(RoomId, BaseStatus, GameRound, Night, Day).
 
 is_in_fight(RoomId) ->
     case get_room(RoomId) of

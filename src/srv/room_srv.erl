@@ -12,7 +12,9 @@
             leave_room/1, 
             want_chat/1, 
             end_chat/1,
-            kick_player/2]).
+            kick_player/2,
+            update_room_fight_pid/2,
+            update_room_status/5]).
 
 -include("room.hrl").
 -include("chat.hrl").
@@ -48,6 +50,12 @@ kick_player(Player, OpPlayer)->
     RoomId = maps:get(room_id, Player, 0),
     OpName = lib_player:get_name(OpPlayer),
     gen_server:cast(?MODULE, {kick_player, RoomId, OpName, lib_player:get_player_id(Player)}).        
+
+update_room_fight_pid(RoomId, Pid) ->
+    gen_server:cast(?MODULE, {update_room_fight_pid, RoomId, Pid}).
+
+update_room_status(RoomId, BaseStatus, GameRound, Night, Day) ->
+    gen_server:cast(?MODULE, {update_room_status, RoomId, BaseStatus, GameRound, Night, Day}).
 
 %% ====================================================================
 %% Behavioural functions
@@ -159,6 +167,7 @@ handle_cast_inner({leave_room, RoomId, PlayerId}, State) ->
     do_player_exit_room(RoomId, PlayerId),
     global_op_srv:player_op(PlayerId, {mod_room, handle_leave_room, []}),
     do_exit_chat(PlayerId, RoomId),
+    do_leave_fight(PlayerId, Room),
     {noreply, State};
 
 handle_cast_inner({want_chat, RoomId, PlayerId}, State) ->
@@ -178,6 +187,17 @@ handle_cast_inner({kick_player, RoomId, OpName, PlayerId}, State) ->
     do_player_exit_room(RoomId, PlayerId),
     global_op_srv:player_op(PlayerId, {mod_room, handle_kick_player, [OpName]}),
     do_exit_chat(PlayerId, RoomId),
+    {noreply, State};
+
+handle_cast_inner({update_room_fight_pid, RoomId, Pid}, State) ->
+    lib_room:assert_room_exist(RoomId),
+    Room = lib_room:get_room(RoomId),
+    lib_room:update_room(RoomId, Room#{fight_pid=>Pid, want_chat_list=>[]}),
+    {noreply, State};
+
+handle_cast_inner({update_room_status, RoomId, BaseStatus, GameRound, Night, Day}, State)->
+    lib_room:assert_room_exist(RoomId),
+    update_room(RoomId, Room#{room_status=>(BaseStatus + GameRound * 2 + Night + Day)}),
     {noreply, State}.
 
 %% handle_info/2
@@ -342,3 +362,6 @@ do_end_chat(RoomId, PlayerId) ->
         _:_ ->
             ignore
     end.
+
+do_leave_fight(PlayerId, Room) ->
+    fight_srv:player_leave(maps:get(fight_pid, Room), PlayerId).

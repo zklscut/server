@@ -51,7 +51,8 @@
          player_speak/3,
          print_state/1,
          player_online/1,
-         player_offline/1
+         player_offline/1,
+         player_leave/2
          ]).
 
 start_link(RoomId, PlayerList, DutyList) ->
@@ -85,12 +86,20 @@ player_offline(Player) ->
             gen_fsm:send_all_state_event(Pid, {player_offline, lib_player:get_player_id(Player)})
     end.
 
+player_leave(Pid, PlayerId) ->
+    case lib_player:get_fight_pid(Player) of
+        undefined ->
+            ignore;
+        Pid ->
+            gen_fsm:send_all_state_event(Pid, {player_leave, PlayerId})
+    end.
+
 %% ====================================================================
 %% Behavioural functions
 %% ====================================================================
 
 init([RoomId, PlayerList, DutyList, State]) ->
-    lib_room:update_fight_pid(RoomId, self()),
+    room_srv:update_room_fight_pid(RoomId, self()),
     lib_room:update_room_status(RoomId, 1, 0, 1, 0),
     NewState = lib_fight:init(RoomId, PlayerList, DutyList, State),
     % NewStateAfterTest = ?IF(?TEST, fight_test_no_send(init, State), NewState),
@@ -930,6 +939,11 @@ handle_event({player_offline, PlayerId}, StateName, State) ->
     Send = #m__fight__offline__s2l{
                        offline_list = OfflineList  
                     },
+    {next_state, StateName, NewState};
+
+handle_event({player_leave, PlayerId}, StateName, State) ->
+    NewLeavePlayerList = maps:get(leave_player, State) ++ [PlayerId],
+    NewState = maps:put(leave_player, NewLeavePlayerList, State),
     {next_state, StateName, NewState};
 
 handle_event(print_state, StateName, StateData) ->

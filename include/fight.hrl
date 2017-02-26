@@ -113,7 +113,8 @@
                   skill_die_list => [],   %%释放技能的死亡列表
                   mvp => 0,               %%谁获得mvp      
                   carry => 0,             %%谁获得carry
-                  cur_skill => 0          %%当前释放的技能
+                  cur_skill => 0,         %%当前释放的技能
+                  leave_player => []
                   }).
 
 -endif.
