@@ -96,7 +96,7 @@ update_fight_pid(RoomId, Pid) ->
             ignore;
         Room ->
             [global_op_srv:player_op(PlayerId, {lib_player, update_fight_pid, [Pid]}) || PlayerId <- maps:get(player_list, Room)],
-            room_srv:update_room_fight_pid(RoomId, Pid),
+            room_srv:update_room_fight_pid(RoomId, Pid)
     end.
 
 %%如果是白天night传1如果是晚上day传0
