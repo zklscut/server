@@ -6,7 +6,13 @@
 -behaviour(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--export([enter_room/2, create_room/4, leave_room/1, want_chat/1, end_chat/1]).
+-export([
+            enter_room/2, 
+            create_room/4, 
+            leave_room/1, 
+            want_chat/1, 
+            end_chat/1,
+            kick_player/2]).
 
 -include("room.hrl").
 -include("chat.hrl").
