@@ -214,6 +214,7 @@ handle_cast_inner({update_room_status, RoomId, BaseStatus, GameRound, Night, Day
 %% ====================================================================
 
 handle_info({chat_timeout, PlayerId, RoomId}, State) ->
+    lager:info("chat_timeout111111111111111111"),
     do_end_chat(RoomId, PlayerId),
     {noreply, State};
 
