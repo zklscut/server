@@ -11,6 +11,7 @@
 -record(m__player__other_info__l2s, {msg_id=12005, player_id}).
 -record(m__player__add_coin__l2s, {msg_id=12006}).
 -record(m__player__add_diamond__l2s, {msg_id=12007}).
+-record(m__player__change_name__l2s, {msg_id=12008, name}).
 -record(m__room__get_list__l2s, {msg_id=13001}).
 -record(p_room, {room_id, cur_player_num, max_player_num, owner, room_name, room_status, duty_list}).
 -record(m__room__get_list__s2l, {msg_id=13002, room_list}).
@@ -31,9 +32,9 @@
 -record(m__room__want_chat_list__s2l, {msg_id=13018, wait_list}).
 -record(m__room__notice_chat_info__s2l, {msg_id=13019, player_id, wait_time}).
 -record(m__room__send_gift__l2s, {msg_id=13020, gift_id, player_id}).
--record(m__room__send_gift__s2l, {msg_id=13020, gift_id, player_id, result, luck_add}).
--record(m__room__kick_player__l2s, {msg_id=13021, kicked_player_id}).
--record(m__room__kick_player__s2l, {msg_id=13022, kicked_player_id, player_name, result}).
+-record(m__room__send_gift__s2l, {msg_id=13021, gift_id, player_id, result, luck_add}).
+-record(m__room__kick_player__l2s, {msg_id=13022, kicked_player_id}).
+-record(m__room__kick_player__s2l, {msg_id=13023, kicked_player_id, player_name, result}).
 -record(p_chat, {player_show_base, voice, content, length, compress, chat_type, room_id, msg_type}).
 -record(m__chat__public_speak__l2s, {msg_id=14001, chat}).
 -record(m__chat__public_speak__s2l, {msg_id=14002, chat}).
