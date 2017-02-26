@@ -197,6 +197,7 @@ handle_cast_inner({update_room_fight_pid, RoomId, Pid}, State) ->
 
 handle_cast_inner({update_room_status, RoomId, BaseStatus, GameRound, Night, Day}, State)->
     lib_room:assert_room_exist(RoomId),
+    Room = lib_room:get_room(RoomId),
     update_room(RoomId, Room#{room_status=>(BaseStatus + GameRound * 2 + Night + Day)}),
     {noreply, State}.
 
