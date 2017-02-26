@@ -189,7 +189,7 @@
 	 chat_type, room_id, msg_type}).
 
 -record(m__room__kick_player__s2l,
-	{msg_id, kicked_player_id, player_name}).
+	{msg_id, kicked_player_id, player_name, result}).
 
 -record(m__room__kick_player__l2s,
 	{msg_id, kicked_player_id}).
@@ -888,7 +888,11 @@ encode(m__room__kick_player__s2l, _Record) ->
 		      pack(3, required,
 			   with_default(_Record#m__room__kick_player__s2l.player_name,
 					none),
-			   string, [])]);
+			   string, []),
+		      pack(4, required,
+			   with_default(_Record#m__room__kick_player__s2l.result,
+					none),
+			   uint32, [])]);
 encode(p_chat, _Record) ->
     iolist_to_binary([pack(1, optional,
 			   with_default(_Record#p_chat.player_show_base, none),
@@ -1623,7 +1627,8 @@ decode(m__room__kick_player__l2s, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__kick_player__l2s, Decoded);
 decode(m__room__kick_player__s2l, Bytes) ->
-    Types = [{3, player_name, string, []},
+    Types = [{4, result, uint32, []},
+	     {3, player_name, string, []},
 	     {2, kicked_player_id, uint32, []},
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
