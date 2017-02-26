@@ -60,7 +60,7 @@ get_player_show_base(PlayerId) when is_integer(PlayerId) ->
 get_player_show_base(Player) ->
     PlayerId = maps:get(id, Player),
     #p_player_show_base{player_id = PlayerId,
-                        nick_name = integer_to_list(PlayerId)}.
+                        nick_name = maps:get(nick_name, Player)}.
 
 get_player_id(Player) ->
     maps:get(id, Player, 0).
