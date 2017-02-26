@@ -6,6 +6,6 @@
 
 -define(SYSTEM_CHAT_ROOM_ENTER, 1).
 -define(SYSTEM_CHAT_ROOM_LEAVE, 2).
-
+-define(SYSTEM_CHAT_ROOM_KICK, 3).
 -endif.
 

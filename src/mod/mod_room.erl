@@ -85,6 +85,19 @@ handle_leave_room(Player) ->
     lager:info("handle_leave_room4"),
     {save, PlayerAfterLeaveFight}.
 
+handle_kick_player(Player, OpName)->
+    Send = #m__room__kick_player__s2l{player_name = OpName, 
+                        kicked_player_id = lib_player:get_player_id(Player)},
+    net_send:send(Send, Player),
+    PlayerAfterLeaveRoom = lib_room:update_player_room_id(0, Player),
+    PlayerAfterLeaveFight = lib_player:update_fight_pid(undefined, PlayerAfterLeaveRoom),
+    {save, PlayerAfterLeaveFight}.
+
+kick_player(#m__room__kick_player__l2s{kicked_player_id = KickedPlayerId}, Player)->
+    KickedPlayer = lib_player:get_player(KickedPlayerId),
+    room_srv:kick_player(KickedPlayer, Player),
+    {ok, Player}.
+
 start_fight(#m__room__start_fight__l2s{}, Player) ->
     RoomId = lib_room:get_player_room_id(Player),
     PlayerList = lib_room:get_player_room_player_list(Player),

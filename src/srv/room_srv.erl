@@ -38,7 +38,10 @@ end_chat(Player) ->
     RoomId = maps:get(room_id, Player, 0),
     gen_server:cast(?MODULE, {end_chat, RoomId, lib_player:get_player_id(Player)}).            
 
-
+kick_player(Player, OpPlayer)->
+    RoomId = maps:get(room_id, Player, 0),
+    OpName = lib_player:get_name(OpPlayer),
+    gen_server:cast(?MODULE, {kick_player, RoomId, OpName, lib_player:get_player_id(Player)}).        
 
 %% ====================================================================
 %% Behavioural functions
@@ -147,26 +150,7 @@ handle_cast_inner({create_room, MaxPlayerNum, RoomName, DutyList, Player}, State
     {noreply, State};        
 
 handle_cast_inner({leave_room, RoomId, PlayerId}, State) ->
-    lib_room:assert_room_exist(RoomId),
-    Room = lib_room:get_room(RoomId),
-    PlayerList = maps:get(player_list, Room),
-    case PlayerList -- [PlayerId] of
-        [] ->
-            lib_room:delete_room(RoomId);
-        NewPlayerList ->
-            Owner = 
-                case lib_room:is_room_owner(PlayerId, Room) of
-                    true ->
-                        lib_player:get_player_show_base(hd(NewPlayerList));
-                    false ->
-                        maps:get(owner, Room)
-                end,
-            NewRoom = Room#{player_list := NewPlayerList,
-                            owner := Owner},
-            mod_room:notice_team_change(NewRoom),
-            mod_chat:send_system_room_chat(?SYSTEM_CHAT_ROOM_LEAVE, lib_player:get_name(PlayerId), RoomId),
-            lib_room:update_room(RoomId, NewRoom)
-    end,
+    do_player_exit_room(RoomId, PlayerId),
     global_op_srv:player_op(PlayerId, {mod_room, handle_leave_room, []}),
     do_exit_chat(PlayerId, RoomId),
     {noreply, State};
@@ -182,6 +166,12 @@ handle_cast_inner({want_chat, RoomId, PlayerId}, State) ->
 
 handle_cast_inner({end_chat, RoomId, PlayerId}, State) ->
     do_end_chat(RoomId, PlayerId),
+    {noreply, State}.
+
+handle_cast_inner({kick_player, RoomId, OpName, PlayerId}, State) ->
+    do_player_exit_room(RoomId, PlayerId),
+    global_op_srv:player_op(PlayerId, {mod_room, handle_kick_player, [OpName]}),
+    do_exit_chat(PlayerId, RoomId),
     {noreply, State}.
 
 %% handle_info/2
@@ -231,17 +221,48 @@ code_change(_OldVsn, State, _Extra) ->
 %% Internal functions
 %% ====================================================================
 
+do_player_exit_room(RoomId, PlayerId)->
+    try
+        lib_room:assert_room_exist(RoomId),
+        Room = lib_room:get_room(RoomId),
+        PlayerList = maps:get(player_list, Room),
+        case PlayerList -- [PlayerId] of
+            [] ->
+                lib_room:delete_room(RoomId);
+            NewPlayerList ->
+                Owner = 
+                    case lib_room:is_room_owner(PlayerId, Room) of
+                        true ->
+                            lib_player:get_player_show_base(hd(NewPlayerList));
+                        false ->
+                            maps:get(owner, Room)
+                    end,
+                NewRoom = Room#{player_list := NewPlayerList,
+                                owner := Owner},
+                mod_room:notice_team_change(NewRoom),
+                % mod_chat:send_system_room_chat(?SYSTEM_CHAT_ROOM_KICK, lib_player:get_name(PlayerId), RoomId),
+                lib_room:update_room(RoomId, NewRoom)
+        end
+    catch
+        _:_ ->
+            ignore
+    end.
 want_chat_local(RoomId, PlayerId)->
-    lib_room:assert_room_exist(RoomId),
-    Room = lib_room:get_room(RoomId),
-    WantChatList = maps:get(want_chat_list, Room),
-    NewWantChatList = util:add_element_single(PlayerId, WantChatList),
-    NewRoom = maps:put(want_chat_list, NewWantChatList, Room),
-    lib_room:update_room(RoomId, NewRoom),
-    case WantChatList of
-        [] ->
-            do_start_chat(PlayerId, NewRoom, RoomId);
-        _ ->
+    try
+        lib_room:assert_room_exist(RoomId),
+        Room = lib_room:get_room(RoomId),
+        WantChatList = maps:get(want_chat_list, Room),
+        NewWantChatList = util:add_element_single(PlayerId, WantChatList),
+        NewRoom = maps:put(want_chat_list, NewWantChatList, Room),
+        lib_room:update_room(RoomId, NewRoom),
+        case WantChatList of
+            [] ->
+                do_start_chat(PlayerId, NewRoom, RoomId);
+            _ ->
+                ignore
+        end
+    catch
+        _:_ ->
             ignore
     end.
 
@@ -270,14 +291,20 @@ do_start_chat(PlayerId, Room, RoomId) ->
     erlang:send_after(60000, self(), {chat_timeout, PlayerId}).
 
 do_exit_chat(PlayerId, RoomId)->
-    Room = lib_room:get_room(RoomId),
-    WantChatList = maps:get(want_chat_list, Room),
-    case WantChatList =/= [] andalso hd(WantChatList) == PlayerId of
-        true ->
-            do_end_chat(RoomId, PlayerId);
-        false ->
-            NewRoom = maps:put(want_chat_list, WantChatList -- [PlayerId], Room),
-            lib_room:update_room(RoomId, NewRoom)
+    try
+        lib_room:assert_room_exist(RoomId),
+        Room = lib_room:get_room(RoomId),
+        WantChatList = maps:get(want_chat_list, Room),
+        case WantChatList =/= [] andalso hd(WantChatList) == PlayerId of
+            true ->
+                do_end_chat(RoomId, PlayerId);
+            false ->
+                NewRoom = maps:put(want_chat_list, WantChatList -- [PlayerId], Room),
+                lib_room:update_room(RoomId, NewRoom)
+        end
+    catch
+        _:_ ->
+            ignore
     end.
 
 do_end_chat(RoomId, PlayerId) ->
