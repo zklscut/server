@@ -314,7 +314,7 @@ do_start_chat(PlayerId, Room, RoomId) ->
                                             wait_list = WantChatList},
     mod_room:send_to_room(Send, Room),
     lib_room:update_room(RoomId, maps:put(chat_start_time, util:get_micro_time(), Room)),
-    erlang:send_after(60000, self(), {chat_timeout, PlayerId}).
+    erlang:send_after(60000, self(), {chat_timeout, PlayerId, RoomId}).
 
 do_exit_chat(PlayerId, RoomId)->
     lib_room:assert_room_exist(RoomId),
