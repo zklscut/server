@@ -157,7 +157,7 @@ handle_cast_inner({create_room, MaxPlayerNum, RoomName, DutyList, Player}, State
                    player_list => [PlayerId],
                    max_player_num => MaxPlayerNum,
                    room_name => RoomName,
-                   room_status => "0",
+                   room_status => 0,
                    duty_list => DutyList},
     lib_room:update_room(RoomId, Room),
     global_op_srv:player_op(PlayerId, {mod_room, handle_create_room, [Room]}),
