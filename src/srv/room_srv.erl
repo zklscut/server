@@ -289,11 +289,14 @@ want_chat_local(RoomId, PlayerId)->
     end.
 
 notice_chat_info(PlayerId, Room)->
+    lager:info("notice_chat_info1"),
     WantChatList = maps:get(want_chat_list, Room),
     case WantChatList of
         []->
+            lager:info("notice_chat_info2"),
             ignore;
         _->
+            lager:info("notice_chat_info3"),
             ChatStartTime = maps:get(chat_start_time, Room),
             CurTime = util:get_micro_time(),
             Send = #m__room__notice_chat_info__s2l{
