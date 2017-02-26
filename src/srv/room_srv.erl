@@ -172,7 +172,7 @@ handle_cast_inner({want_chat, RoomId, PlayerId}, State) ->
 
 handle_cast_inner({end_chat, RoomId, PlayerId}, State) ->
     do_end_chat(RoomId, PlayerId),
-    {noreply, State}.
+    {noreply, State};
 
 handle_cast_inner({kick_player, RoomId, OpName, PlayerId}, State) ->
     do_player_exit_room(RoomId, PlayerId),
