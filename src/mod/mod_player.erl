@@ -12,12 +12,14 @@
          handle_consume_gift/2,
          handle_consume_gift_local/2,
          handle_receive_gift/2,
-         handle_receive_gift_local/2]).
+         handle_receive_gift_local/2,
+         change_name/2]).
 
 -include("game_pb.hrl").
 -include("resource.hrl").
 -include("fight.hrl").
 -include("log.hrl").
+-include("errcode.hrl").
 
 %% ====================================================================
 %% API functions
@@ -74,6 +76,17 @@ handle_receive_gift_local(GiftId, Player) ->
   end,
   {save, PlayerAfterLuck}.
 
+change_name(#m__player__change_name__l2s{name = Name}, Player) ->
+  ChangeNameCnt = maps:get(change_name_cnt, maps:get(data, Player), 0),
+  case is_change_name_legal(Name) andalso ChangeNameCnt == 0 of
+      true ->
+          NewData = maps:put(change_name_cnt, ChangeNameCnt + 1, maps:get(data, Player)),
+          {save, maps:put(data, NewData, Player)};
+      false ->
+          net_send:send_errcode(?ERROR, Player),
+          {ok, Player}
+  end.
+              
 %%%====================================================================
 %%% Internal functions
 %%%====================================================================
@@ -174,3 +187,6 @@ get_send_player_info(Player, OtherPlayer) ->
                           resource_list = mod_resource:get_p_resource_list(Player),
                           win_rate_list = get_p_fight_rate_list(Player)}.
     
+is_change_name_legal(Name) ->
+    Sql = db:make_select_sql(player, ["count(*)"], ["nick_name"], ["="], [Name]),
+    db:get_one(Sql) == 0.
