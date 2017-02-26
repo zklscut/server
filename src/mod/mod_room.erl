@@ -18,7 +18,8 @@
          want_chat_list/2,
          send_gift/2,
          kick_player/2,
-         handle_kick_player/2
+         handle_kick_player/2,
+         send_to_player/2
          ]).
 
 -include("game_pb.hrl").
