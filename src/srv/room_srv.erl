@@ -167,7 +167,7 @@ handle_cast_inner({leave_room, RoomId, PlayerId}, State) ->
     do_player_exit_room(RoomId, PlayerId),
     global_op_srv:player_op(PlayerId, {mod_room, handle_leave_room, []}),
     do_exit_chat(PlayerId, RoomId),
-    do_leave_fight(PlayerId, Room),
+    do_leave_fight(PlayerId, RoomId),
     {noreply, State};
 
 handle_cast_inner({want_chat, RoomId, PlayerId}, State) ->
@@ -363,5 +363,5 @@ do_end_chat(RoomId, PlayerId) ->
             ignore
     end.
 
-do_leave_fight(PlayerId, Room) ->
-    fight_srv:player_leave(maps:get(fight_pid, Room), PlayerId).
+do_leave_fight(PlayerId, RoomId) ->
+    fight_srv:player_leave(maps:get(fight_pid, lib_room:get_room(RoomId)), PlayerId).
