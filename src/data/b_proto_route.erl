@@ -56,5 +56,6 @@ get(15018) -> {m__fight__do_skill__l2s, mod_fight, do_skill};
 get(15019) -> {m__fight__online__s2l, mod_fight, online}; 
 get(15020) -> {m__fight__offline__s2l, mod_fight, offline}; 
 get(15021) -> {m__fight__op_timetick__s2l, mod_fight, op_timetick}; 
+get(15022) -> {m__fight__langren_team_speak__s2l, mod_fight, langren_team_speak}; 
 get(16001) -> {m__resource__push__s2l, mod_resource, push}; 
 get(_) -> undefined. 
