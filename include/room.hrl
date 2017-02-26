@@ -6,7 +6,7 @@
                 player_list => [],
                 max_player_num => 0,
                 room_name => "",
-                room_status => "",
+                room_status => 0,
                 duty_list => [],
                 chat_start_time => 0,
                 want_chat_list => []}).

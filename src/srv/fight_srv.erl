@@ -91,6 +91,7 @@ player_offline(Player) ->
 
 init([RoomId, PlayerList, DutyList, State]) ->
     lib_room:update_fight_pid(RoomId, self()),
+    lib_room:update_room_status(RoomId, 1, 0, 1, 0),
     NewState = lib_fight:init(RoomId, PlayerList, DutyList, State),
     % NewStateAfterTest = ?IF(?TEST, fight_test_no_send(init, State), NewState),
     notice_game_status_change(start, NewState),
@@ -280,6 +281,7 @@ state_yuyanjia(op_over, State) ->
 %% state_day
 %% ====================================================================
 state_day(start, State) ->
+    lib_room:update_room_status(maps:get(room_id, State), 1, maps:get(game_round, State), 1, 1),
     notice_game_status_change(state_day, State),
     send_event_inner(over, b_fight_state_wait:get(state_day)),
     {next_state, state_day, State};
@@ -823,9 +825,11 @@ state_night(start, State) ->
             send_event_inner(start, b_fight_state_wait:get(state_night)),
             {next_state, state_over, NewState};
         false ->
+            StateAfterClear = clear_night_op(NewState)
+            lib_room:update_room_status(maps:get(room_id, StateAfterClear), 1, maps:get(game_round, StateAfterClear), 1, 0),
             notice_game_status_change(state_night, State),
             send_event_inner(over, b_fight_state_wait:get(state_night)),
-            {next_state, state_night, NewState}
+            {next_state, state_night, StateAfterClear}
     end;
 
 state_night(over, State)->

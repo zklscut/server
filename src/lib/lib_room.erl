@@ -18,7 +18,8 @@
          get_fight_pid_by_player/1,
          get_room_duty_list/1,
          is_in_fight/1,
-         handle_online/1]).
+         handle_online/1,
+         update_room_status/5]).
 
 -include("game_pb.hrl").
 -include("ets.hrl").
@@ -96,6 +97,15 @@ update_fight_pid(RoomId, Pid) ->
         Room ->
             [global_op_srv:player_op(PlayerId, {lib_player, update_fight_pid, [Pid]}) || PlayerId <- maps:get(player_list, Room)],
             update_room(RoomId, Room#{fight_pid=>Pid, want_chat_list=>[]})
+    end.
+
+%%如果是白天night传1如果是晚上day传0
+update_room_status(RoomId, BaseStatus, GameRound, Night, Day)->
+    case get_room(RoomId) of
+        undefined ->
+            ignore;
+        Room ->
+            update_room(RoomId, Room#{room_status=>(BaseStatus + GameRound * 2 + Night + Day)})
     end.
 
 is_in_fight(RoomId) ->
