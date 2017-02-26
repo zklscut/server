@@ -96,6 +96,8 @@
 	 decode_m__room__get_list__s2l/1, encode_p_room/1,
 	 decode_p_room/1, encode_m__room__get_list__l2s/1,
 	 decode_m__room__get_list__l2s/1,
+	 encode_m__player__change_name__l2s/1,
+	 decode_m__player__change_name__l2s/1,
 	 encode_m__player__add_diamond__l2s/1,
 	 decode_m__player__add_diamond__l2s/1,
 	 encode_m__player__add_coin__l2s/1,
@@ -250,6 +252,8 @@
 	 room_name, room_status, duty_list}).
 
 -record(m__room__get_list__l2s, {msg_id}).
+
+-record(m__player__change_name__l2s, {msg_id, name}).
 
 -record(m__player__add_diamond__l2s, {msg_id}).
 
@@ -491,6 +495,10 @@ encode_m__room__get_list__l2s(Record)
     when is_record(Record, m__room__get_list__l2s) ->
     encode(m__room__get_list__l2s, Record).
 
+encode_m__player__change_name__l2s(Record)
+    when is_record(Record, m__player__change_name__l2s) ->
+    encode(m__player__change_name__l2s, Record).
+
 encode_m__player__add_diamond__l2s(Record)
     when is_record(Record, m__player__add_diamond__l2s) ->
     encode(m__player__add_diamond__l2s, Record).
@@ -667,6 +675,15 @@ encode(m__player__add_diamond__l2s, _Record) ->
 			   with_default(_Record#m__player__add_diamond__l2s.msg_id,
 					12007),
 			   int32, [])]);
+encode(m__player__change_name__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__player__change_name__l2s.msg_id,
+					12008),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__player__change_name__l2s.name,
+					none),
+			   string, [])]);
 encode(m__room__get_list__l2s, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__room__get_list__l2s.msg_id,
@@ -859,7 +876,7 @@ encode(m__room__send_gift__l2s, _Record) ->
 encode(m__room__send_gift__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__room__send_gift__s2l.msg_id,
-					13020),
+					13021),
 			   int32, []),
 		      pack(2, required,
 			   with_default(_Record#m__room__send_gift__s2l.gift_id,
@@ -880,7 +897,7 @@ encode(m__room__send_gift__s2l, _Record) ->
 encode(m__room__kick_player__l2s, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__room__kick_player__l2s.msg_id,
-					13021),
+					13022),
 			   int32, []),
 		      pack(2, required,
 			   with_default(_Record#m__room__kick_player__l2s.kicked_player_id,
@@ -889,7 +906,7 @@ encode(m__room__kick_player__l2s, _Record) ->
 encode(m__room__kick_player__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__room__kick_player__s2l.msg_id,
-					13022),
+					13023),
 			   int32, []),
 		      pack(2, required,
 			   with_default(_Record#m__room__kick_player__s2l.kicked_player_id,
@@ -1434,6 +1451,9 @@ decode_p_room(Bytes) -> decode(p_room, Bytes).
 decode_m__room__get_list__l2s(Bytes) ->
     decode(m__room__get_list__l2s, Bytes).
 
+decode_m__player__change_name__l2s(Bytes) ->
+    decode(m__player__change_name__l2s, Bytes).
+
 decode_m__player__add_diamond__l2s(Bytes) ->
     decode(m__player__add_diamond__l2s, Bytes).
 
@@ -1535,6 +1555,10 @@ decode(m__player__add_diamond__l2s, Bytes) ->
     Types = [{1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__player__add_diamond__l2s, Decoded);
+decode(m__player__change_name__l2s, Bytes) ->
+    Types = [{2, name, string, []}, {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__player__change_name__l2s, Decoded);
 decode(m__room__get_list__l2s, Bytes) ->
     Types = [{1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
@@ -1939,6 +1963,13 @@ to_record(m__player__add_diamond__l2s, DecodedTuples) ->
 					 Record, Name, Val)
 		end,
 		#m__player__add_diamond__l2s{}, DecodedTuples);
+to_record(m__player__change_name__l2s, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__player__change_name__l2s),
+					 Record, Name, Val)
+		end,
+		#m__player__change_name__l2s{}, DecodedTuples);
 to_record(m__room__get_list__l2s, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields,
