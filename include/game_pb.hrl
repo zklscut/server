@@ -60,4 +60,5 @@
 -record(m__fight__online__s2l, {msg_id=15019, duty, game_state, round, speak_id, die_list, seat_id, attach_data1, attach_data2, offline_list}).
 -record(m__fight__offline__s2l, {msg_id=15020, offline_list}).
 -record(m__fight__op_timetick__s2l, {msg_id=15021, timetick}).
+-record(m__fight__langren_team_speak__s2l, {msg_id=15022, chat}).
 -record(m__resource__push__s2l, {msg_id=16001, resource_id, num, action_id}).
