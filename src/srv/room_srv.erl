@@ -275,21 +275,16 @@ do_player_exit_room(RoomId, PlayerId)->
             ignore
     end.
 want_chat_local(RoomId, PlayerId)->
-    try
-        lib_room:assert_room_exist(RoomId),
-        Room = lib_room:get_room(RoomId),
-        WantChatList = maps:get(want_chat_list, Room),
-        NewWantChatList = util:add_element_single(PlayerId, WantChatList),
-        NewRoom = maps:put(want_chat_list, NewWantChatList, Room),
-        lib_room:update_room(RoomId, NewRoom),
-        case WantChatList of
-            [] ->
-                do_start_chat(PlayerId, NewRoom, RoomId);
-            _ ->
-                ignore
-        end
-    catch
-        _:_ ->
+    lib_room:assert_room_exist(RoomId),
+    Room = lib_room:get_room(RoomId),
+    WantChatList = maps:get(want_chat_list, Room),
+    NewWantChatList = util:add_element_single(PlayerId, WantChatList),
+    NewRoom = maps:put(want_chat_list, NewWantChatList, Room),
+    lib_room:update_room(RoomId, NewRoom),
+    case WantChatList of
+        [] ->
+            do_start_chat(PlayerId, NewRoom, RoomId);
+        _ ->
             ignore
     end.
 
@@ -318,20 +313,15 @@ do_start_chat(PlayerId, Room, RoomId) ->
     erlang:send_after(60000, self(), {chat_timeout, PlayerId}).
 
 do_exit_chat(PlayerId, RoomId)->
-    try
-        lib_room:assert_room_exist(RoomId),
-        Room = lib_room:get_room(RoomId),
-        WantChatList = maps:get(want_chat_list, Room),
-        case WantChatList =/= [] andalso hd(WantChatList) == PlayerId of
-            true ->
-                do_end_chat(RoomId, PlayerId);
-            false ->
-                NewRoom = maps:put(want_chat_list, WantChatList -- [PlayerId], Room),
-                lib_room:update_room(RoomId, NewRoom)
-        end
-    catch
-        _:_ ->
-            ignore
+    lib_room:assert_room_exist(RoomId),
+    Room = lib_room:get_room(RoomId),
+    WantChatList = maps:get(want_chat_list, Room),
+    case WantChatList =/= [] andalso hd(WantChatList) == PlayerId of
+        true ->
+            do_end_chat(RoomId, PlayerId);
+        false ->
+            NewRoom = maps:put(want_chat_list, WantChatList -- [PlayerId], Room),
+            lib_room:update_room(RoomId, NewRoom)
     end.
 
 do_end_chat(RoomId, PlayerId) ->

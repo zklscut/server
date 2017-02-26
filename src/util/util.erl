@@ -103,7 +103,7 @@ conver_bool_to_int(Bool) ->
 add_element_single(Elem, List) ->
   case lists:member(Elem, List) of
     true ->
-        ignore;
+        [List];
     false ->
         List ++ [Elem]
   end.
