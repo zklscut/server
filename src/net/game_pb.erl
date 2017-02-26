@@ -680,7 +680,7 @@ encode(p_room, _Record) ->
 			   []),
 		      pack(6, required,
 			   with_default(_Record#p_room.room_status, none),
-			   string, []),
+			   int32, []),
 		      pack(7, repeated,
 			   with_default(_Record#p_room.duty_list, none), int32,
 			   [])]);
@@ -1519,8 +1519,7 @@ decode(m__room__get_list__l2s, Bytes) ->
     to_record(m__room__get_list__l2s, Decoded);
 decode(p_room, Bytes) ->
     Types = [{7, duty_list, int32, [repeated]},
-	     {6, room_status, string, []},
-	     {5, room_name, string, []},
+	     {6, room_status, int32, []}, {5, room_name, string, []},
 	     {4, owner, p_player_show_base, [is_record]},
 	     {3, max_player_num, int32, []},
 	     {2, cur_player_num, int32, []},
