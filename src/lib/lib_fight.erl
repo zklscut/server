@@ -29,6 +29,7 @@
          do_no_jingzhang_op/1,
          do_fayan_op/1,
          do_send_fayan/3,
+         do_send_langren_team_fayan/4,
          do_guipiao_op/1,
          do_toupiao_op/1,
          is_third_part_win/1,
@@ -80,6 +81,10 @@ is_active_in_fight(PlayerId) ->
     true.
     % Player = lib_player:get_player(PlayerId),
     % lib_player:get_fight_pid(Player) == self().
+
+
+
+
 
 get_player_id_by_seat(SeatId, State) ->
     maps:get(SeatId, maps:get(seat_player_map, State)).
@@ -493,6 +498,11 @@ do_send_fayan(PlayerId, Chat, State) ->
     Player = lib_player:get_player(PlayerId),
     Send = #m__fight__speak__s2l{chat = mod_chat:get_p_chat(Chat, Player)},
     send_to_all_player(Send, State).
+
+do_send_langren_team_fayan(PlayerId, Chat, SeatList, State) ->
+    Player = lib_player:get_player(PlayerId),
+    Send = #m__fight__langren_team_speak__s2l{chat = mod_chat:get_p_chat(Chat, Player)},
+    [send_to_seat(Send, SeatId, State) || SeatId<--SeatList].
 
 do_guipiao_op(State) ->
     LastOpData = get_last_op(State),
