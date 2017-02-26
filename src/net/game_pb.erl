@@ -50,7 +50,11 @@
 	 decode_m__chat__public_speak__s2l/1,
 	 encode_m__chat__public_speak__l2s/1,
 	 decode_m__chat__public_speak__l2s/1, encode_p_chat/1,
-	 decode_p_chat/1, encode_m__room__send_gift__s2l/1,
+	 decode_p_chat/1, encode_m__room__kick_player__s2l/1,
+	 decode_m__room__kick_player__s2l/1,
+	 encode_m__room__kick_player__l2s/1,
+	 decode_m__room__kick_player__l2s/1,
+	 encode_m__room__send_gift__s2l/1,
 	 decode_m__room__send_gift__s2l/1,
 	 encode_m__room__send_gift__l2s/1,
 	 decode_m__room__send_gift__l2s/1,
@@ -183,6 +187,12 @@
 -record(p_chat,
 	{player_show_base, voice, content, length, compress,
 	 chat_type, room_id, msg_type}).
+
+-record(m__room__kick_player__s2l,
+	{msg_id, kicked_player_id, player_name}).
+
+-record(m__room__kick_player__l2s,
+	{msg_id, kicked_player_id}).
 
 -record(m__room__send_gift__s2l,
 	{msg_id, gift_id, player_id, result, luck_add}).
@@ -376,6 +386,14 @@ encode_m__chat__public_speak__l2s(Record)
 
 encode_p_chat(Record) when is_record(Record, p_chat) ->
     encode(p_chat, Record).
+
+encode_m__room__kick_player__s2l(Record)
+    when is_record(Record, m__room__kick_player__s2l) ->
+    encode(m__room__kick_player__s2l, Record).
+
+encode_m__room__kick_player__l2s(Record)
+    when is_record(Record, m__room__kick_player__l2s) ->
+    encode(m__room__kick_player__l2s, Record).
 
 encode_m__room__send_gift__s2l(Record)
     when is_record(Record, m__room__send_gift__s2l) ->
@@ -849,6 +867,28 @@ encode(m__room__send_gift__s2l, _Record) ->
 			   with_default(_Record#m__room__send_gift__s2l.luck_add,
 					none),
 			   uint32, [])]);
+encode(m__room__kick_player__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__room__kick_player__l2s.msg_id,
+					13021),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__room__kick_player__l2s.kicked_player_id,
+					none),
+			   uint32, [])]);
+encode(m__room__kick_player__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__room__kick_player__s2l.msg_id,
+					13022),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__room__kick_player__s2l.kicked_player_id,
+					none),
+			   uint32, []),
+		      pack(3, required,
+			   with_default(_Record#m__room__kick_player__s2l.player_name,
+					none),
+			   string, [])]);
 encode(p_chat, _Record) ->
     iolist_to_binary([pack(1, optional,
 			   with_default(_Record#p_chat.player_show_base, none),
@@ -1300,6 +1340,12 @@ decode_m__chat__public_speak__l2s(Bytes) ->
 
 decode_p_chat(Bytes) -> decode(p_chat, Bytes).
 
+decode_m__room__kick_player__s2l(Bytes) ->
+    decode(m__room__kick_player__s2l, Bytes).
+
+decode_m__room__kick_player__l2s(Bytes) ->
+    decode(m__room__kick_player__l2s, Bytes).
+
 decode_m__room__send_gift__s2l(Bytes) ->
     decode(m__room__send_gift__s2l, Bytes).
 
@@ -1571,6 +1617,17 @@ decode(m__room__send_gift__s2l, Bytes) ->
 	     {2, gift_id, uint32, []}, {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__send_gift__s2l, Decoded);
+decode(m__room__kick_player__l2s, Bytes) ->
+    Types = [{2, kicked_player_id, uint32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__room__kick_player__l2s, Decoded);
+decode(m__room__kick_player__s2l, Bytes) ->
+    Types = [{3, player_name, string, []},
+	     {2, kicked_player_id, uint32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__room__kick_player__s2l, Decoded);
 decode(p_chat, Bytes) ->
     Types = [{8, msg_type, int32, []},
 	     {7, room_id, int32, []}, {6, chat_type, int32, []},
@@ -2002,6 +2059,20 @@ to_record(m__room__send_gift__s2l, DecodedTuples) ->
 					 Record, Name, Val)
 		end,
 		#m__room__send_gift__s2l{}, DecodedTuples);
+to_record(m__room__kick_player__l2s, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__room__kick_player__l2s),
+					 Record, Name, Val)
+		end,
+		#m__room__kick_player__l2s{}, DecodedTuples);
+to_record(m__room__kick_player__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__room__kick_player__s2l),
+					 Record, Name, Val)
+		end,
+		#m__room__kick_player__s2l{}, DecodedTuples);
 to_record(p_chat, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields, p_chat), Record,
