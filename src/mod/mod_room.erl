@@ -96,9 +96,39 @@ handle_kick_player(Player, OpName)->
     PlayerAfterLeaveFight = lib_player:update_fight_pid(undefined, PlayerAfterLeaveRoom),
     {save, PlayerAfterLeaveFight}.
 
+get_kick_player_fail_result(KickedPlayerId, OpPlayerId, KickedPlayerRoomId, OpPlayerRoomId)->
+    case KickedPlayerId == OpPlayerId of
+        true->
+            2;
+        false->
+            case KickedPlayerRoomId =/= 0 of
+                true->
+                    3;
+                false->
+                    case KickedPlayerRoomId =/= OpPlayerRoomId of
+                        true->
+                            1;
+                        false->
+                            4
+                    end
+            end
+    end.
+
 kick_player(#m__room__kick_player__l2s{kicked_player_id = KickedPlayerId}, Player)->
     KickedPlayer = lib_player:get_player(KickedPlayerId),
-    room_srv:kick_player(KickedPlayer, Player),
+    KickedPlayerRoomId = maps:get(room_id, KickedPlayer, 0),
+    OpPlayerRoomId = maps:get(room_id, Player, 0),
+    OpPlayerId = lib_player:get_player_id(Player),
+    case KickedPlayerRoomId =/= 0 andalso KickedPlayerRoomId == OpPlayerRoomId 
+                    andalso KickedPlayerId =/= OpPlayerId andalso OpPlayerRoomId =/= 0  of
+        true->
+            room_srv:kick_player(KickedPlayer, Player);
+        _->
+            Send = #m__room__kick_player__s2l{player_name = lib_player:get_name(Player), 
+                        kicked_player_id = KickedPlayerId, result = 
+                        get_kick_player_fail_result(KickedPlayerId, OpPlayerId, KickedPlayerRoomId, OpPlayerRoomId)},
+            net_send:send(Send, Player)
+    end,
     {ok, Player}.
 
 start_fight(#m__room__start_fight__l2s{}, Player) ->
