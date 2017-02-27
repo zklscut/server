@@ -155,7 +155,7 @@
 -record(m__fight__result__s2l,
 	{msg_id, winner, duty_list, lover, hunxuer, daozei, mvp,
 	 carry, coin_add, cur_level, cur_exp, exp_add,
-	 level_up_exp, next_level_up_exp}).
+	 pre_level_up_exp, level_up_exp, next_level_up_exp}).
 
 -record(p_duty, {seat_id, duty_id}).
 
@@ -1152,10 +1152,14 @@ encode(m__fight__result__s2l, _Record) ->
 					none),
 			   int32, []),
 		      pack(13, required,
-			   with_default(_Record#m__fight__result__s2l.level_up_exp,
+			   with_default(_Record#m__fight__result__s2l.pre_level_up_exp,
 					none),
 			   int32, []),
 		      pack(14, required,
+			   with_default(_Record#m__fight__result__s2l.level_up_exp,
+					none),
+			   int32, []),
+		      pack(15, required,
 			   with_default(_Record#m__fight__result__s2l.next_level_up_exp,
 					none),
 			   int32, [])]);
@@ -1799,12 +1803,14 @@ decode(p_duty, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(p_duty, Decoded);
 decode(m__fight__result__s2l, Bytes) ->
-    Types = [{14, next_level_up_exp, int32, []},
-	     {13, level_up_exp, int32, []}, {12, exp_add, int32, []},
-	     {11, cur_exp, int32, []}, {10, cur_level, int32, []},
-	     {9, coin_add, int32, []}, {8, carry, int32, []},
-	     {7, mvp, int32, []}, {6, daozei, int32, []},
-	     {5, hunxuer, int32, []}, {4, lover, int32, [repeated]},
+    Types = [{15, next_level_up_exp, int32, []},
+	     {14, level_up_exp, int32, []},
+	     {13, pre_level_up_exp, int32, []},
+	     {12, exp_add, int32, []}, {11, cur_exp, int32, []},
+	     {10, cur_level, int32, []}, {9, coin_add, int32, []},
+	     {8, carry, int32, []}, {7, mvp, int32, []},
+	     {6, daozei, int32, []}, {5, hunxuer, int32, []},
+	     {4, lover, int32, [repeated]},
 	     {3, duty_list, p_duty, [is_record, repeated]},
 	     {2, winner, int32, [repeated]}, {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
