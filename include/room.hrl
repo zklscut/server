@@ -9,7 +9,8 @@
                 room_status => 0,
                 duty_list => [],
                 chat_start_time => 0,
-                want_chat_list => []}).
+                want_chat_list => [],
+                ready_list => []}).
 
 -endif.
 

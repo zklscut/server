@@ -14,7 +14,9 @@
             end_chat/1,
             kick_player/2,
             update_room_fight_pid/2,
-            update_room_status/5]).
+            update_room_status/5,
+            ready/2,
+            cancle_ready/2]).
 
 -include("room.hrl").
 -include("chat.hrl").
@@ -56,6 +58,12 @@ update_room_fight_pid(RoomId, Pid) ->
 
 update_room_status(RoomId, BaseStatus, GameRound, Night, Day) ->
     gen_server:cast(?MODULE, {update_room_status, RoomId, BaseStatus, GameRound, Night, Day}).
+
+ready(RoomId, PlayerId) ->
+    gen_server:cast(?MODULE, {ready, RoomId, PlayerId}).        
+
+cancle_ready(RoomId, PlayerId) ->
+    gen_server:cast(?MODULE, {cancle_ready, RoomId, PlayerId}).            
 
 %% ====================================================================
 %% Behavioural functions
@@ -199,6 +207,31 @@ handle_cast_inner({update_room_status, RoomId, BaseStatus, GameRound, Night, Day
     lib_room:assert_room_exist(RoomId),
     Room = lib_room:get_room(RoomId),
     lib_room:update_room(RoomId, Room#{room_status=>(BaseStatus + GameRound * 2 + Night + Day)}),
+    {noreply, State};
+
+handle_cast_inner({ready, RoomId, PlayerId}, State) ->
+    lib_room:assert_room_exist(RoomId),
+    Room = lib_room:get_room(RoomId),
+    NewReadyList = util:add_element_single(PlayerId, maps:get(ready_list, Room)),
+    NewRoom = maps:put(ready_list, NewReadyList, Room),
+    mod_room:notice_team_change(NewRoom),
+
+    case length(NewReadyList) == length(maps:get(player_list, Room)) of
+        true ->
+            Send = #m__room__notice_all_ready__s2l{},
+            mod_room:send_to_room(Send, NewRoom);
+        false ->
+            ignore
+    end,
+
+    {noreply, State};
+
+handle_cast_inner({cancle_ready, RoomId, PlayerId}, State) ->
+    lib_room:assert_room_exist(RoomId),
+    Room = lib_room:get_room(RoomId),
+    NewReadyList = maps:get(ready_list, Room) -- [PlayerId],
+    NewRoom = maps:put(ready_list, NewReadyList, Room),
+    mod_room:notice_team_change(NewRoom),
     {noreply, State}.
 
 %% handle_info/2

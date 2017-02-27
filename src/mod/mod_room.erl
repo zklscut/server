@@ -19,7 +19,9 @@
          send_gift/2,
          kick_player/2,
          handle_kick_player/2,
-         send_to_player/2
+         send_to_player/2,
+         ready/2,
+         cancle_ready/2
          ]).
 
 -include("game_pb.hrl").
@@ -201,6 +203,16 @@ send_to_player(Send, PlayerId)  when is_integer(PlayerId)  ->
 send_to_player(Send, Player) ->
     net_send:send(Send, Player).
 
+ready(#m__room__ready__l2s{}, Player) ->
+    RoomId = lib_room:get_player_room_id(Player),
+    room_srv:ready(RoomId, lib_player:get_player_id(Player)),
+    {ok, Player}.
+
+cancle_ready(#m__room__cancle_ready__l2s{}, Player) ->
+    RoomId = lib_room:get_player_room_id(Player),
+    room_srv:cancle_ready(RoomId, lib_player:get_player_id(Player)),
+    {ok, Player}.
+
 %%%====================================================================
 %%% Internal functions
 %%%====================================================================
@@ -211,12 +223,14 @@ conver_to_p_room(#{room_id := RoomId,
                    max_player_num := MaxPlayerNum,
                    room_name := RoomName,
                    room_status := RoomStatus,
-                   duty_list := DutyList}) ->
+                   duty_list := DutyList,
+                   ready_list := ReadyList}) ->
     #p_room{room_id = RoomId,
             cur_player_num = length(PlayerList),
             max_player_num = MaxPlayerNum,
             owner = Owner,
             room_name = RoomName,
             room_status = RoomStatus,
-            duty_list = DutyList}.
+            duty_list = DutyList,
+            ready_list = ReadyList}.
 
