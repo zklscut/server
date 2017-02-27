@@ -1453,6 +1453,7 @@ fight_result_op(Winner, DutyList, ResultSeatId, ResultDutyId, State)->
                                   cur_level = CurLevel,
                                   cur_exp = CurExp,
                                   exp_add = ExpExtraAdd + ExpAdd,
+                                  pre_level_up_exp = b_exp:get(CurLevel - 1),
                                   level_up_exp = b_exp:get(CurLevel),
                                   next_level_up_exp = b_exp:get(CurLevel + 1)
                                   }, ResultSeatId, State),
