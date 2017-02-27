@@ -153,7 +153,9 @@
 -record(m__fight__guipiao__s2l, {msg_id, guipiao_list}).
 
 -record(m__fight__result__s2l,
-	{msg_id, winner, duty_list, lover, hunxuer}).
+	{msg_id, winner, duty_list, lover, hunxuer, daozei, mvp,
+	 carry, coin_add, cur_level, cur_exp, exp_add,
+	 level_up_exp, next_level_up_exp}).
 
 -record(p_duty, {seat_id, duty_id}).
 
@@ -1120,6 +1122,42 @@ encode(m__fight__result__s2l, _Record) ->
 		      pack(5, required,
 			   with_default(_Record#m__fight__result__s2l.hunxuer,
 					none),
+			   int32, []),
+		      pack(6, required,
+			   with_default(_Record#m__fight__result__s2l.daozei,
+					none),
+			   int32, []),
+		      pack(7, required,
+			   with_default(_Record#m__fight__result__s2l.mvp,
+					none),
+			   int32, []),
+		      pack(8, required,
+			   with_default(_Record#m__fight__result__s2l.carry,
+					none),
+			   int32, []),
+		      pack(9, required,
+			   with_default(_Record#m__fight__result__s2l.coin_add,
+					none),
+			   int32, []),
+		      pack(10, required,
+			   with_default(_Record#m__fight__result__s2l.cur_level,
+					none),
+			   int32, []),
+		      pack(11, required,
+			   with_default(_Record#m__fight__result__s2l.cur_exp,
+					none),
+			   int32, []),
+		      pack(12, required,
+			   with_default(_Record#m__fight__result__s2l.exp_add,
+					none),
+			   int32, []),
+		      pack(13, required,
+			   with_default(_Record#m__fight__result__s2l.level_up_exp,
+					none),
+			   int32, []),
+		      pack(14, required,
+			   with_default(_Record#m__fight__result__s2l.next_level_up_exp,
+					none),
 			   int32, [])]);
 encode(m__fight__guipiao__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
@@ -1761,8 +1799,12 @@ decode(p_duty, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(p_duty, Decoded);
 decode(m__fight__result__s2l, Bytes) ->
-    Types = [{5, hunxuer, int32, []},
-	     {4, lover, int32, [repeated]},
+    Types = [{14, next_level_up_exp, int32, []},
+	     {13, level_up_exp, int32, []}, {12, exp_add, int32, []},
+	     {11, cur_exp, int32, []}, {10, cur_level, int32, []},
+	     {9, coin_add, int32, []}, {8, carry, int32, []},
+	     {7, mvp, int32, []}, {6, daozei, int32, []},
+	     {5, hunxuer, int32, []}, {4, lover, int32, [repeated]},
 	     {3, duty_list, p_duty, [is_record, repeated]},
 	     {2, winner, int32, [repeated]}, {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
