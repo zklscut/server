@@ -86,9 +86,12 @@ change_name(#m__player__change_name__l2s{name = Name}, Player) ->
   case is_change_name_legal(Name) andalso ChangeNameCnt == 0 of
       true ->
           NewData = maps:put(change_name_cnt, ChangeNameCnt + 1, maps:get(data, Player)),
+          Send = #m__player__change_name__s2l{name = Name, result=0},
+          net_send:send(Send, Player),
           {save, maps:put(data, NewData, Player)};
       false ->
-          net_send:send_errcode(?ERROR, Player),
+          SendFail = #m__player__change_name__s2l{name = Name, result=1},
+          net_send:send(SendFail, Player),
           {ok, Player}
   end.
               
