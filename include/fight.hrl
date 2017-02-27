@@ -114,7 +114,7 @@
                   mvp => 0,               %%谁获得mvp      
                   carry => 0,             %%谁获得carry
                   cur_skill => 0,         %%当前释放的技能
-                  leave_player => []
+                  leave_player => []      %%战斗中离开玩家
                   }).
 
 -endif.

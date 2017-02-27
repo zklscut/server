@@ -1424,30 +1424,51 @@ is_carry(SeatId, CarrySeat)->
             0
     end.
 
+fight_result_op(Winner, DutyList, ResultSeatId, ResultDutyId, State)->
+    MvpSeat = maps:get(mvp, State),
+    CarrySeat = maps:get(carry, State),
+    #{lover := Lover,
+      hunxuer := Hunxuer} = State,
+    ThirdPartyList = lib_fight:get_third_part_seat(State),
+    WinCount = get_win_count(ResultSeatId, Winner),
+    IsMvp = is_mvp(ResultSeatId, MvpSeat),
+    IsCarry = is_carry(ResultSeatId, CarrySeat),
+    IsThirdParty = lists:member(ResultSeatId, ThirdPartyList),
+    PlayerId = lib_fight:get_player_id_by_seat(ResultSeatId, State),
+    CoinExtraAdd = mod_player:get_extra_coin(WinCount, IsMvp, IsCarry, IsThirdParty),
+    CoinAdd = mod_player:get_fight_coin(ResultDutyId, WinCount, IsThirdParty),
+    CurLevel = mod_resource:get_num(?RESOURCE_LV, PlayerId),
+    ExpExtraAdd = mod_player:get_extra_exp(WinCount, IsMvp, IsCarry, IsThirdParty),
+    ExpAdd = mod_player:get_fight_exp(ResultDutyId, WinCount, IsThirdParty),
+    CurExp = mod_resource:get_num(?RESOURCE_EXP, PlayerId),
+    lib_fight:send_to_seat(#m__fight__result__s2l{
+                                  winner = Winner,
+                                  lover = Lover,
+                                  hunxuer = Hunxuer,
+                                  duty_list = DutyList,
+                                  daozei = maps:get(daozei_seat, State),
+                                  mvp = MvpSeat,
+                                  carry = CarrySeat,
+                                  coin_add = CoinExtraAdd + CoinAdd,
+                                  cur_level = CurLevel,
+                                  cur_exp = CurExp,
+                                  exp_add = ExpExtraAdd + ExpAdd
+                                  }, ResultSeatId, State),
+    mod_player:handle_fight_result(
+                ResultDutyId, 
+                WinCount,
+                CoinExtraAdd + CoinAdd,
+                ExpExtraAdd + ExpAdd,    
+                PlayerId).
+
 send_fight_result(Winner, State) ->
     DutyList = [#p_duty{seat_id = SeatId,
                         duty_id = DutyId} || 
-                        {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, State))],
-    MvpSeat = maps:get(mvp, State),
-    CarrySeat = maps:get(carry, State),
-    ThirdPartyList = lib_fight:get_third_part_seat(State),
-     [ mod_player:handle_fight_result(
-                ResultDutyId, 
-                get_win_count(ResultSeatId, Winner),
-                is_mvp(ResultSeatId, MvpSeat),
-                is_carry(ResultSeatId, CarrySeat),
-                0,
-                lists:member(ResultSeatId, ThirdPartyList),    
-                lib_fight:get_player_id_by_seat(ResultSeatId, State))
-                 || {ResultSeatId, ResultDutyId} <- maps:to_list(maps:get(seat_duty_map, State))],                   
-
+                        {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, State))],                 
     #{lover := Lover,
       hunxuer := Hunxuer} = State,
-    Send = #m__fight__result__s2l{winner = Winner,
-                                  lover = Lover,
-                                  hunxuer = Hunxuer,
-                                  duty_list = DutyList},
-    lib_fight:send_to_all_player(Send, State).
+    [fight_result_op(Winner, DutyList, ResultSeatId, ResultDutyId, State)
+                 || {ResultSeatId, ResultDutyId} <- maps:to_list(maps:get(seat_duty_map, State))].
 
 notice_start_fayan(SeatId, State) ->
     Send = #m__fight__notice_fayan__s2l{seat_id = SeatId},

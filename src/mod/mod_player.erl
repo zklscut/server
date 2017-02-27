@@ -13,7 +13,12 @@
          handle_consume_gift_local/2,
          handle_receive_gift/2,
          handle_receive_gift_local/2,
-         change_name/2]).
+         change_name/2,
+         get_extra_coin/4,
+         get_fight_coin/3,
+         get_extra_exp/4,
+         get_fight_exp/3
+         ]).
 
 -include("game_pb.hrl").
 -include("resource.hrl").
@@ -44,12 +49,12 @@ add_diamond(#m__player__add_diamond__l2s{}, Player) ->
   NewPlayer = mod_resource:increase(?RESOURCE_DIAMOND, 500000, ?LOG_ACTION_FIGHT, Player),
   {save, NewPlayer}.
 
-handle_fight_result(DutyId, IsWin, IsMvp, IsCarry, TotalTime, ThirdParty, PlayerId) ->
-    global_op_srv:player_op(PlayerId, {?MODULE, handle_fight_result_local, [DutyId, IsWin, IsMvp, IsCarry, TotalTime, ThirdParty]}).
+handle_fight_result(DutyId, IsWin, CoinAdd, ExpAdd, PlayerId) ->
+    global_op_srv:player_op(PlayerId, {?MODULE, handle_fight_result_local, [DutyId, IsWin, CoinAdd, ExpAdd]}).
 
-handle_fight_result_local(DutyId, IsWin, IsMvp, IsCarry, TotalTime, ThirdParty, Player) ->
-    PlayerAfterCoin = increase_fight_coin(DutyId, IsWin, IsMvp, IsCarry, TotalTime,ThirdParty, Player),
-    PlayerAfterExp = increase_fight_exp(DutyId, IsWin, IsMvp, IsCarry, TotalTime, ThirdParty, PlayerAfterCoin),
+handle_fight_result_local(DutyId, IsWin, CoinAdd, ExpAdd, Player) ->
+    PlayerAfterCoin = increase_fight_coin(CoinAdd, Player),
+    PlayerAfterExp = increase_fight_exp(ExpAdd, PlayerAfterCoin),
     PlayerAfterWinRate = do_fight_rate(DutyId, IsWin, PlayerAfterExp),
     {save, PlayerAfterWinRate}.
 
@@ -91,9 +96,10 @@ change_name(#m__player__change_name__l2s{name = Name}, Player) ->
 %%% Internal functions
 %%%====================================================================
 
-increase_fight_coin(DutyId, IsWin, IsMvp, IsCarry, _TotalTime, ThirdParty, Player) ->
-    Coin = get_extra_coin(IsWin, IsMvp, IsCarry, ThirdParty) + get_fight_coin(DutyId, IsWin, ThirdParty),
-    mod_resource:increase(?RESOURCE_COIN, Coin, ?LOG_ACTION_FIGHT, Player).
+increase_fight_coin(CoinAdd, Player) ->
+    mod_resource:increase(?RESOURCE_COIN, CoinAdd, ?LOG_ACTION_FIGHT, Player).
+
+
 
 %%iswin, mvp, carry, third(是否胜利，是否mvp，是否carry，是否第三方)
 get_extra_coin(1, 1, _IsCarry, _IsThird)->
@@ -124,9 +130,8 @@ get_fight_coin(_DutyId, 1, false) ->
 get_fight_coin(_DutyId, _IsWin, _Third) ->
     0.
 
-increase_fight_exp(DutyId, IsWin, IsMvp, IsCarry, _TotalTime, ThirdParty, Player) ->
-    Exp = get_extra_exp(IsWin, IsMvp, IsCarry, ThirdParty) + get_fight_exp(DutyId, IsWin, ThirdParty),
-    mod_resource:increase(?RESOURCE_EXP, Exp, ?LOG_ACTION_FIGHT, Player).
+increase_fight_exp(ExpAdd, Player) ->
+    mod_resource:increase(?RESOURCE_EXP, ExpAdd, ?LOG_ACTION_FIGHT, Player).
 
 %%iswin, mvp, carry, third(是否胜利，是否mvp，是否carry，是否第三方)
 get_extra_exp(1, 1, _IsCarry, _IsThird)->
