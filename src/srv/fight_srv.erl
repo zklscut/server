@@ -1452,7 +1452,9 @@ fight_result_op(Winner, DutyList, ResultSeatId, ResultDutyId, State)->
                                   coin_add = CoinExtraAdd + CoinAdd,
                                   cur_level = CurLevel,
                                   cur_exp = CurExp,
-                                  exp_add = ExpExtraAdd + ExpAdd
+                                  exp_add = ExpExtraAdd + ExpAdd,
+                                  level_up_exp = b_exp:get(CurLevel),
+                                  next_level_up_exp = b_exp:get(CurLevel + 1)
                                   }, ResultSeatId, State),
     mod_player:handle_fight_result(
                 ResultDutyId, 
