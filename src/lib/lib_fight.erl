@@ -78,7 +78,8 @@ send_to_seat(Send, SeatId, State) ->
     end.
 
 is_active_in_fight(PlayerId, State) ->
-    not lists:member(PlayerId, maps:get(leave_player, State)).
+    true.
+    % not lists:member(PlayerId, maps:get(leave_player, State)).
 
 get_player_id_by_seat(SeatId, State) ->
     maps:get(SeatId, maps:get(seat_player_map, State)).
