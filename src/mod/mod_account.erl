@@ -61,7 +61,7 @@ create_player(AccountName) ->
     lib_ets:update(?ETS_ACCOUNT_PLAYER, AccountName, PlayerId),
     CreatePlayer = #{id => PlayerId,
                      account_name => AccountName,
-                     nick_name => integer_to_list(PlayerId),
+                     nick_name => "",
                      data => ?PLAYER_DATA},
     lib_player:update_player(CreatePlayer),
     CreatePlayer.
