@@ -39,7 +39,7 @@
 -include("errcode.hrl").
 -include("game_pb.hrl").
 -include("function.hrl").
--include("resource.hrl");
+-include("resource.hrl").
 -define(TEST, false).
 
 %% ====================================================================
