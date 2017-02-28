@@ -78,13 +78,14 @@ send_to_seat(Send, SeatId, State) ->
     end.
 
 is_active_in_fight(PlayerId, State) ->
-    case lists:member(PlayerId, maps:get(leave_player, State)) of
-        true->
-            lager:info("is_active_in_fight ~p", [maps:get(leave_player, State)]),
-            false;
-        _->
-            true
-    end.
+    true.
+    % case lists:member(PlayerId, maps:get(leave_player, State)) of
+    %     true->
+    %         lager:info("is_active_in_fight ~p", [maps:get(leave_player, State)]),
+    %         false;
+    %     _->
+    %         true
+    % end.
     % not lists:member(PlayerId, maps:get(leave_player, State)).
 
 get_player_id_by_seat(SeatId, State) ->
