@@ -87,7 +87,7 @@ change_name(#m__player__change_name__l2s{name = Name}, Player) ->
       true ->
           NewData = maps:put(change_name_cnt, ChangeNameCnt + 1, maps:get(data, Player)),
           Send = #m__player__change_name__s2l{name = Name, result=0},
-          NewPlayer = maps:put(nick_name, Player),
+          NewPlayer = maps:put(nick_name, Name, Player),
           net_send:send(Send, NewPlayer),
           {save, maps:put(data, NewData, NewPlayer)};
       false ->
