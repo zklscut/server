@@ -176,6 +176,7 @@ handle_cast_inner({leave_room, RoomId, PlayerId}, State) ->
     global_op_srv:player_op(PlayerId, {mod_room, handle_leave_room, []}),
     do_exit_chat(PlayerId, RoomId),
     do_leave_fight(PlayerId, RoomId),
+    do_cancel_ready(RoomId, PlayerId),
     {noreply, State};
 
 handle_cast_inner({want_chat, RoomId, PlayerId}, State) ->
@@ -200,7 +201,7 @@ handle_cast_inner({kick_player, RoomId, OpName, PlayerId}, State) ->
 handle_cast_inner({update_room_fight_pid, RoomId, Pid}, State) ->
     lib_room:assert_room_exist(RoomId),
     Room = lib_room:get_room(RoomId),
-    lib_room:update_room(RoomId, Room#{fight_pid=>Pid, want_chat_list=>[]}),
+    lib_room:update_room(RoomId, Room#{fight_pid=>Pid, want_chat_list=>[], ready_list=>[]}),
     {noreply, State};
 
 handle_cast_inner({update_room_status, RoomId, BaseStatus, GameRound, Night, Day}, State)->
@@ -227,11 +228,7 @@ handle_cast_inner({ready, RoomId, PlayerId}, State) ->
     {noreply, State};
 
 handle_cast_inner({cancle_ready, RoomId, PlayerId}, State) ->
-    lib_room:assert_room_exist(RoomId),
-    Room = lib_room:get_room(RoomId),
-    NewReadyList = maps:get(ready_list, Room) -- [PlayerId],
-    NewRoom = maps:put(ready_list, NewReadyList, Room),
-    mod_room:notice_team_change(NewRoom),
+    do_cancel_ready(RoomId, PlayerId),
     {noreply, State}.
 
 %% handle_info/2
@@ -281,6 +278,13 @@ code_change(_OldVsn, State, _Extra) ->
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
+
+do_cancel_ready(RoomId, PlayerId)->
+    lib_room:assert_room_exist(RoomId),
+    Room = lib_room:get_room(RoomId),
+    NewReadyList = maps:get(ready_list, Room) -- [PlayerId],
+    NewRoom = maps:put(ready_list, NewReadyList, Room),
+    mod_room:notice_team_change(NewRoom).
 
 do_player_exit_room(RoomId, PlayerId)->
     try

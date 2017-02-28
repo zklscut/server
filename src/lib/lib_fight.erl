@@ -358,9 +358,11 @@ do_qiubite_op(State) ->
 
 do_shouwei_op(State) ->
     LastOpData = get_last_op(State),
-    [{_, [SeatId]}] = maps:to_list(LastOpData),
+    [{OpSeatId, [SeatId]}] = maps:to_list(LastOpData),
     StateAfterShouWei = maps:put(shouwei, SeatId, State),
     %%todo:通知守护目标
+    Send = #m__fight__shouwei_op__s2l{seat_id = SeatId},
+    send_to_seat(Send, OpSeatId, StateAfterShouWei),
     clear_last_op(StateAfterShouWei).
 
 do_hunxuer_op(State) ->

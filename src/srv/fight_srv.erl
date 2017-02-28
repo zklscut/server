@@ -833,10 +833,10 @@ state_toupiao_death_fayan(op_over, State) ->
 %% ====================================================================
 state_night(start, State) ->
     NewState = out_die_player(State),
-    {IsOver, Winner} = get_fight_result(NewState),
+    {IsOver, Winner, VictoryParty} = get_fight_result(NewState),
     case IsOver of
         true ->
-            send_fight_result(Winner, NewState),
+            send_fight_result(Winner, VictoryParty, NewState),
             send_event_inner(start, b_fight_state_wait:get(state_night)),
             {next_state, state_over, NewState};
         false ->
@@ -856,8 +856,8 @@ state_night(over, State)->
 %% ====================================================================
 state_fight_over(start, State) ->
     NewState = out_die_player(State),
-    {_, Winner} = get_fight_result(NewState),
-    send_fight_result(Winner, NewState),
+    {_, Winner, VictoryParty} = get_fight_result(NewState),
+    send_fight_result(Winner, VictoryParty, NewState),
     send_event_inner(start, b_fight_state_wait:get(state_fight_over)),
     {next_state, state_over, NewState}.
 
@@ -1312,14 +1312,14 @@ get_fight_result(State) ->
                 LWinner2 = LWinner1 -- LangRenQiubite,
                 LWinner3 = LWinner2 -- ThirdPartQiubite,
                 LWinner4 = LWinner3 -- LangRenHunxuer,
-                throw({true, LWinner4});
+                throw({true, LWinner4, 0});
             _ ->
                 ignore
         end,
 
         case lib_fight:is_third_part_win(State) of
             true->
-                throw({true, lib_fight:get_third_part_seat(State)});    
+                throw({true, lib_fight:get_third_part_seat(State), 2});    
             _->
                 ignore
         end, 
@@ -1330,7 +1330,7 @@ get_fight_result(State) ->
                 LangRenHunxuer1 = lib_fight:get_langren_hunxuer_seat(State),
                 SWinner1 = AllLangren ++ LangrenQiubite,
                 SWinner2 = SWinner1 ++ LangRenHunxuer1,
-                throw({true, SWinner2});
+                throw({true, SWinner2, 1});
             _ ->
                 ignore
         end,
@@ -1340,12 +1340,12 @@ get_fight_result(State) ->
                 LangRenHunxuer2 = lib_fight:get_langren_hunxuer_seat(State),
                 PWinner1 = AllLangren ++ LangrenQiubite1,
                 PWinner2 = PWinner1 ++ LangRenHunxuer2,
-                throw({true, PWinner2});
+                throw({true, PWinner2, 1});
             _ ->
                 ignore
         end,
            
-        {false, []}
+        {false, [], 0}
     catch 
         throw:Result ->
             Result
@@ -1424,7 +1424,7 @@ is_carry(SeatId, CarrySeat)->
             0
     end.
 
-fight_result_op(Winner, DutyList, ResultSeatId, ResultDutyId, State)->
+fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, State)->
     MvpSeat = maps:get(mvp, State),
     CarrySeat = maps:get(carry, State),
     #{lover := Lover,
@@ -1455,7 +1455,8 @@ fight_result_op(Winner, DutyList, ResultSeatId, ResultDutyId, State)->
                                   exp_add = ExpExtraAdd + ExpAdd,
                                   pre_level_up_exp = b_exp:get(CurLevel - 1),
                                   level_up_exp = b_exp:get(CurLevel),
-                                  next_level_up_exp = b_exp:get(CurLevel + 1)
+                                  next_level_up_exp = b_exp:get(CurLevel + 1),
+                                  victory_party = VictoryParty
                                   }, ResultSeatId, State),
     mod_player:handle_fight_result(
                 ResultDutyId, 
@@ -1464,13 +1465,11 @@ fight_result_op(Winner, DutyList, ResultSeatId, ResultDutyId, State)->
                 ExpExtraAdd + ExpAdd,    
                 PlayerId).
 
-send_fight_result(Winner, State) ->
+send_fight_result(Winner, VictoryParty, State) ->
     DutyList = [#p_duty{seat_id = SeatId,
                         duty_id = DutyId} || 
-                        {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, State))],                 
-    #{lover := Lover,
-      hunxuer := Hunxuer} = State,
-    [fight_result_op(Winner, DutyList, ResultSeatId, ResultDutyId, State)
+                        {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, State))], 
+    [fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, State)
                  || {ResultSeatId, ResultDutyId} <- maps:to_list(maps:get(seat_duty_map, State))].
 
 notice_start_fayan(SeatId, State) ->
@@ -1483,7 +1482,7 @@ notice_stop_fayan(SeatId, State) ->
 
 is_over(State) ->
     NewState = out_die_player(State),
-    {IsOver, _Winner} = get_fight_result(NewState),
+    {IsOver, _Winner, _VictoryParty} = get_fight_result(NewState),
     IsOver.
 
 get_online_attach_data(_SeatId, ?DUTY_YUYANJIA, State) ->
