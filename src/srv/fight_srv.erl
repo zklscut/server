@@ -1389,7 +1389,7 @@ notice_toupiao_out([0], _) ->
     ignore;
 
 notice_toupiao_out(SeatList, State) ->  
-    notice_player_op(?OP_QUZHU, SeatList, State).
+    notice_player_op(?OP_QUZHU, SeatList, lib_fight:get_all_seat(State), State).
 
 notice_game_status_change(Status, State) ->
     notice_game_status_change(Status, [], State).
