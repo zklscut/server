@@ -900,7 +900,7 @@ state_toupiao_mvp(start, State) ->
             notice_game_status_change(state_toupiao_mvp, State),
             send_event_inner(wait_op, b_fight_state_wait:get(state_toupiao_mvp)),
             state_toupiao_mvp;
-        false
+        false->
             send_event_inner(start),
             state_toupiao_carry
     end,
