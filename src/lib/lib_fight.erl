@@ -55,6 +55,7 @@
 
 -include("fight.hrl").
 -include("game_pb.hrl").
+-include("resource.hrl").
 
 %% ====================================================================
 %% API functions
@@ -987,7 +988,16 @@ count_xuanju_result(OpData) ->
 
 %%根据魅力值高低选择一个目标(魅力值一样者随机)
 get_max_luck_seat(SeatList, State)->
-    ignore.
+    case SeatList of
+        [] ->
+            undefined;
+        _ ->
+            PlayerIdList = [get_player_id_by_seat(SeatId) || SeatId <- SeatList],
+            PlayerLuckList = [{PlayerId, mod_resource:get_num(?RESOURCE_LUCK, PlayerId)} || PlayerId <- PlayerIdList],
+            {_, MaxLuck} = lists:reverse(lists:keysort(2, PlayerLuckList)),
+            MaxLuckPlayerList = [PlayerId || {PlayerId, Luck} <- PlayerLuckList, Luck == MaxLuck],
+            util:rand_in_list(MaxLuckPlayerList)
+    end.
 
 generate_fayan_turn(SeatId, _First, Turn, State) ->
     AllSeat = get_all_seat(State),
