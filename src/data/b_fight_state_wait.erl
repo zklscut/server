@@ -45,6 +45,12 @@ get(state_someone_die)->
 	2000;
 get(state_someone_die_d_delay)->
 	6000;
+get(state_lapiao_fayan)->
+	2000;
+get(state_toupiao_mvp)->
+	2000;
+get(state_toupiao_carry)->
+	2000;
 get(_) ->
     1000.
 

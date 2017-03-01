@@ -34,6 +34,9 @@
 -define(OP_GUIPIAO, 1008). %%归票
 -define(OP_DEATH_FAYAN, 1009). %%死亡发言
 -define(OP_QUZHU_FAYAN, 1010). %%驱逐发言
+-define(OP_LAPIAO_FAYAN, 1011). %%拉票发言
+-define(OP_TOUPIAO_MVP, 1012). %%投票mvp
+-define(OP_TOUPIAO_CARRY, 1013). %%投票carry
 
 -define(OP_SKILL_CHANGE_JINGZHANG, 2001).
 -define(OP_SKILL_LIEREN, 2002).
@@ -47,6 +50,8 @@
 
 -define(XUANJU_TYPE_JINGZHANG, 1).
 -define(XUANJU_TYPE_QUZHU, 2).
+-define(XUANJU_TYPE_MVP, 3).
+-define(XUANJU_TYPE_CARRY, 4).
 
 -define(TIMER_TIMEOUT, timeout).
 
@@ -114,7 +119,11 @@
                   mvp => 0,               %%谁获得mvp      
                   carry => 0,             %%谁获得carry
                   cur_skill => 0,         %%当前释放的技能
-                  leave_player => []      %%战斗中离开玩家
+                  leave_player => [],     %%战斗中离开玩家
+                  mvp_party => [],         %%参选mvp的人
+                  mvp_draw_cnt => 0,      %%mvp重投次数      
+                  carry_part =>[],        %%参选carry的人
+                  carry_draw_cnt => 0     %%carry重投次数
                   }).
 
 -endif.

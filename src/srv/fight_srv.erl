@@ -760,7 +760,7 @@ state_toupiao(op_over, State) ->
     notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, NewState),
     case IsDraw of
         true ->
-            send_event_inner(start, b_fight_wait_op:get(state_toupiao)),
+            send_event_inner(start, b_fight_state_over_wait:get(state_toupiao)),
             {next_state, state_fayan, maps:put(fayan_turn, MaxSelectList, NewState)};
         false ->   
             %%临时6秒
@@ -782,7 +782,7 @@ state_toupiao(op_over, State) ->
                     lib_fight:lover_die_judge(Quzhu, NewState)
             end,
 
-            send_event_inner(wait_over, b_fight_wait_op:get(state_toupiao)),
+            send_event_inner(wait_over, b_fight_state_over_wait:get(state_toupiao)),
             {next_state, state_toupiao, lib_fight:set_skill_die_list(state_toupiao, StateAfterQuzhu)}
     end;
 
@@ -832,34 +832,177 @@ state_toupiao_death_fayan(op_over, State) ->
 %% state_day
 %% ====================================================================
 state_night(start, State) ->
-    NewState = out_die_player(State),
-    {IsOver, Winner, VictoryParty} = get_fight_result(NewState),
-    case IsOver of
-        true ->
-            send_fight_result(Winner, VictoryParty, NewState),
-            send_event_inner(start, b_fight_state_wait:get(state_night)),
-            {next_state, state_over, NewState};
-        false ->
-            StateAfterClear = clear_night_op(NewState),
+    % NewState = out_die_player(State),
+    % {IsOver, Winner, VictoryParty} = get_fight_result(NewState),
+    % case IsOver of
+    %     true ->
+    %         send_fight_result(Winner, VictoryParty, NewState),
+    %         send_event_inner(start, b_fight_state_wait:get(state_night)),
+    %         {next_state, state_over, NewState};
+    %     false ->
+            StateAfterClear = clear_night_op(State),
             lib_room:update_room_status(maps:get(room_id, StateAfterClear), 1, maps:get(game_round, StateAfterClear), 1, 0),
-            notice_game_status_change(state_night, State),
+            notice_game_status_change(state_night, StateAfterClear),
             send_event_inner(over, b_fight_state_wait:get(state_night)),
-            {next_state, state_night, StateAfterClear}
-    end;
+            {next_state, state_night, StateAfterClear};
+    % end;
 
 state_night(over, State)->
     send_event_inner(start),
     {next_state, get_next_game_state(state_night), State}.
 
 %% ====================================================================
-%% state_fight_over
+%% state_fight_over 战斗结束
 %% ====================================================================
 state_fight_over(start, State) ->
+
+    NewState = out_die_player(State),
+    {_, Winner, VictoryParty} = get_fight_result(NewState),
+
+    %%todo:通知战斗信息
+    %%send_fight_result(Winner, VictoryParty, NewState),
+
+    send_event_inner(start, b_fight_state_wait:get(state_fight_over)),
+    StateAfterMvp = maps:put(mvp_party, Winner, NewState),
+    StateAfterCarry = maps:put(carry_part, lib_fight:get_all_seat(StateAfterCarry) -- Winner),
+    StateAfterFayanTurn = maps:put(fayan_turn, lib_fight:get_all_seat()),
+    {next_state, state_lapiao_fayan, StateAfterCarry}.
+
+%%拉票发言环节
+state_lapiao_fayan(start, State) ->
+    do_fayan_state_start(maps:get(fayan_turn, State), state_lapiao_fayan, State);
+
+state_lapiao_fayan(wait_op, State) ->
+    do_fayan_state_wait_op(?OP_LAPIAO_FAYAN, state_lapiao_fayan, State);
+
+state_lapiao_fayan({player_op, PlayerId, Op, [0]}, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    do_receive_player_op(PlayerId, Op, [0], state_lapiao_fayan, State);
+
+state_lapiao_fayan({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
+    do_receive_fayan(PlayerId, Chat, State),
+    {next_state, state_lapiao_fayan, State};
+
+state_lapiao_fayan(timeout, State) ->
+    do_fayan_state_timeout(state_lapiao_fayan, State);
+
+state_lapiao_fayan(op_over, State) ->
+    do_fayan_state_op_over(state_lapiao_fayan, State).
+
+%%投票mvp
+state_toupiao_mvp(start, State) ->
+    notice_game_status_change(state_toupiao_mvp, State),
+    send_event_inner(wait_op, b_fight_state_wait:get(state_toupiao_mvp)),
+    {next_state, state_toupiao_mvp, State};
+    
+state_toupiao_mvp(wait_op, State) ->
+    start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_TOUPIAO)),
+    notice_toupiao_mvp(State),
+    WaitList = lib_fight:get_all_seat(),
+    StateAfterWait = do_set_wait_op(WaitList, State),
+    {next_state, state_toupiao_mvp, StateAfterWait};    
+    
+state_toupiao_mvp({player_op, PlayerId, Op, OpList}, State) ->
+    do_receive_player_op(PlayerId, Op, OpList, state_toupiao_mvp, State);
+
+state_toupiao_mvp(timeout, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    send_event_inner(op_over),
+    {next_state, state_toupiao_mvp, State};
+
+state_toupiao_mvp(op_over, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    {IsDraw, TouPiaoResult, MaxSelectList, NewState} = lib_fight:do_toupiao_mvp_op(State),
+    Mvp = maps:get(mvp, NewState),
+    case IsDraw of
+        true ->
+            notice_state_toupiao_mvp_result(IsDraw, Mvp, TouPiaoResult, NewState),
+            StateAfterMvpParty = maps:put(mvp_party, MaxSelectList, NewState),
+            send_event_inner(start, b_fight_state_over_wait:get(state_toupiao_mvp)),
+            {next_state, state_lapiao_fayan, maps:put(fayan_turn, MaxSelectList, StateAfterMvpParty)};
+        false ->   
+            %%临时6秒
+            SelectMvp = 
+            case Mvp =/= 0 of
+                true->
+                    Mvp;
+                _->
+                    %%安装魅力值高低选择一个(如果魅力值有相同的(?是否随机一个))
+                    %%lib_fight:get_max_luck_seat(maps:get(mvp_party, NewState), NewState)
+                    1
+            end,
+            notice_state_toupiao_mvp_result(IsDraw, SelectMvp, TouPiaoResult, NewState),
+            StateAfterMvp = maps:put(mvp, SelectMvp, NewState),
+            send_event_inner(wait_over, b_fight_state_over_wait:get(state_toupiao_mvp)),
+            {next_state, state_toupiao_mvp, StateAfterMvp}
+    end;
+
+state_toupiao_mvp(wait_over, State)->
+    send_event_inner(start),
+    {next_state, state_toupiao_carry, State}.
+
+%%投票mvp
+state_toupiao_carry(start, State) ->
+    notice_game_status_change(state_toupiao_carry, State),
+    send_event_inner(wait_op, b_fight_state_wait:get(state_toupiao_carry)),
+    {next_state, state_toupiao_carry, State};
+    
+state_toupiao_carry(wait_op, State) ->
+    start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_TOUPIAO)),
+    notice_toupiao_carry(State),
+    WaitList = lib_fight:get_all_seat(),
+    StateAfterWait = do_set_wait_op(WaitList, State),
+    {next_state, state_toupiao_carry, StateAfterWait};    
+    
+state_toupiao_carry({player_op, PlayerId, Op, OpList}, State) ->
+    do_receive_player_op(PlayerId, Op, OpList, state_toupiao_carry, State);
+
+state_toupiao_carry(timeout, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    send_event_inner(op_over),
+    {next_state, state_toupiao_carry, State};
+
+state_toupiao_carry(op_over, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    {IsDraw, TouPiaoResult, MaxSelectList, NewState} = lib_fight:do_toupiao_carry_op(State),
+    Mvp = maps:get(mvp, NewState),
+    case IsDraw of
+        true ->
+            notice_state_toupiao_carry_result(IsDraw, Mvp, TouPiaoResult, NewState),
+            StateAfterMvpParty = maps:put(carry_party, MaxSelectList, NewState),
+            send_event_inner(start, b_fight_state_over_wait:get(state_toupiao_carry)),
+            {next_state, state_lapiao_fayan, maps:put(fayan_turn, MaxSelectList, StateAfterMvpParty)};
+        false ->   
+            %%临时6秒
+            SelectMvp = 
+            case Mvp =/= 0 of
+                true->
+                    Mvp;
+                _->
+                    %%安装魅力值高低选择一个(如果魅力值有相同的(?是否随机一个))
+                    %%lib_fight:get_max_luck_seat(maps:get(mvp_party, NewState), NewState)
+                    1
+            end,
+            notice_state_toupiao_carry_result(IsDraw, SelectMvp, TouPiaoResult, NewState),
+            StateAfterMvp = maps:put(mvp, SelectMvp, NewState),
+            send_event_inner(wait_over, b_fight_state_over_wait:get(state_toupiao_carry)),
+            {next_state, state_toupiao_carry, StateAfterMvp}
+    end;
+
+state_toupiao_carry(wait_over, State)->
+    send_event_inner(start),
+    {next_state, state_game_over, State}.
+
+%% ====================================================================
+%% 游戏结束
+%% ====================================================================
+state_game_over(start, State) ->
     NewState = out_die_player(State),
     {_, Winner, VictoryParty} = get_fight_result(NewState),
     send_fight_result(Winner, VictoryParty, NewState),
     send_event_inner(start, b_fight_state_wait:get(state_fight_over)),
     {next_state, state_over, NewState}.
+
 
 %% ====================================================================
 %% state_over
@@ -1286,6 +1429,14 @@ notice_toupiao(MaxSelectList, State) ->
     notice_player_op(?OP_TOUPIAO, MaxSelectList, (((AliveList -- MaxSelectList) -- 
                                                  [maps:get(baichi, State)]) -- maps:get(die, State)), State).
 
+notice_toupiao_mvp(State) ->
+    PartyList = maps:get(mvp_party, State),
+    notice_player_op(?OP_TOUPIAO_MVP, PartyList, lib_fight:get_all_seat(State), State).
+
+notice_toupiao_carry(State) ->
+    PartyList = maps:get(carry_party, State),
+    notice_player_op(?OP_TOUPIAO_CARRY, PartyList, lib_fight:get_all_seat(State), State).
+
 notice_night_result(State) ->
     Send = #m__fight__night_result__s2l{die_list = maps:get(die, State)},
     lib_fight:send_to_all_player(Send, State).
@@ -1384,6 +1535,12 @@ clear_night_op(State) ->
 
 notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, State) ->
     notice_xuanju_result(?XUANJU_TYPE_QUZHU, IsDraw, Quzhu, TouPiaoResult, State).  
+
+notice_state_toupiao_mvp_result(IsDraw, Quzhu, TouPiaoResult, State) ->
+    notice_xuanju_result(?XUANJU_TYPE_MVP, IsDraw, Quzhu, TouPiaoResult, State).  
+
+notice_state_toupiao_carry_result(IsDraw, Quzhu, TouPiaoResult, State) ->
+    notice_xuanju_result(?XUANJU_TYPE_CARRY, IsDraw, Quzhu, TouPiaoResult, State). 
 
 notice_toupiao_out([0], _) ->
     ignore;
@@ -1589,7 +1746,13 @@ get_state_legal_op(GameState) ->
         state_night_result->
             [];
         state_fight_over ->
-            []
+            [];
+        state_lapiao_fayan ->
+            [?OP_FAYAN,?OP_QUZHU_FAYAN];
+        state_toupiao_mvp ->
+            [?OP_TOUPIAO];
+        state_toupiao_carry ->
+            [?OP_TOUPIAO]
     end.
 
 get_status_id(GameState) ->
@@ -1635,7 +1798,13 @@ get_status_id(GameState) ->
         state_night ->
             19;
         state_someone_die ->
-            20
+            20;
+        state_lapiao_fayan ->
+            21;
+        state_toupiao_mvp ->
+            22;
+        state_toupiao_carry ->
+            23
     end.
 
 fight_test_no_send(StateName, State) ->
