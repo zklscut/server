@@ -855,20 +855,38 @@ state_night(over, State)->
     send_event_inner(start),
     {next_state, get_next_game_state(state_night), State}.
 
+
+send_fight_result(Winner, VictoryParty, State) ->
+    DutyList = [#p_duty{seat_id = SeatId,
+                        duty_id = DutyId} || 
+                        {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, State))], 
+    [fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, State)
+                 || {ResultSeatId, ResultDutyId} <- maps:to_list(maps:get(seat_duty_map, State))].
+
+
+
+
 %% ====================================================================
 %% state_fight_over 战斗结束
 %% ====================================================================
 state_fight_over(start, State) ->
     NewState = out_die_player(State),
     {_, Winner, VictoryParty} = get_fight_result(NewState),
+    DutyList = [#p_duty{seat_id = SeatId,
+                        duty_id = DutyId} || 
+                        {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, NewState))], 
     %%todo:通知战斗信息
     %%send_fight_result(Winner, VictoryParty, NewState),
     notice_game_status_change(state_fight_over, NewState),
+    Send = #m__fight__over_info__s2l{duty_list = DutyList, winner = Winner, 
+                                                dead_list = maps:get(out_seat_list, NewState)},
+    lib_fight:send_to_all_player(Send, NewState),
     send_event_inner(start, b_fight_state_wait:get(state_fight_over)),
     StateAfterMvp = maps:put(mvp_party, Winner, NewState),
     StateAfterCarry = maps:put(carry_party, lib_fight:get_all_seat(StateAfterMvp) -- Winner, StateAfterMvp),
     StateAfterFayanTurn = maps:put(fayan_turn, lib_fight:get_all_seat(StateAfterCarry), StateAfterCarry),
     {next_state, state_lapiao_fayan, StateAfterFayanTurn}.
+
 
 %%拉票发言环节
 state_lapiao_fayan(start, State) ->
