@@ -868,8 +868,8 @@ state_fight_over(start, State) ->
 
     send_event_inner(start, b_fight_state_wait:get(state_fight_over)),
     StateAfterMvp = maps:put(mvp_party, Winner, NewState),
-    StateAfterCarry = maps:put(carry_part, lib_fight:get_all_seat(StateAfterMvp) -- Winner),
-    StateAfterFayanTurn = maps:put(fayan_turn, lib_fight:get_all_seat()),
+    StateAfterCarry = maps:put(carry_part, lib_fight:get_all_seat(StateAfterMvp) -- Winner, StateAfterMvp),
+    StateAfterFayanTurn = maps:put(fayan_turn, lib_fight:get_all_seat(), StateAfterCarry),
     {next_state, state_lapiao_fayan, StateAfterCarry}.
 
 %%拉票发言环节
