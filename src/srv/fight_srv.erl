@@ -836,7 +836,7 @@ state_toupiao_death_fayan(op_over, State) ->
 %% state_day
 %% ====================================================================
 state_night(start, State) ->
-    % NewState = out_die_player(State),
+    NewState = out_die_player(State),
     % {IsOver, Winner, VictoryParty} = get_fight_result(NewState),
     % case IsOver of
     %     true ->
@@ -844,11 +844,11 @@ state_night(start, State) ->
     %         send_event_inner(start, b_fight_state_wait:get(state_night)),
     %         {next_state, state_over, NewState};
     %     false ->
-            StateAfterClear = clear_night_op(State),
-            lib_room:update_room_status(maps:get(room_id, StateAfterClear), 1, maps:get(game_round, StateAfterClear), 1, 0),
-            notice_game_status_change(state_night, StateAfterClear),
-            send_event_inner(over, b_fight_state_wait:get(state_night)),
-            {next_state, state_night, StateAfterClear};
+    StateAfterClear = clear_night_op(NewState),
+    lib_room:update_room_status(maps:get(room_id, StateAfterClear), 1, maps:get(game_round, StateAfterClear), 1, 0),
+    notice_game_status_change(state_night, StateAfterClear),
+    send_event_inner(over, b_fight_state_wait:get(state_night)),
+    {next_state, state_night, StateAfterClear};
     % end;
 
 state_night(over, State)->
