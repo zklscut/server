@@ -32,6 +32,8 @@
          do_send_langren_team_fayan/4,
          do_guipiao_op/1,
          do_toupiao_op/1,
+         do_toupiao_mvp_op/1,
+         do_toupiao_carry_op/1,
          is_third_part_win/1,
          get_langren_qiubite_seat/1,
          get_haoren_qiubite_seat/1,
@@ -542,6 +544,49 @@ do_toupiao_op(State) ->
         end,
     {DrawResult, ResultList, MaxSeatList, NewState}.
 
+do_toupiao_mvp_op(State) ->
+    LastOpData = get_last_op(State),
+    {IsDraw, ResultList, MaxSeatList} = count_xuanju_result(LastOpData),
+    DrawCnt = maps:get(mvp_draw_cnt, State),
+    {DrawResult, NewState} = 
+        case IsDraw of
+            false ->
+                {false, State#{mvp_draw_cnt := 0,
+                               mvp := hd(MaxSeatList)}};
+            true ->
+                case DrawCnt > 0 of
+                    true ->
+                        {false, State#{mvp_draw_cnt := 0,
+                                       mvp := 0}};
+                    false ->
+                        {true , State#{mvp_draw_cnt := 1,
+                                       mvp := 0}}
+                end
+        end,
+    {DrawResult, ResultList, MaxSeatList, NewState}.
+
+
+do_toupiao_carry_op(State) ->
+    LastOpData = get_last_op(State),
+    {IsDraw, ResultList, MaxSeatList} = count_xuanju_result(LastOpData),
+    DrawCnt = maps:get(carry_draw_cnt, State),
+    {DrawResult, NewState} = 
+        case IsDraw of
+            false ->
+                {false, State#{carry_draw_cnt := 0,
+                               carry := hd(MaxSeatList)}};
+            true ->
+                case DrawCnt > 0 of
+                    true ->
+                        {false, State#{carry_draw_cnt := 0,
+                                       carry := 0}};
+                    false ->
+                        {true , State#{carry_draw_cnt := 1,
+                                       carry := 0}}
+                end
+        end,
+    {DrawResult, ResultList, MaxSeatList, NewState}.        
+
 %%设置白痴死亡状态
 check_set_baichi_die(DieSeat, State)->
     case (DieSeat =/= 0) andalso (maps:get(baichi, State) == DieSeat) of
@@ -939,6 +984,10 @@ count_xuanju_result(OpData) ->
             IsDraw = length(MaxSeatList) > 1,
             {IsDraw, [{CurSeatId, CurSelectSeat} || {CurSeatId, CurSelectSeat, _} <- CountSelectList], MaxSeatList}
     end.
+
+%%根据魅力值高低选择一个目标(魅力值一样者随机)
+get_max_luck_seat(SeatList, State)->
+    ignore.
 
 generate_fayan_turn(SeatId, _First, Turn, State) ->
     AllSeat = get_all_seat(State),
