@@ -1761,7 +1761,7 @@ get_state_legal_op(GameState) ->
         state_fight_over ->
             [];
         state_lapiao_fayan ->
-            [?OP_FAYAN,?OP_QUZHU_FAYAN];
+            [?OP_FAYAN,?OP_LAPIAO_FAYAN];
         state_toupiao_mvp ->
             [?OP_TOUPIAO];
         state_toupiao_carry ->
