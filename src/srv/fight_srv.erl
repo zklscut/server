@@ -909,7 +909,7 @@ state_toupiao_mvp(start, State) ->
 state_toupiao_mvp(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_TOUPIAO)),
     notice_toupiao_mvp(State),
-    WaitList = lib_fight:get_all_seat(),
+    WaitList = lib_fight:get_all_seat(State),
     StateAfterWait = do_set_wait_op(WaitList, State),
     {next_state, state_toupiao_mvp, StateAfterWait};    
     
@@ -961,7 +961,7 @@ state_toupiao_carry(start, State) ->
 state_toupiao_carry(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_TOUPIAO)),
     notice_toupiao_carry(State),
-    WaitList = lib_fight:get_all_seat(),
+    WaitList = lib_fight:get_all_seat(State),
     StateAfterWait = do_set_wait_op(WaitList, State),
     {next_state, state_toupiao_carry, StateAfterWait};    
     
