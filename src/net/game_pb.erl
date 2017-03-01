@@ -3,6 +3,10 @@
 -export([encode/1, encode/2, decode/2,
 	 encode_m__resource__push__s2l/1,
 	 decode_m__resource__push__s2l/1,
+	 encode_m__fight__over_info__s2l/1,
+	 decode_m__fight__over_info__s2l/1,
+	 encode_m__fight__shouwei_op__s2l/1,
+	 decode_m__fight__shouwei_op__s2l/1,
 	 encode_m__fight__langren_team_speak__s2l/1,
 	 decode_m__fight__langren_team_speak__s2l/1,
 	 encode_m__fight__op_timetick__s2l/1,
@@ -133,6 +137,11 @@
 -record(m__resource__push__s2l,
 	{msg_id, resource_id, num, action_id}).
 
+-record(m__fight__over_info__s2l,
+	{msg_id, winner, duty_list, dead_list}).
+
+-record(m__fight__shouwei_op__s2l, {msg_id, seat_id}).
+
 -record(m__fight__langren_team_speak__s2l,
 	{msg_id, chat}).
 
@@ -164,7 +173,8 @@
 -record(m__fight__result__s2l,
 	{msg_id, winner, duty_list, lover, hunxuer, daozei, mvp,
 	 carry, coin_add, cur_level, cur_exp, exp_add,
-	 pre_level_up_exp, level_up_exp, next_level_up_exp}).
+	 pre_level_up_exp, level_up_exp, next_level_up_exp,
+	 victory_party}).
 
 -record(p_duty, {seat_id, duty_id}).
 
@@ -310,6 +320,14 @@ encode(Record) ->
 encode_m__resource__push__s2l(Record)
     when is_record(Record, m__resource__push__s2l) ->
     encode(m__resource__push__s2l, Record).
+
+encode_m__fight__over_info__s2l(Record)
+    when is_record(Record, m__fight__over_info__s2l) ->
+    encode(m__fight__over_info__s2l, Record).
+
+encode_m__fight__shouwei_op__s2l(Record)
+    when is_record(Record, m__fight__shouwei_op__s2l) ->
+    encode(m__fight__shouwei_op__s2l, Record).
 
 encode_m__fight__langren_team_speak__s2l(Record)
     when is_record(Record,
@@ -1228,6 +1246,10 @@ encode(m__fight__result__s2l, _Record) ->
 		      pack(15, required,
 			   with_default(_Record#m__fight__result__s2l.next_level_up_exp,
 					none),
+			   int32, []),
+		      pack(16, required,
+			   with_default(_Record#m__fight__result__s2l.victory_party,
+					none),
 			   int32, [])]);
 encode(m__fight__guipiao__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
@@ -1372,6 +1394,32 @@ encode(m__fight__langren_team_speak__s2l, _Record) ->
 			   with_default(_Record#m__fight__langren_team_speak__s2l.chat,
 					none),
 			   p_chat, [])]);
+encode(m__fight__shouwei_op__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__shouwei_op__s2l.msg_id,
+					15023),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__fight__shouwei_op__s2l.seat_id,
+					none),
+			   int32, [])]);
+encode(m__fight__over_info__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__over_info__s2l.msg_id,
+					15024),
+			   int32, []),
+		      pack(2, repeated,
+			   with_default(_Record#m__fight__over_info__s2l.winner,
+					none),
+			   int32, []),
+		      pack(3, repeated,
+			   with_default(_Record#m__fight__over_info__s2l.duty_list,
+					none),
+			   p_duty, []),
+		      pack(4, repeated,
+			   with_default(_Record#m__fight__over_info__s2l.dead_list,
+					none),
+			   int32, [])]);
 encode(m__resource__push__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__resource__push__s2l.msg_id,
@@ -1411,6 +1459,12 @@ pack(FNum, _, Data, Type, _) ->
 
 decode_m__resource__push__s2l(Bytes) ->
     decode(m__resource__push__s2l, Bytes).
+
+decode_m__fight__over_info__s2l(Bytes) ->
+    decode(m__fight__over_info__s2l, Bytes).
+
+decode_m__fight__shouwei_op__s2l(Bytes) ->
+    decode(m__fight__shouwei_op__s2l, Bytes).
 
 decode_m__fight__langren_team_speak__s2l(Bytes) ->
     decode(m__fight__langren_team_speak__s2l, Bytes).
@@ -1899,7 +1953,8 @@ decode(p_duty, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(p_duty, Decoded);
 decode(m__fight__result__s2l, Bytes) ->
-    Types = [{15, next_level_up_exp, int32, []},
+    Types = [{16, victory_party, int32, []},
+	     {15, next_level_up_exp, int32, []},
 	     {14, level_up_exp, int32, []},
 	     {13, pre_level_up_exp, int32, []},
 	     {12, exp_add, int32, []}, {11, cur_exp, int32, []},
@@ -1974,6 +2029,17 @@ decode(m__fight__langren_team_speak__s2l, Bytes) ->
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__langren_team_speak__s2l, Decoded);
+decode(m__fight__shouwei_op__s2l, Bytes) ->
+    Types = [{2, seat_id, int32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__shouwei_op__s2l, Decoded);
+decode(m__fight__over_info__s2l, Bytes) ->
+    Types = [{4, dead_list, int32, [repeated]},
+	     {3, duty_list, p_duty, [is_record, repeated]},
+	     {2, winner, int32, [repeated]}, {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__over_info__s2l, Decoded);
 decode(m__resource__push__s2l, Bytes) ->
     Types = [{4, action_id, int32, []}, {3, num, int32, []},
 	     {2, resource_id, int32, []}, {1, msg_id, int32, []}],
@@ -2501,6 +2567,20 @@ to_record(m__fight__langren_team_speak__s2l,
 					 Record, Name, Val)
 		end,
 		#m__fight__langren_team_speak__s2l{}, DecodedTuples);
+to_record(m__fight__shouwei_op__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__shouwei_op__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__shouwei_op__s2l{}, DecodedTuples);
+to_record(m__fight__over_info__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__over_info__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__over_info__s2l{}, DecodedTuples);
 to_record(m__resource__push__s2l, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields,
