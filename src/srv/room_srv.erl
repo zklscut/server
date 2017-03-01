@@ -136,22 +136,16 @@ handle_cast(Cast, State) ->
     end.
 
 handle_cast_inner({enter_room, RoomId, PlayerId}, State) ->
-    lager:info("enter_room1"),
     lib_room:assert_room_exist(RoomId),
-    lager:info("enter_room2"),
     Room = lib_room:get_room(RoomId),
-    lager:info("enter_room3"),
     lib_room:assert_room_not_full(Room),
-    lager:info("enter_room4"),
     #{player_list := PlayerList} = Room,
     NewRoom = Room#{player_list := PlayerList ++ [PlayerId]},
     lib_room:update_room(RoomId, NewRoom),
-    lager:info("enter_room5"),
     global_op_srv:player_op(PlayerId, {mod_room, handle_enter_room, [NewRoom]}),
     mod_room:notice_team_change(NewRoom),
-    lager:info("enter_room6"),
     mod_chat:send_system_room_chat(?SYSTEM_CHAT_ROOM_ENTER, lib_player:get_name(PlayerId), RoomId),
-
+    % NewRoomAfterReady = do_ready(RoomId, PlayerId),
     %%通知正在发言的人
     notice_chat_info(PlayerId, NewRoom),
     lager:info("enter_room7"),
@@ -168,6 +162,7 @@ handle_cast_inner({create_room, MaxPlayerNum, RoomName, DutyList, Player}, State
                    room_status => 0,
                    duty_list => DutyList},
     lib_room:update_room(RoomId, Room),
+    % NewRoomAfterReady = do_ready(RoomId, PlayerId),
     global_op_srv:player_op(PlayerId, {mod_room, handle_create_room, [Room]}),
     {noreply, State};        
 
@@ -211,20 +206,7 @@ handle_cast_inner({update_room_status, RoomId, BaseStatus, GameRound, Night, Day
     {noreply, State};
 
 handle_cast_inner({ready, RoomId, PlayerId}, State) ->
-    lib_room:assert_room_exist(RoomId),
-    Room = lib_room:get_room(RoomId),
-    NewReadyList = util:add_element_single(PlayerId, maps:get(ready_list, Room)),
-    NewRoom = maps:put(ready_list, NewReadyList, Room),
-    mod_room:notice_team_change(NewRoom),
-
-    case length(NewReadyList) == length(maps:get(player_list, Room)) of
-        true ->
-            Send = #m__room__notice_all_ready__s2l{},
-            mod_room:send_to_room(Send, NewRoom);
-        false ->
-            ignore
-    end,
-
+    do_ready(RoomId, PlayerId),
     {noreply, State};
 
 handle_cast_inner({cancle_ready, RoomId, PlayerId}, State) ->
@@ -279,12 +261,32 @@ code_change(_OldVsn, State, _Extra) ->
 %% Internal functions
 %% ====================================================================
 
+do_ready(RoomId, PlayerId)->
+    lib_room:assert_room_exist(RoomId),
+    Room = lib_room:get_room(RoomId),
+    NewReadyList = util:add_element_single(PlayerId, maps:get(ready_list, Room)),
+    NewRoom = maps:put(ready_list, NewReadyList, Room),
+    lib_room:update_room(RoomId, NewRoom),
+    mod_room:notice_team_change(NewRoom),
+
+    case (length(NewReadyList) == maps:get(max_player_num, Room)) andalso 
+                        (length(NewReadyList) == length(maps:get(player_list, Room))) of
+        true ->
+            Send = #m__room__notice_all_ready__s2l{},
+            mod_room:send_to_room(Send, NewRoom);
+        false ->
+            ignore
+    end,
+    NewRoom.
+
 do_cancel_ready(RoomId, PlayerId)->
     lib_room:assert_room_exist(RoomId),
     Room = lib_room:get_room(RoomId),
     NewReadyList = maps:get(ready_list, Room) -- [PlayerId],
     NewRoom = maps:put(ready_list, NewReadyList, Room),
-    mod_room:notice_team_change(NewRoom).
+    lib_room:update_room(RoomId, NewRoom),
+    mod_room:notice_team_change(NewRoom),
+    NewRoom.
 
 do_player_exit_room(RoomId, PlayerId)->
     try
