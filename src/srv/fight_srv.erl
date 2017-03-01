@@ -33,7 +33,11 @@
          state_day/2,
          state_night/2,
          state_fight_over/2,
-         state_over/2]).
+         state_over/2,
+         state_lapiao_fayan/2,
+         state_toupiao_mvp/2,
+         state_toupiao_carry/2,
+         state_game_over/2]).
 
 -include("fight.hrl").
 -include("errcode.hrl").
@@ -864,7 +868,7 @@ state_fight_over(start, State) ->
 
     send_event_inner(start, b_fight_state_wait:get(state_fight_over)),
     StateAfterMvp = maps:put(mvp_party, Winner, NewState),
-    StateAfterCarry = maps:put(carry_part, lib_fight:get_all_seat(StateAfterCarry) -- Winner),
+    StateAfterCarry = maps:put(carry_part, lib_fight:get_all_seat(StateAfterMvp) -- Winner),
     StateAfterFayanTurn = maps:put(fayan_turn, lib_fight:get_all_seat()),
     {next_state, state_lapiao_fayan, StateAfterCarry}.
 
