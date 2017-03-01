@@ -859,18 +859,16 @@ state_night(over, State)->
 %% state_fight_over 战斗结束
 %% ====================================================================
 state_fight_over(start, State) ->
-
     NewState = out_die_player(State),
     {_, Winner, VictoryParty} = get_fight_result(NewState),
-
     %%todo:通知战斗信息
     %%send_fight_result(Winner, VictoryParty, NewState),
-
+    notice_game_status_change(state_fight_over, NewState),
     send_event_inner(start, b_fight_state_wait:get(state_fight_over)),
     StateAfterMvp = maps:put(mvp_party, Winner, NewState),
     StateAfterCarry = maps:put(carry_part, lib_fight:get_all_seat(StateAfterMvp) -- Winner, StateAfterMvp),
     StateAfterFayanTurn = maps:put(fayan_turn, lib_fight:get_all_seat(), StateAfterCarry),
-    {next_state, state_lapiao_fayan, StateAfterCarry}.
+    {next_state, state_lapiao_fayan, StateAfterFayanTurn}.
 
 %%拉票发言环节
 state_lapiao_fayan(start, State) ->
@@ -895,9 +893,18 @@ state_lapiao_fayan(op_over, State) ->
 
 %%投票mvp
 state_toupiao_mvp(start, State) ->
-    notice_game_status_change(state_toupiao_mvp, State),
-    send_event_inner(wait_op, b_fight_state_wait:get(state_toupiao_mvp)),
-    {next_state, state_toupiao_mvp, State};
+    Mvp = maps:get(mvp, State),
+    NextState = 
+    case Mvp == 0 of
+        true->
+            notice_game_status_change(state_toupiao_mvp, State),
+            send_event_inner(wait_op, b_fight_state_wait:get(state_toupiao_mvp)),
+            state_toupiao_mvp;
+        false
+            send_event_inner(start),
+            state_toupiao_carry
+    end,
+    {next_state, NextState, State};
     
 state_toupiao_mvp(wait_op, State) ->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_TOUPIAO)),
@@ -1706,7 +1713,9 @@ get_next_game_state(GameState) ->
         state_toupiao_death_fayan ->
             state_night;
         state_night ->
-            state_shouwei
+            state_shouwei;
+        state_lapiao_fayan->
+            state_toupiao_mvp
     end.
 
 get_state_legal_op(GameState) ->
@@ -1808,7 +1817,9 @@ get_status_id(GameState) ->
         state_toupiao_mvp ->
             22;
         state_toupiao_carry ->
-            23
+            23;
+        state_fight_over ->
+            24
     end.
 
 fight_test_no_send(StateName, State) ->
