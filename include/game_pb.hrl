@@ -54,7 +54,7 @@
 -record(m__fight__xuanju_result__s2l, {msg_id=15009, xuanju_type, result_list, is_draw, result_id}).
 -record(m__fight__night_result__s2l, {msg_id=15010, die_list}).
 -record(p_duty, {seat_id, duty_id}).
--record(m__fight__result__s2l, {msg_id=15011, winner, duty_list, lover, hunxuer, daozei, mvp, carry, coin_add, cur_level, cur_exp, exp_add, pre_level_up_exp, level_up_exp, next_level_up_exp}).
+-record(m__fight__result__s2l, {msg_id=15011, winner, duty_list, lover, hunxuer, daozei, mvp, carry, coin_add, cur_level, cur_exp, exp_add, pre_level_up_exp, level_up_exp, next_level_up_exp, victory_party}).
 -record(m__fight__guipiao__s2l, {msg_id=15012, guipiao_list}).
 -record(m__fight__notice_fayan__s2l, {msg_id=15013, seat_id}).
 -record(m__fight__stop_fayan__s2l, {msg_id=15014, seat_id}).
@@ -66,4 +66,6 @@
 -record(m__fight__offline__s2l, {msg_id=15020, offline_list}).
 -record(m__fight__op_timetick__s2l, {msg_id=15021, timetick}).
 -record(m__fight__langren_team_speak__s2l, {msg_id=15022, chat}).
+-record(m__fight__shouwei_op__s2l, {msg_id=15023, seat_id}).
+-record(m__fight__over_info__s2l, {msg_id=15024, winner, duty_list, dead_list}).
 -record(m__resource__push__s2l, {msg_id=16001, resource_id, num, action_id}).
