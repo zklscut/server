@@ -856,14 +856,6 @@ state_night(over, State)->
     {next_state, get_next_game_state(state_night), State}.
 
 
-send_fight_result(Winner, VictoryParty, State) ->
-    DutyList = [#p_duty{seat_id = SeatId,
-                        duty_id = DutyId} || 
-                        {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, State))], 
-    [fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, State)
-                 || {ResultSeatId, ResultDutyId} <- maps:to_list(maps:get(seat_duty_map, State))].
-
-
 
 
 %% ====================================================================
