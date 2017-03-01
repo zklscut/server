@@ -122,7 +122,7 @@
                   leave_player => [],     %%战斗中离开玩家
                   mvp_party => [],         %%参选mvp的人
                   mvp_draw_cnt => 0,      %%mvp重投次数      
-                  carry_part =>[],        %%参选carry的人
+                  carry_party =>[],        %%参选carry的人
                   carry_draw_cnt => 0     %%carry重投次数
                   }).
 
