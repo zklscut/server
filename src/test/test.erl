@@ -12,6 +12,9 @@
 %% ====================================================================
 -export([start/0, send/1, stop/1, recv/1, send_room/1, recv_room/1]).
 
+test1() ->
+	2.
+
 start() ->
     {ok, Sock} = gen_tcp:connect("112.74.183.119", 19000,
                                  [{active, false}, {packet, 0}]),

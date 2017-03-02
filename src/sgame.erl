@@ -17,10 +17,12 @@ start() ->
     application:start(lager),
     crypto:start(),
     application:start(emysql),
+    application:start(mochiweb),
     application:start(game).
 
 stop() ->
-    application:stop(game),
+    application:stop(game), 
+    application:stop(mochiweb),
     application:stop(emysql),
     application:stop(lager).
 
