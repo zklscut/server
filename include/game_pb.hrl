@@ -40,6 +40,7 @@
 -record(m__room__cancle_ready__l2s, {msg_id=13025}).
 -record(m__room__notice_all_ready__s2l, {msg_id=13026}).
 -record(m__room__login_not_in_room__s2l, {msg_id=13027}).
+-record(m__room__enter_fail__s2l, {msg_id=13028}).
 -record(p_chat, {player_show_base, voice, content, length, compress, chat_type, room_id, msg_type}).
 -record(m__chat__public_speak__l2s, {msg_id=14001, chat}).
 -record(m__chat__public_speak__s2l, {msg_id=14002, chat}).
