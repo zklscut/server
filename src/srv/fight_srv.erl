@@ -950,7 +950,7 @@ state_toupiao_mvp(op_over, State) ->
                 _->
                     %%安装魅力值高低选择一个(如果魅力值有相同的(?是否随机一个))
                     %%lib_fight:get_max_luck_seat(maps:get(mvp_party, NewState), NewState)
-                    1
+                    lib_fight:get_max_luck_seat(maps:get(mvp_party, NewState), NewState)
             end,
             notice_state_toupiao_mvp_result(IsDraw, SelectMvp, TouPiaoResult, NewState),
             StateAfterMvp = maps:put(mvp, SelectMvp, NewState),
@@ -986,28 +986,28 @@ state_toupiao_carry(timeout, State) ->
 state_toupiao_carry(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     {IsDraw, TouPiaoResult, MaxSelectList, NewState} = lib_fight:do_toupiao_carry_op(State),
-    Mvp = maps:get(mvp, NewState),
+    Carry = maps:get(carry, NewState),
     case IsDraw of
         true ->
-            notice_state_toupiao_carry_result(IsDraw, Mvp, TouPiaoResult, NewState),
+            notice_state_toupiao_carry_result(IsDraw, Carry, TouPiaoResult, NewState),
             StateAfterMvpParty = maps:put(carry_party, MaxSelectList, NewState),
             send_event_inner(start, b_fight_state_over_wait:get(state_toupiao_carry)),
             {next_state, state_lapiao_fayan, maps:put(fayan_turn, MaxSelectList, StateAfterMvpParty)};
         false ->   
             %%临时6秒
-            SelectMvp = 
-            case Mvp =/= 0 of
+            SelectCarry = 
+            case Carry =/= 0 of
                 true->
-                    Mvp;
+                    Carry;
                 _->
                     %%安装魅力值高低选择一个(如果魅力值有相同的(?是否随机一个))
                     %%lib_fight:get_max_luck_seat(maps:get(mvp_party, NewState), NewState)
-                    1
+                    lib_fight:get_max_luck_seat(maps:get(carry_party, NewState), NewState)
             end,
-            notice_state_toupiao_carry_result(IsDraw, SelectMvp, TouPiaoResult, NewState),
-            StateAfterMvp = maps:put(mvp, SelectMvp, NewState),
+            notice_state_toupiao_carry_result(IsDraw, SelectCarry, TouPiaoResult, NewState),
+            StateAfterCarry = maps:put(carry, SelectCarry, NewState),
             send_event_inner(wait_over, b_fight_state_over_wait:get(state_toupiao_carry)),
-            {next_state, state_toupiao_carry, StateAfterMvp}
+            {next_state, state_toupiao_carry, StateAfterCarry}
     end;
 
 state_toupiao_carry(wait_over, State)->

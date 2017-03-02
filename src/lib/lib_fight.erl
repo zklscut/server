@@ -51,7 +51,8 @@
          clear_last_op/1,
          lover_die_judge/2,
          get_lover_kill/1,
-         set_skill_die_list/2]).
+         set_skill_die_list/2,
+         get_max_luck_seat/2]).
 
 -include("fight.hrl").
 -include("game_pb.hrl").
