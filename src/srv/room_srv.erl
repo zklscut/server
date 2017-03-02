@@ -199,6 +199,7 @@ handle_cast_inner({update_room_fight_pid, RoomId, Pid}, State) ->
     NewRoom = Room#{fight_pid=>Pid, want_chat_list=>[], ready_list=>[]},
     lib_room:update_room(RoomId, NewRoom),
     mod_room:notice_team_change(NewRoom),
+    mod_room:update_chat_list(NewRoom),
     {noreply, State};
 
 handle_cast_inner({update_room_status, RoomId, BaseStatus, GameRound, Night, Day}, State)->
@@ -323,6 +324,7 @@ want_chat_local(RoomId, PlayerId)->
     NewWantChatList = util:add_element_single(PlayerId, WantChatList),
     NewRoom = maps:put(want_chat_list, NewWantChatList, Room),
     lib_room:update_room(RoomId, NewRoom),
+    mod_room:update_chat_list(NewRoom),
     case WantChatList of
         [] ->
             do_start_chat(PlayerId, NewRoom, RoomId);
@@ -331,14 +333,11 @@ want_chat_local(RoomId, PlayerId)->
     end.
 
 notice_chat_info(PlayerId, Room)->
-    lager:info("notice_chat_info1"),
     WantChatList = maps:get(want_chat_list, Room),
     case WantChatList of
         []->
-            lager:info("notice_chat_info2"),
             ignore;
         _->
-            lager:info("notice_chat_info3"),
             ChatStartTime = maps:get(chat_start_time, Room),
             CurTime = util:get_micro_time(),
             Send = #m__room__notice_chat_info__s2l{
@@ -366,7 +365,8 @@ do_exit_chat(PlayerId, RoomId)->
             do_end_chat(RoomId, PlayerId);
         false ->
             NewRoom = maps:put(want_chat_list, WantChatList -- [PlayerId], Room),
-            lib_room:update_room(RoomId, NewRoom)
+            lib_room:update_room(RoomId, NewRoom),
+            mod_room:update_chat_list(NewRoom)
     end.
 
 do_end_chat(RoomId, PlayerId) ->
@@ -387,6 +387,7 @@ do_end_chat(RoomId, PlayerId) ->
         NewWantChatList = tl(WantChatList),
         NewRoom = maps:put(want_chat_list, NewWantChatList, Room),
         lib_room:update_room(RoomId, NewRoom),
+        mod_room:update_chat_list(NewRoom),
         case NewWantChatList of
             [] ->
                 SendEmpty = #m__room__notice_start_chat__s2l{start_id = 0,wait_list=[]},

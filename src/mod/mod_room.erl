@@ -176,13 +176,7 @@ end_chat(#m__room__end_chat__l2s{}, Player) ->
     {ok, Player}. 
 
 want_chat_list(#m__room__want_chat_list__l2s{}, Player)->
-    RoomId = maps:get(room_id, Player, 0),
-    lib_room:assert_room_exist(RoomId),
-    Room = lib_room:get_room(RoomId),
-    WantChatList = maps:get(want_chat_list, Room),
-    WaitList = [lib_player:get_name(PlayerId) || PlayerId<-WantChatList],
-    Send = #m__room__want_chat_list__s2l{wait_list = WaitList},
-    net_send:send(Send, Player),
+    send_chat_list(Player),
     {ok, Player}.
 
 notice_team_change(Room)->
@@ -192,6 +186,18 @@ notice_team_change(Room)->
     Send = #m__room__notice_member_change__s2l{room_info = conver_to_p_room(Room),
                                                  member_list = MemberList},
     send_to_room(Send, Room).
+
+update_chat_list(Room)->
+    [send_chat_list(lib_player:get_player(PlayerId)) || PlayerId <- maps:get(player_list, Room)].
+
+send_chat_list(Player)->
+    RoomId = maps:get(room_id, Player, 0),
+    lib_room:assert_room_exist(RoomId),
+    Room = lib_room:get_room(RoomId),
+    WantChatList = maps:get(want_chat_list, Room),
+    WaitList = [lib_player:get_name(PlayerId) || PlayerId<-WantChatList],
+    Send = #m__room__want_chat_list__s2l{wait_list = WaitList},
+    send_to_player(Send, Player).
 
 send_to_room(Send, Room) ->
     #{player_list := PlayerList} = Room,
