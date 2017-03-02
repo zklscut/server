@@ -105,7 +105,7 @@ player_leave(Pid, PlayerId) ->
 %% ====================================================================
 
 init([RoomId, PlayerList, DutyList, State]) ->
-    room_srv:update_room_fight_pid(RoomId, self()),
+    lib_room:update_fight_pid(RoomId, self()),
     lib_room:update_room_status(RoomId, 1, 0, 1, 0),
     NewState = lib_fight:init(RoomId, PlayerList, DutyList, State),
     % NewStateAfterTest = ?IF(?TEST, fight_test_no_send(init, State), NewState),
