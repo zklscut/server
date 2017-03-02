@@ -204,13 +204,23 @@ send_to_player(Send, Player) ->
     net_send:send(Send, Player).
 
 ready(#m__room__ready__l2s{}, Player) ->
-    RoomId = lib_room:get_player_room_id(Player),
-    room_srv:ready(RoomId, lib_player:get_player_id(Player)),
+    case lib_room:is_in_fight() of
+        false->
+            RoomId = lib_room:get_player_room_id(Player),
+            room_srv:ready(RoomId, lib_player:get_player_id(Player));
+        _->
+            ignore
+    end,
     {ok, Player}.
 
 cancle_ready(#m__room__cancle_ready__l2s{}, Player) ->
-    RoomId = lib_room:get_player_room_id(Player),
-    room_srv:cancle_ready(RoomId, lib_player:get_player_id(Player)),
+    case lib_room:is_in_fight() of
+        false->
+            RoomId = lib_room:get_player_room_id(Player),
+            room_srv:cancle_ready(RoomId, lib_player:get_player_id(Player));
+        _->
+            ignore
+    end,
     {ok, Player}.
 
 %%%====================================================================
