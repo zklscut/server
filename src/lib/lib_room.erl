@@ -52,6 +52,12 @@ assert_not_have_room(Player) ->
             throw(?ERROR)
     end.
 
+is_room_full(Room)->
+   #{max_player_num := MaxPlayerNum,
+      player_list := PlayerList} = Room,
+   length(PlayerList) >= MaxPlayerNum. 
+
+
 assert_room_not_full(Room) ->
     #{max_player_num := MaxPlayerNum,
       player_list := PlayerList} = Room,

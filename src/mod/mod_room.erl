@@ -40,11 +40,16 @@ get_list(#m__room__get_list__l2s{}, Player) ->
     {ok, Player}.
 
 enter_room(#m__room__enter_room__l2s{room_id = RoomId}, Player) ->
-    lager:info("mod_enter_room1"),
     lib_room:assert_not_have_room(Player),
-    lager:info("mod_enter_room2"),
-    room_srv:enter_room(RoomId, Player),
-    lager:info("mod_enter_room3"),
+    lib_room:assert_room_exist(RoomId),
+    Room = lib_room:get_room(RoomId),
+    case lib_room:is_room_full(Room) of
+        true->
+            send_to_player(#m__room__enter_fail__s2l{}, Player);
+        _->
+            room_srv:enter_room(RoomId, Player),
+    end,
+    
     {ok, Player}.
 
 handle_enter_room(Room, Player) ->
