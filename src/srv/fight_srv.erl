@@ -1030,6 +1030,7 @@ state_game_over(start, State) ->
 %% ====================================================================
 
 state_over(start, State) ->
+    RoomId = maps:get(room_id, State),
     room_srv:update_room_fight_pid(RoomId, undefined),
     lib_room:update_room_status(RoomId, 0, 0, 0, 0),
     {stop, normal, State}.
