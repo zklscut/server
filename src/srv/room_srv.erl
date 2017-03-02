@@ -196,7 +196,9 @@ handle_cast_inner({kick_player, RoomId, OpName, PlayerId}, State) ->
 handle_cast_inner({update_room_fight_pid, RoomId, Pid}, State) ->
     lib_room:assert_room_exist(RoomId),
     Room = lib_room:get_room(RoomId),
-    lib_room:update_room(RoomId, Room#{fight_pid=>Pid, want_chat_list=>[], ready_list=>[]}),
+    NewRoom = Room#{fight_pid=>Pid, want_chat_list=>[], ready_list=>[]},
+    lib_room:update_room(RoomId, NewRoom),
+    mod_room:notice_team_change(NewRoom),
     {noreply, State};
 
 handle_cast_inner({update_room_status, RoomId, BaseStatus, GameRound, Night, Day}, State)->
