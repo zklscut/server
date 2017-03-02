@@ -56,7 +56,8 @@
 	 decode_m__chat__public_speak__s2l/1,
 	 encode_m__chat__public_speak__l2s/1,
 	 decode_m__chat__public_speak__l2s/1, encode_p_chat/1,
-	 decode_p_chat/1,
+	 decode_p_chat/1, encode_m__room__enter_fail__s2l/1,
+	 decode_m__room__enter_fail__s2l/1,
 	 encode_m__room__login_not_in_room__s2l/1,
 	 decode_m__room__login_not_in_room__s2l/1,
 	 encode_m__room__notice_all_ready__s2l/1,
@@ -217,6 +218,8 @@
 -record(p_chat,
 	{player_show_base, voice, content, length, compress,
 	 chat_type, room_id, msg_type}).
+
+-record(m__room__enter_fail__s2l, {msg_id}).
 
 -record(m__room__login_not_in_room__s2l, {msg_id}).
 
@@ -442,6 +445,10 @@ encode_m__chat__public_speak__l2s(Record)
 
 encode_p_chat(Record) when is_record(Record, p_chat) ->
     encode(p_chat, Record).
+
+encode_m__room__enter_fail__s2l(Record)
+    when is_record(Record, m__room__enter_fail__s2l) ->
+    encode(m__room__enter_fail__s2l, Record).
 
 encode_m__room__login_not_in_room__s2l(Record)
     when is_record(Record,
@@ -1020,6 +1027,11 @@ encode(m__room__login_not_in_room__s2l, _Record) ->
 			   with_default(_Record#m__room__login_not_in_room__s2l.msg_id,
 					13027),
 			   int32, [])]);
+encode(m__room__enter_fail__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__room__enter_fail__s2l.msg_id,
+					13028),
+			   int32, [])]);
 encode(p_chat, _Record) ->
     iolist_to_binary([pack(1, optional,
 			   with_default(_Record#p_chat.player_show_base, none),
@@ -1559,6 +1571,9 @@ decode_m__chat__public_speak__l2s(Bytes) ->
 
 decode_p_chat(Bytes) -> decode(p_chat, Bytes).
 
+decode_m__room__enter_fail__s2l(Bytes) ->
+    decode(m__room__enter_fail__s2l, Bytes).
+
 decode_m__room__login_not_in_room__s2l(Bytes) ->
     decode(m__room__login_not_in_room__s2l, Bytes).
 
@@ -1891,6 +1906,10 @@ decode(m__room__login_not_in_room__s2l, Bytes) ->
     Types = [{1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__login_not_in_room__s2l, Decoded);
+decode(m__room__enter_fail__s2l, Bytes) ->
+    Types = [{1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__room__enter_fail__s2l, Decoded);
 decode(p_chat, Bytes) ->
     Types = [{8, msg_type, int32, []},
 	     {7, room_id, int32, []}, {6, chat_type, int32, []},
@@ -2403,6 +2422,13 @@ to_record(m__room__login_not_in_room__s2l,
 					 Record, Name, Val)
 		end,
 		#m__room__login_not_in_room__s2l{}, DecodedTuples);
+to_record(m__room__enter_fail__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__room__enter_fail__s2l),
+					 Record, Name, Val)
+		end,
+		#m__room__enter_fail__s2l{}, DecodedTuples);
 to_record(p_chat, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields, p_chat), Record,
