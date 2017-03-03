@@ -19,6 +19,7 @@
          get_room_duty_list/1,
          is_in_fight/1,
          handle_online/1,
+         is_room_full/1,
          update_room_status/5]).
 
 -include("game_pb.hrl").
