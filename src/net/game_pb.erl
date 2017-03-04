@@ -252,7 +252,7 @@
 -record(m__room__end_chat__l2s, {msg_id}).
 
 -record(m__room__notice_start_chat__s2l,
-	{msg_id, start_id, wait_list}).
+	{msg_id, start_id, wait_list, duration}).
 
 -record(m__room__want_chat__s2l, {msg_id, wait_list}).
 
@@ -913,6 +913,10 @@ encode(m__room__notice_start_chat__s2l, _Record) ->
 			   uint32, []),
 		      pack(3, repeated,
 			   with_default(_Record#m__room__notice_start_chat__s2l.wait_list,
+					none),
+			   uint32, []),
+		      pack(4, required,
+			   with_default(_Record#m__room__notice_start_chat__s2l.duration,
 					none),
 			   uint32, [])]);
 encode(m__room__end_chat__l2s, _Record) ->
@@ -1845,7 +1849,8 @@ decode(m__room__want_chat__s2l, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__want_chat__s2l, Decoded);
 decode(m__room__notice_start_chat__s2l, Bytes) ->
-    Types = [{3, wait_list, uint32, [repeated]},
+    Types = [{4, duration, uint32, []},
+	     {3, wait_list, uint32, [repeated]},
 	     {2, start_id, uint32, []}, {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__notice_start_chat__s2l, Decoded);
