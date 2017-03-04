@@ -27,7 +27,7 @@
 -record(m__room__notice_member_change__s2l, {msg_id=13012, room_info, member_list}).
 -record(m__room__want_chat__l2s, {msg_id=13013}).
 -record(m__room__want_chat__s2l, {msg_id=13014, wait_list}).
--record(m__room__notice_start_chat__s2l, {msg_id=13015, start_id, wait_list}).
+-record(m__room__notice_start_chat__s2l, {msg_id=13015, start_id, wait_list, duration}).
 -record(m__room__end_chat__l2s, {msg_id=13016}).
 -record(m__room__want_chat_list__l2s, {msg_id=13017}).
 -record(m__room__want_chat_list__s2l, {msg_id=13018, wait_list}).
