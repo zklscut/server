@@ -380,7 +380,7 @@ do_end_chat(RoomId, PlayerId) ->
             true ->
                 ok;
             false ->
-                Send = #m__room__notice_start_chat__s2l{start_id = 0,wait_list=[]},
+                Send = #m__room__notice_start_chat__s2l{start_id = 0,wait_list=[], duration = 0},
                 mod_room:send_to_room(Send, Room),
                 throw(ignore)
         end,
