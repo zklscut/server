@@ -351,7 +351,8 @@ notice_chat_info(PlayerId, Room)->
 do_start_chat(PlayerId, Room, RoomId) ->
     WantChatList = maps:get(want_chat_list, Room),
     Send = #m__room__notice_start_chat__s2l{start_id = PlayerId,
-                                            wait_list = WantChatList},
+                                            wait_list = WantChatList,
+                                            duration = ?ROOM_CHAT_TIME},
     mod_room:send_to_room(Send, Room),
     lib_room:update_room(RoomId, maps:put(chat_start_time, util:get_micro_time(), Room)),
     erlang:send_after(?ROOM_CHAT_TIME, self(), {chat_timeout, PlayerId, RoomId}).

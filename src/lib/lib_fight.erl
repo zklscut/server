@@ -404,17 +404,14 @@ do_nvwu_op(State) ->
     clear_last_op(StateAfterNvKill).        
 
 do_langren_op(State) ->
-    lager:info("do_langren_op1111111111111"),
     LastOpData = get_last_op(State),
     KillSeat = 
         case maps:to_list(LastOpData) of
             [] ->
                 0;
             _ ->
-                lager:info("do_langren_op22222222"),
                 rand_target_in_op(filter_last_op(LastOpData))
         end,
-    lager:info("do_langren_op3333333333333"),
     StateAfterLangren = maps:put(langren, KillSeat, State),
     StateAfterUpdateDie = do_set_die_list(StateAfterLangren),
 
@@ -747,14 +744,15 @@ set_skill_die_list(StateName, State) ->
 %%是否需要做默认技能延时(猎人未翻牌的情况下，避免猎人被发现)
 %%平安夜或者猎人翻牌不做延时直接跳过
 is_need_someone_die_default_delay(State)->
+    LieRenExist = is_duty_exist(?DUTY_LIEREN, State),
     FlopLieRen = maps:get(flop_lieren, State),
     SafeNight = maps:get(safe_night, State),
     QuzhuOp = maps:get(quzhu_op, State),
     Quzhu = maps:get(quzhu, State),
     BaiLang = maps:get(bailang, State),
     SkillDDelay = maps:get(skill_d_delay, State),
-    lager:info("is_need_someone_die_default_delay  ~p",[FlopLieRen,SafeNight,QuzhuOp,Quzhu,BaiLang,SkillDDelay]),
-    (FlopLieRen == 0) andalso (SkillDDelay == 0) andalso (BaiLang == 0) andalso (((QuzhuOp == 0) andalso (SafeNight =/= 1)) orelse ((QuzhuOp == 1) andalso (Quzhu =/= 0))).
+    LieRenExist andalso (FlopLieRen == 0) andalso (SkillDDelay == 0) andalso (BaiLang == 0) andalso 
+                (((QuzhuOp == 0) andalso (SafeNight =/= 1)) orelse ((QuzhuOp == 1) andalso (Quzhu =/= 0))).
 
 
 
@@ -763,14 +761,11 @@ get_someone_die_op(State)->
     StateAfterDelay = 
     case SkillDieList of
         []->
-            lager:info("get_someone_die_op1  ~p"),
             State;
         _->
-            lager:info("get_someone_die_op2  ~p"),
             maps:put(skill_d_delay, 0, State)
     end,
     try
-        lager:info("get_someone_die_op3  ~p"),
         case SkillDieList of
             [] ->
                 %%如果有人死并且没有发动技能并且猎人没有翻牌做默认延时
@@ -783,7 +778,6 @@ get_someone_die_op(State)->
             _ ->
                 ok
         end,
-        lager:info("get_someone_die_op4  ~p"),
         {DieType, Die} = hd(SkillDieList),
         %%白狼自爆发动技能
         DoBaiLang = (DieType == ?DIE_TYPE_BOOM),
@@ -795,14 +789,12 @@ get_someone_die_op(State)->
         end,
         
         JingZhang = maps:get(jingzhang, StateAfterDelay),
-        lager:info("get_someone_die_op5  ~p", [JingZhang]),
         case (JingZhang =/= 0) andalso (not is_seat_alive(JingZhang, StateAfterDelay)) of
             true ->
                 throw(?OP_SKILL_CHANGE_JINGZHANG);
             false ->
                 ignore
         end,
-        lager:info("get_someone_die_op6  ~p"),
         case Die =/= 0 of
             true->
                 Duty = lib_fight:get_duty_by_seat(Die, StateAfterDelay),
@@ -816,7 +808,6 @@ get_someone_die_op(State)->
             false->
                 ignore
         end,
-        lager:info("get_someone_die_op7  ~p"),
         %%猎人已经出局直接跳过
         FlopLieRen = maps:get(flop_lieren, StateAfterDelay),
         case FlopLieRen == 1 of
@@ -932,7 +923,6 @@ clear_last_op(State) ->
     maps:put(last_op_data, #{}, State).
 
 rand_target_in_op(OpData) ->
-    lager:info("rand_target_in_op211111111111"),
     FunCout = 
         fun({_, [SeatId]}, CurList) ->
             case lists:keyfind(SeatId, 1, CurList) of
@@ -944,12 +934,10 @@ rand_target_in_op(OpData) ->
         end,
     CountSelectList = lists:foldl(FunCout, [], maps:to_list(OpData)),
     SeatListAfterKeysort = lists:keysort(2, CountSelectList),
-    lager:info("rand_target_in_op22222222222222222222"),
     case SeatListAfterKeysort of
         []->
             0;
         _->
-            lager:info("rand_target_in_op333333333333333333333"),
             {_, MaxSelectNum} = lists:last(SeatListAfterKeysort),
             RandSeatList = [CurSeatId || {CurSeatId, CurSelectNum} <- CountSelectList, CurSelectNum == MaxSelectNum],
             case RandSeatList of
@@ -1076,6 +1064,5 @@ do_set_die_list(State) ->
         false->
             StateAfterSafeDay
     end,
-    lager:info("out_die_player  ~p ", [DieAfterLover]),
     maps:put(die, lists:usort(DieAfterLover), StateAfterBaichi).
 
