@@ -3,6 +3,8 @@
 -export([encode/1, encode/2, decode/2,
 	 encode_m__resource__push__s2l/1,
 	 decode_m__resource__push__s2l/1,
+	 encode_m__fight__leave__s2l/1,
+	 decode_m__fight__leave__s2l/1,
 	 encode_m__fight__over_info__s2l/1,
 	 decode_m__fight__over_info__s2l/1,
 	 encode_m__fight__shouwei_op__s2l/1,
@@ -14,8 +16,8 @@
 	 encode_m__fight__offline__s2l/1,
 	 decode_m__fight__offline__s2l/1,
 	 encode_m__fight__online__s2l/1,
-	 decode_m__fight__online__s2l/1,
-	 encode_m__fight__do_skill__l2s/1,
+	 decode_m__fight__online__s2l/1, encode_p_flop/1,
+	 decode_p_flop/1, encode_m__fight__do_skill__l2s/1,
 	 decode_m__fight__do_skill__l2s/1,
 	 encode_m__fight__notice_skill__s2l/1,
 	 decode_m__fight__notice_skill__s2l/1,
@@ -140,6 +142,8 @@
 -record(m__resource__push__s2l,
 	{msg_id, resource_id, num, action_id}).
 
+-record(m__fight__leave__s2l, {msg_id, leave_list}).
+
 -record(m__fight__over_info__s2l,
 	{msg_id, winner, duty_list, dead_list}).
 
@@ -154,7 +158,10 @@
 
 -record(m__fight__online__s2l,
 	{msg_id, duty, game_state, round, speak_id, die_list,
-	 seat_id, attach_data1, attach_data2, offline_list}).
+	 seat_id, attach_data1, attach_data2, offline_list,
+	 leave_list, flop_list}).
+
+-record(p_flop, {seat_id, op}).
 
 -record(m__fight__do_skill__l2s, {msg_id, op, op_list}).
 
@@ -328,6 +335,10 @@ encode_m__resource__push__s2l(Record)
     when is_record(Record, m__resource__push__s2l) ->
     encode(m__resource__push__s2l, Record).
 
+encode_m__fight__leave__s2l(Record)
+    when is_record(Record, m__fight__leave__s2l) ->
+    encode(m__fight__leave__s2l, Record).
+
 encode_m__fight__over_info__s2l(Record)
     when is_record(Record, m__fight__over_info__s2l) ->
     encode(m__fight__over_info__s2l, Record).
@@ -352,6 +363,9 @@ encode_m__fight__offline__s2l(Record)
 encode_m__fight__online__s2l(Record)
     when is_record(Record, m__fight__online__s2l) ->
     encode(m__fight__online__s2l, Record).
+
+encode_p_flop(Record) when is_record(Record, p_flop) ->
+    encode(p_flop, Record).
 
 encode_m__fight__do_skill__l2s(Record)
     when is_record(Record, m__fight__do_skill__l2s) ->
@@ -1356,6 +1370,12 @@ encode(m__fight__do_skill__l2s, _Record) ->
 			   with_default(_Record#m__fight__do_skill__l2s.op_list,
 					none),
 			   int32, [])]);
+encode(p_flop, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#p_flop.seat_id, none), int32,
+			   []),
+		      pack(2, required, with_default(_Record#p_flop.op, none),
+			   int32, [])]);
 encode(m__fight__online__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__fight__online__s2l.msg_id,
@@ -1396,7 +1416,15 @@ encode(m__fight__online__s2l, _Record) ->
 		      pack(10, repeated,
 			   with_default(_Record#m__fight__online__s2l.offline_list,
 					none),
-			   int32, [])]);
+			   int32, []),
+		      pack(11, repeated,
+			   with_default(_Record#m__fight__online__s2l.leave_list,
+					none),
+			   int32, []),
+		      pack(12, repeated,
+			   with_default(_Record#m__fight__online__s2l.flop_list,
+					none),
+			   p_flop, [])]);
 encode(m__fight__offline__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__fight__offline__s2l.msg_id,
@@ -1450,6 +1478,15 @@ encode(m__fight__over_info__s2l, _Record) ->
 			   with_default(_Record#m__fight__over_info__s2l.dead_list,
 					none),
 			   int32, [])]);
+encode(m__fight__leave__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__leave__s2l.msg_id,
+					15025),
+			   int32, []),
+		      pack(2, repeated,
+			   with_default(_Record#m__fight__leave__s2l.leave_list,
+					none),
+			   int32, [])]);
 encode(m__resource__push__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__resource__push__s2l.msg_id,
@@ -1490,6 +1527,9 @@ pack(FNum, _, Data, Type, _) ->
 decode_m__resource__push__s2l(Bytes) ->
     decode(m__resource__push__s2l, Bytes).
 
+decode_m__fight__leave__s2l(Bytes) ->
+    decode(m__fight__leave__s2l, Bytes).
+
 decode_m__fight__over_info__s2l(Bytes) ->
     decode(m__fight__over_info__s2l, Bytes).
 
@@ -1507,6 +1547,8 @@ decode_m__fight__offline__s2l(Bytes) ->
 
 decode_m__fight__online__s2l(Bytes) ->
     decode(m__fight__online__s2l, Bytes).
+
+decode_p_flop(Bytes) -> decode(p_flop, Bytes).
 
 decode_m__fight__do_skill__l2s(Bytes) ->
     decode(m__fight__do_skill__l2s, Bytes).
@@ -2048,8 +2090,14 @@ decode(m__fight__do_skill__l2s, Bytes) ->
 	     {2, op, int32, []}, {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__do_skill__l2s, Decoded);
+decode(p_flop, Bytes) ->
+    Types = [{2, op, int32, []}, {1, seat_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(p_flop, Decoded);
 decode(m__fight__online__s2l, Bytes) ->
-    Types = [{10, offline_list, int32, [repeated]},
+    Types = [{12, flop_list, p_flop, [is_record, repeated]},
+	     {11, leave_list, int32, [repeated]},
+	     {10, offline_list, int32, [repeated]},
 	     {9, attach_data2, int32, [repeated]},
 	     {8, attach_data1, int32, [repeated]},
 	     {7, seat_id, int32, []},
@@ -2085,6 +2133,11 @@ decode(m__fight__over_info__s2l, Bytes) ->
 	     {2, winner, int32, [repeated]}, {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__over_info__s2l, Decoded);
+decode(m__fight__leave__s2l, Bytes) ->
+    Types = [{2, leave_list, int32, [repeated]},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__leave__s2l, Decoded);
 decode(m__resource__push__s2l, Bytes) ->
     Types = [{4, action_id, int32, []}, {3, num, int32, []},
 	     {2, resource_id, int32, []}, {1, msg_id, int32, []}],
@@ -2598,6 +2651,12 @@ to_record(m__fight__do_skill__l2s, DecodedTuples) ->
 					 Record, Name, Val)
 		end,
 		#m__fight__do_skill__l2s{}, DecodedTuples);
+to_record(p_flop, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields, p_flop), Record,
+					 Name, Val)
+		end,
+		#p_flop{}, DecodedTuples);
 to_record(m__fight__online__s2l, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields,
@@ -2641,6 +2700,13 @@ to_record(m__fight__over_info__s2l, DecodedTuples) ->
 					 Record, Name, Val)
 		end,
 		#m__fight__over_info__s2l{}, DecodedTuples);
+to_record(m__fight__leave__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__leave__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__leave__s2l{}, DecodedTuples);
 to_record(m__resource__push__s2l, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields,
