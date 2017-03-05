@@ -68,9 +68,13 @@ init(RoomId, PlayerList, DutyList, State) ->
     State3 = init_duty(PlayerList, DutyList, State2),
     State3#{player_num := length(DutyList)}.
 
+
 send_to_all_player(Send, State) ->
+    send_to_all_player(Send, State, []).
+
+send_to_all_player(Send, State, NotSendList)
     [net_send:send(Send, PlayerId) || PlayerId <- maps:keys(maps:get(player_seat_map, State)),
-     is_active_in_fight(PlayerId, State)].
+     is_active_in_fight(PlayerId, State), not lists:member(PlayerId, NotSendList)].
 
 send_to_seat(Send, SeatId, State) ->
     PlayerId = get_player_id_by_seat(SeatId, State),
@@ -502,7 +506,7 @@ do_fayan_op(State) ->
 do_send_fayan(PlayerId, Chat, State) ->
     Player = lib_player:get_player(PlayerId),
     Send = #m__fight__speak__s2l{chat = mod_chat:get_p_chat(Chat, Player)},
-    send_to_all_player(Send, State).
+    send_to_all_player(Send, State, [PlayerId]).
 
 do_send_langren_team_fayan(PlayerId, Chat, SeatList, State) ->
     Player = lib_player:get_player(PlayerId),
@@ -983,7 +987,7 @@ get_max_luck_seat(SeatList, State)->
         _ ->
             PlayerIdList = [get_player_id_by_seat(SeatId, State) || SeatId <- SeatList],
             PlayerLuckList = [{PlayerId, mod_resource:get_num(?RESOURCE_LUCK, PlayerId)} || PlayerId <- PlayerIdList],
-            {_, MaxLuck} = lists:reverse(lists:keysort(2, PlayerLuckList)),
+            MaxLuck = lists:reverse(lists:keysort(2, PlayerLuckList)),
             MaxLuckPlayerList = [PlayerId || {PlayerId, Luck} <- PlayerLuckList, Luck == MaxLuck],
             util:rand_in_list(MaxLuckPlayerList)
     end.
