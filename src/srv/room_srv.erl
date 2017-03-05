@@ -375,6 +375,8 @@ do_exit_chat(PlayerId, RoomId)->
                 []->
                     ignore;
                 _->
+                    ChatStartTime = maps:get(chat_start_time, Room),
+                    CurTime = util:get_micro_time(),
                     Send = #m__room__notice_chat_info__s2l{
                                             player_id = hd(WantChatList),
                                             wait_time = ?ROOM_CHAT_TIME - (CurTime - ChatStartTime)
