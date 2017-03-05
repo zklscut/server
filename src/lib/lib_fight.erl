@@ -72,7 +72,7 @@ init(RoomId, PlayerList, DutyList, State) ->
 send_to_all_player(Send, State) ->
     send_to_all_player(Send, State, []).
 
-send_to_all_player(Send, State, NotSendList)
+send_to_all_player(Send, State, NotSendList) ->
     [net_send:send(Send, PlayerId) || PlayerId <- maps:keys(maps:get(player_seat_map, State)),
      is_active_in_fight(PlayerId, State) andalso (not lists:member(PlayerId, NotSendList))].
 
