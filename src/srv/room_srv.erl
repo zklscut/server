@@ -379,7 +379,8 @@ do_exit_chat(PlayerId, RoomId)->
                                             player_id = hd(WantChatList),
                                             wait_time = ?ROOM_CHAT_TIME - (CurTime - ChatStartTime)
                                         },
-                    mod_room:send_to_room(Send, Room);
+                    mod_room:send_to_room(Send, Room)
+            end
     end.
 
 do_end_chat(RoomId, PlayerId) ->
