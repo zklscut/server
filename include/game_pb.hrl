@@ -64,10 +64,12 @@
 -record(m__fight__notice_part_jingzhang__s2l, {msg_id=15016, seat_list}).
 -record(m__fight__notice_skill__s2l, {msg_id=15017, op, op_list, seat_id}).
 -record(m__fight__do_skill__l2s, {msg_id=15018, op, op_list}).
--record(m__fight__online__s2l, {msg_id=15019, duty, game_state, round, speak_id, die_list, seat_id, attach_data1, attach_data2, offline_list}).
+-record(p_flop, {seat_id, op}).
+-record(m__fight__online__s2l, {msg_id=15019, duty, game_state, round, speak_id, die_list, seat_id, attach_data1, attach_data2, offline_list, leave_list, flop_list}).
 -record(m__fight__offline__s2l, {msg_id=15020, offline_list}).
 -record(m__fight__op_timetick__s2l, {msg_id=15021, timetick}).
 -record(m__fight__langren_team_speak__s2l, {msg_id=15022, chat}).
 -record(m__fight__shouwei_op__s2l, {msg_id=15023, seat_id}).
 -record(m__fight__over_info__s2l, {msg_id=15024, winner, duty_list, dead_list}).
+-record(m__fight__leave__s2l, {msg_id=15025, leave_list}).
 -record(m__resource__push__s2l, {msg_id=16001, resource_id, num, action_id}).
