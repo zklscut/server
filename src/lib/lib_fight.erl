@@ -74,7 +74,7 @@ send_to_all_player(Send, State) ->
 
 send_to_all_player(Send, State, NotSendList)
     [net_send:send(Send, PlayerId) || PlayerId <- maps:keys(maps:get(player_seat_map, State)),
-     is_active_in_fight(PlayerId, State), not lists:member(PlayerId, NotSendList)].
+     is_active_in_fight(PlayerId, State) andalso (not lists:member(PlayerId, NotSendList))].
 
 send_to_seat(Send, SeatId, State) ->
     PlayerId = get_player_id_by_seat(SeatId, State),
