@@ -370,7 +370,16 @@ do_exit_chat(PlayerId, RoomId)->
         false ->
             NewRoom = maps:put(want_chat_list, WantChatList -- [PlayerId], Room),
             lib_room:update_room(RoomId, NewRoom),
-            mod_room:update_chat_list(NewRoom)
+            mod_room:update_chat_list(NewRoom),
+            case WantChatList of
+                []->
+                    ignore;
+                _->
+                    Send = #m__room__notice_chat_info__s2l{
+                                            player_id = hd(WantChatList),
+                                            wait_time = ?ROOM_CHAT_TIME - (CurTime - ChatStartTime)
+                                        },
+                    mod_room:send_to_room(Send, Room);
     end.
 
 do_end_chat(RoomId, PlayerId) ->
