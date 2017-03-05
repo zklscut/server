@@ -1086,6 +1086,7 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     DieList = maps:get(out_seat_list, State),
     JingZhang = maps:get(jingzhang, State),
     FlopList = maps:get(flop_list, State),
+    LeaveList = maps:get(leave_player, State),
     {AttachData1, AttachData2} = get_online_attach_data(SeatId, DutyId, State),
     Send = #m__fight__online__s2l{duty = DutyId,
                                   seat_id = SeatId,
@@ -1095,7 +1096,10 @@ handle_event({player_online, PlayerId}, StateName, State) ->
                                   die_list = DieList,
                                   attach_data1 = AttachData1,
                                   attach_data2 = AttachData2,
-                                  offline_list = NewOfflineList
+                                  offline_list = NewOfflineList,
+                                  leave_list = LeaveList,
+                                  flop_list =[#p_flop{seat_id = CurSeatId,
+                                                      op = CurOp} || {CurSeatId, CurOp} <- FlopList]
                                   },
     net_send:send(Send, PlayerId),
     {next_state, StateName, NewState};
@@ -1108,11 +1112,16 @@ handle_event({player_offline, PlayerId}, StateName, State) ->
     Send = #m__fight__offline__s2l{
                        offline_list = OfflineList  
                     },
+    lib_fight:send_to_all_player(Send, NewState),
     {next_state, StateName, NewState};
 
 handle_event({player_leave, PlayerId}, StateName, State) ->
     NewLeavePlayerList = maps:get(leave_player, State) ++ [PlayerId],
     NewState = maps:put(leave_player, NewLeavePlayerList, State),
+    Send = #m__fight__leave__s2l{
+                       leave_list = NewLeavePlayerList  
+                    },
+    lib_fight:send_to_all_player(Send, NewState),
     {next_state, StateName, NewState};
 
 handle_event(print_state, StateName, StateData) ->

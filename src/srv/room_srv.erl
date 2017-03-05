@@ -345,7 +345,7 @@ notice_chat_info(PlayerId, Room)->
             CurTime = util:get_micro_time(),
             Send = #m__room__notice_chat_info__s2l{
                                             player_id = hd(WantChatList),
-                                            wait_time = CurTime + ?ROOM_CHAT_TIME - ChatStartTime
+                                            wait_time = ?ROOM_CHAT_TIME - (CurTime - ChatStartTime)
                                         },
             mod_room:send_to_player(Send, PlayerId)
     end.
