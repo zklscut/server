@@ -66,5 +66,6 @@ get(15021) -> {m__fight__op_timetick__s2l, mod_fight, op_timetick};
 get(15022) -> {m__fight__langren_team_speak__s2l, mod_fight, langren_team_speak}; 
 get(15023) -> {m__fight__shouwei_op__s2l, mod_fight, shouwei_op}; 
 get(15024) -> {m__fight__over_info__s2l, mod_fight, over_info}; 
+get(15025) -> {m__fight__leave__s2l, mod_fight, leave}; 
 get(16001) -> {m__resource__push__s2l, mod_resource, push}; 
 get(_) -> undefined. 
