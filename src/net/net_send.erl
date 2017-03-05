@@ -12,7 +12,7 @@
 
 send(Send, #{socket := Socket,
 			 id := PlayerId}) ->
-    % lager:info("send ~p", [{PlayerId, Send}]),
+    lager:info("send ~p", [{PlayerId, Send}]),
     Binary = game_pb:encode(Send),
     ProtoId = element(2, Send),
     Len = byte_size(Binary),
@@ -20,7 +20,7 @@ send(Send, #{socket := Socket,
     ok;
 
 send(Send, PlayerId) when is_integer(PlayerId) ->
-    % lager:info("send ~p", [{PlayerId, Send}]),
+    lager:info("send ~p", [{PlayerId, Send}]),
 	global_op_srv:player_op(PlayerId, {?MODULE, send, [Send]}),
     ok;
 
