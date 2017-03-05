@@ -175,10 +175,13 @@ handle_cast_inner({leave_room, RoomId, PlayerId}, State) ->
     {noreply, State};
 
 handle_cast_inner({want_chat, RoomId, PlayerId}, State) ->
+    lager:info("want_chat111"),
     case lib_room:is_in_fight(RoomId) of
         false->
+            lager:info("want_chat222"),
             want_chat_local(RoomId, PlayerId);
         _->
+            lager:info("want_chat333"),
             ignore
     end,
     {noreply, State};
