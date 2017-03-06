@@ -354,8 +354,8 @@ state_part_jingzhang(start, State) ->
 
 state_part_jingzhang(wait_op, State) ->
     % start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_PART_JINGZHANG)),
-    notice_jingxuan_jingzhang(State),
-    StateAfterWait = do_set_wait_op(?OP_PART_JINGZHANG, lib_fight:get_alive_seat_list(State), State),
+    StateAfterNotice = notice_jingxuan_jingzhang(State),
+    StateAfterWait = do_set_wait_op(?OP_PART_JINGZHANG, lib_fight:get_alive_seat_list(StateAfterNotice), StateAfterNotice),
     {next_state, state_part_jingzhang, StateAfterWait};
 
 state_part_jingzhang({player_op, PlayerId, Op, OpList}, State) ->
@@ -378,8 +378,9 @@ state_part_jingzhang(op_over, State) ->
 state_part_fayan(start, State) ->    
     Send = #m__fight__notice_part_jingzhang__s2l{seat_list = maps:get(part_jingzhang, State)},
     lib_fight:send_to_all_player(Send, State),
-    
-    do_fayan_state_start(maps:get(part_jingzhang, State), state_part_fayan, State);
+        
+    do_fayan_state_start(maps:get(part_jingzhang, State), state_part_fayan, 
+                            maps:put(parting_jingzhang, maps:get(part_jingzhang, State), State));
 
 state_part_fayan(wait_op, State) ->
     do_fayan_state_wait_op(?OP_PART_FAYAN, state_part_fayan, State);
@@ -422,12 +423,12 @@ state_xuanju_jingzhang(start, State) ->
 
 state_xuanju_jingzhang(wait_op, State) ->
     % start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_XUANJU_JINGZHANG)),
-    notice_xuanju_jingzhang(State),
-    ExitJingZhang = maps:get(exit_jingzhang, State),
+    StateAfterNotice = notice_xuanju_jingzhang(State),
+    ExitJingZhang = maps:get(exit_jingzhang, StateAfterNotice),
 
-    WaitList = (lib_fight:get_alive_seat_list(State) -- maps:get(part_jingzhang, State)) -- ExitJingZhang,
+    WaitList = (lib_fight:get_alive_seat_list(StateAfterNotice) -- maps:get(part_jingzhang, StateAfterNotice)) -- ExitJingZhang,
     lager:info("state_xuanju_jingzhang ~p", [WaitList]),
-    StateAfterWait = do_set_wait_op(?OP_XUANJU_JINGZHANG, WaitList, State),
+    StateAfterWait = do_set_wait_op(?OP_XUANJU_JINGZHANG, WaitList, StateAfterNotice),
 
     {next_state, state_xuanju_jingzhang, StateAfterWait};    
     
@@ -447,9 +448,10 @@ state_xuanju_jingzhang(op_over, State) ->
         true ->
             send_event_inner(start),
             {next_state, state_part_fayan, maps:put(part_jingzhang, MaxSeatList, NewState)};
-        false ->   
+        false ->  
+            StateAfterPartingJingZhang = maps:put(parting_jingzhang, [], NewState), 
             send_event_inner(start),
-            {next_state, get_next_game_state(state_xuanju_jingzhang), maps:put(do_police_select, 1, NewState)}
+            {next_state, get_next_game_state(state_xuanju_jingzhang), maps:put(do_police_select, 1, StateAfterPartingJingZhang)}
     end.     
 
 %% ====================================================================
@@ -746,9 +748,10 @@ state_toupiao(start, State) ->
     
 state_toupiao(wait_op, State) ->
     % start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_TOUPIAO)),\
-    notice_toupiao(State),
-    WaitList = (lib_fight:get_alive_seat_list(State) -- [maps:get(baichi, State)]) -- maps:get(die, State),
-    StateAfterWait = do_set_wait_op(?OP_TOUPIAO, WaitList, State),
+    StateAfterNotice = notice_toupiao(State),
+    WaitList = (lib_fight:get_alive_seat_list(StateAfterNotice) -- 
+            [maps:get(baichi, StateAfterNotice)]) -- maps:get(die, StateAfterNotice),
+    StateAfterWait = do_set_wait_op(?OP_TOUPIAO, WaitList, StateAfterNotice),
     {next_state, state_toupiao, StateAfterWait};    
     
 state_toupiao({player_op, PlayerId, Op, OpList}, State) ->
@@ -921,9 +924,9 @@ state_toupiao_mvp(start, State) ->
     
 state_toupiao_mvp(wait_op, State) ->
     % start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_TOUPIAO)),
-    notice_toupiao_mvp(State),
-    WaitList = lib_fight:get_all_seat(State),
-    StateAfterWait = do_set_wait_op(?OP_TOUPIAO_MVP, WaitList, State),
+    StateAfterNotice = notice_toupiao_mvp(State),
+    WaitList = lib_fight:get_all_seat(StateAfterNotice),
+    StateAfterWait = do_set_wait_op(?OP_TOUPIAO_MVP, WaitList, StateAfterNotice),
     {next_state, state_toupiao_mvp, StateAfterWait};    
     
 state_toupiao_mvp({player_op, PlayerId, Op, OpList}, State) ->
@@ -973,9 +976,9 @@ state_toupiao_carry(start, State) ->
     
 state_toupiao_carry(wait_op, State) ->
     % start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_TOUPIAO)),
-    notice_toupiao_carry(State),
-    WaitList = lib_fight:get_all_seat(State),
-    StateAfterWait = do_set_wait_op(?OP_TOUPIAO_CARRY, WaitList, State),
+    StateAfterNotice = notice_toupiao_carry(StateAfterNotice),
+    WaitList = lib_fight:get_all_seat(StateAfterNotice),
+    StateAfterWait = do_set_wait_op(?OP_TOUPIAO_CARRY, WaitList, StateAfterNotice),
     {next_state, state_toupiao_carry, StateAfterWait};    
     
 state_toupiao_carry({player_op, PlayerId, Op, OpList}, State) ->
@@ -1066,9 +1069,10 @@ handle_event({skill, PlayerId, Op, OpList}, StateName, State) ->
             StateName ->
                 {next_state, StateName, NewState};
             _ ->
+                StateAfterParting = maps:put(parting_jingzhang, [], NewState),
                 cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
                 send_event_inner(start),
-                {next_state, NextStateAfterOver, NewState}
+                {next_state, NextStateAfterOver, StateAfterParting}
         end
     catch
         throw:ErrCode ->
@@ -1091,6 +1095,8 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     Winner = maps:get(winner, NewState),
     WaitOp = maps:get(wait_op, NewState),
     WaitOpList = maps:get(wait_op_list, NewState),
+    ExitJingZhang = maps:get(exit_jingzhang, NewState),
+    PartingJingZhang = maps:get(parting_jingzhang, NewState)
     {AttachData1, AttachData2} = get_online_attach_data(SeatId, DutyId, NewState),
     Send = #m__fight__online__s2l{duty = DutyId,
                                   seat_id = SeatId,
@@ -1108,7 +1114,8 @@ handle_event({player_online, PlayerId}, StateName, State) ->
                                   flop_list =[#p_flop{seat_id = CurSeatId,
                                                       op = CurOp} || {CurSeatId, CurOp} <- FlopList],
                                   winner = Winner,
-                                  duty_list = get_online_duty_data(Winner, NewState)
+                                  duty_list = get_online_duty_data(Winner, NewState),
+                                  parting_jingzhang = PartingJingZhang -- ExitJingZhang
                                   },
     net_send:send(Send, PlayerId),
     player_online_offline_wait_op_time_update(SeatId, NewState),
@@ -1333,13 +1340,6 @@ notice_player_op(Op, AttachData, SeatList, State) ->
         _->
             WaitTime
     end,
-
-    %%正常延时时间
-    put(fsm_timer_normal_duration, WaitTime),
-    %%
-    put(fsm_timer_start, util:get_micro_time()),
-
-    start_fight_fsm_event_timer(?TIMER_TIMEOUT, UseWaitTime),
     Send = #m__fight__notice_op__s2l{op = Op,
                                      attach_data = AttachData},
     FunNotice = 
@@ -1347,15 +1347,26 @@ notice_player_op(Op, AttachData, SeatList, State) ->
             lib_fight:send_to_seat(Send, SeatId, State)
         end,
     lists:foreach(FunNotice, SeatList),
-    case lists:member(Op, ?FAYAN_OP_LIST) of
+    case WaitTime == 0 of
         true->
-            put(fsm_timer_use_duration, UseWaitTime),
-            UseWaitTimeSend = #m__fight__op_timetick__s2l{timetick = UseWaitTime},
-            lib_fight:send_to_all_player(UseWaitTimeSend, State);
+            State;
         _->
-            put(fsm_timer_use_duration, WaitTime),
-            NormalWaitTimeSend = #m__fight__op_timetick__s2l{timetick = WaitTime},
-            lib_fight:send_to_all_player(NormalWaitTimeSend, State)
+            start_fight_fsm_event_timer(?TIMER_TIMEOUT, UseWaitTime),
+            %%正常延时时间
+            StateAfterNormalDuration = maps:put(op_timer_normal_dur, WaitTime, State),
+            %%
+            StateAfterStart = maps:put(op_timer_start, util:get_micro_time(), StateAfterNormalDuration),
+            StateAfterUseDuration = 
+            case lists:member(Op, ?FAYAN_OP_LIST) of
+                true->
+                    UseWaitTimeSend = #m__fight__op_timetick__s2l{timetick = UseWaitTime},
+                    lib_fight:send_to_all_player(UseWaitTimeSend, State);
+                    maps:put(op_timer_use_dur, UseWaitTime, StateAfterNormalDuration),
+                _->
+                    NormalWaitTimeSend = #m__fight__op_timetick__s2l{timetick = WaitTime},
+                    lib_fight:send_to_all_player(NormalWaitTimeSend, State),
+                    maps:put(op_timer_use_dur, WaitTime, StateAfterNormalDuration),
+            end
     end.
 
 do_set_wait_op(Op, SeatIdList, State) ->
@@ -1447,7 +1458,7 @@ do_log_op(SeatId, OpList, State) ->
 wait_op_list_all_offline_players_timeout(WaitOpList, State)->
     case lib_fight:is_offline_all(WaitOpList) of
         true->
-            case get(fsm_timer_start) of
+            case maps:get(op_timer_start, State) of
                 undefined->
                     [];
                 StartTime->
@@ -1468,9 +1479,9 @@ wait_op_list_all_offline_players_timeout(WaitOpList, State)->
 
 %%玩家上线下线等待延时操作
 player_online_offline_wait_op_time_update(SeatId, State)->
-    NormalDuration = get(fsm_timer_normal_duration),
-    UseDuration = get(fsm_timer_use_duration),
-    StartTime = get(fsm_timer_start),
+    NormalDuration = maps:get(op_timer_normal_dur, State),
+    UseDuration = maps:get(op_timer_use_dur, State),
+    StartTime = maps:get(op_timer_start, State),
     WaitOpList = maps:get(wait_op_list, State),
     case (undefined =/= StartTime) andalso ([] =/= WaitOpList)
                                      andalso lists:member(SeatId, WaitOpList) of
@@ -1643,6 +1654,7 @@ clear_night_op(State) ->
            langren_boom => 0,
            show_nigth_result => 0,
            flop_list => [],
+           parting_jingzhang => [],
            quzhu_op => 0,
            safe_night => 1,         %%平安夜
            safe_day => 1           %%平安日
