@@ -1352,7 +1352,7 @@ notice_player_op(Op, AttachData, SeatList, State) ->
         _->
             put(fsm_timer_use_duration, WaitTime),
             NormalWaitTimeSend = #m__fight__op_timetick__s2l{timetick = WaitTime},
-            lib_fight:send_to_all_player(NormalWaitTimeSend, State);
+            lib_fight:send_to_all_player(NormalWaitTimeSend, State)
     end.
 
 do_set_wait_op(Op, SeatIdList, State) ->
@@ -1499,7 +1499,7 @@ player_online_offline_wait_op_time_update(SeatId, State)->
                                     start_fight_fsm_event_timer(?TIMER_TIMEOUT, WaitTime),
                                     %%通知更新倒计时
                                     UseWaitTimeSend = #m__fight__op_timetick__s2l{timetick = WaitTime},
-                                    lib_fight:send_to_all_player(UseWaitTimeSend, State);
+                                    lib_fight:send_to_all_player(UseWaitTimeSend, State)
                             end 
             end;
         _->
