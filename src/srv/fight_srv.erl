@@ -1080,18 +1080,18 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     OfflineList = maps:get(offline_list, State),
     NewOfflineList = OfflineList -- [PlayerId],
     NewState =  maps:put(offline_list, NewOfflineList, State),
-    SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
-    DutyId = lib_fight:get_duty_by_seat(SeatId, State),
-    Round = maps:get(game_round, State),
-    GameState = maps:get(game_state, State),
-    DieList = maps:get(out_seat_list, State),
-    JingZhang = maps:get(jingzhang, State),
-    FlopList = maps:get(flop_list, State),
-    LeaveList = maps:get(leave_player, State),
-    Winner = maps:get(winner, State),
-    WaitOp = maps:get(wait_op, State),
-    WaitOpList = maps:get(wait_op_list, State),
-    {AttachData1, AttachData2} = get_online_attach_data(SeatId, DutyId, State),
+    SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, NewState),
+    DutyId = lib_fight:get_duty_by_seat(SeatId, NewState),
+    Round = maps:get(game_round, NewState),
+    GameState = maps:get(game_state, NewState),
+    DieList = maps:get(out_seat_list, NewState),
+    JingZhang = maps:get(jingzhang, NewState),
+    FlopList = maps:get(flop_list, NewState),
+    LeaveList = maps:get(leave_player, NewState),
+    Winner = maps:get(winner, NewState),
+    WaitOp = maps:get(wait_op, NewState),
+    WaitOpList = maps:get(wait_op_list, NewState),
+    {AttachData1, AttachData2} = get_online_attach_data(SeatId, DutyId, NewState),
     Send = #m__fight__online__s2l{duty = DutyId,
                                   seat_id = SeatId,
                                   game_state =GameState,
@@ -1103,6 +1103,8 @@ handle_event({player_online, PlayerId}, StateName, State) ->
                                   attach_data2 = AttachData2,
                                   offline_list = NewOfflineList,
                                   leave_list = LeaveList,
+                                  jingzhang = JingZhang,
+                                  lover_list = get_online_lover_data(SeatId, NewState),
                                   flop_list =[#p_flop{seat_id = CurSeatId,
                                                       op = CurOp} || {CurSeatId, CurOp} <- FlopList],
                                   winner = Winner
@@ -1774,6 +1776,15 @@ get_online_attach_data(_SeatId, ?DUTY_QIUBITE, State) ->
 
 get_online_attach_data(_, _, _) ->
     {[],[]}.
+
+get_online_lover_data(SeatId, State)->
+    Lover = maps:get(lover, State),
+    case (Lover =/= []) andalso lists:member(SeatId, Lover) of
+        true->
+            Lover;
+        _->
+            [];
+    end.
 
 get_next_game_state(GameState) ->
     case GameState of
