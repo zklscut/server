@@ -1534,7 +1534,14 @@ player_online_offline_wait_op_time_update(SeatId, State)->
 do_remove_wait_op(SeatId, State) ->
     WaitOpList = maps:get(wait_op_list, State),
     NewWaitOpList = wait_op_list_all_offline_players_timeout(WaitOpList -- [SeatId], State),
-    {NewWaitOpList == [], maps:put(wait_op_list, NewWaitOpList, State)}.
+    NewState = 
+    case NewWaitOpList of
+        []->
+            maps:put(wait_op, 0, State);
+        _->
+            State
+    end,
+    {NewWaitOpList == [], maps:put(wait_op_list, NewWaitOpList, NewState)}.
 
 notice_jingxuan_jingzhang(State) ->
     notice_player_op(?OP_PART_JINGZHANG, lib_fight:get_alive_seat_list(State), State).
@@ -1647,7 +1654,9 @@ clear_night_op(State) ->
             false ->
                 JingZhang
         end,
-    State#{wait_op_list => [],   %% 等待中的操作
+    State#{
+           wait_op => 0,        %%等待的操作 
+           wait_op_list => [],   %% 等待中的操作
            nvwu => {0, 0},       %% 女巫操作
            langren => 0,         %% 狼人击杀的目标
            bailang => 0,         %% 白狼自爆
