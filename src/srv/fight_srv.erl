@@ -353,7 +353,7 @@ state_part_jingzhang(start, State) ->
     end;
 
 state_part_jingzhang(wait_op, State) ->
-    start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_PART_JINGZHANG)),
+    % start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_PART_JINGZHANG)),
     notice_jingxuan_jingzhang(State),
     StateAfterWait = do_set_wait_op(lib_fight:get_alive_seat_list(State), State),
     {next_state, state_part_jingzhang, StateAfterWait};
@@ -1227,12 +1227,12 @@ do_duty_state_start(Duty, GameState, State) ->
     end.
 
 do_duty_state_wait_op(Duty, State) ->
-    % case b_fight_op_wait:get(Duty) of
-    %     0 ->
-    %         ignore;
-    %     WaitTime ->
-    %         start_fight_fsm_event_timer(?TIMER_TIMEOUT, WaitTime)
-    % end,
+    case b_fight_op_wait:get(Duty) of
+        0 ->
+            ignore;
+        WaitTime ->
+            start_fight_fsm_event_timer(?TIMER_TIMEOUT, WaitTime)
+    end,
     SeatIdList = lib_fight:get_duty_seat(Duty, State),
     notice_player_op(Duty, SeatIdList, State),
     do_set_wait_op(SeatIdList, State).
