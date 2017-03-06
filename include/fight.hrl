@@ -37,6 +37,9 @@
 -define(OP_LAPIAO_FAYAN, 1011). %%拉票发言
 -define(OP_TOUPIAO_MVP, 1012). %%投票mvp
 -define(OP_TOUPIAO_CARRY, 1013). %%投票carry
+-define(OP_SKILL_OFFLINE, 1014). %%离线玩家操作时长
+
+-define(FAYAN_OP_LIST, [?OP_FAYAN, ?OP_PART_FAYAN, ?OP_DEATH_FAYAN, ?OP_QUZHU_FAYAN, ?OP_LAPIAO_FAYAN]).
 
 -define(OP_SKILL_CHANGE_JINGZHANG, 2001).
 -define(OP_SKILL_LIEREN, 2002).
@@ -47,6 +50,7 @@
 -define(OP_SKILL_D_DELAY, 2007). %%默认延时操作
 -define(OP_SKILL_END_FIGHT, 2008). %%结束战斗
 -define(OP_SKILL_LOVER_DIE, 2009). %%情侣一方死亡带走另外一方
+
 
 -define(XUANJU_TYPE_JINGZHANG, 1).
 -define(XUANJU_TYPE_QUZHU, 2).
@@ -76,7 +80,7 @@
                   out_seat_list => [],   %% 出局列表 seat_id
                   seat_duty_map => #{},  %% #{seat_id, 职责}
                   duty_seat_map => #{},  %% #{duty_id, [seat_id]}
-                  left_op_list => [],    %% 剩余操作seat_id 按照顺序排好
+                  wait_op => 0,          %% 等待的操作
                   wait_op_list => [],    %% 等待中的操作
                   status => 0,           %% 当前游戏状态
                   game_state =>  0,      %% 第几天晚上

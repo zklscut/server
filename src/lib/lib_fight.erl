@@ -7,6 +7,7 @@
          send_to_all_player/2,
          send_to_seat/3,
          is_active_in_fight/2,
+         is_offline_all/2,
          get_player_id_by_seat/2,
          get_seat_id_by_player_id/2,
          get_duty_by_seat/2,
@@ -95,6 +96,15 @@ is_active_in_fight(PlayerId, State) ->
     %         true
     % end.
     % not lists:member(PlayerId, maps:get(leave_player, State)).
+
+is_offline_all(SeatList, State) ->
+    OfflineList = maps:get(offline_list, State) ++ maps:get(leave_player, State),
+    case SeatList of
+        []->
+            true;
+        _->
+            lists:all(fun(SeatId)-> lists:member(SeatId, OfflineList) end, SeatList)
+    end.
 
 get_player_id_by_seat(SeatId, State) ->
     maps:get(SeatId, maps:get(seat_player_map, State)).
