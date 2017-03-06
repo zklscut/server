@@ -1783,7 +1783,7 @@ get_online_lover_data(SeatId, State)->
         true->
             Lover;
         _->
-            [];
+            []
     end.
 
 get_next_game_state(GameState) ->
