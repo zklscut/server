@@ -125,8 +125,7 @@
                   mvp_draw_cnt => 0,     %%mvp重投次数      
                   carry_party =>[],      %%参选carry的人
                   carry_draw_cnt => 0,    %%carry重投次数
-                  speak_id => 0,
-
+                  speak_id => 0
                   }).
 
 -endif.
