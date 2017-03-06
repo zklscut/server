@@ -1107,7 +1107,8 @@ handle_event({player_online, PlayerId}, StateName, State) ->
                                   lover_list = get_online_lover_data(SeatId, NewState),
                                   flop_list =[#p_flop{seat_id = CurSeatId,
                                                       op = CurOp} || {CurSeatId, CurOp} <- FlopList],
-                                  winner = Winner
+                                  winner = Winner,
+                                  duty_list = get_online_duty_data(Winner, NewState)
                                   },
     net_send:send(Send, PlayerId),
     player_online_offline_wait_op_time_update(SeatId, NewState),
@@ -1784,6 +1785,16 @@ get_online_lover_data(SeatId, State)->
             Lover;
         _->
             []
+    end.
+
+get_online_duty_data(Winner, State)->
+    case Winner of
+        []->
+            [];
+        _->
+            DutyList = [#p_duty{seat_id = SeatId,
+                        duty_id = DutyId} || 
+                        {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, State))]
     end.
 
 get_next_game_state(GameState) ->
