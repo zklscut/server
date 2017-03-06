@@ -1463,7 +1463,7 @@ do_log_op(SeatId, OpList, State) ->
 
 %%剩下等待的人是否全部离线并且超过10秒操作时间
 wait_op_list_all_offline_players_timeout(WaitOpList, State)->
-    case lib_fight:is_offline_all(WaitOpList) of
+    case lib_fight:is_offline_all(WaitOpList, State) of
         true->
             case maps:get(op_timer_start, State) of
                 undefined->
@@ -1493,7 +1493,7 @@ player_online_offline_wait_op_time_update(SeatId, State)->
     case (undefined =/= StartTime) andalso ([] =/= WaitOpList)
                                      andalso lists:member(SeatId, WaitOpList) of
         true->
-            case lib_fight:is_offline_all(WaitOpList) of
+            case lib_fight:is_offline_all(WaitOpList, State) of
                 true->
                     %%离线玩家总共等待10秒,并且只等待一次
                     case (util:get_micro_time() - StartTime) > b_fight_op_wait:get(?OP_SKILL_OFFLINE) of
