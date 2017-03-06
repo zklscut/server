@@ -160,8 +160,8 @@
 	{msg_id, duty, game_state, round, die_list, seat_id,
 	 attach_data1, attach_data2, offline_list, leave_list,
 	 flop_list, winner, wait_op, wait_op_list,
-	 wait_op_attach_data, jingzhang, lover_list, duty_list,
-	 parting_jingzhang}).
+	 wait_op_attach_data, wait_op_tick, jingzhang,
+	 lover_list, duty_list, parting_jingzhang}).
 
 -record(p_flop, {seat_id, op}).
 
@@ -1440,18 +1440,22 @@ encode(m__fight__online__s2l, _Record) ->
 					none),
 			   int32, []),
 		      pack(16, required,
+			   with_default(_Record#m__fight__online__s2l.wait_op_tick,
+					none),
+			   int32, []),
+		      pack(17, required,
 			   with_default(_Record#m__fight__online__s2l.jingzhang,
 					none),
 			   int32, []),
-		      pack(17, repeated,
+		      pack(18, repeated,
 			   with_default(_Record#m__fight__online__s2l.lover_list,
 					none),
 			   int32, []),
-		      pack(18, repeated,
+		      pack(19, repeated,
 			   with_default(_Record#m__fight__online__s2l.duty_list,
 					none),
 			   p_duty, []),
-		      pack(19, repeated,
+		      pack(20, repeated,
 			   with_default(_Record#m__fight__online__s2l.parting_jingzhang,
 					none),
 			   int32, [])]);
@@ -2125,10 +2129,11 @@ decode(p_flop, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(p_flop, Decoded);
 decode(m__fight__online__s2l, Bytes) ->
-    Types = [{19, parting_jingzhang, int32, [repeated]},
-	     {18, duty_list, p_duty, [is_record, repeated]},
-	     {17, lover_list, int32, [repeated]},
-	     {16, jingzhang, int32, []},
+    Types = [{20, parting_jingzhang, int32, [repeated]},
+	     {19, duty_list, p_duty, [is_record, repeated]},
+	     {18, lover_list, int32, [repeated]},
+	     {17, jingzhang, int32, []},
+	     {16, wait_op_tick, int32, []},
 	     {15, wait_op_attach_data, int32, [repeated]},
 	     {14, wait_op_list, int32, [repeated]},
 	     {13, wait_op, int32, []},
