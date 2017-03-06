@@ -976,7 +976,7 @@ state_toupiao_carry(start, State) ->
     
 state_toupiao_carry(wait_op, State) ->
     % start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_TOUPIAO)),
-    StateAfterNotice = notice_toupiao_carry(StateAfterNotice),
+    StateAfterNotice = notice_toupiao_carry(State),
     WaitList = lib_fight:get_all_seat(StateAfterNotice),
     StateAfterWait = do_set_wait_op(?OP_TOUPIAO_CARRY, WaitList, StateAfterNotice),
     {next_state, state_toupiao_carry, StateAfterWait};    
