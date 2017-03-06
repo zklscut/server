@@ -150,7 +150,7 @@ handle_info({tcp_closed, _}, State) ->
     {stop, logout, State};
 
 handle_info({tcp, _Port, <<PreData:24, Len:16, ProtoId:16, ProtoData/binary>>}, State) ->
-    lager:info("receive bianry ~p", [{PreData, Len, ProtoId, ProtoData}]),
+    % lager:info("receive bianry ~p", [{PreData, Len, ProtoId, ProtoData}]),
     {Op, NewState} = do_proto(ProtoId, ProtoData, State),
     do_cache_op(Op, NewState),
     active_socket_inner(maps:get(socket, State)),
@@ -196,7 +196,7 @@ code_change(_OldVsn, State, _Extra) ->
 
 active_socket_inner(Socket) ->
     ActiveResult = inet:setopts(Socket, [{active, once}]),
-    lager:info("active result ~p", [ActiveResult]),
+    % lager:info("active result ~p", [ActiveResult]),
     ActiveResult.
 
 do_proto(ProtoId, ProtoData, State) ->
