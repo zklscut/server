@@ -519,9 +519,9 @@ state_someone_die(wait_op, State) ->
     end,
     StateAfterSkillSeat = maps:put(skill_seat, OpSeat, StateAfterDieOp),
     % start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(Op)),
-    notice_player_op(Op, [OpSeat], StateAfterSkillSeat),
+    StateAfterOp = notice_player_op(Op, [OpSeat], StateAfterSkillSeat),
     lager:info("get_someone_die_op wait_op  ~p", [Op]),
-    {next_state, state_someone_die, maps:put(cur_skill, Op, StateAfterSkillSeat)};
+    {next_state, state_someone_die, maps:put(cur_skill, Op, StateAfterOp)};
 
 state_someone_die(timeout, State) ->
     SeatId = maps:get(skill_seat, State),
@@ -640,8 +640,8 @@ state_jingzhang(start, State) ->
 state_jingzhang(wait_op, State) ->
     % start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_JINGZHANG_ZHIDING)),
     JingZhang = maps:get(jingzhang, State),
-    notice_player_op(?OP_JINGZHANG_ZHIDING, maps:get(die, State), [JingZhang], State),
-    StateAfterWait = do_set_wait_op(?OP_JINGZHANG_ZHIDING, [JingZhang], State),
+    StateAfterOp = notice_player_op(?OP_JINGZHANG_ZHIDING, maps:get(die, State), [JingZhang], State),
+    StateAfterWait = do_set_wait_op(?OP_JINGZHANG_ZHIDING, [JingZhang], StateAfterOp),
     {next_state, state_jingzhang, StateAfterWait}; 
 
 state_jingzhang({player_op, PlayerId, Op, OpList}, State) ->
@@ -715,8 +715,8 @@ state_guipiao(start, State) ->
 state_guipiao(wait_op, State) ->
     % start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_GUIPIAO)),
     JingZhang = maps:get(jingzhang, State),
-    notice_player_op(?OP_GUIPIAO, [JingZhang], State),
-    StateAfterWait = do_set_wait_op(?OP_GUIPIAO, [JingZhang], State),
+    StateAfterOp = notice_player_op(?OP_GUIPIAO, [JingZhang], State),
+    StateAfterWait = do_set_wait_op(?OP_GUIPIAO, [JingZhang], StateAfterOp),
     {next_state, state_guipiao, StateAfterWait}; 
 
 state_guipiao({player_op, PlayerId, Op, OpList}, State) ->
@@ -1240,8 +1240,8 @@ do_duty_state_wait_op(Duty, State) ->
     %         start_fight_fsm_event_timer(?TIMER_TIMEOUT, WaitTime)
     % end,
     SeatIdList = lib_fight:get_duty_seat(Duty, State),
-    notice_player_op(Duty, SeatIdList, State),
-    do_set_wait_op(Duty, SeatIdList, State).
+    StateAfterOp = notice_player_op(Duty, SeatIdList, State),
+    do_set_wait_op(Duty, SeatIdList, StateAfterOp).
 
 do_duty_op_timeout(OpList, StateName, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -1295,8 +1295,8 @@ do_fayan_state_wait_op(Op, StateName, State) ->
     % start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_FAYAN)),
     Fayan = hd(maps:get(fayan_turn, State)),
     notice_start_fayan(Fayan, State),
-    notice_player_op(Op, [Fayan], State),
-    StateAfterWait = do_set_wait_op(Op, [Fayan], State),
+    StateAfterOp = notice_player_op(Op, [Fayan], State),
+    StateAfterWait = do_set_wait_op(Op, [Fayan], StateAfterOp),
     {next_state, StateName, lib_fight:do_fayan_op(StateAfterWait)}.
 
 do_fayan_state_timeout(StateName, State) ->
