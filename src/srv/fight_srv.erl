@@ -1227,12 +1227,12 @@ do_duty_state_start(Duty, GameState, State) ->
     end.
 
 do_duty_state_wait_op(Duty, State) ->
-    case b_fight_op_wait:get(Duty) of
-        0 ->
-            ignore;
-        WaitTime ->
-            start_fight_fsm_event_timer(?TIMER_TIMEOUT, WaitTime)
-    end,
+    % case b_fight_op_wait:get(Duty) of
+    %     0 ->
+    %         ignore;
+    %     WaitTime ->
+    %         start_fight_fsm_event_timer(?TIMER_TIMEOUT, WaitTime)
+    % end,
     SeatIdList = lib_fight:get_duty_seat(Duty, State),
     notice_player_op(Duty, SeatIdList, State),
     do_set_wait_op(SeatIdList, State).
@@ -1334,6 +1334,7 @@ notice_player_op(Op, SeatList, State) ->
 
 notice_player_op(Op, AttachData, SeatList, State) ->
     WaitTime = b_fight_op_wait:get(Op),
+    start_fight_fsm_event_timer(?TIMER_TIMEOUT, WaitTime),
     Send = #m__fight__notice_op__s2l{op = Op,
                                      attach_data = AttachData},
     FunNotice = 
