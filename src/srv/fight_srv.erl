@@ -1360,12 +1360,12 @@ notice_player_op(Op, AttachData, SeatList, State) ->
             case lists:member(Op, ?FAYAN_OP_LIST) of
                 true->
                     UseWaitTimeSend = #m__fight__op_timetick__s2l{timetick = UseWaitTime},
-                    lib_fight:send_to_all_player(UseWaitTimeSend, State);
-                    maps:put(op_timer_use_dur, UseWaitTime, StateAfterNormalDuration),
+                    lib_fight:send_to_all_player(UseWaitTimeSend, State),
+                    maps:put(op_timer_use_dur, UseWaitTime, StateAfterNormalDuration);
                 _->
                     NormalWaitTimeSend = #m__fight__op_timetick__s2l{timetick = WaitTime},
                     lib_fight:send_to_all_player(NormalWaitTimeSend, State),
-                    maps:put(op_timer_use_dur, WaitTime, StateAfterNormalDuration),
+                    maps:put(op_timer_use_dur, WaitTime, StateAfterNormalDuration)
             end
     end.
 
