@@ -97,6 +97,7 @@ is_active_in_fight(PlayerId, State) ->
     % end.
     % not lists:member(PlayerId, maps:get(leave_player, State)).
 
+%判断是否都处于离线状态
 is_offline_all(SeatList, State) ->
     OfflineList = maps:get(offline_list, State) ++ maps:get(leave_player, State),
     case SeatList of
