@@ -879,7 +879,8 @@ state_fight_over(start, State) ->
     StateAfterMvp = maps:put(mvp_party, Winner, NewState),
     StateAfterCarry = maps:put(carry_party, lib_fight:get_all_seat(StateAfterMvp) -- Winner, StateAfterMvp),
     StateAfterFayanTurn = maps:put(fayan_turn, lib_fight:get_all_seat(StateAfterCarry), StateAfterCarry),
-    {next_state, state_lapiao_fayan, StateAfterFayanTurn}.
+    StateAfterWinner = maps:put(winner, Winner, StateAfterFayanTurn),
+    {next_state, state_lapiao_fayan, StateAfterWinner}.
 
 
 %%拉票发言环节
@@ -1087,6 +1088,7 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     JingZhang = maps:get(jingzhang, State),
     FlopList = maps:get(flop_list, State),
     LeaveList = maps:get(leave_player, State),
+    Winner = maps:get(winner, State),
     {AttachData1, AttachData2} = get_online_attach_data(SeatId, DutyId, State),
     Send = #m__fight__online__s2l{duty = DutyId,
                                   seat_id = SeatId,
@@ -1099,7 +1101,8 @@ handle_event({player_online, PlayerId}, StateName, State) ->
                                   offline_list = NewOfflineList,
                                   leave_list = LeaveList,
                                   flop_list =[#p_flop{seat_id = CurSeatId,
-                                                      op = CurOp} || {CurSeatId, CurOp} <- FlopList]
+                                                      op = CurOp} || {CurSeatId, CurOp} <- FlopList],
+                                  winner = Winner
                                   },
     net_send:send(Send, PlayerId),
     {next_state, StateName, NewState};
@@ -1224,12 +1227,12 @@ do_duty_state_start(Duty, GameState, State) ->
     end.
 
 do_duty_state_wait_op(Duty, State) ->
-    case b_fight_op_wait:get(Duty) of
-        0 ->
-            ignore;
-        WaitTime ->
-            start_fight_fsm_event_timer(?TIMER_TIMEOUT, WaitTime)
-    end,
+    % case b_fight_op_wait:get(Duty) of
+    %     0 ->
+    %         ignore;
+    %     WaitTime ->
+    %         start_fight_fsm_event_timer(?TIMER_TIMEOUT, WaitTime)
+    % end,
     SeatIdList = lib_fight:get_duty_seat(Duty, State),
     notice_player_op(Duty, SeatIdList, State),
     do_set_wait_op(SeatIdList, State).

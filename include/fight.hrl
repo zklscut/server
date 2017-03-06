@@ -114,16 +114,19 @@
                   nv_kill => 0,          %%女巫带走的人
                   safe_night => 1,       %%平安夜
                   safe_day => 1,         %%平安日
-                  skill_d_delay => 0,     %%释放技能是否做过默认延时
-                  skill_die_list => [],   %%释放技能的死亡列表
-                  mvp => 0,               %%谁获得mvp      
-                  carry => 0,             %%谁获得carry
-                  cur_skill => 0,         %%当前释放的技能
-                  leave_player => [],     %%战斗中离开玩家
-                  mvp_party => [],         %%参选mvp的人
-                  mvp_draw_cnt => 0,      %%mvp重投次数      
-                  carry_party =>[],        %%参选carry的人
-                  carry_draw_cnt => 0     %%carry重投次数
+                  skill_d_delay => 0,    %%释放技能是否做过默认延时
+                  skill_die_list => [],  %%释放技能的死亡列表
+                  mvp => 0,              %%谁获得mvp      
+                  carry => 0,            %%谁获得carry
+                  cur_skill => 0,        %%当前释放的技能
+                  leave_player => [],    %%战斗中离开玩家
+                  winner => [],          %%胜利方
+                  mvp_party => [],       %%参选mvp的人
+                  mvp_draw_cnt => 0,     %%mvp重投次数      
+                  carry_party =>[],      %%参选carry的人
+                  carry_draw_cnt => 0,    %%carry重投次数
+                  speak_id => 0,
+
                   }).
 
 -endif.
