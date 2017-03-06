@@ -1448,7 +1448,7 @@ wait_op_list_all_offline_players_timeout(WaitOpList, State)->
                 undefined->
                     [];
                 StartTime->
-                    %%离线玩家总共等待10秒,并且只等待一次
+                    %%如果剩下的是离线玩家并且总共操作时间超过10秒，直接跳过
                     case (util:get_micro_time() - StartTime) > b_fight_op_wait:get(?OP_SKILL_OFFLINE) of
                         true->
                             [];
@@ -1509,7 +1509,7 @@ player_online_offline_wait_op_time_update(SeatId, State)->
 
 do_remove_wait_op(SeatId, State) ->
     WaitOpList = maps:get(wait_op_list, State),
-    NewWaitOpList = wait_op_list_all_offline_players_timeout(WaitOpList -- [SeatId]),
+    NewWaitOpList = wait_op_list_all_offline_players_timeout(WaitOpList -- [SeatId], State),
     {NewWaitOpList == [], maps:put(wait_op_list, NewWaitOpList, State)}.
 
 notice_jingxuan_jingzhang(State) ->
