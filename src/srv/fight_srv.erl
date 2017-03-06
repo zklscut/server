@@ -1096,7 +1096,7 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     WaitOp = maps:get(wait_op, NewState),
     WaitOpList = maps:get(wait_op_list, NewState),
     ExitJingZhang = maps:get(exit_jingzhang, NewState),
-    PartingJingZhang = maps:get(parting_jingzhang, NewState)
+    PartingJingZhang = maps:get(parting_jingzhang, NewState),
     {AttachData1, AttachData2} = get_online_attach_data(SeatId, DutyId, NewState),
     Send = #m__fight__online__s2l{duty = DutyId,
                                   seat_id = SeatId,
