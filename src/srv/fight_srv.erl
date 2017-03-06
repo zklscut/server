@@ -1369,11 +1369,11 @@ notice_player_op(Op, AttachData, SeatList, State) ->
                 true->
                     UseWaitTimeSend = #m__fight__op_timetick__s2l{timetick = UseWaitTime},
                     lib_fight:send_to_all_player(UseWaitTimeSend, StateAfterStart),
-                    maps:put(op_timer_use_dur, UseWaitTime, StateAfterNormalDuration);
+                    maps:put(op_timer_use_dur, UseWaitTime, StateAfterStart);
                 _->
                     NormalWaitTimeSend = #m__fight__op_timetick__s2l{timetick = WaitTime},
                     lib_fight:send_to_all_player(NormalWaitTimeSend, StateAfterStart),
-                    maps:put(op_timer_use_dur, WaitTime, StateAfterNormalDuration)
+                    maps:put(op_timer_use_dur, WaitTime, StateAfterStart)
             end
     end.
 
