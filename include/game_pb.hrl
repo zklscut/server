@@ -65,7 +65,7 @@
 -record(m__fight__notice_skill__s2l, {msg_id=15017, op, op_list, seat_id}).
 -record(m__fight__do_skill__l2s, {msg_id=15018, op, op_list}).
 -record(p_flop, {seat_id, op}).
--record(m__fight__online__s2l, {msg_id=15019, duty, game_state, round, speak_id, die_list, seat_id, attach_data1, attach_data2, offline_list, leave_list, flop_list}).
+-record(m__fight__online__s2l, {msg_id=15019, duty, game_state, round, wait_op, die_list, seat_id, attach_data1, attach_data2, offline_list, leave_list, flop_list, winner, wait_op_list, jingzhang, lover_list}).
 -record(m__fight__offline__s2l, {msg_id=15020, offline_list}).
 -record(m__fight__op_timetick__s2l, {msg_id=15021, timetick}).
 -record(m__fight__langren_team_speak__s2l, {msg_id=15022, chat}).
