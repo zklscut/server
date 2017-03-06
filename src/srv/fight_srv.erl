@@ -1095,8 +1095,10 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     Winner = maps:get(winner, NewState),
     WaitOp = maps:get(wait_op, NewState),
     WaitOpList = maps:get(wait_op_list, NewState),
+    WaitOpAttackData = maps:get(wait_op_attack_data, NewState),
     ExitJingZhang = maps:get(exit_jingzhang, NewState),
     PartingJingZhang = maps:get(parting_jingzhang, NewState),
+    
     {AttachData1, AttachData2} = get_online_attach_data(SeatId, DutyId, NewState),
     Send = #m__fight__online__s2l{duty = DutyId,
                                   seat_id = SeatId,
@@ -1115,7 +1117,8 @@ handle_event({player_online, PlayerId}, StateName, State) ->
                                                       op = CurOp} || {CurSeatId, CurOp} <- FlopList],
                                   winner = Winner,
                                   duty_list = get_online_duty_data(Winner, NewState),
-                                  parting_jingzhang = PartingJingZhang -- ExitJingZhang
+                                  parting_jingzhang = PartingJingZhang -- ExitJingZhang,
+                                  wait_op_attach_data = WaitOpAttackData
                                   },
     net_send:send(Send, PlayerId),
     player_online_offline_wait_op_time_update(SeatId, NewState),
@@ -1352,19 +1355,20 @@ notice_player_op(Op, AttachData, SeatList, State) ->
             State;
         _->
             start_fight_fsm_event_timer(?TIMER_TIMEOUT, UseWaitTime),
+            StateAfterAttackData = maps:put(wait_op_attack_data, WaitTime, State),
             %%正常延时时间
-            StateAfterNormalDuration = maps:put(op_timer_normal_dur, WaitTime, State),
+            StateAfterNormalDuration = maps:put(op_timer_normal_dur, WaitTime, StateAfterAttackData),
             %%
             StateAfterStart = maps:put(op_timer_start, util:get_micro_time(), StateAfterNormalDuration),
             StateAfterUseDuration = 
             case lists:member(Op, ?FAYAN_OP_LIST) of
                 true->
                     UseWaitTimeSend = #m__fight__op_timetick__s2l{timetick = UseWaitTime},
-                    lib_fight:send_to_all_player(UseWaitTimeSend, State),
+                    lib_fight:send_to_all_player(UseWaitTimeSend, StateAfterStart),
                     maps:put(op_timer_use_dur, UseWaitTime, StateAfterNormalDuration);
                 _->
                     NormalWaitTimeSend = #m__fight__op_timetick__s2l{timetick = WaitTime},
-                    lib_fight:send_to_all_player(NormalWaitTimeSend, State),
+                    lib_fight:send_to_all_player(NormalWaitTimeSend, StateAfterStart),
                     maps:put(op_timer_use_dur, WaitTime, StateAfterNormalDuration)
             end
     end.

@@ -82,6 +82,7 @@
                   duty_seat_map => #{},  %% #{duty_id, [seat_id]}
                   wait_op => 0,          %% 等待的操作
                   wait_op_list => [],    %% 等待中的操作
+                  wait_op_attack_data => [], %%操作附近数据
                   status => 0,           %% 当前游戏状态
                   game_state =>  0,      %% 第几天晚上
                   game_round =>  1,      %% 第几轮
