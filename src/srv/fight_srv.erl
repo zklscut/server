@@ -1099,6 +1099,7 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     ExitJingZhang = maps:get(exit_jingzhang, NewState),
     PartingJingZhang = maps:get(parting_jingzhang, NewState),
     OpStartTime = maps:get(op_timer_start, NewState),
+    lager:info("player_online ~p", [OpStartTime]),
     OpUseTime = maps:get(op_timer_use_dur, NewState),
     
     {AttachData1, AttachData2} = get_online_attach_data(SeatId, DutyId, NewState),
@@ -1466,7 +1467,7 @@ wait_op_list_all_offline_players_timeout(WaitOpList, State)->
     case lib_fight:is_offline_all(WaitOpList, State) of
         true->
             case maps:get(op_timer_start, State) of
-                undefined->
+                0->
                     [];
                 StartTime->
                     %%如果剩下的是离线玩家并且总共操作时间超过10秒，直接跳过
