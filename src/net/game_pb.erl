@@ -157,9 +157,10 @@
 -record(m__fight__offline__s2l, {msg_id, offline_list}).
 
 -record(m__fight__online__s2l,
-	{msg_id, duty, game_state, round, speak_id, die_list,
+	{msg_id, duty, game_state, round, wait_op, die_list,
 	 seat_id, attach_data1, attach_data2, offline_list,
-	 leave_list, flop_list}).
+	 leave_list, flop_list, winner, wait_op_list, jingzhang,
+	 lover_list}).
 
 -record(p_flop, {seat_id, op}).
 
@@ -1394,7 +1395,7 @@ encode(m__fight__online__s2l, _Record) ->
 					none),
 			   int32, []),
 		      pack(5, required,
-			   with_default(_Record#m__fight__online__s2l.speak_id,
+			   with_default(_Record#m__fight__online__s2l.wait_op,
 					none),
 			   int32, []),
 		      pack(6, repeated,
@@ -1424,7 +1425,23 @@ encode(m__fight__online__s2l, _Record) ->
 		      pack(12, repeated,
 			   with_default(_Record#m__fight__online__s2l.flop_list,
 					none),
-			   p_flop, [])]);
+			   p_flop, []),
+		      pack(13, repeated,
+			   with_default(_Record#m__fight__online__s2l.winner,
+					none),
+			   int32, []),
+		      pack(14, repeated,
+			   with_default(_Record#m__fight__online__s2l.wait_op_list,
+					none),
+			   int32, []),
+		      pack(15, required,
+			   with_default(_Record#m__fight__online__s2l.jingzhang,
+					none),
+			   int32, []),
+		      pack(16, repeated,
+			   with_default(_Record#m__fight__online__s2l.lover_list,
+					none),
+			   int32, [])]);
 encode(m__fight__offline__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__fight__offline__s2l.msg_id,
@@ -2095,14 +2112,18 @@ decode(p_flop, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(p_flop, Decoded);
 decode(m__fight__online__s2l, Bytes) ->
-    Types = [{12, flop_list, p_flop, [is_record, repeated]},
+    Types = [{16, lover_list, int32, [repeated]},
+	     {15, jingzhang, int32, []},
+	     {14, wait_op_list, int32, [repeated]},
+	     {13, winner, int32, [repeated]},
+	     {12, flop_list, p_flop, [is_record, repeated]},
 	     {11, leave_list, int32, [repeated]},
 	     {10, offline_list, int32, [repeated]},
 	     {9, attach_data2, int32, [repeated]},
 	     {8, attach_data1, int32, [repeated]},
 	     {7, seat_id, int32, []},
 	     {6, die_list, int32, [repeated]},
-	     {5, speak_id, int32, []}, {4, round, int32, []},
+	     {5, wait_op, int32, []}, {4, round, int32, []},
 	     {3, game_state, int32, []}, {2, duty, int32, []},
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
