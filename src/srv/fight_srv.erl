@@ -1098,6 +1098,8 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     WaitOpAttackData = maps:get(wait_op_attack_data, NewState),
     ExitJingZhang = maps:get(exit_jingzhang, NewState),
     PartingJingZhang = maps:get(parting_jingzhang, NewState),
+    OpStartTime = maps:get(op_timer_start, NewState),
+    OpUseTime = maps:get(op_timer_use_dur, NewState),
     
     {AttachData1, AttachData2} = get_online_attach_data(SeatId, DutyId, NewState),
     Send = #m__fight__online__s2l{duty = DutyId,
@@ -1106,6 +1108,8 @@ handle_event({player_online, PlayerId}, StateName, State) ->
                                   round = Round,
                                   wait_op = WaitOp,
                                   wait_op_list = WaitOpList,
+                                  wait_op_attach_data = WaitOpAttackData,
+                                  wait_op_tick = OpUseTime - (util:get_micro_time() - OpStartTime),
                                   die_list = DieList,
                                   attach_data1 = AttachData1,
                                   attach_data2 = AttachData2,
@@ -1117,12 +1121,11 @@ handle_event({player_online, PlayerId}, StateName, State) ->
                                                       op = CurOp} || {CurSeatId, CurOp} <- FlopList],
                                   winner = Winner,
                                   duty_list = get_online_duty_data(Winner, NewState),
-                                  parting_jingzhang = PartingJingZhang -- ExitJingZhang,
-                                  wait_op_attach_data = WaitOpAttackData
+                                  parting_jingzhang = PartingJingZhang -- ExitJingZhang
                                   },
     net_send:send(Send, PlayerId),
-    player_online_offline_wait_op_time_update(SeatId, NewState),
-    {next_state, StateName, NewState};
+    StateAfterTimeUpdate = player_online_offline_wait_op_time_update(SeatId, NewState),
+    {next_state, StateName, StateAfterTimeUpdate};
 
 handle_event({player_offline, PlayerId}, StateName, State) ->
     OfflineList = maps:get(offline_list, State),
@@ -1133,8 +1136,8 @@ handle_event({player_offline, PlayerId}, StateName, State) ->
                        offline_list = OfflineList  
                     },
     lib_fight:send_to_all_player(Send, NewState),
-    player_online_offline_wait_op_time_update(SeatId, NewState),
-    {next_state, StateName, NewState};
+    StateAfterTimeUpdate = player_online_offline_wait_op_time_update(SeatId, NewState),
+    {next_state, StateName, StateAfterTimeUpdate};
 
 handle_event({player_leave, PlayerId}, StateName, State) ->
     SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
@@ -1144,8 +1147,8 @@ handle_event({player_leave, PlayerId}, StateName, State) ->
                        leave_list = NewLeavePlayerList  
                     },
     lib_fight:send_to_all_player(Send, NewState),
-    player_online_offline_wait_op_time_update(SeatId, NewState),
-    {next_state, StateName, NewState};
+    StateAfterTimeUpdate = player_online_offline_wait_op_time_update(SeatId, NewState),
+    {next_state, StateName, StateAfterTimeUpdate};
 
 handle_event(print_state, StateName, StateData) ->
     lager:info("state name ~p", [StateName]),
@@ -1496,33 +1499,36 @@ player_online_offline_wait_op_time_update(SeatId, State)->
                     case (util:get_micro_time() - StartTime) > b_fight_op_wait:get(?OP_SKILL_OFFLINE) of
                         true->
                             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-                            start_fight_fsm_event_timer(?TIMER_TIMEOUT, 0);
+                            start_fight_fsm_event_timer(?TIMER_TIMEOUT, 0),
+                            State;
                         _->
                             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
                             start_fight_fsm_event_timer(?TIMER_TIMEOUT, 
-                                b_fight_op_wait:get(?OP_SKILL_OFFLINE) - (util:get_micro_time() - StartTime))
+                                b_fight_op_wait:get(?OP_SKILL_OFFLINE) - (util:get_micro_time() - StartTime)),
+                            State
                     end;
                 _->
                     case UseDuration == NormalDuration of
                         true->
-                            ignore;
+                            State;
                         _->
                             %%重连上来>
                             case (util:get_micro_time() - StartTime) >= NormalDuration of
                                 true->
-                                    ignore;
+                                    State;
                                 _->
                                     WaitTime = NormalDuration - (util:get_micro_time() - StartTime),
                                     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
                                     start_fight_fsm_event_timer(?TIMER_TIMEOUT, WaitTime),
                                     %%通知更新倒计时
                                     UseWaitTimeSend = #m__fight__op_timetick__s2l{timetick = WaitTime},
-                                    lib_fight:send_to_all_player(UseWaitTimeSend, State)
+                                    lib_fight:send_to_all_player(UseWaitTimeSend, State),
+                                    maps:put(op_timer_use_dur, NormalDuration, State)
                             end 
                     end
             end;
         _->
-            ignore
+            State
     end.
 
 do_remove_wait_op(SeatId, State) ->
