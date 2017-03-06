@@ -1501,7 +1501,8 @@ player_online_offline_wait_op_time_update(SeatId, State)->
                                     UseWaitTimeSend = #m__fight__op_timetick__s2l{timetick = WaitTime},
                                     lib_fight:send_to_all_player(UseWaitTimeSend, State)
                             end 
-                    end
+                    end;
+            end;
         _->
             ignore
     end.
