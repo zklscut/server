@@ -160,7 +160,7 @@
 	{msg_id, duty, game_state, round, wait_op, die_list,
 	 seat_id, attach_data1, attach_data2, offline_list,
 	 leave_list, flop_list, winner, wait_op_list, jingzhang,
-	 lover_list}).
+	 lover_list, duty_list}).
 
 -record(p_flop, {seat_id, op}).
 
@@ -1441,7 +1441,11 @@ encode(m__fight__online__s2l, _Record) ->
 		      pack(16, repeated,
 			   with_default(_Record#m__fight__online__s2l.lover_list,
 					none),
-			   int32, [])]);
+			   int32, []),
+		      pack(17, repeated,
+			   with_default(_Record#m__fight__online__s2l.duty_list,
+					none),
+			   p_duty, [])]);
 encode(m__fight__offline__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__fight__offline__s2l.msg_id,
@@ -2112,7 +2116,8 @@ decode(p_flop, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(p_flop, Decoded);
 decode(m__fight__online__s2l, Bytes) ->
-    Types = [{16, lover_list, int32, [repeated]},
+    Types = [{17, duty_list, p_duty, [is_record, repeated]},
+	     {16, lover_list, int32, [repeated]},
 	     {15, jingzhang, int32, []},
 	     {14, wait_op_list, int32, [repeated]},
 	     {13, winner, int32, [repeated]},
