@@ -1118,8 +1118,8 @@ handle_event({player_online, PlayerId}, StateName, State) ->
                                   die_list = DieList,
                                   attach_data1 = AttachData1,
                                   attach_data2 = AttachData2,
-                                  offline_list = [lib_fight:get_seat_id_by_player_id(PlayerId)||PlayerId <- NewOfflineList],
-                                  leave_list = [lib_fight:get_seat_id_by_player_id(PlayerId)||PlayerId <- LeaveList],
+                                  offline_list = [lib_fight:get_seat_id_by_player_id(PlayerId, NewState)||PlayerId <- NewOfflineList],
+                                  leave_list = [lib_fight:get_seat_id_by_player_id(PlayerId, NewState)||PlayerId <- LeaveList],
                                   jingzhang = JingZhang,
                                   lover_list = get_online_lover_data(SeatId, NewState),
                                   flop_list =[#p_flop{seat_id = CurSeatId,
@@ -1138,7 +1138,7 @@ handle_event({player_offline, PlayerId}, StateName, State) ->
     NewState =  maps:put(offline_list, NewOfflineList, State),
     SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
     Send = #m__fight__offline__s2l{
-                       offline_list = [lib_fight:get_seat_id_by_player_id(PlayerId)||PlayerId <- OfflineList]  
+                       offline_list = [lib_fight:get_seat_id_by_player_id(PlayerId, NewState)||PlayerId <- OfflineList]  
                     },
     lib_fight:send_to_all_player(Send, NewState),
     StateAfterTimeUpdate = player_online_offline_wait_op_time_update(SeatId, NewState),
@@ -1149,7 +1149,7 @@ handle_event({player_leave, PlayerId}, StateName, State) ->
     NewLeavePlayerList = maps:get(leave_player, State) ++ [PlayerId],
     NewState = maps:put(leave_player, NewLeavePlayerList, State),
     Send = #m__fight__leave__s2l{
-                       leave_list = [lib_fight:get_seat_id_by_player_id(PlayerId)||PlayerId <- NewLeavePlayerList]   
+                       leave_list = [lib_fight:get_seat_id_by_player_id(PlayerId, NewState)||PlayerId <- NewLeavePlayerList]   
                     },
     lib_fight:send_to_all_player(Send, NewState),
     StateAfterTimeUpdate = player_online_offline_wait_op_time_update(SeatId, NewState),
