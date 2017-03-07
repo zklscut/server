@@ -90,7 +90,7 @@ player_offline(Player) ->
             lager:info("player_offline undefined"),
             ignore;
         Pid ->
-            lager:info("player_offline undefined"),
+            lager:info("player_offline defined"),
             gen_fsm:send_all_state_event(Pid, {player_offline, lib_player:get_player_id(Player)})
     end.
 
@@ -100,11 +100,11 @@ player_leave(Pid, PlayerId) ->
             lager:info("player_leave undefined"),
             ignore;
         Pid ->
-            lager:info("player_leave undefined"),
+            lager:info("player_leave defined"),
             gen_fsm:send_all_state_event(Pid, {player_leave, PlayerId})
     end.
 
-%% ====================================================================
+%% ================`===================================================
 %% Behavioural functions
 %% ====================================================================
 
