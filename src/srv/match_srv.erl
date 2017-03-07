@@ -103,6 +103,7 @@ handle_cast_inner({start_match, PlayerList, Rank}, State) ->
     {noreply, State};
 
 handle_cast_inner({cancle_match, PlayerId}, State) ->
+    MatchData = get_match_data(),
     #{match_num := MatchNum,
       match_list := MatchList} = MatchData,
     case lists:keyfind(PlayerId, 1, MatchList) of
