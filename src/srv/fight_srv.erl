@@ -1465,7 +1465,7 @@ do_log_op(SeatId, OpList, State) ->
 
 %%剩下等待的人是否全部离线并且超过10秒操作时间
 wait_op_list_all_offline_players_timeout(WaitOpList, State)->
-    case lib_fight:is_offline_all(WaitOpList, State) of
+    case ([] =/= WaitOpList) andalso lib_fight:is_offline_all(WaitOpList, State) of
         true->
             case maps:get(op_timer_start, State) of
                 0->
