@@ -17,7 +17,7 @@ start() ->
     application:start(lager),
     crypto:start(),
     application:start(emysql),
-    application:start(mochiweb),
+    lager:info("start mochiwerb ~p", [application:start(mochiweb)]),
     application:start(game).
 
 stop() ->

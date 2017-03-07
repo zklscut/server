@@ -1,13 +1,12 @@
 %% @author zhangkl
-%% @doc player_srv.
+%% @doc match_srv.
 %% 2016
 
--module(ets_srv).
-
--include("ets.hrl").
-
+-module(match_srv).
 -behaviour(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
+
+-include("ets.hrl").
 
 %% ====================================================================
 %% API functions
@@ -16,6 +15,12 @@
 
 start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+
+start_match(PlayerList, Rank) ->
+    gen_server:cast(?MODULE, {start_match, PlayerList, Rank}).
+
+cancle_match(PlayerId) ->
+    gen_server:cast(?MODULE, {cancle_match, PlayerId}).
 
 %% ====================================================================
 %% Behavioural functions
@@ -35,12 +40,6 @@ start_link() ->
     Timeout :: non_neg_integer() | infinity.
 %% ====================================================================
 init([]) ->
-    ets:new(?ETS_PLAYER_PID, [set, public, named_table, {keypos, 1}]),
-    ets:new(?ETS_GLOBAL_COUNTER, [set, public, named_table, {keypos, 1}]),
-    ets:new(?ETS_ROOM, [set, public, named_table, {keypos, 1}]),
-    ets:new(?ETS_ACCOUNT_PLAYER, [set, public, named_table, {keypos, 1}]),
-    ets:new(?ETS_MATCH, [set, public, named_table, {keypos, 1}]),
-    
     {ok, #state{}}.
 
 
@@ -77,9 +76,49 @@ handle_call(_Request, _From, State) ->
     NewState :: term(),
     Timeout :: non_neg_integer() | infinity.
 %% ====================================================================
-handle_cast(_Msg, State) ->
-    {noreply, State}.
+handle_cast(Cast, State) ->
+    try
+        handle_cast_inner(Cast, State)
+    catch
+        throw:{ErrCode, PlayerId} ->
+            global_op_srv:player_op(PlayerId, {mod_player, send_errcode, ErrCode});
+        What:Error ->
+            lager:error("error what ~p, Error ~p, stack", 
+                [What, Error, erlang:get_stacktrace()]),
+        {noreply, State}        
+    end.
 
+
+handle_cast_inner({start_match, PlayerList, Rank}, State) ->
+    MatchData = get_match_data(),
+    #{match_num := MatchNum,
+      match_list := MatchList} = MatchData,
+    NewMatchNum = MatchNum + length(PlayerList),
+    NewMatchList = MatchList ++ [{hd{PlayerList}, PlayerList, Rank}],
+    NewMatchData = MatchData#{match_num := NewMatchNum,
+                              match_list := NewMatchList},
+    update_match_data(NewMatchData),
+    do_start_fight(NewMatchData),                                     
+    {noreply, State};
+
+handle_cast_inner({cancle_match, PlayerId}, State) ->
+    #{match_num := MatchNum,
+      match_list := MatchList} = MatchData,
+    case lists:keyfind(PlayerId, 1, MatchList) of
+        false ->
+            ignore;
+        {_, PlayerList, _} ->
+            NewMatchNum = MatchNum - length(PlayerList),
+            NewMatchList = lists:keydelete(PlayerId, 1, MatchList),
+            NewMatchData = MatchData#{match_num := NewMatchNum,
+                                      match_list := NewMatchList},
+            update_match_data(NewMatchData)
+    end,
+
+    {noreply, State};    
+
+handle_cast_inner(_Cast, State) ->
+    {noreply, State}.
 
 %% handle_info/2
 %% ====================================================================
@@ -125,4 +164,49 @@ code_change(_OldVsn, State, _Extra) ->
 %% Internal functions
 %% ====================================================================
 
+get_match_data() ->
+    case lib_ets:get(?ETS_MATCH, 0) of
+        undefined ->
+            ?MATCH_DATA;
+        MatchData ->
+            MatchData
+    end.
 
+update_match_data(MatchData) ->
+    lib_ets:update_match_data(?ETS_MATCH, 0, MatchData).
+
+do_start_fight(MatchData) ->
+    #{match_num := MatchNum,
+      match_list := MatchList} = MatchData,
+    case MatchNum >= ?MATCH_NEED_PLAYER_NUM of
+        true ->
+            {_, _, Rank} = hd(MatchList),
+            FunGetFit = 
+                fun({CurPlayerId, CurPlayerList, CurRank}, {CurFitNum, CurFitList}) ->
+                    case abs(CurRank - Rank} =< ?MATCH_MIN_DIFF_RANK of
+                        true ->
+                            CurNum = length(CurPlayerList),
+                            case CurFitNum + CurNum > ?MATCH_NEED_PLAYER_NUM of
+                                true ->
+                                    {CurFitNum, CurFitList};
+                                false ->
+                                    case CurFitNum + CurNum == ?MATCH_NEED_PLAYER_NUM of
+                                        true ->
+                                            throw({start_fight, CurFitList ++ CurPlayerList});
+                                        false ->
+                                            {CurFitNum + CurNum, CurFitList ++ CurPlayerList}
+                                    end
+                            end;
+                        false ->
+                            {CurFitNum, CurFitList}
+                    end
+                end,
+            try
+                lists:foldl(FunGetFit, {0, []}, MatchList)
+            catch
+                throw:{start_fight, StartPlayerIdList} ->
+                    start_link(0, StartPlayerIdList, b_duty:get(?MATCH_NEED_PLAYER_NUM))
+            end;
+        false ->
+            ignore
+    end.
