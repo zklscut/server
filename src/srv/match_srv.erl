@@ -185,6 +185,7 @@ do_start_fight(MatchData) ->
             {_, _, Rank} = hd(MatchList),
             FunGetFit = 
                 fun({CurPlayerId, CurPlayerList, CurRank}, {CurFitNum, CurFitList}) ->
+                    %%TODO 按照时间拿差值 时间在 last_match_time
                     case abs(CurRank - Rank) =< ?MATCH_MIN_DIFF_RANK of
                         true ->
                             CurNum = length(CurPlayerList),
@@ -194,9 +195,9 @@ do_start_fight(MatchData) ->
                                 false ->
                                     case CurFitNum + CurNum == ?MATCH_NEED_PLAYER_NUM of
                                         true ->
-                                            throw({start_fight, CurFitList ++ CurPlayerList});
+                                            throw({start_fight, CurFitList ++ [{CurPlayerId, CurPlayerList, CurRank}]});
                                         false ->
-                                            {CurFitNum + CurNum, CurFitList ++ CurPlayerList}
+                                            {CurFitNum + CurNum, CurFitList ++ [{CurPlayerId, CurPlayerList, CurRank}]}
                                     end
                             end;
                         false ->
@@ -206,8 +207,21 @@ do_start_fight(MatchData) ->
             try
                 lists:foldl(FunGetFit, {0, []}, MatchList)
             catch
-                throw:{start_fight, StartPlayerIdList} ->
-                    fight_srv:start_link(0, StartPlayerIdList, b_duty:get(?MATCH_NEED_PLAYER_NUM))
+                throw:{start_fight, FitList} ->
+                    FunStartFight = 
+                        fun({CurPlayerId, CurPlayerList, _CurRank}, {CurMatchList, CurStartPlayerList}) ->
+                            {lists:keydelete(CurPlayerId, 1, CurMatchList),
+                             CurStartPlayerList ++ CurPlayerList}
+                        end,
+                    {NewMatchList, StartPlayerList} = lists:foldl(FunStartFight, {MatchList, []}, FitList),
+                    NewMatchData = MatchData#{match_num := MatchNum - ?MATCH_NEED_PLAYER_NUM,
+                                              match_list := NewMatchList,
+                                              %%如果要做等待这里生成一个等待id发送给客户端, 然后记录等待队伍的状态
+                                              %% wait_list := maps:put(wait_id, #{match_list => FitList, wait_start_list => []})
+                                              %%　设置超时后返回队列
+                                              last_match_time := util:get_micro_time()},
+                    update_match_data(NewMatchData),
+                    fight_srv:start_link(0, StartPlayerList, b_duty:get(?MATCH_NEED_PLAYER_NUM))
             end;
         false ->
             ignore
