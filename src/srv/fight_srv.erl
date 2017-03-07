@@ -1129,6 +1129,13 @@ handle_event({player_online, PlayerId}, StateName, State) ->
                                   parting_jingzhang = PartingJingZhang -- ExitJingZhang
                                   },
     net_send:send(Send, PlayerId),
+
+    %%刷新离线列表
+    SendOffline = #m__fight__offline__s2l{
+                       offline_list = [lib_fight:get_seat_id_by_player_id(PlayerId, NewState)||PlayerId <- NewOfflineList]  
+                    },
+    lib_fight:send_to_all_player(SendOffline, NewState, [PlayerId]),
+
     StateAfterTimeUpdate = player_online_offline_wait_op_time_update(SeatId, NewState),
     {next_state, StateName, StateAfterTimeUpdate};
 
