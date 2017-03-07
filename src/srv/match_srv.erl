@@ -7,6 +7,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -include("ets.hrl").
+-include("match.hrl").
 
 %% ====================================================================
 %% API functions
@@ -94,7 +95,7 @@ handle_cast_inner({start_match, PlayerList, Rank}, State) ->
     #{match_num := MatchNum,
       match_list := MatchList} = MatchData,
     NewMatchNum = MatchNum + length(PlayerList),
-    NewMatchList = MatchList ++ [{hd{PlayerList}, PlayerList, Rank}],
+    NewMatchList = MatchList ++ [{hd(PlayerList), PlayerList, Rank}],
     NewMatchData = MatchData#{match_num := NewMatchNum,
                               match_list := NewMatchList},
     update_match_data(NewMatchData),
