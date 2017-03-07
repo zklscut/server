@@ -207,7 +207,7 @@ do_start_fight(MatchData) ->
                 lists:foldl(FunGetFit, {0, []}, MatchList)
             catch
                 throw:{start_fight, StartPlayerIdList} ->
-                    start_link(0, StartPlayerIdList, b_duty:get(?MATCH_NEED_PLAYER_NUM))
+                    fight_srv:start_link(0, StartPlayerIdList, b_duty:get(?MATCH_NEED_PLAYER_NUM))
             end;
         false ->
             ignore
