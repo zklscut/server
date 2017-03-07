@@ -1365,7 +1365,7 @@ notice_player_op(Op, AttachData, SeatList, State) ->
         _->
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
             start_fight_fsm_event_timer(?TIMER_TIMEOUT, UseWaitTime),
-            StateAfterAttackData = maps:put(wait_op_attack_data, WaitTime, State),
+            StateAfterAttackData = maps:put(wait_op_attack_data, AttachData, State),
             %%正常延时时间
             StateAfterNormalDuration = maps:put(op_timer_normal_dur, WaitTime, StateAfterAttackData),
             %%
