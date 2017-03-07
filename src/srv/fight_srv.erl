@@ -1137,6 +1137,7 @@ handle_event({player_offline, PlayerId}, StateName, State) ->
     NewOfflineList = util:add_element_single(PlayerId, OfflineList),
     NewState =  maps:put(offline_list, NewOfflineList, State),
     SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
+    lager:info("player_offline ~p", [length(NewOfflineList)]),
     Send = #m__fight__offline__s2l{
                        offline_list = [lib_fight:get_seat_id_by_player_id(PlayerId, NewState)||PlayerId <- OfflineList]  
                     },
