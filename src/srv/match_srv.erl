@@ -12,7 +12,9 @@
 %% ====================================================================
 %% API functions
 %% ====================================================================
--export([start_link/0]).
+-export([start_link/0,
+         start_match/2,
+         cancle_match/1]).
 
 start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
