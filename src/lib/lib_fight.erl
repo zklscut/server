@@ -105,7 +105,7 @@ is_offline_all(SeatList, State) ->
         []->
             true;
         _->
-            lists:all(fun(SeatId)-> lists:member(SeatId, OfflineList) end, SeatList)
+            lists:all(fun(SeatId)-> lists:member(get_player_id_by_seat(SeatId), OfflineList) end, SeatList)
     end.
 
 get_player_id_by_seat(SeatId, State) ->

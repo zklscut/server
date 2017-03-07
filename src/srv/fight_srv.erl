@@ -481,20 +481,17 @@ state_night_result(_, State) ->
 %% ====================================================================
 state_someone_die(start, State) ->
     {OpName, Op, StateAfterDieOp} = lib_fight:get_someone_die_op(State),
-    lager:info("state_someone_die  ~p", [OpName, Op]),
     {NextState, StateAfterOp} = 
     case OpName of
         op_over->
             send_event_inner(op_over),
             {state_someone_die, StateAfterDieOp};
         d_delay->
-            lager:info("state_someone_die22"),
             notice_game_status_change(state_someone_die, [?OP_SKILL_D_DELAY], StateAfterDieOp),
             send_event_inner(op_over, b_fight_op_wait:get(?OP_SKILL_D_DELAY)),
             {state_someone_die, maps:put(skill_d_delay, 1, StateAfterDieOp)};
         skip->
             send_event_inner(start),
-            lager:info("state_someone_die_skip ~p", [maps:get(pre_state_name, StateAfterDieOp), maps:get(langren_boom, StateAfterDieOp)]),
             StateAfterBoom = 
                 case maps:get(langren_boom, StateAfterDieOp) == 1 of
                     true->
@@ -508,7 +505,6 @@ state_someone_die(start, State) ->
             send_event_inner(wait_op),
             {state_someone_die, StateAfterDieOp}
     end,
-    lager:info("state_someone_die33 ~p ~p", [[OpName],[maps:get(skill_d_delay, StateAfterOp)]]),
     {next_state, NextState, maps:put(cur_skill, 0, StateAfterOp)};
 
 state_someone_die(wait_op, State) ->
