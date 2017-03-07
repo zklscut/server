@@ -184,7 +184,7 @@ do_start_fight(MatchData) ->
             {_, _, Rank} = hd(MatchList),
             FunGetFit = 
                 fun({CurPlayerId, CurPlayerList, CurRank}, {CurFitNum, CurFitList}) ->
-                    case abs(CurRank - Rank} =< ?MATCH_MIN_DIFF_RANK of
+                    case abs(CurRank - Rank) =< ?MATCH_MIN_DIFF_RANK of
                         true ->
                             CurNum = length(CurPlayerList),
                             case CurFitNum + CurNum > ?MATCH_NEED_PLAYER_NUM of
