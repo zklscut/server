@@ -1139,7 +1139,7 @@ handle_event({player_offline, PlayerId}, StateName, State) ->
     SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
     lager:info("player_offline ~p", [length(NewOfflineList)]),
     Send = #m__fight__offline__s2l{
-                       offline_list = [lib_fight:get_seat_id_by_player_id(PlayerId, NewState)||PlayerId <- OfflineList]  
+                       offline_list = [lib_fight:get_seat_id_by_player_id(PlayerId, NewState)||PlayerId <- NewOfflineList]  
                     },
     lib_fight:send_to_all_player(Send, NewState),
     StateAfterTimeUpdate = player_online_offline_wait_op_time_update(SeatId, NewState),
