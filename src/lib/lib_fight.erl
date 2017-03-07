@@ -5,6 +5,7 @@
 -module(lib_fight).
 -export([init/4,
          send_to_all_player/2,
+         send_to_all_player/3,
          send_to_seat/3,
          is_active_in_fight/2,
          is_offline_all/2,
