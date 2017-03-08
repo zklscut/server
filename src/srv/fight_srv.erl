@@ -1597,7 +1597,7 @@ notice_night_result(State) ->
 out_die_player(State) ->
     NewState = maps:put(out_seat_list, (maps:get(out_seat_list, State) ++ maps:get(die, State) ++ 
                             [maps:get(quzhu, State)]) -- [maps:get(baichi, State)], State),
-    lager:info("out_die_player  ~p ~p ~p ~p", [maps:get(out_seat_list, State),maps:get(die, State),[maps:get(quzhu, State)],[maps:get(baichi, State)]]),
+    % lager:info("out_die_player  ~p ~p ~p ~p", [maps:get(out_seat_list, State),maps:get(die, State),[maps:get(quzhu, State)],[maps:get(baichi, State)]]),
     NewState.
 
 get_fight_result(State) ->
