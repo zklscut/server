@@ -181,8 +181,8 @@ handle_info(wait_timeout, State) ->
                 true ->
                     {maps:remove(WaitId, CurWaitList),
                      CurMatchList ++ [{CurPlayerId, CurPlayerList, CurRank} || {CurPlayerId, CurPlayerList, CurRank} <- FitList,
-                                      not util:is_any_element_same(WaitPlayerList, CurPlayerList)]};
-                    }
+                                      not util:is_any_element_same(WaitPlayerList, CurPlayerList)]
+                    };
                 false ->
                     {CurWaitList, CurMatchList}
             end
