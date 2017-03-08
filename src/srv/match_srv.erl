@@ -276,7 +276,7 @@ do_start_fight(MatchData) ->
                              CurStartPlayerList ++ CurPlayerList}
                         end,
                     {NewMatchList, StartPlayerList} = lists:foldl(FunStartFight, {MatchList, []}, FitList),
-                    {WaitId, WaitMatch} = generate_wait_match(StartPlayerList, FitList)
+                    {WaitId, WaitMatch} = generate_wait_match(StartPlayerList, FitList),
                     NewMatchData = MatchData#{match_num := MatchNum - ?MATCH_NEED_PLAYER_NUM,
                                               match_list := NewMatchList,
                                               wait_list := maps:put(WaitId, WaitMatch, maps:get(wait_list, MatchData)),
