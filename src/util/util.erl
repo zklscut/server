@@ -11,7 +11,8 @@
          part_list/2,
          conver_bool_to_int/1,
          add_element_single/2,
-         get_micro_time/0]).
+         get_micro_time/0,
+         is_any_element_same/2]).
 
 
 %% ====================================================================
@@ -111,6 +112,13 @@ add_element_single(Elem, List) ->
 get_micro_time()->
   {MegaSecs, Secs, MicroSecs} = erlang:now(),
   1000000000 * MegaSecs + Secs * 1000 + MicroSecs div 1000.
+
+is_any_element_same(ListA, ListB) ->
+  Fun = 
+    fun(Element) ->
+        lists:member(Element, ListB)
+    end,
+  lists:any(Fun, ListA).
 
 %%%====================================================================
 %%% Internal functions
