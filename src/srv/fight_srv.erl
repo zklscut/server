@@ -63,6 +63,7 @@ start_link(RoomId, PlayerList, DutyList) ->
     gen_fsm:start(?MODULE, [RoomId, PlayerList, DutyList, ?MFIGHT], []).
 
 player_op(Pid, PlayerId, Op, OpList) ->
+    lager:info("player_op ~p", [{Op, OpList}]),
     gen_fsm:send_event(Pid, {player_op, PlayerId, Op, OpList}).
 
 player_speak(Pid, PlayerId, Chat) ->
