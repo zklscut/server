@@ -101,11 +101,18 @@ handle_cast(Cast, State) ->
 handle_cast_inner({start_match, PlayerList, Rank}, State) ->
     MatchData = get_match_data(),
     #{match_num := MatchNum,
-      match_list := MatchList} = MatchData,
+      match_list := MatchList,
+      player_info:= PlayerInfo
+      } = MatchData,
     NewMatchNum = MatchNum + length(PlayerList),
-    NewMatchList = MatchList ++ [{hd(PlayerList), PlayerList, Rank}],
+    MatchPlayerId = hd(PlayerList),
+    NewMatchList = MatchList ++ [{MatchPlayerId, PlayerList, Rank, 0}],
+    NewPlayerInfo = lists:foldl(fun(PlayerId, TmpPlayerInfo) -> 
+                        TmpPlayerInfo ++ [{PlayerId, MatchPlayerId, 0}] end, PlayerInfo, PlayerList),
     NewMatchData = MatchData#{match_num := NewMatchNum,
-                              match_list := NewMatchList},
+                              match_list := NewMatchList,
+                              player_info := NewPlayerInfo
+                              },
     update_match_data(NewMatchData),
     do_start_fight(NewMatchData),                                     
     {noreply, State};
@@ -122,6 +129,10 @@ handle_cast_inner({cancle_match, PlayerId}, State) ->
             NewMatchList = lists:keydelete(PlayerId, 1, MatchList),
             NewMatchData = MatchData#{match_num := NewMatchNum,
                                       match_list := NewMatchList},
+            %%通知玩家队列取消
+
+            %%如果玩家已经在等待中，删除等待    
+
             update_match_data(NewMatchData)
     end,
 
@@ -139,6 +150,7 @@ handle_cast_inner({enter_match, PlayerId, WaitId}, State) ->
              NewWaitPlayerList = WaitPlayerList -- [PlayerId],
              case NewWaitPlayerList of
                 [] ->
+                    %%战斗开始从队列中移除
                     fight_srv:start_link(0, StartPlayerList, b_duty:get(?MATCH_NEED_PLAYER_NUM)),
                     NewWaitList = maps:remove(WaitId, WaitList),
                     NewMatchData = maps:put(wait_list, NewWaitList, MatchData),

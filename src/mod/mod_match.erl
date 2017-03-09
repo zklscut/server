@@ -26,6 +26,16 @@ enter_match(#m__match__enter_match_l2s{wait_id = WaitId}, Player) ->
     match_srv:enter_match(lib_player:get_player_id(Player), WaitId),
     {ok, Player}.
 
+send_to_player_list(Send, PlayerList) ->
+	[send_to_player(Send, PlayerId) || PlayerId <- PlayerList].
+
+send_to_player(Send, PlayerId)  when is_integer(PlayerId)  ->
+    net_send:send(Send, PlayerId);
+
+send_to_player(Send, Player) ->
+    net_send:send(Send, Player).
+
 %%%====================================================================
 %%% Internal functions
 %%%====================================================================
+

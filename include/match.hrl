@@ -4,7 +4,9 @@
 -define(MATCH_DATA, #{match_num => 0,
                       last_match_time => 0,
                       wait_list => [],
-                      match_list => []}).
+                      player_info => [], %%[{PlayerId, MatchPlayerId, WaitId},.....]
+                      match_list => [] %%[{MatchPlayerId, PlayerList, Rank, IsWait},.....]
+                      }).
 
 -define(MATCH_NEED_PLAYER_NUM, 12).
 -define(MATCH_MIN_DIFF_RANK, 400).
