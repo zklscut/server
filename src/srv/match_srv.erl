@@ -313,15 +313,16 @@ do_start_fight(MatchData) ->
                 lists:foldl(FunGetFit, {0, []}, MatchList)
             catch
                 throw:{start_fight, FitList} ->
+                    WaitId = global_id_srv:gemerate_match_wait_id()
                     FunStartFight = 
                         fun({_, CurPlayerList, _, _}, {CurPlayerInfo, CurStartPlayerList}) ->
                             {   
-                                do_set_player_info_wait(CurPlayerInfo, CurPlayerList),
+                                do_set_player_info_wait(CurPlayerInfo, CurPlayerList, WaitId),
                                 CurStartPlayerList ++ CurPlayerList
                             }
                         end,
                     {NewPlayerInfo, StartPlayerList} = lists:foldl(FunStartFight, {PlayerInfo, []}, FitList),
-                    {WaitId, WaitMatch} = generate_wait_match(StartPlayerList, FitList),
+                    WaitMatch = generate_wait_match(WaitId, StartPlayerList, FitList),
                     NewMatchData = MatchData#{
                                                   player_list := NewPlayerInfo,      
                                                   wait_list := maps:put(WaitId, WaitMatch, maps:get(wait_list, MatchData)),
@@ -335,13 +336,12 @@ do_start_fight(MatchData) ->
             lager:info("do_start_fight: num no enough")
     end.
 
-generate_wait_match(PlayerIdList, FitList) ->
-    Id = global_id_srv:gemerate_match_wait_id(),
-    {Id, #{id => Id,
+generate_wait_match(WaitId, PlayerIdList, FitList) ->
+    #{id => WaitId,
            fit_list => FitList,
            player_list => PlayerIdList,
            wait_player_list => PlayerIdList,
-           start_wait_time => util:get_micro_time()}}.
+           start_wait_time => util:get_micro_time()}.
 
 do_remove_player_info(PlayerInfo, PlayerList)->
     RomoveFun = 
@@ -356,13 +356,13 @@ do_reset_player_info(PlayerInfo, PlayerList)->
         fun(PlayerId, CurPlayerInfo)->
             maps:put(PlayerId, {MatchPlayerId, 0}, CurPlayerInfo)
         end,
-    lists:foldl(RomoveFun, PlayerInfo, PlayerList).
+    lists:foldl(ResetFun, PlayerInfo, PlayerList).
 
-do_set_player_info_wait(PlayerInfo, PlayerList)->
+do_set_player_info_wait(PlayerInfo, PlayerList, WaitId)->
     MatchPlayerId = hd(PlayerList),
     SetFun = 
         fun(PlayerId, CurPlayerInfo)->
-            maps:put(PlayerId, {MatchPlayerId, 1}, CurPlayerInfo)
+            maps:put(PlayerId, {MatchPlayerId, WaitId}, CurPlayerInfo)
         end,
     lists:foldl(SetFun, PlayerInfo, PlayerList).
  
@@ -383,24 +383,23 @@ do_time_out(MatchList, PlayerInfo, WaitPlayerList, FitList)->
     lists:foldl(TmpFun, {MatchList, PlayerInfo}, FitList).
 
 do_cancel_match(PlayerId, MatchData)->
-    #{match_num := MatchNum,
+    #{
       match_list := MatchList,
       wait_list := WaitList,
-      player_info := PlayerInfo} = MatchData,
+      player_info := PlayerInfo
+      } = MatchData,
     case maps:get(PlayerId, PlayerInfo, undefined) of
         undefined ->
             MatchData;
         {MatchPlayerId, WaitId} ->
-            {NewMatchNum, NewMatchList, NewPlayerInfo} = 
+            {NewMatchList, NewPlayerInfo} = 
             case lists:keyfind(MatchPlayerId, 1, MatchList) of
                 false ->
-                    {MatchNum, MatchList, PlayerInfo, []};
+                    {MatchList, PlayerInfo, []};
                 {_,PlayerList,_} ->
-                    {MatchNum - length(PlayerList), lists:keydelete(MatchPlayerId, 1, MatchList),
-                            lists:foldl(fun(PlayerId, TmpPlayerInfo) -> 
-                                    maps:remove(PlayerId, TmpPlayerInfo) end, 
-                                    PlayerInfo, PlayerList)}
-                    %%PlayerList 退出组队
+                    {lists:keydelete(MatchPlayerId, 1, MatchList),
+                            do_remove_player_info(PlayerInfo, PlayerList)}
+                    %%通知PlayerList 退出组队
             end,
             WaitMatch = maps:get(WaitId, WaitList, undefined),
             %%通知玩家组队取消
