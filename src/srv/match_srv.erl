@@ -198,10 +198,9 @@ handle_info(wait_timeout, State) ->
               {CurWaitList, CurMatchList, CurPlayerInfo}) ->
             case Now - StartWaitTime > ?MATCH_TIMEOUT of
                 true ->
-                    {
-                        maps:remove(WaitId, CurWaitList),
-                        do_time_out(CurMatchList, CurPlayerInfo, WaitPlayerList, FitList)
-                    };
+                    {maps:remove(WaitId, CurWaitList),
+                     do_time_out(CurMatchList, CurPlayerInfo, WaitPlayerList, FitList),
+                     CurPlayerInfo};
                 false ->
                     {CurWaitList, CurMatchList, CurPlayerInfo}
             end
