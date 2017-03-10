@@ -5,7 +5,6 @@
 -module(rank_behaviour).
 -callback get_rank_to_player_ets() -> atom().
 -callback get_player_id_to_rank_ets() -> atom().
--callback is_lager(Value1, Value2) -> boolean().
 
 -include("function.hrl").
 
