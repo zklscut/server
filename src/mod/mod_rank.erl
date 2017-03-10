@@ -23,7 +23,7 @@ get_rank(#m__rank__get_rank__l2s{rank_type = RankType,
                 langren_rank_srv
         end,
     RankList = [{Rank, rank_behaviour:get_player_show_by_rank(Rank, RankModule)} ||
-                 Rank <- lists:seq(SartRank, EndRank)],
+                 Rank <- lists:seq(StartRank, EndRank)],
     FunConver = 
         fun({Rank, {CurPlayerId, CurValue}}) ->
                 #p_rank{player_show_base = lib_player:get_player_show_base(CurPlayerId),
