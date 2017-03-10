@@ -191,12 +191,11 @@ handle_info(wait_timeout, State) ->
       } = MatchData,
     Now = util:get_micro_time(),
     FunTimeOut = 
-        fun(WiatId) ->
+        fun(WiatId, {CurWaitList, CurMatchList, CurPlayerInfo}) ->
             #{id := WaitId,
               fit_list := FitList,
               wait_player_list := WaitPlayerList,
               start_wait_time := StartWaitTime} = maps:get(WaitId, WaitList), 
-              {CurWaitList, CurMatchList, CurPlayerInfo}) ->
             case Now - StartWaitTime > ?MATCH_TIMEOUT of
                 true ->
                     {maps:remove(WaitId, CurWaitList),
