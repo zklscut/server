@@ -76,7 +76,7 @@
 -record(m__match__start_match__l2s, {msg_id=17001, player_list}).
 -record(m__match__end_match__l2s, {msg_id=17002}).
 -record(m__match__end_match__s2l, {msg_id=17003}).
--record(m__match__again_match__s2l, {msg_id=17004}).
+-record(m__match__again_match__s2l, {msg_id=17004, is_again}).
 -record(m__match__notice_enter_match__s2l, {msg_id=17005, wait_id, wait_list}).
 -record(m__match__enter_match__l2s, {msg_id=17006, wait_id}).
 -record(m__match__enter_match_list__s2l, {msg_id=17007, wait_id, ready_list, wait_list}).
