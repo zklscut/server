@@ -361,7 +361,6 @@ do_init_player_info(PlayerInfo, PlayerList)->
     lists:foldl(SetFun, PlayerInfo, PlayerList).
 
 do_reset_player_info(PlayerInfo, PlayerList)->
-    MatchPlayerId = hd(PlayerList),
     ResetFun = 
         fun(PlayerId, CurPlayerInfo)->
             case maps:get(PlayerId, CurPlayerInfo, undefined) of
