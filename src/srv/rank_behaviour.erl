@@ -20,7 +20,7 @@
 -export([start_link/1, value_change/4, reset/1, get_player_show_by_rank/2, dump_all_rank_server/0, get_max_rank/1]).
 
 start_link(Module) ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, [Module], []).
+    gen_server:start_link({local, Module}, ?MODULE, [Module], []).
 
 value_change(Module, PlayerId, PreValue, Value) ->
     gen_server:cast(Module, {value_change, PlayerId, PreValue, Value}).
