@@ -385,7 +385,7 @@ do_init_player_info(PlayerInfo, PlayerList)->
     SetFun = 
         fun(PlayerId, CurPlayerInfo)->
             %%通知玩家排队中
-            Send = #m__match__again_match__s2l{},
+            Send = #m__match__again_match__s2l{is_again = 0},
             mod_match:send_to_player(Send, PlayerId),
             maps:put(PlayerId, {MatchPlayerId, 0}, CurPlayerInfo)
         end,
@@ -399,7 +399,7 @@ do_reset_player_info(PlayerInfo, PlayerList)->
                     CurPlayerInfo;
                 {WaitMatchPlayerId, _}->
                     %%通知玩家重新排队中
-                    Send = #m__match__again_match__s2l{},
+                    Send = #m__match__again_match__s2l{is_again=1},
                     mod_match:send_to_player(Send, PlayerId),
                     maps:put(PlayerId, {WaitMatchPlayerId, 0}, CurPlayerInfo)
             end
