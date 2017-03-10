@@ -21,7 +21,7 @@ start(_, _) ->
     start_global_op_process(),
     start_cache_store_server(),
     start_match_process(),
-    
+    start_rank_server(),
     %% keep last
     start_tcp_supervisor(),
     tcp_listener:start(),
