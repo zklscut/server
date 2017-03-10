@@ -257,7 +257,7 @@ get_match_data() ->
     end.
 
 update_match_data(MatchData) ->
-    lib_ets:update_match_data(?ETS_MATCH, 0, MatchData).
+    lib_ets:update(?ETS_MATCH, 0, MatchData).
 
 cal_match_num(MatchData)->
     #{
