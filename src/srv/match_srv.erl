@@ -106,8 +106,7 @@ handle_cast_inner({start_match, PlayerList, Rank}, State) ->
       } = MatchData,
     MatchPlayerId = hd(PlayerList),
     NewMatchList = MatchList ++ [{MatchPlayerId, PlayerList, Rank, length(PlayerList)}],
-    NewPlayerInfo = lists:foldl(fun(PlayerId, TmpPlayerInfo) -> 
-                        maps:put(PlayerId, {MatchPlayerId, 0}, TmpPlayerInfo) end, PlayerInfo, PlayerList),
+    NewPlayerInfo = do_init_player_info(PlayerInfo, PlayerList),
     NewMatchData = MatchData#{
                               match_list := NewMatchList,
                               player_info := NewPlayerInfo
@@ -348,14 +347,30 @@ do_remove_player_info(PlayerInfo, PlayerList)->
     RomoveFun = 
         fun(PlayerId, CurPlayerInfo)->
             maps:remove(PlayerId, CurPlayerInfo)
+            %%通知玩家退出排队
         end,
     lists:foldl(RomoveFun, PlayerInfo, PlayerList).
+
+do_init_player_info(PlayerInfo, PlayerList)->
+    MatchPlayerId = hd(PlayerList),
+    SetFun = 
+        fun(PlayerId, CurPlayerInfo)->
+            maps:put(PlayerId, {MatchPlayerId, 0}, CurPlayerInfo)
+            %%通知玩家排队中
+        end,
+    lists:foldl(SetFun, PlayerInfo, PlayerList).
 
 do_reset_player_info(PlayerInfo, PlayerList)->
     MatchPlayerId = hd(PlayerList),
     ResetFun = 
         fun(PlayerId, CurPlayerInfo)->
-            maps:put(PlayerId, {MatchPlayerId, 0}, CurPlayerInfo)
+            case maps:get(PlayerId, CurPlayerInfo, undefined) of
+                undefined->
+                    CurPlayerInfo;
+                {WaitMatchPlayerId, _}->
+                    maps:put(PlayerId, {WaitMatchPlayerId, 0}, CurPlayerInfo)
+                    %%通知玩家重新排队中
+            end
         end,
     lists:foldl(ResetFun, PlayerInfo, PlayerList).
 
@@ -364,6 +379,7 @@ do_set_player_info_wait(PlayerInfo, PlayerList, WaitId)->
     SetFun = 
         fun(PlayerId, CurPlayerInfo)->
             maps:put(PlayerId, {MatchPlayerId, WaitId}, CurPlayerInfo)
+            %%通知玩家进入准备
         end,
     lists:foldl(SetFun, PlayerInfo, PlayerList).
  
@@ -411,17 +427,7 @@ do_cancel_match(PlayerId, MatchData)->
                 _->
                     WaitPlayerList = maps:get(player_list, WaitMatch),
                     %%通知玩家状态更新，设置非组队等待的标志
-                    FunWait = 
-                    fun(WaitPlayerId, WaitPlayerInfo) ->
-                        FunWaitPlayerInfo = 
-                        case maps:get(WaitPlayerId, WaitPlayerInfo, undefined) of
-                            undefined->
-                                WaitPlayerInfo;
-                            {WaitMatchPlayerId, _}->
-                                maps:put(PlayerId, {WaitMatchPlayerId, 0}, WaitPlayerInfo)
-                        end
-                    end,
-                    lists:foldl(FunWait, NewPlayerInfo, WaitPlayerList)
+                    do_reset_player_info(NewPlayerInfo, WaitPlayerList)
             end,    
 
             %%如果玩家已经在等待中，删除等待    
