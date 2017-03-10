@@ -335,7 +335,7 @@ do_start_fight(MatchData) ->
                     {NewPlayerInfo, StartPlayerList} = lists:foldl(FunStartFight, {PlayerInfo, []}, FitList),
                     WaitMatch = generate_wait_match(WaitId, StartPlayerList, FitList),
                     NewMatchData = MatchData#{
-                                                  player_list := NewPlayerInfo,      
+                                                  player_info := NewPlayerInfo,      
                                                   wait_list := maps:put(WaitId, WaitMatch, maps:get(wait_list, MatchData)),
                                                   last_match_time := util:get_micro_time()
                                               },
