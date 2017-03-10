@@ -451,7 +451,6 @@ do_cancel_match(PlayerId, MatchData)->
                 {_,PlayerList,_,_} ->
                     {lists:keydelete(MatchPlayerId, 1, MatchList),
                             do_remove_player_info(PlayerInfo, PlayerList)}
-                    %%通知PlayerList 退出组队
             end,
             WaitMatch = maps:get(WaitId, WaitList, undefined),
             %%通知玩家组队取消

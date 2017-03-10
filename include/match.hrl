@@ -11,6 +11,6 @@
 -define(MATCH_NEED_PLAYER_NUM, 3).
 -define(MATCH_MIN_DIFF_RANK, 400).
 -define(MATCH_TIMETICK, 500).
--define(MATCH_TIMEOUT, 10000).
+-define(MATCH_TIMEOUT, 20000).
 
 -endif.
