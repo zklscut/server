@@ -351,8 +351,8 @@ do_remove_player_info(PlayerInfo, PlayerList)->
         fun(PlayerId, CurPlayerInfo)->
             %%通知玩家退出排队
             Send = #m__match__end_match__s2l{},
-            mod_match:send_to_player(Send, PlayerId)
-            maps:remove(PlayerId, CurPlayerInfo),
+            mod_match:send_to_player(Send, PlayerId),
+            maps:remove(PlayerId, CurPlayerInfo)
         end,
     lists:foldl(RomoveFun, PlayerInfo, PlayerList).
 
