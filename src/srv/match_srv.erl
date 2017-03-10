@@ -16,6 +16,7 @@
 -export([start_link/0,
          start_match/2,
          cancle_match/1,
+         offline_match/1,
          enter_match/2]).
 
 start_link() ->
