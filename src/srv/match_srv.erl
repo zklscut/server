@@ -169,7 +169,7 @@ handle_cast_inner({enter_match, PlayerId, _WaitId}, State) ->
                     NewMatchList = 
                                 lists:foldl(
                                 fun(CurPlayerId, CurMatchList) ->
-                                    maps:remove(CurPlayerId, CurMatchList)
+                                    lists:keydelete(CurPlayerId, 1, CurMatchList)
                                 end, 
                                 MatchList, 
                                 StartPlayerList
