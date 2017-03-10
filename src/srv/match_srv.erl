@@ -423,6 +423,7 @@ do_cancel_match(PlayerId, MatchData)->
       wait_list := WaitList,
       player_info := PlayerInfo
       } = MatchData,
+    lager:info("do_cancel_match ~p", [MatchList]),
     case maps:get(PlayerId, PlayerInfo, undefined) of
         undefined ->
             MatchData;
@@ -431,7 +432,7 @@ do_cancel_match(PlayerId, MatchData)->
             case lists:keyfind(MatchPlayerId, 1, MatchList) of
                 false ->
                     {MatchList, PlayerInfo};
-                {_,PlayerList,_} ->
+                {_,PlayerList,_,_} ->
                     {lists:keydelete(MatchPlayerId, 1, MatchList),
                             do_remove_player_info(PlayerInfo, PlayerList)}
                     %%通知PlayerList 退出组队
