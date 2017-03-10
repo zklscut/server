@@ -347,7 +347,7 @@ do_start_fight(MatchData) ->
                     mod_match:send_to_player_list(Send, StartPlayerList)
             end;
         false ->
-            lager:info("do_start_fight: num no enough")
+            ignore % lager:info("do_start_fight: num no enough")
     end.
 
 generate_wait_match(WaitId, PlayerIdList, FitList) ->
