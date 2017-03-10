@@ -22,6 +22,7 @@
 start_link(Module) ->
     gen_server:start_link({local, Module}, ?MODULE, [Module], []).
 
+%%比如狼人积分变换了 调用 rank_behaviour:value_change(langren_rank_srv, PlayerId, PreValue, Value)
 value_change(Module, PlayerId, PreValue, Value) ->
     gen_server:cast(Module, {value_change, PlayerId, PreValue, Value}).
 
