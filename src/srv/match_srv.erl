@@ -349,7 +349,7 @@ generate_wait_match(WaitId, PlayerIdList, FitList) ->
 do_remove_player_info(PlayerInfo, PlayerList)->
     RomoveFun = 
         fun(PlayerId, CurPlayerInfo)->
-            maps:remove(PlayerId, CurPlayerInfo)
+            maps:remove(PlayerId, CurPlayerInfo),
             %%通知玩家退出排队
             Send = #m__match__end_match__s2l{},
             mod_match:send_to_player(Send, PlayerId)
@@ -360,7 +360,7 @@ do_init_player_info(PlayerInfo, PlayerList)->
     MatchPlayerId = hd(PlayerList),
     SetFun = 
         fun(PlayerId, CurPlayerInfo)->
-            maps:put(PlayerId, {MatchPlayerId, 0}, CurPlayerInfo)
+            maps:put(PlayerId, {MatchPlayerId, 0}, CurPlayerInfo),
             %%通知玩家排队中
             Send = #m__match__again_match__s2l{},
             mod_match:send_to_player(Send, PlayerId)
@@ -374,7 +374,7 @@ do_reset_player_info(PlayerInfo, PlayerList)->
                 undefined->
                     CurPlayerInfo;
                 {WaitMatchPlayerId, _}->
-                    maps:put(PlayerId, {WaitMatchPlayerId, 0}, CurPlayerInfo)
+                    maps:put(PlayerId, {WaitMatchPlayerId, 0}, CurPlayerInfo),
                     %%通知玩家重新排队中
                     Send = #m__match__again_match__s2l{},
                     mod_match:send_to_player(Send, PlayerId)
