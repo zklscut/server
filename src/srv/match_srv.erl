@@ -191,10 +191,11 @@ handle_info(wait_timeout, State) ->
       } = MatchData,
     Now = util:get_micro_time(),
     FunTimeOut = 
-        fun(#{id := WaitId,
+        fun(WiatId) ->
+            #{id := WaitId,
               fit_list := FitList,
               wait_player_list := WaitPlayerList,
-              start_wait_time := StartWaitTime}, 
+              start_wait_time := StartWaitTime} = maps:get(WaitId, WaitList), 
               {CurWaitList, CurMatchList, CurPlayerInfo}) ->
             case Now - StartWaitTime > ?MATCH_TIMEOUT of
                 true ->
@@ -205,7 +206,8 @@ handle_info(wait_timeout, State) ->
                     {CurWaitList, CurMatchList, CurPlayerInfo}
             end
         end,
-    {NewWaitList, NewMatchList, NewPlayerInfo} = lists:foldl(FunTimeOut, {WaitList, MatchList, PlayerInfo}, WaitList),
+    {NewWaitList, NewMatchList, NewPlayerInfo} = 
+        lists:foldl(FunTimeOut, {WaitList, MatchList, PlayerInfo}, maps:keys(WaitList)),
     NewMatchData = MatchData#{wait_list := NewWaitList,
                               match_list := NewMatchList,
                               player_info := NewPlayerInfo},
