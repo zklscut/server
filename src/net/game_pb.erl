@@ -1,6 +1,25 @@
 -module(game_pb).
 
 -export([encode/1, encode/2, decode/2,
+	 encode_m__rank__get_rank__s2l/1,
+	 decode_m__rank__get_rank__s2l/1,
+	 encode_m__rank__get_rank__l2s/1,
+	 decode_m__rank__get_rank__l2s/1, encode_p_rank/1,
+	 decode_p_rank/1,
+	 encode_m__match__enter_match_list__s2l/1,
+	 decode_m__match__enter_match_list__s2l/1,
+	 encode_m__match__enter_match__l2s/1,
+	 decode_m__match__enter_match__l2s/1,
+	 encode_m__match__notice_enter_match__s2l/1,
+	 decode_m__match__notice_enter_match__s2l/1,
+	 encode_m__match__again_match__s2l/1,
+	 decode_m__match__again_match__s2l/1,
+	 encode_m__match__end_match__s2l/1,
+	 decode_m__match__end_match__s2l/1,
+	 encode_m__match__end_match__l2s/1,
+	 decode_m__match__end_match__l2s/1,
+	 encode_m__match__start_match__l2s/1,
+	 decode_m__match__start_match__l2s/1,
 	 encode_m__resource__push__s2l/1,
 	 decode_m__resource__push__s2l/1,
 	 encode_m__fight__leave__s2l/1,
@@ -138,6 +157,31 @@
 	 decode_m__account__login__l2s/1, encode_p_resource/1,
 	 decode_p_resource/1, encode_p_player_show_base/1,
 	 decode_p_player_show_base/1]).
+
+-record(m__rank__get_rank__s2l,
+	{msg_id, rank_type, start_rank, end_rank, rank_list}).
+
+-record(m__rank__get_rank__l2s,
+	{msg_id, rank_type, start_rank, end_rank}).
+
+-record(p_rank, {player_show_base, rank, value}).
+
+-record(m__match__enter_match_list__s2l,
+	{msg_id, wait_id, ready_list, wait_list}).
+
+-record(m__match__enter_match__l2s, {msg_id, wait_id}).
+
+-record(m__match__notice_enter_match__s2l,
+	{msg_id, wait_id, wait_list}).
+
+-record(m__match__again_match__s2l, {msg_id}).
+
+-record(m__match__end_match__s2l, {msg_id}).
+
+-record(m__match__end_match__l2s, {msg_id}).
+
+-record(m__match__start_match__l2s,
+	{msg_id, player_list}).
 
 -record(m__resource__push__s2l,
 	{msg_id, resource_id, num, action_id}).
@@ -332,6 +376,47 @@
 
 encode(Record) ->
     encode(erlang:element(1, Record), Record).
+
+encode_m__rank__get_rank__s2l(Record)
+    when is_record(Record, m__rank__get_rank__s2l) ->
+    encode(m__rank__get_rank__s2l, Record).
+
+encode_m__rank__get_rank__l2s(Record)
+    when is_record(Record, m__rank__get_rank__l2s) ->
+    encode(m__rank__get_rank__l2s, Record).
+
+encode_p_rank(Record) when is_record(Record, p_rank) ->
+    encode(p_rank, Record).
+
+encode_m__match__enter_match_list__s2l(Record)
+    when is_record(Record,
+		   m__match__enter_match_list__s2l) ->
+    encode(m__match__enter_match_list__s2l, Record).
+
+encode_m__match__enter_match__l2s(Record)
+    when is_record(Record, m__match__enter_match__l2s) ->
+    encode(m__match__enter_match__l2s, Record).
+
+encode_m__match__notice_enter_match__s2l(Record)
+    when is_record(Record,
+		   m__match__notice_enter_match__s2l) ->
+    encode(m__match__notice_enter_match__s2l, Record).
+
+encode_m__match__again_match__s2l(Record)
+    when is_record(Record, m__match__again_match__s2l) ->
+    encode(m__match__again_match__s2l, Record).
+
+encode_m__match__end_match__s2l(Record)
+    when is_record(Record, m__match__end_match__s2l) ->
+    encode(m__match__end_match__s2l, Record).
+
+encode_m__match__end_match__l2s(Record)
+    when is_record(Record, m__match__end_match__l2s) ->
+    encode(m__match__end_match__l2s, Record).
+
+encode_m__match__start_match__l2s(Record)
+    when is_record(Record, m__match__start_match__l2s) ->
+    encode(m__match__start_match__l2s, Record).
 
 encode_m__resource__push__s2l(Record)
     when is_record(Record, m__resource__push__s2l) ->
@@ -1537,7 +1622,117 @@ encode(m__resource__push__s2l, _Record) ->
 		      pack(4, required,
 			   with_default(_Record#m__resource__push__s2l.action_id,
 					none),
-			   int32, [])]).
+			   int32, [])]);
+encode(m__match__start_match__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__match__start_match__l2s.msg_id,
+					17001),
+			   int32, []),
+		      pack(2, repeated,
+			   with_default(_Record#m__match__start_match__l2s.player_list,
+					none),
+			   int32, [])]);
+encode(m__match__end_match__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__match__end_match__l2s.msg_id,
+					17002),
+			   int32, [])]);
+encode(m__match__end_match__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__match__end_match__s2l.msg_id,
+					17003),
+			   int32, [])]);
+encode(m__match__again_match__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__match__again_match__s2l.msg_id,
+					17004),
+			   int32, [])]);
+encode(m__match__notice_enter_match__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__match__notice_enter_match__s2l.msg_id,
+					17005),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__match__notice_enter_match__s2l.wait_id,
+					none),
+			   int32, []),
+		      pack(3, repeated,
+			   with_default(_Record#m__match__notice_enter_match__s2l.wait_list,
+					none),
+			   p_player_show_base, [])]);
+encode(m__match__enter_match__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__match__enter_match__l2s.msg_id,
+					17006),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__match__enter_match__l2s.wait_id,
+					none),
+			   int32, [])]);
+encode(m__match__enter_match_list__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__match__enter_match_list__s2l.msg_id,
+					17007),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__match__enter_match_list__s2l.wait_id,
+					none),
+			   int32, []),
+		      pack(3, repeated,
+			   with_default(_Record#m__match__enter_match_list__s2l.ready_list,
+					none),
+			   p_player_show_base, []),
+		      pack(4, repeated,
+			   with_default(_Record#m__match__enter_match_list__s2l.wait_list,
+					none),
+			   p_player_show_base, [])]);
+encode(p_rank, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#p_rank.player_show_base, none),
+			   p_player_show_base, []),
+		      pack(2, required,
+			   with_default(_Record#p_rank.rank, none), int32, []),
+		      pack(3, required,
+			   with_default(_Record#p_rank.value, none), int32,
+			   [])]);
+encode(m__rank__get_rank__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__rank__get_rank__l2s.msg_id,
+					18001),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__rank__get_rank__l2s.rank_type,
+					none),
+			   int32, []),
+		      pack(3, required,
+			   with_default(_Record#m__rank__get_rank__l2s.start_rank,
+					none),
+			   int32, []),
+		      pack(4, required,
+			   with_default(_Record#m__rank__get_rank__l2s.end_rank,
+					none),
+			   int32, [])]);
+encode(m__rank__get_rank__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__rank__get_rank__s2l.msg_id,
+					18002),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__rank__get_rank__s2l.rank_type,
+					none),
+			   int32, []),
+		      pack(3, required,
+			   with_default(_Record#m__rank__get_rank__s2l.start_rank,
+					none),
+			   int32, []),
+		      pack(4, required,
+			   with_default(_Record#m__rank__get_rank__s2l.end_rank,
+					none),
+			   int32, []),
+		      pack(5, repeated,
+			   with_default(_Record#m__rank__get_rank__s2l.rank_list,
+					none),
+			   p_rank, [])]).
 
 with_default(undefined, none) -> undefined;
 with_default(undefined, Default) -> Default;
@@ -1557,6 +1752,35 @@ pack(FNum, _, Data, _, _) when is_tuple(Data) ->
     protobuffs:encode(FNum, encode(RecName, Data), bytes);
 pack(FNum, _, Data, Type, _) ->
     protobuffs:encode(FNum, Data, Type).
+
+decode_m__rank__get_rank__s2l(Bytes) ->
+    decode(m__rank__get_rank__s2l, Bytes).
+
+decode_m__rank__get_rank__l2s(Bytes) ->
+    decode(m__rank__get_rank__l2s, Bytes).
+
+decode_p_rank(Bytes) -> decode(p_rank, Bytes).
+
+decode_m__match__enter_match_list__s2l(Bytes) ->
+    decode(m__match__enter_match_list__s2l, Bytes).
+
+decode_m__match__enter_match__l2s(Bytes) ->
+    decode(m__match__enter_match__l2s, Bytes).
+
+decode_m__match__notice_enter_match__s2l(Bytes) ->
+    decode(m__match__notice_enter_match__s2l, Bytes).
+
+decode_m__match__again_match__s2l(Bytes) ->
+    decode(m__match__again_match__s2l, Bytes).
+
+decode_m__match__end_match__s2l(Bytes) ->
+    decode(m__match__end_match__s2l, Bytes).
+
+decode_m__match__end_match__l2s(Bytes) ->
+    decode(m__match__end_match__l2s, Bytes).
+
+decode_m__match__start_match__l2s(Bytes) ->
+    decode(m__match__start_match__l2s, Bytes).
 
 decode_m__resource__push__s2l(Bytes) ->
     decode(m__resource__push__s2l, Bytes).
@@ -2184,7 +2408,60 @@ decode(m__resource__push__s2l, Bytes) ->
     Types = [{4, action_id, int32, []}, {3, num, int32, []},
 	     {2, resource_id, int32, []}, {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
-    to_record(m__resource__push__s2l, Decoded).
+    to_record(m__resource__push__s2l, Decoded);
+decode(m__match__start_match__l2s, Bytes) ->
+    Types = [{2, player_list, int32, [repeated]},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__match__start_match__l2s, Decoded);
+decode(m__match__end_match__l2s, Bytes) ->
+    Types = [{1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__match__end_match__l2s, Decoded);
+decode(m__match__end_match__s2l, Bytes) ->
+    Types = [{1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__match__end_match__s2l, Decoded);
+decode(m__match__again_match__s2l, Bytes) ->
+    Types = [{1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__match__again_match__s2l, Decoded);
+decode(m__match__notice_enter_match__s2l, Bytes) ->
+    Types = [{3, wait_list, p_player_show_base,
+	      [is_record, repeated]},
+	     {2, wait_id, int32, []}, {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__match__notice_enter_match__s2l, Decoded);
+decode(m__match__enter_match__l2s, Bytes) ->
+    Types = [{2, wait_id, int32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__match__enter_match__l2s, Decoded);
+decode(m__match__enter_match_list__s2l, Bytes) ->
+    Types = [{4, wait_list, p_player_show_base,
+	      [is_record, repeated]},
+	     {3, ready_list, p_player_show_base,
+	      [is_record, repeated]},
+	     {2, wait_id, int32, []}, {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__match__enter_match_list__s2l, Decoded);
+decode(p_rank, Bytes) ->
+    Types = [{3, value, int32, []}, {2, rank, int32, []},
+	     {1, player_show_base, p_player_show_base, [is_record]}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(p_rank, Decoded);
+decode(m__rank__get_rank__l2s, Bytes) ->
+    Types = [{4, end_rank, int32, []},
+	     {3, start_rank, int32, []}, {2, rank_type, int32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__rank__get_rank__l2s, Decoded);
+decode(m__rank__get_rank__s2l, Bytes) ->
+    Types = [{5, rank_list, p_rank, [is_record, repeated]},
+	     {4, end_rank, int32, []}, {3, start_rank, int32, []},
+	     {2, rank_type, int32, []}, {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__rank__get_rank__s2l, Decoded).
 
 decode(<<>>, _, Acc) -> Acc;
 decode(<<Bytes/binary>>, Types, Acc) ->
@@ -2755,7 +3032,78 @@ to_record(m__resource__push__s2l, DecodedTuples) ->
 						     m__resource__push__s2l),
 					 Record, Name, Val)
 		end,
-		#m__resource__push__s2l{}, DecodedTuples).
+		#m__resource__push__s2l{}, DecodedTuples);
+to_record(m__match__start_match__l2s, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__match__start_match__l2s),
+					 Record, Name, Val)
+		end,
+		#m__match__start_match__l2s{}, DecodedTuples);
+to_record(m__match__end_match__l2s, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__match__end_match__l2s),
+					 Record, Name, Val)
+		end,
+		#m__match__end_match__l2s{}, DecodedTuples);
+to_record(m__match__end_match__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__match__end_match__s2l),
+					 Record, Name, Val)
+		end,
+		#m__match__end_match__s2l{}, DecodedTuples);
+to_record(m__match__again_match__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__match__again_match__s2l),
+					 Record, Name, Val)
+		end,
+		#m__match__again_match__s2l{}, DecodedTuples);
+to_record(m__match__notice_enter_match__s2l,
+	  DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__match__notice_enter_match__s2l),
+					 Record, Name, Val)
+		end,
+		#m__match__notice_enter_match__s2l{}, DecodedTuples);
+to_record(m__match__enter_match__l2s, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__match__enter_match__l2s),
+					 Record, Name, Val)
+		end,
+		#m__match__enter_match__l2s{}, DecodedTuples);
+to_record(m__match__enter_match_list__s2l,
+	  DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__match__enter_match_list__s2l),
+					 Record, Name, Val)
+		end,
+		#m__match__enter_match_list__s2l{}, DecodedTuples);
+to_record(p_rank, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields, p_rank), Record,
+					 Name, Val)
+		end,
+		#p_rank{}, DecodedTuples);
+to_record(m__rank__get_rank__l2s, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__rank__get_rank__l2s),
+					 Record, Name, Val)
+		end,
+		#m__rank__get_rank__l2s{}, DecodedTuples);
+to_record(m__rank__get_rank__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__rank__get_rank__s2l),
+					 Record, Name, Val)
+		end,
+		#m__rank__get_rank__s2l{}, DecodedTuples).
 
 set_record_field(Fields, Record, Field, Value) ->
     Index = list_index(Field, Fields),
