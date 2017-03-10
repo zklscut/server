@@ -100,16 +100,15 @@ handle_cast(Cast, State) ->
 
 handle_cast_inner({start_match, PlayerList, Rank}, State) ->
     MatchData = get_match_data(),
-    #{match_num := MatchNum,
+    #{
       match_list := MatchList,
       player_info:= PlayerInfo
       } = MatchData,
-    NewMatchNum = MatchNum + length(PlayerList),
     MatchPlayerId = hd(PlayerList),
-    NewMatchList = MatchList ++ [{MatchPlayerId, PlayerList, Rank, 0}],
+    NewMatchList = MatchList ++ [{MatchPlayerId, PlayerList, Rank, length(PlayerList)}],
     NewPlayerInfo = lists:foldl(fun(PlayerId, TmpPlayerInfo) -> 
-                        TmpPlayerInfo ++ [{PlayerId, MatchPlayerId, 0}] end, PlayerInfo, PlayerList),
-    NewMatchData = MatchData#{match_num := NewMatchNum,
+                        maps:put(PlayerId, {MatchPlayerId, 0}, TmpPlayerInfo) end, PlayerInfo, PlayerList),
+    NewMatchData = MatchData#{
                               match_list := NewMatchList,
                               player_info := NewPlayerInfo
                               },
@@ -117,44 +116,46 @@ handle_cast_inner({start_match, PlayerList, Rank}, State) ->
     do_start_fight(NewMatchData),                                     
     {noreply, State};
 
+
 handle_cast_inner({cancle_match, PlayerId}, State) ->
     MatchData = get_match_data(),
-    #{match_num := MatchNum,
-      match_list := MatchList} = MatchData,
-    case lists:keyfind(PlayerId, 1, MatchList) of
-        false ->
-            ignore;
-        {_, PlayerList, _} ->
-            NewMatchNum = MatchNum - length(PlayerList),
-            NewMatchList = lists:keydelete(PlayerId, 1, MatchList),
-            NewMatchData = MatchData#{match_num := NewMatchNum,
-                                      match_list := NewMatchList},
-            %%通知玩家队列取消
-
-            %%如果玩家已经在等待中，删除等待    
-
-            update_match_data(NewMatchData)
-    end,
-
+    update_match_data(do_cancel_match(PlayerId, MatchData)),
     {noreply, State};    
 
 handle_cast_inner({enter_match, PlayerId, WaitId}, State) ->
     MatchData = get_match_data(),
-    #{wait_list := WaitList} =  MatchData,
+    #{
+        player_info := PlayerInfo,
+        wait_list := WaitList,
+        match_list := MatchList
+    } =  MatchData,
     case maps:get(WaitId, WaitList, undefined) of
         undefined ->
             ignore;
         WaitMatch ->
-             #{wait_player_list := WaitPlayerList,
-               player_list := StartPlayerList} = WaitMatch,
+             #{
+                wait_player_list := WaitPlayerList,
+                player_list := StartPlayerList} = WaitMatch,
              NewWaitPlayerList = WaitPlayerList -- [PlayerId],
              case NewWaitPlayerList of
                 [] ->
                     %%战斗开始从队列中移除
-                    fight_srv:start_link(0, StartPlayerList, b_duty:get(?MATCH_NEED_PLAYER_NUM)),
+
+                    lager:info("start fight ++++++++++++++++++++")
+                    %%fight_srv:start_link(0, StartPlayerList, b_duty:get(?MATCH_NEED_PLAYER_NUM)),
+                    NewPlayerInfo = do_remove_player_info(PlayerInfo, StartPlayerList),
                     NewWaitList = maps:remove(WaitId, WaitList),
-                    NewMatchData = maps:put(wait_list, NewWaitList, MatchData),
-                    update_match_data(NewMatchData);
+                    NewMatchList = 
+                                lists:foldl(
+                                fun(CurPlayerId, CurMatchList) ->
+                                    maps:remove(CurPlayerId, CurMatchList)
+                                end, 
+                                MatchList, 
+                                StartPlayerList
+                                ),
+                    update_match_data(MatchData#{player_info := NewPlayerInfo,
+                                                    wait_list := NewWaitList,
+                                                    match_list := NewMatchList});
                 _ ->
                     NewWaitMatch = WaitMatch#{wait_player_list := NewWaitPlayerList},
                     NewWaitList = maps:put(WaitId, NewWaitMatch, WaitList),
@@ -178,30 +179,37 @@ handle_cast_inner(_Cast, State) ->
     Timeout :: non_neg_integer() | infinity.
 %% ====================================================================
 
+
+
 handle_info(wait_timeout, State) ->
     erlang:send_after(?MATCH_TIMEOUT, self(), wait_timeout),
     MatchData = get_match_data(),
-    #{wait_list := WaitList,
-      match_list := MatchList} = MatchData,
+    #{
+        wait_list := WaitList,
+        match_list := MatchList,
+        player_info := PlayerInfo
+      } = MatchData,
     Now = util:get_micro_time(),
     FunTimeOut = 
         fun(#{id := WaitId,
               fit_list := FitList,
               wait_player_list := WaitPlayerList,
-              start_wait_time := StartWaitTime}, {CurWaitList, CurMatchList}) ->
+              start_wait_time := StartWaitTime}, 
+              {CurWaitList, CurMatchList, CurPlayerInfo}) ->
             case Now - StartWaitTime > ?MATCH_TIMEOUT of
                 true ->
-                    {maps:remove(WaitId, CurWaitList),
-                     CurMatchList ++ [{CurPlayerId, CurPlayerList, CurRank} || {CurPlayerId, CurPlayerList, CurRank} <- FitList,
-                                      not util:is_any_element_same(WaitPlayerList, CurPlayerList)]
+                    {
+                        maps:remove(WaitId, CurWaitList),
+                        do_time_out(CurMatchList, CurPlayerInfo, WaitPlayerList, FitList)
                     };
                 false ->
-                    {CurWaitList, CurMatchList}
+                    {CurWaitList, CurMatchList, CurPlayerInfo}
             end
         end,
-    {NewWaitList, NewMatchList} = lists:foldl(FunTimeOut, {WaitList, MatchList}, WaitList),
+    {NewWaitList, NewMatchList, NewPlayerInfo} = lists:foldl(FunTimeOut, {WaitList, MatchList, PlayerInfo}, WaitList),
     NewMatchData = MatchData#{wait_list := NewWaitList,
-                              match_list := NewMatchList},
+                              match_list := NewMatchList,
+                              player_info := NewPlayerInfo},
     update_match_data(NewMatchData),
     do_start_fight(NewMatchData),
     {noreply, State};
@@ -251,27 +259,50 @@ get_match_data() ->
 update_match_data(MatchData) ->
     lib_ets:update_match_data(?ETS_MATCH, 0, MatchData).
 
-do_start_fight(MatchData) ->
-    #{match_num := MatchNum,
+cal_match_num(MatchData)->
+    #{
+      player_info := PlayerInfo,
       match_list := MatchList} = MatchData,
+    FunCalNum = 
+        fun({CurPlayerId, _CurPlayerList, _CurRank, CurNum}, CurMatchNum)->
+                case maps:get(CurPlayerId, PlayerInfo, undefined) of
+                    undefined->
+                        CurMatchNum;
+                    {_, IsWait}->
+                        case IsWait of
+                            0->
+                                CurMatchNum + CurNum;
+                            _->
+                                CurMatchNum
+                        end
+                end
+        end,
+    lists:foldl(FunCalNum, 0, MatchList).
+
+do_start_fight(MatchData) ->
+    #{
+      player_info := PlayerInfo,  
+      match_list := MatchList
+      } = MatchData,
+    MatchNum = cal_match_num(MatchData).
     case MatchNum >= ?MATCH_NEED_PLAYER_NUM of
         true ->
-            {_, _, Rank} = hd(MatchList),
+            {_, _, Rank, _} = hd(MatchList),
             FunGetFit = 
-                fun({CurPlayerId, CurPlayerList, CurRank}, {CurFitNum, CurFitList}) ->
+                fun({CurPlayerId, CurPlayerList, CurRank, CurNum}, {CurFitNum, CurFitList}) ->
                     %%TODO 按照时间拿差值 时间在 last_match_time
-                    case abs(CurRank - Rank) =< ?MATCH_MIN_DIFF_RANK of
+                    {_, IsWait} = maps:get(CurPlayerId, PlayerInfo),
+                    case (0 == IsWait) andalso (abs(CurRank - Rank) =< ?MATCH_MIN_DIFF_RANK) of
                         true ->
-                            CurNum = length(CurPlayerList),
                             case CurFitNum + CurNum > ?MATCH_NEED_PLAYER_NUM of
                                 true ->
                                     {CurFitNum, CurFitList};
                                 false ->
                                     case CurFitNum + CurNum == ?MATCH_NEED_PLAYER_NUM of
                                         true ->
-                                            throw({start_fight, CurFitList ++ [{CurPlayerId, CurPlayerList, CurRank}]});
+                                            throw({start_fight, CurFitList ++ [{CurPlayerId, CurPlayerList, CurRank, CurNum}]});
                                         false ->
-                                            {CurFitNum + CurNum, CurFitList ++ [{CurPlayerId, CurPlayerList, CurRank}]}
+                                            {CurFitNum + CurNum, CurFitList ++ [{CurPlayerId, CurPlayerList, CurRank, CurNum}]}
                                     end
                             end;
                         false ->
@@ -283,22 +314,25 @@ do_start_fight(MatchData) ->
             catch
                 throw:{start_fight, FitList} ->
                     FunStartFight = 
-                        fun({CurPlayerId, CurPlayerList, _CurRank}, {CurMatchList, CurStartPlayerList}) ->
-                            {lists:keydelete(CurPlayerId, 1, CurMatchList),
-                             CurStartPlayerList ++ CurPlayerList}
+                        fun({_, CurPlayerList, _, _}, {CurPlayerInfo, CurStartPlayerList}) ->
+                            {   
+                                do_set_player_info_wait(CurPlayerInfo, CurPlayerList),
+                                CurStartPlayerList ++ CurPlayerList
+                            }
                         end,
-                    {NewMatchList, StartPlayerList} = lists:foldl(FunStartFight, {MatchList, []}, FitList),
+                    {NewPlayerInfo, StartPlayerList} = lists:foldl(FunStartFight, {PlayerInfo, []}, FitList),
                     {WaitId, WaitMatch} = generate_wait_match(StartPlayerList, FitList),
-                    NewMatchData = MatchData#{match_num := MatchNum - ?MATCH_NEED_PLAYER_NUM,
-                                              match_list := NewMatchList,
-                                              wait_list := maps:put(WaitId, WaitMatch, maps:get(wait_list, MatchData)),
-                                              last_match_time := util:get_micro_time()},
+                    NewMatchData = MatchData#{
+                                                  player_list := NewPlayerInfo,      
+                                                  wait_list := maps:put(WaitId, WaitMatch, maps:get(wait_list, MatchData)),
+                                                  last_match_time := util:get_micro_time()
+                                              },
                     update_match_data(NewMatchData),
                     Send = #m__match__notice_enter_match__s2l{wait_id = WaitId},
                     [net_send:send(Send, CurPlayerId) || CurPlayerId <- StartPlayerList]
             end;
         false ->
-            ignore
+            lager:info("do_start_fight: num no enough")
     end.
 
 generate_wait_match(PlayerIdList, FitList) ->
@@ -308,3 +342,93 @@ generate_wait_match(PlayerIdList, FitList) ->
            player_list => PlayerIdList,
            wait_player_list => PlayerIdList,
            start_wait_time => util:get_micro_time()}}.
+
+do_remove_player_info(PlayerInfo, PlayerList)->
+    RomoveFun = 
+        fun(PlayerId, CurPlayerInfo)->
+            maps:remove(PlayerId, CurPlayerInfo)
+        end,
+    lists:foldl(RomoveFun, PlayerInfo, PlayerList).
+
+do_reset_player_info(PlayerInfo, PlayerList)->
+    MatchPlayerId = hd(PlayerList),
+    ResetFun = 
+        fun(PlayerId, CurPlayerInfo)->
+            maps:put(PlayerId, {MatchPlayerId, 0}, CurPlayerInfo)
+        end,
+    lists:foldl(RomoveFun, PlayerInfo, PlayerList).
+
+do_set_player_info_wait(PlayerInfo, PlayerList)->
+    MatchPlayerId = hd(PlayerList),
+    SetFun = 
+        fun(PlayerId, CurPlayerInfo)->
+            maps:put(PlayerId, {MatchPlayerId, 1}, CurPlayerInfo)
+        end,
+    lists:foldl(SetFun, PlayerInfo, PlayerList).
+ 
+
+do_time_out(MatchList, PlayerInfo, WaitPlayerList, FitList)->
+    TmpFun = 
+        fun({CurPlayerId, CurPlayerList, CurRank}, {CurMatchList, CurPlayerInfo})->
+            case util:is_any_element_same(WaitPlayerList, CurPlayerList) of
+                true->
+                    %%有等待的玩家没有准备，移除队列
+                    {maps:remove(hd(CurPlayerList), CurMatchList), 
+                                do_remove_player_info(CurPlayerInfo, CurPlayerList)};
+                false->
+                    %%其他玩家没有准备则退回队列，继续准备
+                    {CurMatchList, do_reset_player_info(CurPlayerInfo, CurPlayerList)};
+            end,            
+        end,
+    lists:foldl(TmpFun, {MatchList, PlayerInfo}, FitList).
+
+do_cancel_match(PlayerId, MatchData)->
+    #{match_num := MatchNum,
+      match_list := MatchList,
+      wait_list := WaitList,
+      player_info := PlayerInfo} = MatchData,
+    case maps:get(PlayerId, PlayerInfo, undefined) of
+        undefined ->
+            MatchData;
+        {MatchPlayerId, WaitId} ->
+            {NewMatchNum, NewMatchList, NewPlayerInfo} = 
+            case lists:keyfind(MatchPlayerId, 1, MatchList) of
+                false ->
+                    {MatchNum, MatchList, PlayerInfo, []};
+                {_,PlayerList,_} ->
+                    {MatchNum - length(PlayerList), lists:keydelete(MatchPlayerId, 1, MatchList),
+                            lists:foldl(fun(PlayerId, TmpPlayerInfo) -> 
+                                    maps:remove(PlayerId, TmpPlayerInfo) end, 
+                                    PlayerInfo, PlayerList)}
+                    %%PlayerList 退出组队
+            end,
+            WaitMatch = maps:get(WaitId, WaitList, undefined),
+            %%通知玩家组队取消
+            PlayerInfoAtferWait = 
+            case WaitMatch of
+                undefined->
+                    NewPlayerInfo;
+                _->
+                    WaitPlayerList = maps:get(player_list, WaitMatch),
+                    %%通知玩家状态更新，设置非组队等待的标志
+                    FunWait = 
+                    fun(WaitPlayerId, WaitPlayerInfo) ->
+                        FunWaitPlayerInfo = 
+                        case maps:get(WaitPlayerId, WaitPlayerInfo, undefined) of
+                            undefined->
+                                WaitPlayerInfo;
+                            {WaitMatchPlayerId, _}->
+                                maps:put(PlayerId, {WaitMatchPlayerId, 0}, WaitPlayerInfo)
+                        end,
+                    end,
+                    lists:foldl(FunWait, NewPlayerInfo, WaitPlayerList)
+            end,    
+
+            %%如果玩家已经在等待中，删除等待    
+            NewWaitList = maps:remove(WaitId, WaitList),
+            MatchData#{
+                  match_list := NewMatchList,
+                  wait_list := NewWaitList,
+                  player_info := PlayerInfoAtferWait
+                        }
+    end.

@@ -5,7 +5,10 @@
 -module(mod_match).
 -export([start_match/2,
          end_match/2,
-         enter_match/2]).
+         enter_match/2,
+         send_to_player_list/2,
+         send_to_player/2
+         ]).
 
 -include("game_pb.hrl").
 
