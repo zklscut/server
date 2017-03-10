@@ -408,7 +408,8 @@ do_time_out(MatchList, PlayerInfo, WaitPlayerList, FitList)->
             case util:is_any_element_same(WaitPlayerList, CurPlayerList) of
                 true->
                     %%有等待的玩家没有准备，移除队列
-                    {maps:remove(hd(CurPlayerList), CurMatchList), 
+                    {
+                        lists:keydelete(hd(CurPlayerList), 1, CurMatchList),
                                 do_remove_player_info(CurPlayerInfo, CurPlayerList)};
                 false->
                     %%其他玩家没有准备则退回队列，继续准备
