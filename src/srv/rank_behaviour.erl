@@ -18,7 +18,7 @@
 %% ====================================================================
 %% API functions
 %% ====================================================================
--export([start_link/1, value_change/4, reset/2, get_player_show_by_rank/2, dump_all_rank_server/0, get_max_rank/1]).
+-export([start_link/1, value_change/4, reset/1, get_player_show_by_rank/2, dump_all_rank_server/0, get_max_rank/1]).
 
 start_link(Module) ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [Module], []).
@@ -30,7 +30,7 @@ reset(Module) ->
     gen_server:cast(Module, reset).
 
 get_player_show_by_rank(Rank, Module) ->
-    Ets = Module:get_rank_to_player_ets(),
+    Ets = get_rank_to_player_ets(Module),
     case lib_ets:get(Ets, Rank) of
         undefined ->
             fakse;
@@ -45,7 +45,7 @@ dump_rank_server(Module) ->
     gen_server:call(Module, dump_rank_server).
 
 get_max_rank(Module) ->
-    Ets = get_rank_to_player_ets(),
+    Ets = get_rank_to_player_ets(Module),
     ets:info(Ets, size).
 
 
@@ -122,7 +122,7 @@ handle_cast(Cast, State) ->
         {noreply, State}        
     end.
 
-handle_cast_inner({value_change, PlayerId, PreValue, NewValue}, State) ->
+handle_cast_inner({value_change, PlayerId, PreValue, Value}, State) ->
     Module = State#state.module,
     MaxRank = get_max_rank(Module),
     Rank = 
@@ -257,9 +257,9 @@ is_need_exchange(Value, ExchangeValue, ExchangeChangeRank, State) ->
     Module = State#state.module,
     ?IF(ExchangeChangeRank < 0, Module:is_lager(Value, ExchangeValue), Module:is_lager(ExchangeValue, Value)).
 
-select_rank_data_from_db(Module) ->
-    [].
+% select_rank_data_from_db(Module) ->
+%     [].
 
-update_rank_data_to_db() ->
-    [].
+% update_rank_data_to_db() ->
+%     [].
 
