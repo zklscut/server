@@ -174,7 +174,7 @@
 -record(m__match__notice_enter_match__s2l,
 	{msg_id, wait_id, wait_list}).
 
--record(m__match__again_match__s2l, {msg_id}).
+-record(m__match__again_match__s2l, {msg_id, is_again}).
 
 -record(m__match__end_match__s2l, {msg_id}).
 
@@ -1646,6 +1646,10 @@ encode(m__match__again_match__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__match__again_match__s2l.msg_id,
 					17004),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__match__again_match__s2l.is_again,
+					none),
 			   int32, [])]);
 encode(m__match__notice_enter_match__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
@@ -2423,7 +2427,8 @@ decode(m__match__end_match__s2l, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__match__end_match__s2l, Decoded);
 decode(m__match__again_match__s2l, Bytes) ->
-    Types = [{1, msg_id, int32, []}],
+    Types = [{2, is_again, int32, []},
+	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__match__again_match__s2l, Decoded);
 decode(m__match__notice_enter_match__s2l, Bytes) ->
