@@ -187,7 +187,7 @@ code_change(_OldVsn, State, _Extra) ->
 %% ====================================================================
 
 get_rank_by_player_id(PlayerId, State) ->
-    Ets = get_player_id_to_rank_ets(State),
+    Ets = get_player_id_to_rank_ets(State#state.module),
     case lib_ets:get(Ets, PlayerId) of
         undefined ->
             false;
@@ -196,7 +196,7 @@ get_rank_by_player_id(PlayerId, State) ->
     end.
 
 get_player_by_rank(Rank, State) ->
-    Ets = get_rank_to_player_ets(State),
+    Ets = get_rank_to_player_ets(State#state.module),
     case lib_ets:get(Ets, Rank) of
         undefined ->
             false;
@@ -205,11 +205,11 @@ get_player_by_rank(Rank, State) ->
     end.
 
 update_rank_by_player_id(PlayerId, Rank, State) ->
-    Ets = get_player_id_to_rank_ets(State),
+    Ets = get_player_id_to_rank_ets(State#state.module),
     lib_ets:update(Ets, PlayerId, Rank).
 
 update_player_by_rank(Rank, PlayerId, Value, State) ->
-    Ets = get_rank_to_player_ets(State),
+    Ets = get_rank_to_player_ets(State#state.module),
     lib_ets:update(Ets, Rank, {PlayerId, Value}).
 
 update_rank(PlayerId, Rank, _Value, State) when Rank > ?SERVER_MAX_RANK ->
@@ -220,17 +220,15 @@ update_rank(PlayerId, Rank, Value, State) ->
     update_player_by_rank(Rank, PlayerId, Value, State).
 
 remove_rank(PlayerId, Rank, State) ->
-    EtsPlayerToRank = get_player_id_to_rank_ets(State),
+    EtsPlayerToRank = get_player_id_to_rank_ets(State#state.module),
     lib_ets:delete(EtsPlayerToRank, PlayerId),
-    EtsRankToPlayer = get_rank_to_player_ets(State),
+    EtsRankToPlayer = get_rank_to_player_ets(State#state.module),
     lib_ets:delete(EtsRankToPlayer, Rank).
 
-get_rank_to_player_ets(State) ->
-    Module = State#state.module,
+get_rank_to_player_ets(Module) ->
     Module:get_rank_to_player_ets().
 
-get_player_id_to_rank_ets(State) ->
-    Module = State#state.module,
+get_player_id_to_rank_ets(Module) ->
     Module:get_player_id_to_rank_ets().
 
 exchange_rank(0, PlayerId, Value, _ExchangeChangeRank, State) ->
