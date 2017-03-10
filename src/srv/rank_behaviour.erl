@@ -5,7 +5,9 @@
 -module(rank_behaviour).
 -callback get_rank_to_player_ets() -> atom().
 -callback get_player_id_to_rank_ets() -> atom().
--callback is_lager() -> bool().
+-callback is_lager() -> boolean().
+
+-include("function.hrl").
 
 -behaviour(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -40,7 +42,7 @@ dump_all_rank_server() ->
     [dump_rank_server(Module) || Module <- []].
 
 dump_rank_server(Module) ->
-    gen_server:call(Modul, dump_rank_server).
+    gen_server:call(Module, dump_rank_server).
 
 get_max_rank(Module) ->
     Ets = get_rank_to_player_ets(),
