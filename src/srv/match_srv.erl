@@ -191,7 +191,7 @@ handle_info(wait_timeout, State) ->
       } = MatchData,
     Now = util:get_micro_time(),
     FunTimeOut = 
-        fun(WiatId, {CurWaitList, CurMatchList, CurPlayerInfo}) ->
+        fun(WaitId, {CurWaitList, CurMatchList, CurPlayerInfo}) ->
             #{id := WaitId,
               fit_list := FitList,
               wait_player_list := WaitPlayerList,
