@@ -419,7 +419,7 @@ do_cancel_match(PlayerId, MatchData)->
                                 WaitPlayerInfo;
                             {WaitMatchPlayerId, _}->
                                 maps:put(PlayerId, {WaitMatchPlayerId, 0}, WaitPlayerInfo)
-                        end,
+                        end
                     end,
                     lists:foldl(FunWait, NewPlayerInfo, WaitPlayerList)
             end,    
