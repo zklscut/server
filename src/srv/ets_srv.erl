@@ -40,7 +40,10 @@ init([]) ->
     ets:new(?ETS_ROOM, [set, public, named_table, {keypos, 1}]),
     ets:new(?ETS_ACCOUNT_PLAYER, [set, public, named_table, {keypos, 1}]),
     ets:new(?ETS_MATCH, [set, public, named_table, {keypos, 1}]),
-    
+    ets:new(?ETS_RANK_LAGNREN_RANK_TO_PLAYER, [set, public, named_table, {keypos, 1}]),
+    ets:new(?ETS_RANK_LAGNREN_PLAYER_ID_TO_RANK, [set, public, named_table, {keypos, 1}]),
+    ets:new(?ETS_RANK_NVWU_RANK_TO_PLAYER, [set, public, named_table, {keypos, 1}]),
+    ets:new(?ETS_RANK_NVWU_PLAYER_ID_TO_RANK, [set, public, named_table, {keypos, 1}]),
     {ok, #state{}}.
 
 

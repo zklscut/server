@@ -65,6 +65,11 @@ start_match_process() ->
 start_cache_store_server() ->
     cache_store_bhv:start_link(cache_store_player, 10000).
 
+start_rank_server() ->
+    supervisor:start_child(game_supervisor,
+                           {langren_rank_srv, {rank_behaviour, start_link,[langren_rank_srv]},
+                            transient, infinity, worker, [langren_rank_srv]}).        
+
 start_game_db() ->
     {ok, DBUser} = application:get_env(db_user),
     {ok, DBPwd} = application:get_env(db_pwd),
