@@ -210,6 +210,7 @@ handle_info(wait_timeout, State) ->
             case Now - StartWaitTime > ?MATCH_TIMEOUT of
                 true ->
                     {
+                        lager:info("do_time_out"),
                         do_time_out(maps:remove(WaitId, CurWaitList), 
                                     CurMatchList, CurPlayerInfo, WaitPlayerList, FitList)
                      };
@@ -217,8 +218,10 @@ handle_info(wait_timeout, State) ->
                     {CurWaitList, CurMatchList, CurPlayerInfo}
             end
         end,
+
     {NewWaitList, NewMatchList, NewPlayerInfo} = 
         lists:foldl(FunTimeOut, {WaitList, MatchList, PlayerInfo}, maps:keys(WaitList)),
+    lager:info("do_time_out ~p", [{NewWaitList, NewMatchList, NewPlayerInfo}]),
     NewMatchData = MatchData#{wait_list := NewWaitList,
                               match_list := NewMatchList,
                               player_info := NewPlayerInfo},
