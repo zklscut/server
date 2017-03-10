@@ -22,7 +22,7 @@ start_match(#m__match__start_match__l2s{player_list = PlayerList}, Player) ->
     {ok, Player}.
 
 end_match(#m__match__end_match__l2s{}, Player) ->
-    match_srv:end_match(lib_player:get_player_id(Player)),
+    match_srv:cancle_match(lib_player:get_player_id(Player)),
     {ok, Player}.
 
 enter_match(#m__match__enter_match_l2s{wait_id = WaitId}, Player) ->

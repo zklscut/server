@@ -30,6 +30,9 @@ cancle_match(PlayerId) ->
 enter_match(PlayerId, WaitId) ->
     gen_server:cast(?MODULE, {enter_match, PlayerId, WaitId}).    
 
+offline_match(PlayerId) ->
+    gen_server:cast(?MODULE, {cancle_match, PlayerId}).
+
 %% ====================================================================
 %% Behavioural functions
 %% ====================================================================
@@ -348,6 +351,8 @@ do_remove_player_info(PlayerInfo, PlayerList)->
         fun(PlayerId, CurPlayerInfo)->
             maps:remove(PlayerId, CurPlayerInfo)
             %%通知玩家退出排队
+            Send = #m__match__end_match__s2l{},
+            mod_match:send_to_player(Send, PlayerId)
         end,
     lists:foldl(RomoveFun, PlayerInfo, PlayerList).
 
@@ -357,6 +362,8 @@ do_init_player_info(PlayerInfo, PlayerList)->
         fun(PlayerId, CurPlayerInfo)->
             maps:put(PlayerId, {MatchPlayerId, 0}, CurPlayerInfo)
             %%通知玩家排队中
+            Send = #m__match__again_match__s2l{},
+            mod_match:send_to_player(Send, PlayerId)
         end,
     lists:foldl(SetFun, PlayerInfo, PlayerList).
 
@@ -369,6 +376,8 @@ do_reset_player_info(PlayerInfo, PlayerList)->
                 {WaitMatchPlayerId, _}->
                     maps:put(PlayerId, {WaitMatchPlayerId, 0}, CurPlayerInfo)
                     %%通知玩家重新排队中
+                    Send = #m__match__again_match__s2l{},
+                    mod_match:send_to_player(Send, PlayerId)
             end
         end,
     lists:foldl(ResetFun, PlayerInfo, PlayerList).
@@ -378,7 +387,6 @@ do_set_player_info_wait(PlayerInfo, PlayerList, WaitId)->
     SetFun = 
         fun(PlayerId, CurPlayerInfo)->
             maps:put(PlayerId, {MatchPlayerId, WaitId}, CurPlayerInfo)
-            %%通知玩家进入准备
         end,
     lists:foldl(SetFun, PlayerInfo, PlayerList).
  
@@ -411,7 +419,7 @@ do_cancel_match(PlayerId, MatchData)->
             {NewMatchList, NewPlayerInfo} = 
             case lists:keyfind(MatchPlayerId, 1, MatchList) of
                 false ->
-                    {MatchList, PlayerInfo, []};
+                    {MatchList, PlayerInfo};
                 {_,PlayerList,_} ->
                     {lists:keydelete(MatchPlayerId, 1, MatchList),
                             do_remove_player_info(PlayerInfo, PlayerList)}

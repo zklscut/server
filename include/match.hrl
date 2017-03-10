@@ -1,7 +1,7 @@
 -ifndef(MATCH_HRL).
 -define(MATCH_HRL, true).
 
--define(MATCH_DATA, #{match_num => 0,
+-define(MATCH_DATA, #{
                       last_match_time => 0,
                       wait_list => #{}, %%WaitId = {}
                       player_info => #{}, %%PlayerId = {MatchPlayerId, WaitId}
@@ -10,7 +10,7 @@
 
 -define(MATCH_NEED_PLAYER_NUM, 3).
 -define(MATCH_MIN_DIFF_RANK, 400).
-
+-define(MATCH_TIMETICK, 20000).
 -define(MATCH_TIMEOUT, 500).
 
 -endif.
