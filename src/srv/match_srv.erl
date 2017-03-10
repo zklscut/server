@@ -141,7 +141,7 @@ handle_cast_inner({enter_match, PlayerId, WaitId}, State) ->
                 [] ->
                     %%战斗开始从队列中移除
 
-                    lager:info("start fight ++++++++++++++++++++")
+                    lager:info("start fight ++++++++++++++++++++"),
                     %%fight_srv:start_link(0, StartPlayerList, b_duty:get(?MATCH_NEED_PLAYER_NUM)),
                     NewPlayerInfo = do_remove_player_info(PlayerInfo, StartPlayerList),
                     NewWaitList = maps:remove(WaitId, WaitList),
@@ -284,7 +284,7 @@ do_start_fight(MatchData) ->
       player_info := PlayerInfo,  
       match_list := MatchList
       } = MatchData,
-    MatchNum = cal_match_num(MatchData).
+    MatchNum = cal_match_num(MatchData),
     case MatchNum >= ?MATCH_NEED_PLAYER_NUM of
         true ->
             {_, _, Rank, _} = hd(MatchList),
@@ -377,8 +377,8 @@ do_time_out(MatchList, PlayerInfo, WaitPlayerList, FitList)->
                                 do_remove_player_info(CurPlayerInfo, CurPlayerList)};
                 false->
                     %%其他玩家没有准备则退回队列，继续准备
-                    {CurMatchList, do_reset_player_info(CurPlayerInfo, CurPlayerList)};
-            end,            
+                    {CurMatchList, do_reset_player_info(CurPlayerInfo, CurPlayerList)}
+            end           
         end,
     lists:foldl(TmpFun, {MatchList, PlayerInfo}, FitList).
 
