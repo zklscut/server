@@ -125,17 +125,28 @@ handle_cast_inner({cancle_match, PlayerId}, State) ->
     update_match_data(do_cancel_match(PlayerId, MatchData)),
     {noreply, State};    
 
-handle_cast_inner({enter_match, PlayerId, WaitId}, State) ->
+handle_cast_inner({enter_match, PlayerId, _WaitId}, State) ->
+    lager:info("enter_match1"),
     MatchData = get_match_data(),
     #{
         player_info := PlayerInfo,
         wait_list := WaitList,
         match_list := MatchList
     } =  MatchData,
+    WaitId = 
+        case maps:get(PlayerId, PlayerInfo, undefined) of
+            undefined->
+                undefined;
+            {_,CurWaitId}->
+                CurWaitId
+        end,
+
     case maps:get(WaitId, WaitList, undefined) of
         undefined ->
+            lager:info("enter_match2"),
             ignore;
         WaitMatch ->
+            lager:info("enter_match3"),
              #{
                 wait_player_list := WaitPlayerList,
                 player_list := StartPlayerList} = WaitMatch,
