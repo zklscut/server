@@ -140,6 +140,13 @@ handle_cast_inner({enter_match, PlayerId, WaitId}, State) ->
                 wait_player_list := WaitPlayerList,
                 player_list := StartPlayerList} = WaitMatch,
              NewWaitPlayerList = WaitPlayerList -- [PlayerId],
+            ReadyPlayerList =  StartPlayerList -- NewWaitPlayerList,
+            Send = #m__match__enter_match_list__s2l{
+                    wait_id = WaitId,
+                    ready_list = [lib_player:get_player_show_base(ReadyPlayerId)||ReadyPlayerId<-ReadyPlayerList],
+                    wait_list = [lib_player:get_player_show_base(WaitPlayerId)||WaitPlayerId<-NewWaitPlayerList]
+                },
+             mod_match:send_to_player_list(Send, StartPlayerList),   
              case NewWaitPlayerList of
                 [] ->
                     %%战斗开始从队列中移除
@@ -333,8 +340,11 @@ do_start_fight(MatchData) ->
                                                   last_match_time := util:get_micro_time()
                                               },
                     update_match_data(NewMatchData),
-                    Send = #m__match__notice_enter_match__s2l{wait_id = WaitId},
-                    [net_send:send(Send, CurPlayerId) || CurPlayerId <- StartPlayerList]
+                    Send = #m__match__notice_enter_match__s2l{
+                                                                wait_id = WaitId,
+                                                                wait_list = [lib_player:get_player_show_base(WaitPlayerId)||WaitPlayerId<-StartPlayerList]
+                                                            },
+                    mod_match:send_to_player_list(Send, StartPlayerList)
             end;
         false ->
             lager:info("do_start_fight: num no enough")
