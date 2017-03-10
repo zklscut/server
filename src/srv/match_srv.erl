@@ -163,7 +163,7 @@ handle_cast_inner({enter_match, PlayerId, WaitId}, State) ->
                     update_match_data(NewMatchData)
             end
     end,
-    {noreply, State}; ;
+    {noreply, State};
 
 handle_cast_inner(_Cast, State) ->
     {noreply, State}.
