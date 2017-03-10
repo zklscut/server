@@ -73,3 +73,13 @@
 -record(m__fight__over_info__s2l, {msg_id=15024, winner, duty_list, dead_list}).
 -record(m__fight__leave__s2l, {msg_id=15025, leave_list}).
 -record(m__resource__push__s2l, {msg_id=16001, resource_id, num, action_id}).
+-record(m__match__start_match__l2s, {msg_id=17001, player_list}).
+-record(m__match__end_match__l2s, {msg_id=17002}).
+-record(m__match__end_match__s2l, {msg_id=17003}).
+-record(m__match__again_match__s2l, {msg_id=17004}).
+-record(m__match__notice_enter_match__s2l, {msg_id=17005, wait_id, wait_list}).
+-record(m__match__enter_match__l2s, {msg_id=17006, wait_id}).
+-record(m__match__enter_match_list__s2l, {msg_id=17007, wait_id, ready_list, wait_list}).
+-record(p_rank, {player_show_base, rank, value}).
+-record(m__rank__get_rank__l2s, {msg_id=18001, rank_type, start_rank, end_rank}).
+-record(m__rank__get_rank__s2l, {msg_id=18002, rank_type, start_rank, end_rank, rank_list}).
