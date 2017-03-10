@@ -51,7 +51,7 @@ offline_match(PlayerId) ->
     Timeout :: non_neg_integer() | infinity.
 %% ====================================================================
 init([]) ->
-    erlang:send_after(?MATCH_TIMEOUT, self(), wait_timeout),
+    erlang:send_after(?MATCH_TIMETICK, self(), wait_timeout),
     {ok, #state{}}.
 
 
@@ -185,7 +185,7 @@ handle_cast_inner(_Cast, State) ->
 
 
 handle_info(wait_timeout, State) ->
-    erlang:send_after(?MATCH_TIMEOUT, self(), wait_timeout),
+    erlang:send_after(?MATCH_TIMETICK, self(), wait_timeout),
     MatchData = get_match_data(),
     #{
         wait_list := WaitList,
@@ -194,22 +194,22 @@ handle_info(wait_timeout, State) ->
       } = MatchData,
     Now = util:get_micro_time(),
     FunTimeOut = 
-        fun(#{id := WaitId,
+        fun(WaitId, {CurWaitList, CurMatchList, CurPlayerInfo}) ->
+            #{id := WaitId,
               fit_list := FitList,
               wait_player_list := WaitPlayerList,
-              start_wait_time := StartWaitTime}, 
-              {CurWaitList, CurMatchList, CurPlayerInfo}) ->
+              start_wait_time := StartWaitTime} = maps:get(WaitId, WaitList), 
             case Now - StartWaitTime > ?MATCH_TIMEOUT of
                 true ->
-                    {
-                        maps:remove(WaitId, CurWaitList),
-                        do_time_out(CurMatchList, CurPlayerInfo, WaitPlayerList, FitList)
-                    };
+                    {maps:remove(WaitId, CurWaitList),
+                     do_time_out(CurMatchList, CurPlayerInfo, WaitPlayerList, FitList),
+                     CurPlayerInfo};
                 false ->
                     {CurWaitList, CurMatchList, CurPlayerInfo}
             end
         end,
-    {NewWaitList, NewMatchList, NewPlayerInfo} = lists:foldl(FunTimeOut, {WaitList, MatchList, PlayerInfo}, WaitList),
+    {NewWaitList, NewMatchList, NewPlayerInfo} = 
+        lists:foldl(FunTimeOut, {WaitList, MatchList, PlayerInfo}, maps:keys(WaitList)),
     NewMatchData = MatchData#{wait_list := NewWaitList,
                               match_list := NewMatchList,
                               player_info := NewPlayerInfo},
@@ -260,7 +260,7 @@ get_match_data() ->
     end.
 
 update_match_data(MatchData) ->
-    lib_ets:update_match_data(?ETS_MATCH, 0, MatchData).
+    lib_ets:update(?ETS_MATCH, 0, MatchData).
 
 cal_match_num(MatchData)->
     #{

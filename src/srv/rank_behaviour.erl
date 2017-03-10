@@ -5,7 +5,8 @@
 -module(rank_behaviour).
 -callback get_rank_to_player_ets() -> atom().
 -callback get_player_id_to_rank_ets() -> atom().
--callback is_lager() -> bool().
+
+-include("function.hrl").
 
 -behaviour(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -16,11 +17,12 @@
 %% ====================================================================
 %% API functions
 %% ====================================================================
--export([start_link/1, value_change/4, reset/2, get_player_show_by_rank/2, dump_all_rank_server/0, get_max_rank/1]).
+-export([start_link/1, value_change/4, reset/1, get_player_show_by_rank/2, dump_all_rank_server/0, get_max_rank/1]).
 
 start_link(Module) ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, [Module], []).
+    gen_server:start_link({local, Module}, ?MODULE, [Module], []).
 
+%%比如狼人积分变换了 调用 rank_behaviour:value_change(langren_rank_srv, PlayerId, PreValue, Value)
 value_change(Module, PlayerId, PreValue, Value) ->
     gen_server:cast(Module, {value_change, PlayerId, PreValue, Value}).
 
@@ -28,7 +30,7 @@ reset(Module) ->
     gen_server:cast(Module, reset).
 
 get_player_show_by_rank(Rank, Module) ->
-    Ets = Module:get_rank_to_player_ets(),
+    Ets = get_rank_to_player_ets(Module),
     case lib_ets:get(Ets, Rank) of
         undefined ->
             fakse;
@@ -40,10 +42,10 @@ dump_all_rank_server() ->
     [dump_rank_server(Module) || Module <- []].
 
 dump_rank_server(Module) ->
-    gen_server:call(Modul, dump_rank_server).
+    gen_server:call(Module, dump_rank_server).
 
 get_max_rank(Module) ->
-    Ets = get_rank_to_player_ets(),
+    Ets = get_rank_to_player_ets(Module),
     ets:info(Ets, size).
 
 
@@ -120,7 +122,7 @@ handle_cast(Cast, State) ->
         {noreply, State}        
     end.
 
-handle_cast_inner({value_change, PlayerId, PreValue, NewValue}, State) ->
+handle_cast_inner({value_change, PlayerId, PreValue, Value}, State) ->
     Module = State#state.module,
     MaxRank = get_max_rank(Module),
     Rank = 
@@ -186,7 +188,7 @@ code_change(_OldVsn, State, _Extra) ->
 %% ====================================================================
 
 get_rank_by_player_id(PlayerId, State) ->
-    Ets = get_player_id_to_rank_ets(State),
+    Ets = get_player_id_to_rank_ets(State#state.module),
     case lib_ets:get(Ets, PlayerId) of
         undefined ->
             false;
@@ -195,7 +197,7 @@ get_rank_by_player_id(PlayerId, State) ->
     end.
 
 get_player_by_rank(Rank, State) ->
-    Ets = get_rank_to_player_ets(State),
+    Ets = get_rank_to_player_ets(State#state.module),
     case lib_ets:get(Ets, Rank) of
         undefined ->
             false;
@@ -204,11 +206,11 @@ get_player_by_rank(Rank, State) ->
     end.
 
 update_rank_by_player_id(PlayerId, Rank, State) ->
-    Ets = get_player_id_to_rank_ets(State),
+    Ets = get_player_id_to_rank_ets(State#state.module),
     lib_ets:update(Ets, PlayerId, Rank).
 
 update_player_by_rank(Rank, PlayerId, Value, State) ->
-    Ets = get_rank_to_player_ets(State),
+    Ets = get_rank_to_player_ets(State#state.module),
     lib_ets:update(Ets, Rank, {PlayerId, Value}).
 
 update_rank(PlayerId, Rank, _Value, State) when Rank > ?SERVER_MAX_RANK ->
@@ -219,17 +221,15 @@ update_rank(PlayerId, Rank, Value, State) ->
     update_player_by_rank(Rank, PlayerId, Value, State).
 
 remove_rank(PlayerId, Rank, State) ->
-    EtsPlayerToRank = get_player_id_to_rank_ets(State),
+    EtsPlayerToRank = get_player_id_to_rank_ets(State#state.module),
     lib_ets:delete(EtsPlayerToRank, PlayerId),
-    EtsRankToPlayer = get_rank_to_player_ets(State),
+    EtsRankToPlayer = get_rank_to_player_ets(State#state.module),
     lib_ets:delete(EtsRankToPlayer, Rank).
 
-get_rank_to_player_ets(State) ->
-    Module = State#state.module,
+get_rank_to_player_ets(Module) ->
     Module:get_rank_to_player_ets().
 
-get_player_id_to_rank_ets(State) ->
-    Module = State#state.module,
+get_player_id_to_rank_ets(Module) ->
     Module:get_player_id_to_rank_ets().
 
 exchange_rank(0, PlayerId, Value, _ExchangeChangeRank, State) ->
@@ -255,9 +255,9 @@ is_need_exchange(Value, ExchangeValue, ExchangeChangeRank, State) ->
     Module = State#state.module,
     ?IF(ExchangeChangeRank < 0, Module:is_lager(Value, ExchangeValue), Module:is_lager(ExchangeValue, Value)).
 
-select_rank_data_from_db(Module) ->
-    [].
+% select_rank_data_from_db(Module) ->
+%     [].
 
-update_rank_data_to_db() ->
-    [].
+% update_rank_data_to_db() ->
+%     [].
 
