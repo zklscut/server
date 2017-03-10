@@ -210,10 +210,8 @@ handle_info(wait_timeout, State) ->
             case Now - StartWaitTime > ?MATCH_TIMEOUT of
                 true ->
                     lager:info("do_time_out"),
-                    {
-                        do_time_out(maps:remove(WaitId, CurWaitList), 
-                                    CurMatchList, CurPlayerInfo, WaitPlayerList, FitList)
-                     };
+                    do_time_out(maps:remove(WaitId, CurWaitList), 
+                            CurMatchList, CurPlayerInfo, WaitPlayerList, FitList);
                 false ->
                     {CurWaitList, CurMatchList, CurPlayerInfo}
             end
