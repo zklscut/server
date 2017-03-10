@@ -162,7 +162,8 @@ handle_cast_inner({enter_match, PlayerId, WaitId}, State) ->
                     NewMatchData = maps:put(wait_list, NewWaitList, MatchData),
                     update_match_data(NewMatchData)
             end
-    end;
+    end,
+    {noreply, State}; ;
 
 handle_cast_inner(_Cast, State) ->
     {noreply, State}.
@@ -369,7 +370,7 @@ do_set_player_info_wait(PlayerInfo, PlayerList, WaitId)->
 
 do_time_out(MatchList, PlayerInfo, WaitPlayerList, FitList)->
     TmpFun = 
-        fun({CurPlayerId, CurPlayerList, CurRank}, {CurMatchList, CurPlayerInfo})->
+        fun({_CurPlayerId, CurPlayerList, _CurRank, _CurNum}, {CurMatchList, CurPlayerInfo})->
             case util:is_any_element_same(WaitPlayerList, CurPlayerList) of
                 true->
                     %%有等待的玩家没有准备，移除队列
