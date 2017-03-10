@@ -313,7 +313,7 @@ do_start_fight(MatchData) ->
                 lists:foldl(FunGetFit, {0, []}, MatchList)
             catch
                 throw:{start_fight, FitList} ->
-                    WaitId = global_id_srv:gemerate_match_wait_id()
+                    WaitId = global_id_srv:gemerate_match_wait_id(),
                     FunStartFight = 
                         fun({_, CurPlayerList, _, _}, {CurPlayerInfo, CurStartPlayerList}) ->
                             {   
