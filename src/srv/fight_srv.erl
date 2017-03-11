@@ -117,7 +117,6 @@ init([RoomId, PlayerList, DutyList, Name, State]) ->
     % NewStateAfterTest = ?IF(?TEST, fight_test_no_send(init, State), NewState),
     notice_duty(NewState),
     notice_game_status_change(start, NewState),
-    
     send_event_inner(start, b_fight_state_wait:get(start)),
     {ok, state_daozei, NewState}.
 
