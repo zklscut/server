@@ -1039,6 +1039,8 @@ state_game_over(start, State) ->
 
 state_over(start, State) ->
     RoomId = maps:get(room_id, State),
+    PlayerList = maps:get(player_list, State),
+    [global_op_srv:player_op(PlayerId, {lib_player, update_fight_pid, [undefined]}) || PlayerId <- PlayerList],
     room_srv:update_room_fight_pid(RoomId, undefined),
     lib_room:update_room_status(RoomId, 0, 0, 0, 0),
     {stop, normal, State}.
