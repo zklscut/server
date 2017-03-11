@@ -1775,7 +1775,8 @@ fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, Stat
                                   pre_level_up_exp = b_exp:get(CurLevel - 1),
                                   level_up_exp = b_exp:get(CurLevel),
                                   next_level_up_exp = b_exp:get(CurLevel + 1),
-                                  victory_party = VictoryParty
+                                  victory_party = VictoryParty,
+                                  room_id = maps:get(room_id, State)
                                   }, ResultSeatId, State),
     mod_player:handle_fight_result(
                 ResultDutyId, 
@@ -1789,7 +1790,16 @@ send_fight_result(Winner, VictoryParty, State) ->
                         duty_id = DutyId} || 
                         {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, State))], 
     [fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, State)
-                 || {ResultSeatId, ResultDutyId} <- maps:to_list(maps:get(seat_duty_map, State))].
+                 || {ResultSeatId, ResultDutyId} <- maps:to_list(maps:get(seat_duty_map, State))],
+    RoomId = maps:get(room_id, State),
+
+    case RoomId > 0 of
+        true->
+            Room = lib_room:get_room(RoomId),
+            mod_room:notice_team_change(Room);
+        _->
+            ignore
+    .
 
 notice_start_fayan(SeatId, State) ->
     Send = #m__fight__notice_fayan__s2l{seat_id = SeatId},
