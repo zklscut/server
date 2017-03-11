@@ -174,7 +174,7 @@ state_qiubite(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_QIUBITE, State),
     {next_state, state_qiubite, NewState};
 
-state_qiubite({player_op, PlayerId, Op, [LoverA,LoverB]]}, State) ->
+state_qiubite({player_op, PlayerId, Op, [LoverA,LoverB]}, State) ->
     do_receive_player_op(PlayerId, Op, [LoverA,LoverB], state_qiubite, State);
 
 state_qiubite({player_op, PlayerId, Op, OpList}, State) ->
