@@ -1217,12 +1217,13 @@ cancel_fight_fsm_event_timer(Event) ->
 
 notice_duty(State) ->
     SeatDutyMap = maps:get(seat_duty_map, State),
+    FightInfo = lib_fight:get_p_fight(State),
     FunNotice = 
         fun(SeatId) ->
             Duty = maps:get(SeatId, SeatDutyMap),
             Send = #m__fight__notice_duty__s2l{duty = Duty,
                                                seat_id = SeatId,
-                                               fight_info = lib_fight:get_p_fight(State)
+                                               fight_info = FightInfo
                                                },
             lib_fight:send_to_seat(Send, SeatId, State)
         end,
