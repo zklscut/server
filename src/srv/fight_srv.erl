@@ -871,7 +871,7 @@ state_night(over, State)->
 %% ====================================================================
 state_fight_over(start, State) ->
     NewState = out_die_player(State),
-    {_, Winner, VictoryParty} = get_fight_result(NewState),
+    {_, Winner, _VictoryParty} = get_fight_result(NewState),
     DutyList = [#p_duty{seat_id = SeatId,
                         duty_id = DutyId} || 
                         {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, NewState))], 
@@ -1848,7 +1848,7 @@ get_online_duty_data(Winner, State)->
         []->
             [];
         _->
-            DutyList = [#p_duty{seat_id = SeatId,
+            [#p_duty{seat_id = SeatId,
                         duty_id = DutyId} || 
                         {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, State))]
     end.
