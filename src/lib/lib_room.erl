@@ -103,7 +103,6 @@ update_fight_pid(RoomId, Pid) ->
         undefined ->
             ignore;
         Room ->
-            [global_op_srv:player_op(PlayerId, {lib_player, update_fight_pid, [Pid]}) || PlayerId <- maps:get(player_list, Room)],
             room_srv:update_room_fight_pid(RoomId, Pid)
     end.
 

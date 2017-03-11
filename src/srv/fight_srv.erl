@@ -110,6 +110,7 @@ player_leave(Pid, PlayerId) ->
 %% ====================================================================
 
 init([RoomId, PlayerList, DutyList, Name, State]) ->
+    [global_op_srv:player_op(PlayerId, {lib_player, update_fight_pid, [self()]}) || PlayerId <- PlayerList],
     lib_room:update_fight_pid(RoomId, self()),
     lib_room:update_room_status(RoomId, 1, 0, 1, 0),
     NewState = lib_fight:init(RoomId, PlayerList, DutyList, Name, State),
