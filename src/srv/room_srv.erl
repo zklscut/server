@@ -248,7 +248,8 @@ handle_info({ready_timeout, RoomId}, State) ->
                 true ->
                      CurTime = util:get_micro_time(),
                      StartReadyTime = maps:get(ready_start, Room),
-                     case (CurTime - StartReadyTime) > ?ROOM_READY_TIME of
+                     lager:info("ready_timeout ~p", [CurTime - StartReadyTime]),
+                     case (CurTime - StartReadyTime) >= ?ROOM_READY_TIME of
                         true->
                             lib_room:start_room_fight(RoomId);
                         _->
