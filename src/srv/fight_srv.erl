@@ -1132,7 +1132,7 @@ handle_event({player_online, PlayerId}, StateName, State) ->
 
     %%刷新离线列表
     SendOffline = #m__fight__offline__s2l{
-                       offline_list = [lib_fight:get_seat_id_by_player_id(PlayerId, NewState)||PlayerId <- NewOfflineList]  
+                       offline_list = [lib_fight:get_seat_id_by_player_id(OffPlayerId, NewState)||OffPlayerId <- NewOfflineList]  
                     },
     lib_fight:send_to_all_player(SendOffline, NewState, [PlayerId]),
 
@@ -1146,7 +1146,7 @@ handle_event({player_offline, PlayerId}, StateName, State) ->
     SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
     lager:info("player_offline ~p", [length(NewOfflineList)]),
     Send = #m__fight__offline__s2l{
-                       offline_list = [lib_fight:get_seat_id_by_player_id(PlayerId, NewState)||PlayerId <- NewOfflineList]  
+                       offline_list = [lib_fight:get_seat_id_by_player_id(OffPlayerId, NewState)||OffPlayerId <- NewOfflineList]  
                     },
     lib_fight:send_to_all_player(Send, NewState),
     StateAfterTimeUpdate = player_online_offline_wait_op_time_update(SeatId, NewState),
@@ -1157,7 +1157,7 @@ handle_event({player_leave, PlayerId}, StateName, State) ->
     NewLeavePlayerList = maps:get(leave_player, State) ++ [PlayerId],
     NewState = maps:put(leave_player, NewLeavePlayerList, State),
     Send = #m__fight__leave__s2l{
-                       leave_list = [lib_fight:get_seat_id_by_player_id(PlayerId, NewState)||PlayerId <- NewLeavePlayerList]   
+                       leave_list = [lib_fight:get_seat_id_by_player_id(LeavePlayerId, NewState)||LeavePlayerId <- NewLeavePlayerList]   
                     },
     lib_fight:send_to_all_player(Send, NewState),
     StateAfterTimeUpdate = player_online_offline_wait_op_time_update(SeatId, NewState),
