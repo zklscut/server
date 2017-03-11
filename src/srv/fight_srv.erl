@@ -59,8 +59,8 @@
          player_leave/2
          ]).
 
-start_link(RoomId, PlayerList, DutyList) ->
-    gen_fsm:start(?MODULE, [RoomId, PlayerList, DutyList, ?MFIGHT], []).
+start_link(RoomId, PlayerList, DutyList, Name) ->
+    gen_fsm:start(?MODULE, [RoomId, PlayerList, DutyList, Name, ?MFIGHT], []).
 
 player_op(Pid, PlayerId, Op, OpList) ->
     lager:info("player_op ~p", [{Op, OpList}]),
