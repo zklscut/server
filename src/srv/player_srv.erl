@@ -203,7 +203,7 @@ do_proto(ProtoId, ProtoData, State) ->
     try
         {ProtoName, Module, Function} = b_proto_route:get(ProtoId),
         ProtoRecord = game_pb:decode(ProtoName, ProtoData),
-        % lager:info("receive proto ~p", [ProtoRecord]),
+        lager:info("receive proto ~p", [ProtoRecord]),
         apply(Module, Function, [ProtoRecord, State])
     catch
         throw:ThrowError ->
