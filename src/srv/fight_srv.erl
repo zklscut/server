@@ -148,7 +148,7 @@ state_daozei({player_op, PlayerId, Op, OpList}, State) ->
     do_receive_player_op(PlayerId, Op, OpList, state_daozei, State);
 
 state_daozei(timeout, State) ->
-    DaozeiList = maps:get(daozeidaozei, State),
+    DaozeiList = maps:get(daozei, State),
     Op = 
         case lists:member(?DUTY_LANGREN, DaozeiList) of
             true ->
