@@ -179,7 +179,7 @@ state_qiubite({player_op, PlayerId, Op, [LoverA,LoverB]}, State) ->
 
 state_qiubite({player_op, PlayerId, Op, OpList}, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    send_event_inner(timeout),
+    send_event_inner(timeout);
 
 state_qiubite(timeout, State) ->
     RandLover = util:rand_in_list(lib_fight:get_alive_seat_list(State) -- 
