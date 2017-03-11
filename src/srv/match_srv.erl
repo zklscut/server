@@ -177,7 +177,7 @@ handle_cast_inner({enter_match, PlayerId, _WaitId}, State) ->
                     update_match_data(MatchData#{player_info := NewPlayerInfo,
                                                     wait_list := NewWaitList,
                                                     match_list := NewMatchList}),
-                    fight_srv:start_link(0, StartPlayerList, b_duty:get(?MATCH_NEED_PLAYER_NUM), "标准房");
+                    fight_srv:start_link(0, StartPlayerList, b_duty:get(?MATCH_NEED_PLAYER_NUM), "abc");
                 _ ->
                     NewWaitMatch = WaitMatch#{wait_player_list := NewWaitPlayerList},
                     NewWaitList = maps:put(WaitId, NewWaitMatch, WaitList),
