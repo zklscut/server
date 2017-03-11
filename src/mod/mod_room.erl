@@ -136,6 +136,7 @@ kick_player(#m__room__kick_player__l2s{kicked_player_id = KickedPlayerId}, Playe
     {ok, Player}.
 
 start_fight(#m__room__start_fight__l2s{}, Player) ->
+    lager:info("start_fight+++++++++++ ~p", [Player]),
     RoomId = lib_room:get_player_room_id(Player),
     PlayerList = lib_room:get_player_room_player_list(Player),
     DutyList = lib_room:get_room_duty_list(RoomId),
