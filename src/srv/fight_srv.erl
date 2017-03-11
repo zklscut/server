@@ -148,7 +148,7 @@ state_daozei({player_op, PlayerId, Op, OpList}, State) ->
     do_receive_player_op(PlayerId, Op, OpList, state_daozei, State);
 
 state_daozei(timeout, State) ->
-    DaozeiList = maps:get(daozei, State),
+    DaozeiList = maps:get(daozeidaozei, State),
     Op = 
         case lists:member(?DUTY_LANGREN, DaozeiList) of
             true ->
@@ -1367,7 +1367,10 @@ do_receive_fayan(PlayerId, Chat, State) ->
 
 notice_player_op(?DUTY_DAOZEI, SeatList, State) ->
     notice_player_op(?DUTY_DAOZEI, maps:get(daozei, State), SeatList, State);
-    
+
+notice_player_op(?DUTY_SHOUWEI, SeatList, State) ->
+    notice_player_op(?DUTY_SHOUWEI, [maps:get(shouwei, State)], SeatList, State);
+
 notice_player_op(?DUTY_NVWU, SeatList, State) ->
     notice_player_op(?DUTY_NVWU, [lists:sum(maps:get(nvwu_left, State))] ++ [maps:get(langren, State)], SeatList, State);
 
