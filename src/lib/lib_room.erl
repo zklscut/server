@@ -103,7 +103,7 @@ update_fight_pid(RoomId, Pid) ->
     case get_room(RoomId) of
         undefined ->
             ignore;
-        Room ->
+        _Room ->
             room_srv:update_room_fight_pid(RoomId, Pid)
     end.
 
@@ -112,7 +112,7 @@ update_room_status(RoomId, BaseStatus, GameRound, Night, Day)->
     case get_room(RoomId) of
         undefined ->
             ignore;
-        Room ->
+        _Room ->
             room_srv:update_room_status(RoomId, BaseStatus, GameRound, Night, Day)
     end.
     

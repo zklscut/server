@@ -305,7 +305,9 @@ do_ready(RoomId, PlayerId)->
             Send = #m__room__notice_all_ready__s2l{},
             mod_room:send_to_room(Send, NewRoom),
             erlang:send_after(?ROOM_READY_TIME, self(), {ready_timeout, RoomId}),
-            maps:put(ready_start, util:get_micro_time(), NewRoom);
+            ReadyStartRoom = maps:put(ready_start, util:get_micro_time(), NewRoom);
+            lib_room:update_room(RoomId, ReadyStartRoom),
+            ReadyStartRoom;
         false ->
             NewRoom
     end,
