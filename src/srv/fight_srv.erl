@@ -1799,7 +1799,7 @@ send_fight_result(Winner, VictoryParty, State) ->
             mod_room:notice_team_change(Room);
         _->
             ignore
-    .
+    end.
 
 notice_start_fayan(SeatId, State) ->
     Send = #m__fight__notice_fayan__s2l{seat_id = SeatId},
