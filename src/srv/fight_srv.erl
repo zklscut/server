@@ -63,14 +63,28 @@ start_link(RoomId, PlayerList, DutyList, Name) ->
     gen_fsm:start(?MODULE, [RoomId, PlayerList, DutyList, Name, ?MFIGHT], []).
 
 player_op(Pid, PlayerId, Op, OpList) ->
-    lager:info("player_op ~p", [{Op, OpList}]),
-    gen_fsm:send_event(Pid, {player_op, PlayerId, Op, OpList}).
+    case Pid of
+        undefined->
+            ignore;
+        _->
+            gen_fsm:send_event(Pid, {player_op, PlayerId, Op, OpList})
+    end.
 
 player_speak(Pid, PlayerId, Chat) ->
-    gen_fsm:send_event(Pid, {player_op, PlayerId, ?OP_FAYAN, [Chat]}).    
+    case Pid of
+        undefined->
+            ignore;
+        _->
+            gen_fsm:send_event(Pid, {player_op, PlayerId, ?OP_FAYAN, [Chat]})
+    end.
 
 player_skill(Pid, PlayerId, Op, OpList) ->
-    gen_fsm:send_all_state_event(Pid, {skill, PlayerId, Op, OpList}).
+    case Pid of
+        undefined->
+            ignore;
+        _->
+            gen_fsm:send_all_state_event(Pid, {skill, PlayerId, Op, OpList})
+    end.
 
 print_state(Pid) ->
     gen_fsm:send_all_state_event(Pid, print_state).
