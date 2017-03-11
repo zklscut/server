@@ -1118,8 +1118,8 @@ handle_event({player_online, PlayerId}, StateName, State) ->
                                   die_list = DieList,
                                   attach_data1 = AttachData1,
                                   attach_data2 = AttachData2,
-                                  offline_list = [lib_fight:get_seat_id_by_player_id(PlayerId, NewState)||PlayerId <- NewOfflineList],
-                                  leave_list = [lib_fight:get_seat_id_by_player_id(PlayerId, NewState)||PlayerId <- LeaveList],
+                                  offline_list = [lib_fight:get_seat_id_by_player_id(OffPlayerId, NewState)||OffPlayerId <- NewOfflineList],
+                                  leave_list = [lib_fight:get_seat_id_by_player_id(LeavePlayerId, NewState)||LeavePlayerId <- LeaveList],
                                   jingzhang = JingZhang,
                                   lover_list = get_online_lover_data(SeatId, NewState),
                                   flop_list =[#p_flop{seat_id = CurSeatId,
@@ -1379,7 +1379,6 @@ notice_player_op(Op, AttachData, SeatList, State) ->
             StateAfterNormalDuration = maps:put(op_timer_normal_dur, WaitTime, StateAfterAttackData),
             %%
             StateAfterStart = maps:put(op_timer_start, util:get_micro_time(), StateAfterNormalDuration),
-            StateAfterUseDuration = 
             case lists:member(Op, ?FAYAN_OP_LIST) of
                 true->
                     UseWaitTimeSend = #m__fight__op_timetick__s2l{timetick = UseWaitTime},
