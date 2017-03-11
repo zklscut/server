@@ -812,7 +812,7 @@ state_toupiao(op_over, State) ->
                     %%客户端根据通知结果判断是否平安日
                     StateAfterNoticeDie = maps:put(day_notice_die, maps:get(day_notice_die, NewState) ++ [Quzhu], NewState),
                     notice_toupiao_out([Quzhu], StateAfterNoticeDie),
-                    lib_fight:lover_die_judge(Quzhu, NewState)
+                    lib_fight:lover_die_judge(Quzhu, StateAfterNoticeDie)
             end,
 
             send_event_inner(wait_over, b_fight_state_over_wait:get(state_toupiao)),
