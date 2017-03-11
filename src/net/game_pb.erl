@@ -129,7 +129,8 @@
 	 decode_m__room__enter_room__l2s/1,
 	 encode_m__room__get_list__s2l/1,
 	 decode_m__room__get_list__s2l/1, encode_p_room/1,
-	 decode_p_room/1, encode_m__room__get_list__l2s/1,
+	 decode_p_room/1, encode_p_fight/1, decode_p_fight/1,
+	 encode_m__room__get_list__l2s/1,
 	 decode_m__room__get_list__l2s/1,
 	 encode_m__player__change_name__s2l/1,
 	 decode_m__player__change_name__s2l/1,
@@ -205,7 +206,7 @@
 	 attach_data1, attach_data2, offline_list, leave_list,
 	 flop_list, winner, wait_op, wait_op_list,
 	 wait_op_attach_data, wait_op_tick, jingzhang,
-	 lover_list, duty_list, parting_jingzhang}).
+	 lover_list, duty_list, parting_jingzhang, fight_info}).
 
 -record(p_flop, {seat_id, op}).
 
@@ -230,7 +231,7 @@
 	{msg_id, winner, duty_list, lover, hunxuer, daozei, mvp,
 	 carry, coin_add, cur_level, cur_exp, exp_add,
 	 pre_level_up_exp, level_up_exp, next_level_up_exp,
-	 victory_party}).
+	 victory_party, room_id}).
 
 -record(p_duty, {seat_id, duty_id}).
 
@@ -259,7 +260,7 @@
 	{msg_id, op, attach_data}).
 
 -record(m__fight__notice_duty__s2l,
-	{msg_id, duty, seat_id}).
+	{msg_id, duty, seat_id, fight_info}).
 
 -record(m__fight__game_state_change__s2l,
 	{msg_id, game_status, attach_data}).
@@ -337,6 +338,9 @@
 -record(p_room,
 	{room_id, cur_player_num, max_player_num, owner,
 	 room_name, room_status, duty_list, ready_list}).
+
+-record(p_fight,
+	{room_name, duty_list, player_info_list}).
 
 -record(m__room__get_list__l2s, {msg_id}).
 
@@ -659,6 +663,10 @@ encode_m__room__get_list__s2l(Record)
 encode_p_room(Record) when is_record(Record, p_room) ->
     encode(p_room, Record).
 
+encode_p_fight(Record)
+    when is_record(Record, p_fight) ->
+    encode(p_fight, Record).
+
 encode_m__room__get_list__l2s(Record)
     when is_record(Record, m__room__get_list__l2s) ->
     encode(m__room__get_list__l2s, Record).
@@ -874,6 +882,16 @@ encode(m__room__get_list__l2s, _Record) ->
 			   with_default(_Record#m__room__get_list__l2s.msg_id,
 					13001),
 			   int32, [])]);
+encode(p_fight, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#p_fight.room_name, none),
+			   string, []),
+		      pack(2, repeated,
+			   with_default(_Record#p_fight.duty_list, none), int32,
+			   []),
+		      pack(4, repeated,
+			   with_default(_Record#p_fight.player_info_list, none),
+			   p_player_show_base, [])]);
 encode(p_room, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#p_room.room_id, none), int32,
@@ -1204,7 +1222,11 @@ encode(m__fight__notice_duty__s2l, _Record) ->
 		      pack(3, required,
 			   with_default(_Record#m__fight__notice_duty__s2l.seat_id,
 					none),
-			   int32, [])]);
+			   int32, []),
+		      pack(4, required,
+			   with_default(_Record#m__fight__notice_duty__s2l.fight_info,
+					none),
+			   p_fight, [])]);
 encode(m__fight__notice_op__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__fight__notice_op__s2l.msg_id,
@@ -1381,6 +1403,10 @@ encode(m__fight__result__s2l, _Record) ->
 		      pack(16, required,
 			   with_default(_Record#m__fight__result__s2l.victory_party,
 					none),
+			   int32, []),
+		      pack(17, required,
+			   with_default(_Record#m__fight__result__s2l.room_id,
+					none),
 			   int32, [])]);
 encode(m__fight__guipiao__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
@@ -1543,7 +1569,11 @@ encode(m__fight__online__s2l, _Record) ->
 		      pack(20, repeated,
 			   with_default(_Record#m__fight__online__s2l.parting_jingzhang,
 					none),
-			   int32, [])]);
+			   int32, []),
+		      pack(21, required,
+			   with_default(_Record#m__fight__online__s2l.fight_info,
+					none),
+			   p_fight, [])]);
 encode(m__fight__offline__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__fight__offline__s2l.msg_id,
@@ -1959,6 +1989,8 @@ decode_m__room__get_list__s2l(Bytes) ->
 
 decode_p_room(Bytes) -> decode(p_room, Bytes).
 
+decode_p_fight(Bytes) -> decode(p_fight, Bytes).
+
 decode_m__room__get_list__l2s(Bytes) ->
     decode(m__room__get_list__l2s, Bytes).
 
@@ -2082,6 +2114,13 @@ decode(m__room__get_list__l2s, Bytes) ->
     Types = [{1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__get_list__l2s, Decoded);
+decode(p_fight, Bytes) ->
+    Types = [{4, player_info_list, p_player_show_base,
+	      [is_record, repeated]},
+	     {2, duty_list, int32, [repeated]},
+	     {1, room_name, string, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(p_fight, Decoded);
 decode(p_room, Bytes) ->
     Types = [{8, ready_list, uint32, [repeated]},
 	     {7, duty_list, int32, [repeated]},
@@ -2243,7 +2282,8 @@ decode(m__fight__game_state_change__s2l, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__game_state_change__s2l, Decoded);
 decode(m__fight__notice_duty__s2l, Bytes) ->
-    Types = [{3, seat_id, int32, []}, {2, duty, int32, []},
+    Types = [{4, fight_info, p_fight, [is_record]},
+	     {3, seat_id, int32, []}, {2, duty, int32, []},
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__notice_duty__s2l, Decoded);
@@ -2302,7 +2342,8 @@ decode(p_duty, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(p_duty, Decoded);
 decode(m__fight__result__s2l, Bytes) ->
-    Types = [{16, victory_party, int32, []},
+    Types = [{17, room_id, int32, []},
+	     {16, victory_party, int32, []},
 	     {15, next_level_up_exp, int32, []},
 	     {14, level_up_exp, int32, []},
 	     {13, pre_level_up_exp, int32, []},
@@ -2357,7 +2398,8 @@ decode(p_flop, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(p_flop, Decoded);
 decode(m__fight__online__s2l, Bytes) ->
-    Types = [{20, parting_jingzhang, int32, [repeated]},
+    Types = [{21, fight_info, p_fight, [is_record]},
+	     {20, parting_jingzhang, int32, [repeated]},
 	     {19, duty_list, p_duty, [is_record, repeated]},
 	     {18, lover_list, int32, [repeated]},
 	     {17, jingzhang, int32, []},
@@ -2616,6 +2658,12 @@ to_record(m__room__get_list__l2s, DecodedTuples) ->
 					 Record, Name, Val)
 		end,
 		#m__room__get_list__l2s{}, DecodedTuples);
+to_record(p_fight, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields, p_fight), Record,
+					 Name, Val)
+		end,
+		#p_fight{}, DecodedTuples);
 to_record(p_room, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields, p_room), Record,
