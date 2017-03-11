@@ -787,6 +787,7 @@ is_need_someone_die_default_delay(State)->
     Quzhu = maps:get(quzhu, State),
     BaiLang = maps:get(bailang, State),
     SkillDDelay = maps:get(skill_d_delay, State),
+    lager:info("is_need_someone_die_default_delay ~p", [{LieRenExist, FlopLieRen, SafeNight, QuzhuOp, Quzhu, BaiLang, SkillDDelay}]),
     LieRenExist andalso (FlopLieRen == 0) andalso (SkillDDelay == 0) andalso (BaiLang == 0) andalso 
                 (((QuzhuOp == 0) andalso (SafeNight =/= 1)) orelse ((QuzhuOp == 1) andalso (Quzhu =/= 0))).
 
@@ -1097,7 +1098,7 @@ do_set_die_list(State) ->
     StateAfterBaichi = 
     case BaiChi =/= 0 andalso lists:member(BaiChi,DieAfterLover) of
         true->
-            maps:put(baichi, StateAfterSafeDay);
+            maps:put(baichi, 0, StateAfterSafeDay);
         false->
             StateAfterSafeDay
     end,
