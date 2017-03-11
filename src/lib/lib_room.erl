@@ -6,6 +6,7 @@
 -export([get_room/1,
          update_room/2,
          delete_room/1,
+         get_room_name/1,
          get_player_room_id/1,
          update_player_room_id/2,
          assert_not_have_room/1,
@@ -56,7 +57,7 @@ assert_not_have_room(Player) ->
 is_room_full(Room)->
    #{max_player_num := MaxPlayerNum,
       player_list := PlayerList} = Room,
-   length(PlayerList) >= MaxPlayerNum. 
+   length(PlayerList) >= MaxPlayerNum orelse is_in_fight(Room). 
 
 
 assert_room_not_full(Room) ->
@@ -124,6 +125,9 @@ get_fight_pid_by_player(Player) ->
 
 get_room_duty_list(RoomId) ->
     maps:get(duty_list, get_room(RoomId)).
+
+get_room_name(RoomId)->
+    maps:get(room_name, get_room(RoomId)).
 
 handle_online(Player) ->
     RoomId = maps:get(room_id, Player, 0),

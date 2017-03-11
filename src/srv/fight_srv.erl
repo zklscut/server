@@ -109,13 +109,14 @@ player_leave(Pid, PlayerId) ->
 %% Behavioural functions
 %% ====================================================================
 
-init([RoomId, PlayerList, DutyList, State]) ->
+init([RoomId, PlayerList, DutyList, Name, State]) ->
     lib_room:update_fight_pid(RoomId, self()),
     lib_room:update_room_status(RoomId, 1, 0, 1, 0),
-    NewState = lib_fight:init(RoomId, PlayerList, DutyList, State),
+    NewState = lib_fight:init(RoomId, PlayerList, DutyList, Name, State),
     % NewStateAfterTest = ?IF(?TEST, fight_test_no_send(init, State), NewState),
-    notice_game_status_change(start, NewState),
     notice_duty(NewState),
+    notice_game_status_change(start, NewState),
+    
     send_event_inner(start, b_fight_state_wait:get(start)),
     {ok, state_daozei, NewState}.
 
@@ -1105,6 +1106,7 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     
     {AttachData1, AttachData2} = get_online_attach_data(SeatId, DutyId, NewState),
     Send = #m__fight__online__s2l{duty = DutyId,
+                                  fight_info = lib_fight:get_p_fight(NewState),
                                   seat_id = SeatId,
                                   game_state =GameState,
                                   round = Round,
@@ -1219,7 +1221,9 @@ notice_duty(State) ->
         fun(SeatId) ->
             Duty = maps:get(SeatId, SeatDutyMap),
             Send = #m__fight__notice_duty__s2l{duty = Duty,
-                                               seat_id = SeatId},
+                                               seat_id = SeatId,
+                                               fight_info = lib_fight:get_p_fight(State)
+                                               },
             lib_fight:send_to_seat(Send, SeatId, State)
         end,
     lists:foreach(FunNotice, maps:keys(SeatDutyMap)).

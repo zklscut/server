@@ -74,6 +74,9 @@
 -define(DIE_TYPE_LOVER, 7).
 
 -define(MFIGHT, #{room_id => 0,
+                  room_name => "",%%房间名称
+                  duty_list => [],%%职责列表
+                  player_list => [], %%玩家列表
                   seat_player_map => #{},%% #{seat_id, player_id}
                   player_seat_map => #{},%% #{player_id, seat_id}
                   offline_list => [],    %% seat_id

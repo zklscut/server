@@ -9,6 +9,7 @@
          send_to_seat/3,
          is_active_in_fight/2,
          is_offline_all/2,
+         get_p_fight/1,
          get_player_id_by_seat/2,
          get_seat_id_by_player_id/2,
          get_duty_by_seat/2,
@@ -64,12 +65,21 @@
 %% API functions
 %% ====================================================================
 
-init(RoomId, PlayerList, DutyList, State) ->
+init(RoomId, PlayerList, DutyList, Name, State) ->
     State1 = State#{room_id := RoomId},
     State2 = init_seat(PlayerList, State1),
     State3 = init_duty(PlayerList, DutyList, State2),
+    StateAfterDutyList = maps:put(duty_list, DutyList, State3),
+    StateAfterPlayerList = maps:put(player_list, PlayerList, StateAfterDutyList),
+    StateAfterName = maps:put(room_name, Name, StateAfterPlayerList),
     State3#{player_num := length(DutyList)}.
 
+get_p_fight(State)->
+    p_fight#{
+        room_name = maps:get(room_name, State),
+        duty_list = maps:get(duty_list, State),
+        player_info_list = [lib_player:get_player_show_base(PlayerId) || PlayerId <- maps:get(player_list, State)]
+    }.
 
 send_to_all_player(Send, State) ->
     send_to_all_player(Send, State, []).
