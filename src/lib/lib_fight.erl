@@ -100,7 +100,8 @@ send_to_seat(Send, SeatId, State) ->
     end.
 
 is_active_in_fight(PlayerId, State) ->
-    true.
+    Player = lib_player:get_player(PlayerId),
+    lib_player:get_fight_pid(Player) == self().
     % case lists:member(PlayerId, maps:get(leave_player, State)) of
     %     true->
     %         lager:info("is_active_in_fight ~p", [maps:get(leave_player, State)]),
