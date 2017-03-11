@@ -108,7 +108,13 @@ update_fight_pid(RoomId, Pid) ->
 
 %%如果是白天night传1如果是晚上day传0
 update_room_status(RoomId, BaseStatus, GameRound, Night, Day)->
-    room_srv:update_room_status(RoomId, BaseStatus, GameRound, Night, Day).
+    case get_room(RoomId) of
+        undefined ->
+            ignore;
+        Room ->
+            room_srv:update_room_status(RoomId, BaseStatus, GameRound, Night, Day).
+    end.
+    
 
 is_in_fight(RoomId) ->
     case get_room(RoomId) of
