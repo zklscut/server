@@ -242,8 +242,9 @@ handle_info({ready_timeout, RoomId}, State) ->
         undefined ->
             ignore;
         _->
-           case (length(NewReadyList) == maps:get(max_player_num, Room)) andalso 
-                        (length(NewReadyList) == length(maps:get(player_list, Room))) of
+           ReadyList = maps:get(ready_list, Room),
+           case (length(ReadyList) == maps:get(max_player_num, Room)) andalso 
+                        (length(ReadyList) == length(maps:get(player_list, Room))) of
                 true ->
                      CurTime = util:get_micro_time(),
                      StartReadyTime = maps:get(ready_start, Room),
