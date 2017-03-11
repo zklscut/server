@@ -1052,6 +1052,7 @@ state_game_over(start, State) ->
 %% ====================================================================
 
 state_over(start, State) ->
+    lager:info("state_over++++++++++++++++++++"),
     RoomId = maps:get(room_id, State),
     PlayerList = maps:get(player_list, State),
     [global_op_srv:player_op(PlayerId, {lib_player, update_fight_pid, [undefined]}) || PlayerId <- PlayerList],
