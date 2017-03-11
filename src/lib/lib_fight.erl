@@ -75,7 +75,7 @@ init(RoomId, PlayerList, DutyList, Name, State) ->
     State3#{player_num := length(DutyList)}.
 
 get_p_fight(State)->
-    p_fight#{
+    #p_fight{
         room_name = maps:get(room_name, State),
         duty_list = maps:get(duty_list, State),
         player_info_list = [lib_player:get_player_show_base(PlayerId) || PlayerId <- maps:get(player_list, State)]
