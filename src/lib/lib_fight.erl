@@ -1092,7 +1092,7 @@ do_set_die_list(State) ->
         true->
             maps:put(safe_night, 0, State);
         false->
-            State
+            maps:put(safe_night, 1, State)
     end,
     BaiChi = maps:get(baichi, StateAfterSafeDay),
     StateAfterBaichi = 
