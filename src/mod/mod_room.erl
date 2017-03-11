@@ -139,7 +139,7 @@ start_fight(#m__room__start_fight__l2s{}, Player) ->
     RoomId = lib_room:get_player_room_id(Player),
     PlayerList = lib_room:get_player_room_player_list(Player),
     DutyList = lib_room:get_room_duty_list(RoomId),
-    RoomName = lib_player:get_room_name(RoomId),
+    RoomName = lib_room:get_room_name(RoomId),
     fight_srv:start_link(RoomId, PlayerList, DutyList, RoomName),
     {ok, Player}.
 
