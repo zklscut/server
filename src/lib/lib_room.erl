@@ -112,7 +112,7 @@ update_room_status(RoomId, BaseStatus, GameRound, Night, Day)->
         undefined ->
             ignore;
         Room ->
-            room_srv:update_room_status(RoomId, BaseStatus, GameRound, Night, Day).
+            room_srv:update_room_status(RoomId, BaseStatus, GameRound, Night, Day)
     end.
     
 
