@@ -3,7 +3,7 @@
 %% 2016
 
 -module(lib_fight).
--export([init/4,
+-export([init/5,
          send_to_all_player/2,
          send_to_all_player/3,
          send_to_seat/3,
@@ -72,7 +72,7 @@ init(RoomId, PlayerList, DutyList, Name, State) ->
     StateAfterDutyList = maps:put(duty_list, DutyList, State3),
     StateAfterPlayerList = maps:put(player_list, PlayerList, StateAfterDutyList),
     StateAfterName = maps:put(room_name, Name, StateAfterPlayerList),
-    State3#{player_num := length(DutyList)}.
+    StateAfterName#{player_num := length(DutyList)}.
 
 get_p_fight(State)->
     #p_fight{
