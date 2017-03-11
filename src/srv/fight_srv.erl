@@ -487,7 +487,8 @@ state_night_result(start, State)->
     %%客户端判断是不是平安夜
     notice_night_result(State),
     send_event_inner(over, b_fight_state_wait:get(state_night_result)),
-    NewState = maps:put(show_nigth_result, 1, State),
+    StateAfterNoticeDie = maps:put(day_notice_die, maps:get(day_notice_die, State) ++ maps:get(die), State),
+    NewState = maps:put(show_nigth_result, 1, StateAfterNoticeDie),
     {next_state, state_night_result, lib_fight:set_skill_die_list(state_night_result, NewState)};
 
 state_night_result(over, State)->
@@ -801,14 +802,16 @@ state_toupiao(op_over, State) ->
                     StateAfterBaichi = lib_fight:do_skill(lib_fight:get_player_id_by_seat(Quzhu, NewState), ?OP_SKILL_BAICHI, [0], NewState),
                     case maps:get(baichi, StateAfterBaichi) == 0 of
                         true->
-                            notice_toupiao_out([Quzhu], StateAfterBaichi),
-                            lib_fight:lover_die_judge(Quzhu, StateAfterBaichi);
+                            StateAfterNoticeDie = maps:put(day_notice_die, maps:get(day_notice_die, StateAfterBaichi) ++ [StateAfterBaichi], State),
+                            notice_toupiao_out([Quzhu], StateAfterNoticeDie),
+                            lib_fight:lover_die_judge(Quzhu, StateAfterNoticeDie);
                         false->
                             StateAfterBaichi
                     end;
                 false->
                     %%客户端根据通知结果判断是否平安日
-                    notice_toupiao_out([Quzhu], NewState),
+                    StateAfterNoticeDie = maps:put(day_notice_die, maps:get(day_notice_die, NewState) ++ [Quzhu], NewState),
+                    notice_toupiao_out([Quzhu], StateAfterNoticeDie),
                     lib_fight:lover_die_judge(Quzhu, NewState)
             end,
 
@@ -1112,7 +1115,7 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     DutyId = lib_fight:get_duty_by_seat(SeatId, NewState),
     Round = maps:get(game_round, NewState),
     GameState = maps:get(game_state, NewState),
-    DieList = maps:get(out_seat_list, NewState),
+    DieList = maps:get(out_seat_list, NewState) ++ maps:get(day_notice_die, NewState),
     JingZhang = maps:get(jingzhang, NewState),
     FlopList = maps:get(flop_list, NewState),
     LeaveList = maps:get(leave_player, NewState),
@@ -1712,6 +1715,7 @@ clear_night_op(State) ->
            show_nigth_result => 0,
            flop_list => [],
            parting_jingzhang => [],
+           day_notice_die => [],
            quzhu_op => 0,
            safe_night => 1,         %%平安夜
            safe_day => 1           %%平安日

@@ -134,10 +134,11 @@
                   mvp_draw_cnt => 0,     %%mvp重投次数      
                   carry_party =>[],      %%参选carry的人
                   carry_draw_cnt => 0,    %%carry重投次数
-                  speak_id => 0,
+                  speak_id => 0,          %%
                   op_timer_start => 0,   %%操作开始时间
                   op_timer_normal_dur => 0, %%正常操作持续时间
-                  op_timer_use_dur => 0   %%操作当前持续时间
+                  op_timer_use_dur => 0,   %%操作当前持续时间
+                  day_notice_die => [] %%白天通知了玩家已经死亡的人(断线重连用)
                   }).
 
 -endif.
