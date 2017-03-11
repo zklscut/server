@@ -487,7 +487,7 @@ state_night_result(start, State)->
     %%客户端判断是不是平安夜
     notice_night_result(State),
     send_event_inner(over, b_fight_state_wait:get(state_night_result)),
-    StateAfterNoticeDie = maps:put(day_notice_die, maps:get(day_notice_die, State) ++ maps:get(die), State),
+    StateAfterNoticeDie = maps:put(day_notice_die, maps:get(day_notice_die, State) ++ maps:get(die, State), State),
     NewState = maps:put(show_nigth_result, 1, StateAfterNoticeDie),
     {next_state, state_night_result, lib_fight:set_skill_die_list(state_night_result, NewState)};
 
@@ -802,7 +802,7 @@ state_toupiao(op_over, State) ->
                     StateAfterBaichi = lib_fight:do_skill(lib_fight:get_player_id_by_seat(Quzhu, NewState), ?OP_SKILL_BAICHI, [0], NewState),
                     case maps:get(baichi, StateAfterBaichi) == 0 of
                         true->
-                            StateAfterNoticeDie = maps:put(day_notice_die, maps:get(day_notice_die, StateAfterBaichi) ++ [StateAfterBaichi], State),
+                            StateAfterNoticeDie = maps:put(day_notice_die, maps:get(day_notice_die, StateAfterBaichi) ++ [Quzhu], StateAfterBaichi),
                             notice_toupiao_out([Quzhu], StateAfterNoticeDie),
                             lib_fight:lover_die_judge(Quzhu, StateAfterNoticeDie);
                         false->
