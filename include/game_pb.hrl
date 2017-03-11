@@ -14,6 +14,7 @@
 -record(m__player__change_name__l2s, {msg_id=12008, name}).
 -record(m__player__change_name__s2l, {msg_id=12009, name, result}).
 -record(m__room__get_list__l2s, {msg_id=13001}).
+-record(p_fight, {room_name, duty_list, player_info_list}).
 -record(p_room, {room_id, cur_player_num, max_player_num, owner, room_name, room_status, duty_list, ready_list}).
 -record(m__room__get_list__s2l, {msg_id=13002, room_list}).
 -record(m__room__enter_room__l2s, {msg_id=13003, room_id}).
@@ -45,7 +46,7 @@
 -record(m__chat__public_speak__l2s, {msg_id=14001, chat}).
 -record(m__chat__public_speak__s2l, {msg_id=14002, chat}).
 -record(m__fight__game_state_change__s2l, {msg_id=15001, game_status, attach_data}).
--record(m__fight__notice_duty__s2l, {msg_id=15002, duty, seat_id}).
+-record(m__fight__notice_duty__s2l, {msg_id=15002, duty, seat_id, fight_info}).
 -record(m__fight__notice_op__s2l, {msg_id=15003, op, attach_data}).
 -record(m__fight__notice_op__l2s, {msg_id=15004, op, op_list}).
 -record(m__fight__speak__l2s, {msg_id=15005, chat}).
@@ -56,7 +57,7 @@
 -record(m__fight__xuanju_result__s2l, {msg_id=15009, xuanju_type, result_list, is_draw, result_id}).
 -record(m__fight__night_result__s2l, {msg_id=15010, die_list}).
 -record(p_duty, {seat_id, duty_id}).
--record(m__fight__result__s2l, {msg_id=15011, winner, duty_list, lover, hunxuer, daozei, mvp, carry, coin_add, cur_level, cur_exp, exp_add, pre_level_up_exp, level_up_exp, next_level_up_exp, victory_party}).
+-record(m__fight__result__s2l, {msg_id=15011, winner, duty_list, lover, hunxuer, daozei, mvp, carry, coin_add, cur_level, cur_exp, exp_add, pre_level_up_exp, level_up_exp, next_level_up_exp, victory_party, room_id}).
 -record(m__fight__guipiao__s2l, {msg_id=15012, guipiao_list}).
 -record(m__fight__notice_fayan__s2l, {msg_id=15013, seat_id}).
 -record(m__fight__stop_fayan__s2l, {msg_id=15014, seat_id}).
@@ -65,7 +66,7 @@
 -record(m__fight__notice_skill__s2l, {msg_id=15017, op, op_list, seat_id}).
 -record(m__fight__do_skill__l2s, {msg_id=15018, op, op_list}).
 -record(p_flop, {seat_id, op}).
--record(m__fight__online__s2l, {msg_id=15019, duty, game_state, round, die_list, seat_id, attach_data1, attach_data2, offline_list, leave_list, flop_list, winner, wait_op, wait_op_list, wait_op_attach_data, wait_op_tick, jingzhang, lover_list, duty_list, parting_jingzhang}).
+-record(m__fight__online__s2l, {msg_id=15019, duty, game_state, round, die_list, seat_id, attach_data1, attach_data2, offline_list, leave_list, flop_list, winner, wait_op, wait_op_list, wait_op_attach_data, wait_op_tick, jingzhang, lover_list, duty_list, parting_jingzhang, fight_info}).
 -record(m__fight__offline__s2l, {msg_id=15020, offline_list}).
 -record(m__fight__op_timetick__s2l, {msg_id=15021, timetick}).
 -record(m__fight__langren_team_speak__s2l, {msg_id=15022, chat}).
