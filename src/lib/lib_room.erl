@@ -21,6 +21,7 @@
          is_in_fight/1,
          handle_online/1,
          is_room_full/1,
+         start_room_fight/1,
          update_room_status/5]).
 
 -include("game_pb.hrl").
@@ -145,6 +146,26 @@ handle_online(Player) ->
             mod_room:notice_team_change(Room)
     end.
 
+start_room_fight(RoomId) ->
+    Room = get_room(RoomId),
+    case Room of
+        undefined->
+            ignore;
+        _->
+            PlayerList = lib_room:get_player_list(Room),
+            DutyList = lib_room:get_room_duty_list(RoomId),
+            RoomName = lib_room:get_room_name(RoomId),
+            fight_srv:start_link(RoomId, PlayerList, DutyList, RoomName)
+    end.
+
+
 %%%====================================================================
 %%% Internal functions
 %%%====================================================================
+get_player_list(Room) ->
+    case Room of
+        undefined ->
+            [];
+        Room ->
+            maps:get(player_list, Room)
+    end.

@@ -1,6 +1,7 @@
 -ifndef(ROOM_HRL).
 -define(ROOM_HRL, true).
 -define(ROOM_CHAT_TIME, 60000).
+-define(ROOM_READY_TIME, 10000).
 -define(MROOM, #{room_id => 0,
                 owner => undefined,
                 player_list => [],

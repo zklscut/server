@@ -236,6 +236,29 @@ handle_info({chat_timeout, PlayerId, RoomId}, State) ->
     do_end_chat(RoomId, PlayerId),
     {noreply, State};
 
+handle_info({ready_timeout, RoomId}, State) ->
+    Room = lib_room:get_room(RoomId),
+    case Room of
+        undefined ->
+            ignore;
+        _->
+           case (length(NewReadyList) == maps:get(max_player_num, Room)) andalso 
+                        (length(NewReadyList) == length(maps:get(player_list, Room))) of
+                true ->
+                     CurTime = util:get_micro_time(),
+                     StartReadyTime = maps:get(ready_start, Room),
+                     case (CurTime - StartReadyTime) > ?ROOM_READY_TIME of
+                        true->
+                            lib_room:start_room_fight(RoomId);
+                        _->
+                            ignore
+                    end;
+                false ->
+                    ignore
+            end
+    end,
+    {noreply, State};
+
 handle_info(_Info, State) ->
     {noreply, State}.
 
@@ -274,16 +297,18 @@ do_ready(RoomId, PlayerId)->
     NewRoom = maps:put(ready_list, NewReadyList, Room),
     lib_room:update_room(RoomId, NewRoom),
     mod_room:notice_team_change(NewRoom),
-
+    ReadyRoom = 
     case (length(NewReadyList) == maps:get(max_player_num, Room)) andalso 
                         (length(NewReadyList) == length(maps:get(player_list, Room))) of
         true ->
             Send = #m__room__notice_all_ready__s2l{},
-            mod_room:send_to_room(Send, NewRoom);
+            mod_room:send_to_room(Send, NewRoom),
+            erlang:send_after(?ROOM_READY_TIME, self(), {ready_timeout, RoomId}),
+            maps:put(ready_start, util:get_micro_time(), NewRoom);
         false ->
-            ignore
+            NewRoom
     end,
-    NewRoom.
+    ReadyRoom.
 
 do_cancel_ready(RoomId, PlayerId)->
     lib_room:assert_room_exist(RoomId),
