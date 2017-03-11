@@ -152,9 +152,9 @@ start_room_fight(RoomId) ->
         undefined->
             ignore;
         _->
-            PlayerList = lib_room:get_player_list(Room),
-            DutyList = lib_room:get_room_duty_list(RoomId),
-            RoomName = lib_room:get_room_name(RoomId),
+            PlayerList = get_player_list(Room),
+            DutyList = get_room_duty_list(RoomId),
+            RoomName = get_room_name(RoomId),
             fight_srv:start_link(RoomId, PlayerList, DutyList, RoomName)
     end.
 
