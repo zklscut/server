@@ -172,8 +172,7 @@ state_qiubite(start, State) ->
 
 state_qiubite(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_QIUBITE, State),
-    ,
-    {next_state, state_qiubite, NewState};{next_state, state_qiubite, NewState};
+    {next_state, state_qiubite, NewState};
 
 state_qiubite({player_op, PlayerId, Op, [LoverA,LoverB]}, State) ->
     do_receive_player_op(PlayerId, Op, [LoverA,LoverB], state_qiubite, State);
@@ -181,7 +180,7 @@ state_qiubite({player_op, PlayerId, Op, [LoverA,LoverB]}, State) ->
 state_qiubite({player_op, _PlayerId, _Op, _OpList}, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     send_event_inner(timeout),
-    {next_state, state_qiubite, State};;
+    {next_state, state_qiubite, State};
 
 state_qiubite(timeout, State) ->
     RandLover = util:rand_in_list(lib_fight:get_alive_seat_list(State) -- 
