@@ -163,7 +163,7 @@ handle_cast_inner({enter_match, PlayerId, _WaitId}, State) ->
                     %%战斗开始从队列中移除
 
                     lager:info("start fight ++++++++++++++++++++"),
-                    %%fight_srv:start_link(0, StartPlayerList, b_duty:get(?MATCH_NEED_PLAYER_NUM)),
+                    
                     NewPlayerInfo = do_remove_player_info(PlayerInfo, StartPlayerList),
                     NewWaitList = maps:remove(WaitId, WaitList),
                     NewMatchList = 
@@ -176,7 +176,8 @@ handle_cast_inner({enter_match, PlayerId, _WaitId}, State) ->
                                 ),
                     update_match_data(MatchData#{player_info := NewPlayerInfo,
                                                     wait_list := NewWaitList,
-                                                    match_list := NewMatchList});
+                                                    match_list := NewMatchList}),
+                    fight_srv:start_link(0, StartPlayerList, b_duty:get(?MATCH_NEED_PLAYER_NUM), "标准房");
                 _ ->
                     NewWaitMatch = WaitMatch#{wait_player_list := NewWaitPlayerList},
                     NewWaitList = maps:put(WaitId, NewWaitMatch, WaitList),
