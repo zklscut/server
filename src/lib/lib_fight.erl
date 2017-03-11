@@ -952,6 +952,7 @@ filter_last_op(OpMap) ->
     lists:foldl(FunRemove, OpMap, maps:keys(OpMap)).
 
 clear_last_op(State) ->
+    lager:info("clear_last_op"),
     maps:put(last_op_data, #{}, State).
 
 rand_target_in_op(OpData) ->

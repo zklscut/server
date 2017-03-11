@@ -1489,6 +1489,7 @@ get_skill_next_state(Op, StateName, State) ->
     end.
 
 do_log_op(SeatId, OpList, State) ->
+    lager:info("do_log_op ~p", [{SeatId, OpList}]),
     LastOpData = maps:get(last_op_data, State),
     NewLastOpData = maps:put(SeatId, OpList, LastOpData),
     maps:put(last_op_data, NewLastOpData, State).
