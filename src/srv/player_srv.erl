@@ -203,7 +203,7 @@ do_proto(ProtoId, ProtoData, State) ->
     try
         {ProtoName, Module, Function} = b_proto_route:get(ProtoId),
         ProtoRecord = game_pb:decode(ProtoName, ProtoData),
-        case Module of
+        case Function of
             heart_beat ->
                 ignore;
             _ ->
