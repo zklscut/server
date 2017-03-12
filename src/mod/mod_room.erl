@@ -86,8 +86,8 @@ leave_room(#m__room__leave_room__l2s{}, Player) ->
     {ok, Player}.
 
 handle_leave_room(Player) ->
-    Return = #m__room__leave_room__s2l{},
-    net_send:send(Return, Player),
+    % Return = #m__room__leave_room__s2l{},
+    % net_send:send(Return, Player),
     PlayerAfterLeaveRoom = lib_room:update_player_room_id(0, Player),
     lib_player:update_fight_pid(undefined, PlayerAfterLeaveRoom).
 
