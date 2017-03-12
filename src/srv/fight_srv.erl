@@ -1197,7 +1197,7 @@ handle_event({player_leave, PlayerId}, StateName, State) ->
                             },
             lib_fight:send_to_all_player(Send, NewState),
             player_online_offline_wait_op_time_update(SeatId, NewState)
-    end
+    end,
     {next_state, StateName, StateAfterLeave};
 
 handle_event(print_state, StateName, StateData) ->
