@@ -140,7 +140,12 @@ handle_online(Player) ->
     lager:info("handle_online ~p", [RoomId]),
     case RoomId of
         0 ->
-            mod_room:send_to_player(#m__room__login_not_in_room__s2l{}, Player);
+            case lib_player:is_in_fight(Player) of
+              false->
+                  mod_room:send_to_player(#m__room__login_not_in_room__s2l{}, Player);
+              _->
+                  ignore
+            end;
         _ ->
             Room = lib_room:get_room(RoomId),
             mod_room:notice_team_change(Room)

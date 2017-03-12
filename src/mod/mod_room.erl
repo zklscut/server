@@ -82,8 +82,7 @@ handle_create_room(Room, Player) ->
     {save, NewPlayer}.    
 
 leave_room(#m__room__leave_room__l2s{}, Player) ->
-    lib_room:assert_have_room(Player),
-    room_srv:leave_room(Player),
+    fight_srv:player_leave(lib_player:get_fight_pid(Player), lib_player:get_player_id(Player)),
     {ok, Player}.
 
 handle_leave_room(Player) ->

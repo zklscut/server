@@ -4,7 +4,8 @@
 -include("fight.hrl").
 
 get(3) -> [?DUTY_LANGREN, 
-            util:rand_in_list([?DUTY_NVWU, ?DUTY_SHOUWEI, ?DUTY_HUNXUEER, ?DUTY_YUYANJIA]), 
+			?DUTY_YUYANJIA, 
+            % util:rand_in_list([?DUTY_NVWU, ?DUTY_SHOUWEI, ?DUTY_HUNXUEER, ?DUTY_YUYANJIA]), 
                 ?DUTY_PINGMIN]; 
 get(6) -> [{?DUTY_LANGREN, 2}, {?DUTY_NVWU, 1}, {?DUTY_PINGMIN, 3}]; 
 get(7) -> [{?DUTY_LANGREN, 2}, {?DUTY_NVWU, 1}, {?DUTY_PINGMIN, 4}]; 

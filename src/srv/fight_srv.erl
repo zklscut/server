@@ -113,7 +113,8 @@ player_leave(Pid, PlayerId) ->
     case Pid of
         undefined ->
             lager:info("player_leave undefined"),
-            ignore;
+            net_send:send(#m__room__leave_room__s2l{result=1}, PlayerId)
+            room_srv:leave_room(lib_player:get_player(PlayerId));
         Pid ->
             lager:info("player_leave defined"),
             gen_fsm:send_all_state_event(Pid, {player_leave, PlayerId})
@@ -1178,14 +1179,26 @@ handle_event({player_offline, PlayerId}, StateName, State) ->
 
 handle_event({player_leave, PlayerId}, StateName, State) ->
     SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
-    NewLeavePlayerList = maps:get(leave_player, State) ++ [PlayerId],
-    NewState = maps:put(leave_player, NewLeavePlayerList, State),
-    Send = #m__fight__leave__s2l{
-                       leave_list = [lib_fight:get_seat_id_by_player_id(LeavePlayerId, NewState)||LeavePlayerId <- NewLeavePlayerList]   
-                    },
-    lib_fight:send_to_all_player(Send, NewState),
-    StateAfterTimeUpdate = player_online_offline_wait_op_time_update(SeatId, NewState),
-    {next_state, StateName, StateAfterTimeUpdate};
+    DieList = maps:get(out_seat_list, State) ++ maps:get(day_notice_die, State),
+
+    StateAfterLeave = 
+    case lists:member(SeatId, DieList) of
+        false->
+            lib_fight:send_to_seat(#m__room__leave_room__s2l{result=2}, SeatId, State),
+            State;
+        _->
+            lib_fight:send_to_seat(#m__room__leave_room__s2l{result=1}, SeatId, State),
+            room_srv:leave_room(lib_player:get_player(PlayerId)),
+            NewLeavePlayerList = maps:get(leave_player, State) ++ [PlayerId],
+            NewState = maps:put(leave_player, NewLeavePlayerList, State),
+            Send = #m__fight__leave__s2l{
+                               leave_list = [lib_fight:get_seat_id_by_player_id(LeavePlayerId, NewState)
+                                                                            ||LeavePlayerId <- NewLeavePlayerList]   
+                            },
+            lib_fight:send_to_all_player(Send, NewState),
+            player_online_offline_wait_op_time_update(SeatId, NewState)
+    end
+    {next_state, StateName, StateAfterLeave};
 
 handle_event(print_state, StateName, StateData) ->
     lager:info("state name ~p", [StateName]),
