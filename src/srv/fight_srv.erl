@@ -113,7 +113,7 @@ player_leave(Pid, PlayerId) ->
     case Pid of
         undefined ->
             lager:info("player_leave undefined"),
-            net_send:send(#m__room__leave_room__s2l{result=1}, PlayerId)
+            net_send:send(#m__room__leave_room__s2l{result=1}, PlayerId),
             room_srv:leave_room(lib_player:get_player(PlayerId));
         Pid ->
             lager:info("player_leave defined"),
