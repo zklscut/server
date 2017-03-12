@@ -16,17 +16,18 @@
 %% ====================================================================
 
 login(#m__account__login__l2s{account_name = AccountName}, 
-    #{socket := Socket} = Player) ->
+    Player) ->
     {_IsCreate, NewPlayer} = create_or_get_player(AccountName, Player),
     PlayerId = lib_player:get_player_id(NewPlayer),
     case lib_player:get_player_pid(PlayerId) of
         undefined ->
             handle_send_login_result(NewPlayer);
         Pid ->
+            handle_send_login_result(NewPlayer),
             Send = #m__player__kick__s2l{kick_reason = 0},
             net_send:send(Send, PlayerId),
-            player_srv:login_change_socket(Pid, Socket),
-            player_srv:stop_force(self())
+            %player_srv:login_change_socket(Pid, Socket),
+            player_srv:kick_player(Pid, normal)
     end,
     
     {save, NewPlayer}.
