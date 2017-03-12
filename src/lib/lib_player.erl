@@ -52,7 +52,6 @@ get_player(PlayerId) ->
     cache_store_bhv:read(cache_store_player, PlayerId).
 
 update_player(Player) ->
-    lager:info("update player ~p", [{Player, erlang:get_stacktrace()}]),
     cache_store_bhv:write(cache_store_player, {get_player_id(Player), Player}).
 
 get_player_show_base(PlayerId) when is_integer(PlayerId) ->
@@ -67,13 +66,11 @@ get_player_id(Player) ->
     maps:get(id, Player, 0).
 
 update_fight_pid(Pid, Player) ->
-    lager:info("update_fight_pid ~p", [Pid]),
     NewPlayer = Player#{fight_pid=>Pid},
     {save, NewPlayer}.
 
 is_in_fight(Player) ->
     Pid = maps:get(fight_pid, Player, undefined),
-    lager:info("is_in_fight ~p", [Pid]),
     Pid =/= undefined andalso is_process_alive(Pid) == true.
 
 get_fight_pid(Player) ->

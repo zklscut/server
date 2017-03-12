@@ -26,7 +26,6 @@ login(#m__account__login__l2s{account_name = AccountName},
             handle_send_login_result(NewPlayer),
             Send = #m__player__kick__s2l{kick_reason = 0},
             net_send:send(Send, PlayerId),
-            %player_srv:login_change_socket(Pid, Socket),
             player_srv:kick_player(Pid, normal)
     end,
     
