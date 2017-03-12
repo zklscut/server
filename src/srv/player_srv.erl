@@ -203,7 +203,12 @@ do_proto(ProtoId, ProtoData, State) ->
     try
         {ProtoName, Module, Function} = b_proto_route:get(ProtoId),
         ProtoRecord = game_pb:decode(ProtoName, ProtoData),
-        lager:info("receive proto ~p", [ProtoRecord]),
+        case Module of
+            heart_beat ->
+                ignore;
+            _ ->
+                lager:info("receive proto ~p", [ProtoRecord])
+        end,
         apply(Module, Function, [ProtoRecord, State])
     catch
         throw:ThrowError ->
