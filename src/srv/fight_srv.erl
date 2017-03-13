@@ -506,8 +506,11 @@ state_someone_die(start, State) ->
             send_event_inner(op_over),
             {state_someone_die, StateAfterDieOp};
         d_delay->
+            TimeTick = b_fight_op_wait:get(?OP_SKILL_D_DELAY),
             notice_game_status_change(state_someone_die, [?OP_SKILL_D_DELAY], StateAfterDieOp),
-            send_event_inner(op_over, b_fight_op_wait:get(?OP_SKILL_D_DELAY)),
+            send_event_inner(op_over, TimeTick),
+            SendDelayTick = #m__fight__op_timetick__s2l{timetick = b_fight_op_wait:get(?OP_SKILL_D_DELAY)},
+            lib_fight:send_to_all_player(SendDelayTick, StateAfterDieOp),
             {state_someone_die, maps:put(skill_d_delay, 1, StateAfterDieOp)};
         skip->
             send_event_inner(start),
