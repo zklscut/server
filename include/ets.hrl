@@ -16,6 +16,20 @@
 -define(ETS_RANK_LIEREN_PLAYER_ID_TO_RANK, ets_rank_lieren_player_id_to_rank).
 -define(ETS_RANK_PINMING_RANK_TO_PLAYER, ets_rank_pinming_rank_to_player).
 -define(ETS_RANK_PINMING_PLAYER_ID_TO_RANK, ets_rank_pinming_player_id_to_rank).
+
+-define(ETS_RANK_DAOZEI_RANK_TO_PLAYER, ets_rank_daozei_rank_to_player).
+-define(ETS_RANK_DAOZEI_PLAYER_ID_TO_RANK, ets_rank_daozei_player_id_to_rank).
+-define(ETS_RANK_QIUBITE_RANK_TO_PLAYER, ets_rank_qiubite_rank_to_player).
+-define(ETS_RANK_QIUBITE_PLAYER_ID_TO_RANK, ets_rank_qiubite_player_id_to_rank).
+-define(ETS_RANK_SHOUWEI_RANK_TO_PLAYER, ets_rank_shouwei_rank_to_player).
+-define(ETS_RANK_SHOUWEI_PLAYER_ID_TO_RANK, ets_rank_shouwei_player_id_to_rank).
+-define(ETS_RANK_BAICHI_RANK_TO_PLAYER, ets_rank_baichi_rank_to_player).
+-define(ETS_RANK_BAICHI_PLAYER_ID_TO_RANK, ets_rank_baichi_player_id_to_rank).
+-define(ETS_RANK_BAILANG_RANK_TO_PLAYER, ets_rank_bailang_rank_to_player).
+-define(ETS_RANK_BAILANG_PLAYER_ID_TO_RANK, ets_rank_bailang_player_id_to_rank).
+-define(ETS_RANK_HUNXUEER_RANK_TO_PLAYER, ets_rank_hunxueer_rank_to_player).
+-define(ETS_RANK_HUNXUEER_PLAYER_ID_TO_RANK, ets_rank_hunxueer_player_id_to_rank).
+
 -define(ETS_RANK_RANK_RANK_TO_PLAYER, ets_rank_rank_rank_to_player).
 -define(ETS_RANK_RANK_PLAYER_ID_TO_RANK, ets_rank_rank_player_id_to_rank).
 -define(ETS_RANK_LUCK_RANK_TO_PLAYER, ets_rank_luck_rank_to_player).

@@ -22,6 +22,20 @@ start(_, _) ->
     start_cache_store_server(),
     start_match_process(),
     start_langren_rank_server(),
+    start_nvwu_rank_server(),
+    start_yuyanjia_rank_server(),
+    start_lieren_rank_server(),
+    start_pinming_rank_server(),
+    start_daozei_rank_server(),
+    start_qiubite_rank_server(),
+    start_shouwei_rank_server(),
+    start_baichi_rank_server(),
+    start_bailang_rank_server(),
+    start_hunxueer_rank_server(),
+    start_rank_rank_server(),
+    start_luck_rank_server(),
+    start_mvp_rank_server(),
+    start_fighting_rank_server(),
     %% keep last
     start_tcp_supervisor(),
     tcp_listener:start(),
@@ -89,6 +103,36 @@ start_pinming_rank_server() ->
     supervisor:start_child(game_supervisor,
                            {pinming_rank_srv, {rank_behaviour, start_link,[pinming_rank_srv]},
                             transient, infinity, worker, [pinming_rank_srv]}). 
+
+start_daozei_rank_server() ->
+    supervisor:start_child(game_supervisor,
+                           {daozei_rank_srv, {rank_behaviour, start_link,[daozei_rank_srv]},
+                            transient, infinity, worker, [daozei_rank_srv]}). 
+
+start_qiubite_rank_server() ->
+    supervisor:start_child(game_supervisor,
+                           {qiubite_rank_srv, {rank_behaviour, start_link,[qiubite_rank_srv]},
+                            transient, infinity, worker, [qiubite_rank_srv]}). 
+
+start_shouwei_rank_server() ->
+    supervisor:start_child(game_supervisor,
+                           {shouwei_rank_srv, {rank_behaviour, start_link,[shouwei_rank_srv]},
+                            transient, infinity, worker, [shouwei_rank_srv]}).
+
+start_baichi_rank_server() ->
+    supervisor:start_child(game_supervisor,
+                           {baichi_rank_srv, {rank_behaviour, start_link,[baichi_rank_srv]},
+                            transient, infinity, worker, [baichi_rank_srv]}).
+
+start_bailang_rank_server() ->
+    supervisor:start_child(game_supervisor,
+                           {bailang_rank_srv, {rank_behaviour, start_link,[bailang_rank_srv]},
+                            transient, infinity, worker, [bailang_rank_srv]}).
+
+start_hunxueer_rank_server() ->
+    supervisor:start_child(game_supervisor,
+                           {hunxueer_rank_srv, {rank_behaviour, start_link,[hunxueer_rank_srv]},
+                            transient, infinity, worker, [hunxueer_rank_srv]}).
 
 start_rank_rank_server() ->
     supervisor:start_child(game_supervisor,
