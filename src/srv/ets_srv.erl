@@ -44,6 +44,20 @@ init([]) ->
     ets:new(?ETS_RANK_LAGNREN_PLAYER_ID_TO_RANK, [set, public, named_table, {keypos, 1}]),
     ets:new(?ETS_RANK_NVWU_RANK_TO_PLAYER, [set, public, named_table, {keypos, 1}]),
     ets:new(?ETS_RANK_NVWU_PLAYER_ID_TO_RANK, [set, public, named_table, {keypos, 1}]),
+    ets:new(?ETS_RANK_YUYANJIA_RANK_TO_PLAYER, [set, public, named_table, {keypos, 1}]),
+    ets:new(?ETS_RANK_YUYANJIA_PLAYER_ID_TO_RANK, [set, public, named_table, {keypos, 1}]),
+    ets:new(?ETS_RANK_LIEREN_RANK_TO_PLAYER, [set, public, named_table, {keypos, 1}]),
+    ets:new(?ETS_RANK_LIEREN_PLAYER_ID_TO_RANK, [set, public, named_table, {keypos, 1}]),
+    ets:new(?ETS_RANK_PINMING_RANK_TO_PLAYER, [set, public, named_table, {keypos, 1}]),
+    ets:new(?ETS_RANK_PINMING_PLAYER_ID_TO_RANK, [set, public, named_table, {keypos, 1}]),
+    ets:new(?ETS_RANK_RANK_RANK_TO_PLAYER, [set, public, named_table, {keypos, 1}]),
+    ets:new(?ETS_RANK_RANK_PLAYER_ID_TO_RANK, [set, public, named_table, {keypos, 1}]),
+    ets:new(?ETS_RANK_LUCK_RANK_TO_PLAYER, [set, public, named_table, {keypos, 1}]),
+    ets:new(?ETS_RANK_LUCK_PLAYER_ID_TO_RANK, [set, public, named_table, {keypos, 1}]),
+    ets:new(?ETS_RANK_MVP_RANK_TO_PLAYER, [set, public, named_table, {keypos, 1}]),
+    ets:new(?ETS_RANK_MVP_PLAYER_ID_TO_RANK, [set, public, named_table, {keypos, 1}]),
+    ets:new(?ETS_RANK_FIGHTING_RANK_TO_PLAYER, [set, public, named_table, {keypos, 1}]),
+    ets:new(?ETS_RANK_FIGHTING_PLAYER_ID_TO_RANK, [set, public, named_table, {keypos, 1}]),
     {ok, #state{}}.
 
 

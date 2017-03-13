@@ -65,10 +65,50 @@ start_match_process() ->
 start_cache_store_server() ->
     cache_store_bhv:start_link(cache_store_player, 10000).
 
-start_rank_server() ->
+start_langren_rank_server() ->
     supervisor:start_child(game_supervisor,
                            {langren_rank_srv, {rank_behaviour, start_link,[langren_rank_srv]},
-                            transient, infinity, worker, [langren_rank_srv]}).        
+                            transient, infinity, worker, [langren_rank_srv]}). 
+
+start_nvwu_rank_server() ->
+    supervisor:start_child(game_supervisor,
+                           {nvwu_rank_srv, {rank_behaviour, start_link,[nvwu_rank_srv]},
+                            transient, infinity, worker, [nvwu_rank_srv]}).  
+
+start_yuyanjia_rank_server() ->
+    supervisor:start_child(game_supervisor,
+                           {yuyanjia_rank_srv, {rank_behaviour, start_link,[yuyanjia_rank_srv]},
+                            transient, infinity, worker, [yuyanjia_rank_srv]}).   
+
+start_lieren_rank_server() ->
+    supervisor:start_child(game_supervisor,
+                           {lieren_rank_srv, {rank_behaviour, start_link,[lieren_rank_srv]},
+                            transient, infinity, worker, [lieren_rank_srv]}).        
+
+start_pinming_rank_server() ->
+    supervisor:start_child(game_supervisor,
+                           {pinming_rank_srv, {rank_behaviour, start_link,[pinming_rank_srv]},
+                            transient, infinity, worker, [pinming_rank_srv]}). 
+
+start_rank_rank_server() ->
+    supervisor:start_child(game_supervisor,
+                           {rank_rank_srv, {rank_behaviour, start_link,[rank_rank_srv]},
+                            transient, infinity, worker, [rank_rank_srv]}). 
+
+start_luck_rank_server() ->
+    supervisor:start_child(game_supervisor,
+                           {luck_rank_srv, {rank_behaviour, start_link,[luck_rank_srv]},
+                            transient, infinity, worker, [luck_rank_srv]}). 
+
+start_mvp_rank_server() ->
+    supervisor:start_child(game_supervisor,
+                           {mvp_rank_srv, {rank_behaviour, start_link,[mvp_rank_srv]},
+                            transient, infinity, worker, [mvp_rank_srv]}).
+
+start_fighting_rank_server() ->
+    supervisor:start_child(game_supervisor,
+                           {fighting_rank_srv, {rank_behaviour, start_link,[fighting_rank_srv]},
+                            transient, infinity, worker, [fighting_rank_srv]}).
 
 start_game_db() ->
     {ok, DBUser} = application:get_env(db_user),

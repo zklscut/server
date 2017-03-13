@@ -1390,6 +1390,7 @@ notice_player_op(Op, SeatList, State) ->
     notice_player_op(Op, SeatList, SeatList, State).
 
 notice_player_op(Op, AttachData, SeatList, State) ->
+    lager:info("notice_player_op ~p", [Op]),
     WaitTime = b_fight_op_wait:get(Op),
     UseWaitTime = 
     case lib_fight:is_offline_all(SeatList, State) of
@@ -1407,8 +1408,10 @@ notice_player_op(Op, AttachData, SeatList, State) ->
     lists:foreach(FunNotice, SeatList),
     case WaitTime == 0 of
         true->
+            lager:info("notice_player_op1"),
             State;
         _->
+            lager:info("notice_player_op2"),
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
             start_fight_fsm_event_timer(?TIMER_TIMEOUT, UseWaitTime),
             StateAfterAttackData = maps:put(wait_op_attack_data, AttachData, State),
@@ -1418,10 +1421,12 @@ notice_player_op(Op, AttachData, SeatList, State) ->
             StateAfterStart = maps:put(op_timer_start, util:get_micro_time(), StateAfterNormalDuration),
             case lists:member(Op, ?FAYAN_OP_LIST) of
                 true->
+                    lager:info("notice_player_op3"),
                     UseWaitTimeSend = #m__fight__op_timetick__s2l{timetick = UseWaitTime},
                     lib_fight:send_to_all_player(UseWaitTimeSend, StateAfterStart),
                     maps:put(op_timer_use_dur, UseWaitTime, StateAfterStart);
                 _->
+                    lager:info("notice_player_op4"),
                     NormalWaitTimeSend = #m__fight__op_timetick__s2l{timetick = WaitTime},
                     lib_fight:send_to_all_player(NormalWaitTimeSend, StateAfterStart),
                     maps:put(op_timer_use_dur, WaitTime, StateAfterStart)

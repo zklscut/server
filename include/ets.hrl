@@ -10,7 +10,19 @@
 -define(ETS_RANK_LAGNREN_PLAYER_ID_TO_RANK, ets_rank_langren_player_id_to_rank).
 -define(ETS_RANK_NVWU_RANK_TO_PLAYER, ets_rank_nvwu_rank_to_player).
 -define(ETS_RANK_NVWU_PLAYER_ID_TO_RANK, ets_rank_nvwu_player_id_to_rank).
-
-
+-define(ETS_RANK_YUYANJIA_RANK_TO_PLAYER, ets_rank_yuyanjia_rank_to_player).
+-define(ETS_RANK_YUYANJIA_PLAYER_ID_TO_RANK, ets_rank_yuyanjia_player_id_to_rank).
+-define(ETS_RANK_LIEREN_RANK_TO_PLAYER, ets_rank_lieren_rank_to_player).
+-define(ETS_RANK_LIEREN_PLAYER_ID_TO_RANK, ets_rank_lieren_player_id_to_rank).
+-define(ETS_RANK_PINMING_RANK_TO_PLAYER, ets_rank_pinming_rank_to_player).
+-define(ETS_RANK_PINMING_PLAYER_ID_TO_RANK, ets_rank_pinming_player_id_to_rank).
+-define(ETS_RANK_RANK_RANK_TO_PLAYER, ets_rank_rank_rank_to_player).
+-define(ETS_RANK_RANK_PLAYER_ID_TO_RANK, ets_rank_rank_player_id_to_rank).
+-define(ETS_RANK_LUCK_RANK_TO_PLAYER, ets_rank_luck_rank_to_player).
+-define(ETS_RANK_LUCK_PLAYER_ID_TO_RANK, ets_rank_luck_player_id_to_rank).
+-define(ETS_RANK_MVP_RANK_TO_PLAYER, ets_rank_mvp_rank_to_player).
+-define(ETS_RANK_MVP_PLAYER_ID_TO_RANK, ets_rank_mvp_player_id_to_rank).
+-define(ETS_RANK_FIGHTING_RANK_TO_PLAYER, ets_rank_fighting_rank_to_player).
+-define(ETS_RANK_FIGHTING_PLAYER_ID_TO_RANK, ets_rank_fighting_player_id_to_rank).
 -endif.
 

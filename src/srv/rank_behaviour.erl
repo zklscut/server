@@ -33,7 +33,7 @@ get_player_show_by_rank(Rank, Module) ->
     Ets = get_rank_to_player_ets(Module),
     case lib_ets:get(Ets, Rank) of
         undefined ->
-            fakse;
+            false;
         Cache ->
             Cache
     end.
