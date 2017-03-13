@@ -2,7 +2,7 @@
 %% @doc mod_templete.
 %% 2016
 
--module(langren_rank_srv).
+-module(rank_rank_srv).
 
 -include("ets.hrl").
 
