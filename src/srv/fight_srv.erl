@@ -506,7 +506,7 @@ state_someone_die(start, State) ->
             send_event_inner(op_over),
             {state_someone_die, StateAfterDieOp};
         d_delay->
-            TimeTick = util:rand(2, 10),
+            TimeTick = util:rand(4, 10),
             notice_game_status_change(state_someone_die, [?OP_SKILL_D_DELAY], StateAfterDieOp),
             send_event_inner(op_over, TimeTick),
             SendDelayTick = #m__fight__op_timetick__s2l{timetick = b_fight_op_wait:get(?OP_SKILL_D_DELAY)},
