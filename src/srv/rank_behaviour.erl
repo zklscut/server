@@ -279,5 +279,5 @@ select_rank_data_from_db(Module) ->
 
 update_rank_data_to_db(Module, Data) ->
     Sql = 
-        db:make_replace_sql(rank, ["rank_name", "data"], [[atom_to_list(Module), term_to_binary(Data)]]),
+        db:make_batch_replace_sql(rank, ["rank_name", "data"], [[atom_to_list(Module), term_to_binary(Data)]]),
     db:execute(Sql).
