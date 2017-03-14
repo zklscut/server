@@ -96,6 +96,7 @@ init([Module]) ->
 %% ====================================================================
 
 handle_call(dump_rank_server, _From, State) ->
+    Module = State#state.module,
     EtsPlayerToRank = get_player_id_to_rank_ets(Module),
     EtsRankToPlayer = get_rank_to_player_ets(Module),
     DBPlayerToRank = ets:tab2list(EtsPlayerToRank),
