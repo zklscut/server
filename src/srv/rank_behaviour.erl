@@ -68,7 +68,6 @@ get_max_rank(Module) ->
 %% ====================================================================
 init([Module]) ->
     {DBPlayerToRank, DBRankToPlayer} = select_rank_data_from_db(Module),
-    State = #state{module = Module},
     EtsPlayerToRank = get_player_id_to_rank_ets(Module),
     EtsRankToPlayer = get_rank_to_player_ets(Module),
 
