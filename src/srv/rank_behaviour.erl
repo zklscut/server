@@ -39,7 +39,10 @@ get_player_show_by_rank(Rank, Module) ->
     end.
 
 dump_all_rank_server() ->
-    [dump_rank_server(Module) || Module <- [langren_rank_srv]].
+    [dump_rank_server(Module) || Module <- [langren_rank_srv, baichi_rank_srv, bailang_rank_srv,
+    daozei_rank_srv, fighting_rank_srv, hunxueer_rank_srv, lieren_rank_srv, luck_rank_srv, 
+    mvp_rank_srv, nvwu_rank_srv, pinming_rank_srv, qiubite_rank_srv, rank_rank_srv, 
+    shouwei_rank_srv, yuyanjia_rank_srv]].
 
 dump_rank_server(Module) ->
     gen_server:call(Module, dump_rank_server).
