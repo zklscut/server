@@ -123,4 +123,4 @@ get_friend_info(FriendId, FriendData)->
     #p_friend{player_show_base = lib_player:get_player_show_base(FriendPlayer),
               room_id = RoomId,
               status = Status,
-              last_chat = lists:last(ChatList)}.
+              last_chat = ChatList}.
