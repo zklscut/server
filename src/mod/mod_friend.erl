@@ -100,7 +100,7 @@ notice_private_chat(SpeakId, PChat, Player) ->
 
 get_chat_list(#m__friend__get_chat_list__l2s{friend_id = FriendId}, Player) ->
     FriendData = get_friend_data(Player),
-    OneFriend = maps:get(TargetId, FriendData),
+    OneFriend = maps:get(FriendId, FriendData),
     ChatList = maps:get(chat_list, OneFriend),
 
     Send = #m__friend__get_chat_list__s2l{chat_list = ChatList},
@@ -112,9 +112,9 @@ get_chat_list(#m__friend__get_chat_list__l2s{friend_id = FriendId}, Player) ->
 %%%====================================================================
 
 get_friend_data(Player) ->
-    maps:get(friend, maps:get(data), #{}).
+    maps:get(friend, maps:get(data, Player), #{}).
 
 update_friend_data(FriendData, Player) ->
     Data = maps:get(data, Player),
-    NewData = maps:put(data, FriendData, Data),
+    NewData = maps:put(friend, FriendData, Data),
     maps:put(data, NewData, Player).
