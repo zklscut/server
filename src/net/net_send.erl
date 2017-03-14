@@ -11,7 +11,7 @@
          send_errcode/2]).
 
 send(Send, #{socket := Socket,
-			 id := PlayerId}) ->
+			 id := _PlayerId}) ->
     % lager:info("send ~p", [{PlayerId, Send}]),
     Binary = game_pb:encode(Send),
     ProtoId = element(2, Send),

@@ -101,7 +101,7 @@ send_to_seat(Send, SeatId, State) ->
 
 is_active_in_fight(PlayerId, State) ->
     Player = lib_player:get_player(PlayerId),
-    FightPid = lib_player:get_fight_pid(Player),
+    _FightPid = lib_player:get_fight_pid(Player),
     LeavePlayer = maps:get(offline_list, State) ++ maps:get(leave_player, State),
     not lists:member(PlayerId, LeavePlayer).
     % not ((lists:member(PlayerId, LeavePlayer)) orelse (undefined == FightPid) orelse (FightPid =/= self()).
