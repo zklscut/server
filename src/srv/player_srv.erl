@@ -104,10 +104,13 @@ handle_cast(Cast, State) ->
     try
         handle_cast_inner(Cast, State)
     catch
+        throw:ErrCode ->
+            net_send:send_errcode(ErrCode, State),
+            {noreply, State};
         What:Error ->
             lager:error("error what ~p, Error ~p, stack ~p", 
                 [What, Error, erlang:get_stacktrace()]),
-        {noreply, State}        
+            {noreply, State}        
     end.
 
 handle_cast_inner({apply, {M, F, A}, _PlayerId}, State) ->

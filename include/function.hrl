@@ -8,4 +8,11 @@
                             (B)
                        end)).
 
+-define(ASSERT(C, E), (case (C) of
+                        true ->
+                            ok;
+                        false ->
+                            throw(E)
+                       end)).
+
 -endif.
