@@ -41,7 +41,7 @@ add_friend(#m__friend__add_friend__l2s{add_friend = AddFriend}, Player) ->
 remove_friend(#m__friend__remove_friend__l2s{remove_friend = RemoveFriend}, Player) ->
     FriendData = get_friend_data(Player),
     NewFriendData = maps:remove(RemoveFriend, FriendData),
-    net_send:send(#m__friend__remove_friend__s2l(remove_friend = RemoveFriend), Player),
+    net_send:send(#m__friend__remove_friend__s2l{remove_friend = RemoveFriend}, Player),
     {save, update_friend_data(NewFriendData, Player)}.
 
 private_chat(#m__friend__private_chat__l2s{chat = InitPChat,
