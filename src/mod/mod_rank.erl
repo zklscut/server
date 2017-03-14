@@ -28,7 +28,7 @@ get_rank(#m__rank__get_rank__l2s{rank_type = RankType,
             ?RANK_TYPE_PINMING->
                 pinming_rank_srv;
             ?RANK_TYPE_DAOZEI->
-                daozei_ranK_srv;
+                daozei_rank_srv;
             ?RANK_TYPE_QIUBITE->
                 qiubite_rank_srv;
             ?RANK_TYPE_SHOUWEI->

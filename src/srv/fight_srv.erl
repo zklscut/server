@@ -1827,6 +1827,8 @@ fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, Stat
     mod_player:handle_fight_result(
                 ResultDutyId, 
                 WinCount,
+                IsMvp,
+                IsCarry,
                 CoinExtraAdd + CoinAdd,
                 ExpExtraAdd + ExpAdd,    
                 PlayerId).

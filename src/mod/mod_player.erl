@@ -49,14 +49,16 @@ add_diamond(#m__player__add_diamond__l2s{}, Player) ->
   NewPlayer = mod_resource:increase(?RESOURCE_DIAMOND, 500000, ?LOG_ACTION_FIGHT, Player),
   {save, NewPlayer}.
 
-handle_fight_result(DutyId, IsWin, CoinAdd, ExpAdd, PlayerId) ->
-    global_op_srv:player_op(PlayerId, {?MODULE, handle_fight_result_local, [DutyId, IsWin, CoinAdd, ExpAdd]}).
+handle_fight_result(DutyId, IsWin, IsMvp, IsCarry, CoinAdd, ExpAdd, PlayerId) ->
+    global_op_srv:player_op(PlayerId, {?MODULE, handle_fight_result_local, [DutyId, IsWin, IsMvp, IsCarry, CoinAdd, ExpAdd]}).
 
-handle_fight_result_local(DutyId, IsWin, CoinAdd, ExpAdd, Player) ->
+handle_fight_result_local(DutyId, IsWin, IsMvp, IsCarry, CoinAdd, ExpAdd, Player) ->
     PlayerAfterCoin = increase_fight_coin(CoinAdd, Player),
     PlayerAfterExp = increase_fight_exp(ExpAdd, PlayerAfterCoin),
     PlayerAfterWinRate = do_fight_rate(DutyId, IsWin, PlayerAfterExp),
-    {save, PlayerAfterWinRate}.
+    PlayerAfterMvp = increase_fight_mvp(IsMvp, PlayerAfterWinRate),
+    PlayerAfterCarry = increase_fight_mvp(IsMvp, PlayerAfterMvp),
+    {save, PlayerAfterCarry}.
 
 handle_consume_gift(GiftId, PlayerId) ->
   global_op_srv:player_op(PlayerId, {?MODULE, handle_consume_gift_local, [GiftId]}).
@@ -103,7 +105,27 @@ change_name(#m__player__change_name__l2s{name = Name}, Player) ->
 increase_fight_coin(CoinAdd, Player) ->
     mod_resource:increase(?RESOURCE_COIN, CoinAdd, ?LOG_ACTION_FIGHT, Player).
 
+increase_fight_mvp(IsMvp, Player) ->
+    case IsMvp == 1 of
+      true->
+        mod_resource:increase(?RESOURCE_MVP, IsMvp, ?LOG_ACTION_FIGHT, Player);
+      _->
+        Player
+    end.
 
+increase_fight_carry(IsCarry, Player) ->
+    case IsCarry == 1 of
+      true->
+        mod_resource:increase(?RESOURCE_CARRY, IsCarry, ?LOG_ACTION_FIGHT, Player);
+      _->
+        Player
+    end.
+
+increase_fight_fighting(Fighting, Player) ->
+    mod_resource:increase(?RESOURCE_FIGHTING, Fighting, ?LOG_ACTION_FIGHT, Player).
+
+increase_fight_rank_score(RankScore, Player) ->
+    mod_resource:increase(?RESOURCE_RANK_SCORE, RankScore, ?LOG_ACTION_FIGHT, Player).
 
 %%iswin, mvp, carry, third(是否胜利，是否mvp，是否carry，是否第三方)
 get_extra_coin(1, 1, _IsCarry, _IsThird)->
@@ -166,10 +188,40 @@ get_fight_exp(_DutyId, 1, false) ->
 get_fight_exp(_DutyId, _IsWin, _Third) ->
     0.
 
+set_duty_rank_info(Duty, PreValue, CurValue, Player)->
+  PlayerId = lib_player:get_player_id(Player),
+  case Duty of
+    ?DUTY_DAOZEI->
+      rank_behaviour:value_change(daozei_rank_srv, PlayerId, PreValue, CurValue);
+    ?DUTY_QIUBITE->
+      rank_behaviour:value_change(qiubite_rank_srv, PlayerId, PreValue, CurValue);
+    ?DUTY_HUNXUEER->
+      rank_behaviour:value_change(hunxueer_rank_srv, PlayerId, PreValue, CurValue);
+    ?DUTY_SHOUWEI->
+      rank_behaviour:value_change(shouwei_rank_srv, PlayerId, PreValue, CurValue);
+    ?DUTY_LANGREN->
+      rank_behaviour:value_change(langren_rank_srv, PlayerId, PreValue, CurValue);
+    ?DUTY_NVWU->
+      rank_behaviour:value_change(nvwu_rank_srv, PlayerId, PreValue, CurValue);
+    ?DUTY_YUYANJIA->
+      rank_behaviour:value_change(yuyanjia_rank_srv, PlayerId, PreValue, CurValue);
+    ?DUTY_LIEREN->
+      rank_behaviour:value_change(lieren_rank_srv, PlayerId, PreValue, CurValue);
+    ?DUTY_BAICHI->
+      rank_behaviour:value_change(baichi_rank_srv, PlayerId, PreValue, CurValue);
+    ?DUTY_PINGMIN->
+      rank_behaviour:value_change(pinming_rank_srv, PlayerId, PreValue, CurValue);
+    ?DUTY_BAILANG->
+      rank_behaviour:value_change(bailang_rank_srv, PlayerId, PreValue, CurValue);
+    _->
+      ignore
+  end.
+
 do_fight_rate(DutyId, IsWin, Player) ->
     WinRateList = maps:get(win_rate_list, maps:get(data, Player), #{}),
     {AllDutyWinCnt, AllDutyCnt} = maps:get(0, WinRateList, {0, 0}),
     {DutyWinCnt, DutyCnt} = maps:get(DutyId, WinRateList, {0, 0}),
+    set_duty_rank_info(DutyId, DutyWinCnt, DutyWinCnt + IsWin, Player),
     NewWinList = WinRateList#{0 => {AllDutyWinCnt + IsWin, AllDutyCnt + 1},
                               DutyId => {DutyWinCnt + IsWin, DutyCnt + 1}},
     NewData = maps:put(win_rate_list, NewWinList, maps:get(data, Player)),
