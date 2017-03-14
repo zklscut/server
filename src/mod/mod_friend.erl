@@ -122,5 +122,6 @@ get_friend_info(FriendId, FriendData)->
     #{chat_list := ChatList} = OneFriend,
     #p_friend{player_show_base = lib_player:get_player_show_base(FriendPlayer),
               room_id = RoomId,
-              status = Status,
-              last_chat = ChatList}.
+              status = Status
+            }.
+              % last_chat = ChatList}.
