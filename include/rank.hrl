@@ -3,5 +3,17 @@
 
 -define(RANK_TYPE_LANGREN, 1).
 -define(RANK_TYPE_NVWU, 2).
-
+-define(RANK_TYPE_YUYANJIA, 3).
+-define(RANK_TYPE_LIEREN, 4).
+-define(RANK_TYPE_PINMING, 5).
+-define(RANK_TYPE_DAOZEI, 6).
+-define(RANK_TYPE_QIUBITE, 7).
+-define(RANK_TYPE_SHOUWEI, 8).
+-define(RANK_TYPE_BAICHI, 9).
+-define(RANK_TYPE_BAILANG, 10).
+-define(RANK_TYPE_HUNXUEER, 11).
+-define(RANK_TYPE_RANK, 12).
+-define(RANK_TYPE_LUCK, 13).
+-define(RANK_TYPE_MVP, 14).
+-define(RANK_TYPE_FIGHTING, 15).
 -endif.

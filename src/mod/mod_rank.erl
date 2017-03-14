@@ -19,6 +19,34 @@ get_rank(#m__rank__get_rank__l2s{rank_type = RankType,
         case RankType of
             ?RANK_TYPE_LANGREN ->
                 langren_rank_srv;
+            ?RANK_TYPE_NVWU->
+                nvwu_rank_srv;
+            ?RANK_TYPE_YUYANJIA->
+                yuyanjia_rank_srv;
+            ?RANK_TYPE_LIEREN->
+                lieren_rank_srv;
+            ?RANK_TYPE_PINMING->
+                pinming_rank_srv;
+            ?RANK_TYPE_DAOZEI->
+                daozei_ranK_srv;
+            ?RANK_TYPE_QIUBITE->
+                qiubite_rank_srv;
+            ?RANK_TYPE_SHOUWEI->
+                shouwei_rank_srv;
+            ?RANK_TYPE_BAICHI->
+                baichi_rank_srv;
+            ?RANK_TYPE_BAILANG->
+                bailang_rank_srv;
+            ?RANK_TYPE_HUNXUEER->
+                hunxueer_rank_srv;
+            ?RANK_TYPE_RANK->
+                rank_rank_srv;
+            ?RANK_TYPE_LUCK->
+                luck_rank_srv;
+            ?RANK_TYPE_MVP->
+                mvp_rank_srv;
+            ?RANK_TYPE_FIGHTING->
+                fighting_rank_srv;
             _ ->
                 langren_rank_srv
         end,
