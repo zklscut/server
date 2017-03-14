@@ -57,7 +57,7 @@ handle_fight_result_local(DutyId, IsWin, IsMvp, IsCarry, CoinAdd, ExpAdd, Player
     PlayerAfterExp = increase_fight_exp(ExpAdd, PlayerAfterCoin),
     PlayerAfterWinRate = do_fight_rate(DutyId, IsWin, PlayerAfterExp),
     PlayerAfterMvp = increase_fight_mvp(IsMvp, PlayerAfterWinRate),
-    PlayerAfterCarry = increase_fight_mvp(IsMvp, PlayerAfterMvp),
+    PlayerAfterCarry = increase_fight_carry(IsCarry, PlayerAfterMvp),
     {save, PlayerAfterCarry}.
 
 handle_consume_gift(GiftId, PlayerId) ->
@@ -121,11 +121,11 @@ increase_fight_carry(IsCarry, Player) ->
         Player
     end.
 
-increase_fight_fighting(Fighting, Player) ->
-    mod_resource:increase(?RESOURCE_FIGHTING, Fighting, ?LOG_ACTION_FIGHT, Player).
+% increase_fight_fighting(Fighting, Player) ->
+%     mod_resource:increase(?RESOURCE_FIGHTING, Fighting, ?LOG_ACTION_FIGHT, Player).
 
-increase_fight_rank_score(RankScore, Player) ->
-    mod_resource:increase(?RESOURCE_RANK_SCORE, RankScore, ?LOG_ACTION_FIGHT, Player).
+% increase_fight_rank_score(RankScore, Player) ->
+%     mod_resource:increase(?RESOURCE_RANK_SCORE, RankScore, ?LOG_ACTION_FIGHT, Player).
 
 %%iswin, mvp, carry, third(是否胜利，是否mvp，是否carry，是否第三方)
 get_extra_coin(1, 1, _IsCarry, _IsThird)->
