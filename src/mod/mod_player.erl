@@ -190,31 +190,36 @@ get_fight_exp(_DutyId, _IsWin, _Third) ->
 
 set_duty_rank_info(Duty, PreValue, CurValue, Player)->
   PlayerId = lib_player:get_player_id(Player),
-  case Duty of
-    ?DUTY_DAOZEI->
-      rank_behaviour:value_change(daozei_rank_srv, PlayerId, PreValue, CurValue);
-    ?DUTY_QIUBITE->
-      rank_behaviour:value_change(qiubite_rank_srv, PlayerId, PreValue, CurValue);
-    ?DUTY_HUNXUEER->
-      rank_behaviour:value_change(hunxueer_rank_srv, PlayerId, PreValue, CurValue);
-    ?DUTY_SHOUWEI->
-      rank_behaviour:value_change(shouwei_rank_srv, PlayerId, PreValue, CurValue);
-    ?DUTY_LANGREN->
-      rank_behaviour:value_change(langren_rank_srv, PlayerId, PreValue, CurValue);
-    ?DUTY_NVWU->
-      rank_behaviour:value_change(nvwu_rank_srv, PlayerId, PreValue, CurValue);
-    ?DUTY_YUYANJIA->
-      rank_behaviour:value_change(yuyanjia_rank_srv, PlayerId, PreValue, CurValue);
-    ?DUTY_LIEREN->
-      rank_behaviour:value_change(lieren_rank_srv, PlayerId, PreValue, CurValue);
-    ?DUTY_BAICHI->
-      rank_behaviour:value_change(baichi_rank_srv, PlayerId, PreValue, CurValue);
-    ?DUTY_PINGMIN->
-      rank_behaviour:value_change(pinming_rank_srv, PlayerId, PreValue, CurValue);
-    ?DUTY_BAILANG->
-      rank_behaviour:value_change(bailang_rank_srv, PlayerId, PreValue, CurValue);
+  case PreValue =/= CurValue of
+    true->
+        case Duty of
+            ?DUTY_DAOZEI->
+              rank_behaviour:value_change(daozei_rank_srv, PlayerId, PreValue, CurValue);
+            ?DUTY_QIUBITE->
+              rank_behaviour:value_change(qiubite_rank_srv, PlayerId, PreValue, CurValue);
+            ?DUTY_HUNXUEER->
+              rank_behaviour:value_change(hunxueer_rank_srv, PlayerId, PreValue, CurValue);
+            ?DUTY_SHOUWEI->
+              rank_behaviour:value_change(shouwei_rank_srv, PlayerId, PreValue, CurValue);
+            ?DUTY_LANGREN->
+              rank_behaviour:value_change(langren_rank_srv, PlayerId, PreValue, CurValue);
+            ?DUTY_NVWU->
+              rank_behaviour:value_change(nvwu_rank_srv, PlayerId, PreValue, CurValue);
+            ?DUTY_YUYANJIA->
+              rank_behaviour:value_change(yuyanjia_rank_srv, PlayerId, PreValue, CurValue);
+            ?DUTY_LIEREN->
+              rank_behaviour:value_change(lieren_rank_srv, PlayerId, PreValue, CurValue);
+            ?DUTY_BAICHI->
+              rank_behaviour:value_change(baichi_rank_srv, PlayerId, PreValue, CurValue);
+            ?DUTY_PINGMIN->
+              rank_behaviour:value_change(pinming_rank_srv, PlayerId, PreValue, CurValue);
+            ?DUTY_BAILANG->
+              rank_behaviour:value_change(bailang_rank_srv, PlayerId, PreValue, CurValue);
+            _->
+              ignore
+        end;
     _->
-      ignore
+        ignore
   end.
 
 do_fight_rate(DutyId, IsWin, Player) ->
