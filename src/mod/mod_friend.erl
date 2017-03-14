@@ -60,7 +60,7 @@ remove_friend(#m__friend__remove_friend__l2s{remove_friend = RemoveFriend}, Play
     NewFriendData = maps:remove(RemoveFriend, FriendData),
     {save, update_friend_data(NewFriendData, Player)}.
 
-private_chat(#m__chat__private_chat__l2s{chat = InitPChat,
+private_chat(#m__friend__private_chat__l2s{chat = InitPChat,
                                          target_id = TargetId}, Player) ->
     FriendData = get_friend_data(Player),
     OneFriend = maps:get(TargetId, FriendData),
@@ -94,7 +94,7 @@ notice_private_chat(SpeakId, PChat, Player) ->
     NewOneFriend = maps:put(chat_list, NewChatList, OneFriend),
     NewFriendData = maps:put(SpeakId, NewOneFriend, FriendData),
 
-    Send = #m__chat__private_chat__s2l{chat = PChat},
+    Send = #m__friend__private_chat__s2l{chat = PChat},
     net_send:send(Send, Player),
     {save, update_friend_data(NewFriendData, Player)}.
 
