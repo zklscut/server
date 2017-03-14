@@ -30,6 +30,7 @@ reset(Module) ->
     gen_server:cast(Module, reset).
 
 get_player_show_by_rank(Rank, Module) ->
+    lager:info("get_player_show_by_rank ~p", [{Rank, Module}]),
     Ets = get_rank_to_player_ets(Module),
     case lib_ets:get(Ets, Rank) of
         undefined ->
@@ -222,10 +223,12 @@ get_player_by_rank(Rank, State) ->
     end.
 
 update_rank_by_player_id(PlayerId, Rank, State) ->
+    lager:info("update_rank_by_player_id ~p", [{Rank, State#state.module}]),
     Ets = get_player_id_to_rank_ets(State#state.module),
     lib_ets:update(Ets, PlayerId, Rank).
 
 update_player_by_rank(Rank, PlayerId, Value, State) ->
+    lager:info("update_player_by_rank ~p", [{Rank, State#state.module}]),
     Ets = get_rank_to_player_ets(State#state.module),
     lib_ets:update(Ets, Rank, {PlayerId, Value}).
 
