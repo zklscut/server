@@ -13,6 +13,7 @@
 -record(m__player__add_diamond__l2s, {msg_id=12007}).
 -record(m__player__change_name__l2s, {msg_id=12008, name}).
 -record(m__player__change_name__s2l, {msg_id=12009, name, result}).
+-record(m__player__kick__s2l, {msg_id=12010, kick_reason}).
 -record(m__room__get_list__l2s, {msg_id=13001}).
 -record(p_fight, {room_name, duty_list, player_info_list}).
 -record(p_room, {room_id, cur_player_num, max_player_num, owner, room_name, room_status, duty_list, ready_list}).
@@ -22,7 +23,7 @@
 -record(m__room__create_room__l2s, {msg_id=13005, max_player_num, room_name, duty_list}).
 -record(m__room__create_room__s2l, {msg_id=13006, room_info}).
 -record(m__room__leave_room__l2s, {msg_id=13007}).
--record(m__room__leave_room__s2l, {msg_id=13008}).
+-record(m__room__leave_room__s2l, {msg_id=13008, result}).
 -record(m__room__rand_enter__l2s, {msg_id=13009}).
 -record(m__room__start_fight__l2s, {msg_id=13011}).
 -record(m__room__notice_member_change__s2l, {msg_id=13012, room_info, member_list}).
@@ -73,6 +74,7 @@
 -record(m__fight__shouwei_op__s2l, {msg_id=15023, seat_id}).
 -record(m__fight__over_info__s2l, {msg_id=15024, winner, duty_list, dead_list}).
 -record(m__fight__leave__s2l, {msg_id=15025, leave_list}).
+-record(m__fight__update_duty__s2l, {msg_id=15026, pre_duty, cur_duty}).
 -record(m__resource__push__s2l, {msg_id=16001, resource_id, num, action_id}).
 -record(m__match__start_match__l2s, {msg_id=17001, player_list}).
 -record(m__match__end_match__l2s, {msg_id=17002}).
@@ -84,3 +86,14 @@
 -record(p_rank, {player_show_base, rank, value}).
 -record(m__rank__get_rank__l2s, {msg_id=18001, rank_type, start_rank, end_rank}).
 -record(m__rank__get_rank__s2l, {msg_id=18002, rank_type, start_rank, end_rank, rank_list}).
+-record(p_friend, {player_show_base, status, room_id, last_chat}).
+-record(m__friend__get_friend__l2s, {msg_id=19001}).
+-record(m__friend__get_friend__s2l, {msg_id=19002, friend_list}).
+-record(m__friend__add_friend__l2s, {msg_id=19003, add_friend}).
+-record(m__friend__remove_friend__l2s, {msg_id=19005, remove_friend}).
+-record(m__friend__private_chat__l2s, {msg_id=19007, chat, target_id}).
+-record(m__friend__private_chat__s2l, {msg_id=19008, chat}).
+-record(m__friend__get_chat_list__l2s, {msg_id=19009, friend_id}).
+-record(m__friend__get_chat_list__s2l, {msg_id=19010, chat_list}).
+-record(m__friend__add_friend__s2l, {msg_id=19011, friend}).
+-record(m__friend__remove_friend__s2l, {msg_id=19012, remove_friend}).
