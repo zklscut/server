@@ -272,7 +272,7 @@ select_rank_data_from_db(Module) ->
     Sql = "select data from rank where rank_name = '" ++ atom_to_list(Module) ++ "'",
     case db:get_one(Sql) of
         null ->
-            [];
+            {[], []};
         Data ->
             binary_to_term(Data)
     end.
