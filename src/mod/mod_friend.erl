@@ -12,7 +12,7 @@
 
 -include("game_pb.hrl").
 -include("friend.hrl").
--include("funtion.hrl").
+-include("function.hrl").
 -include("errcode.hrl").
 
 %% ====================================================================
@@ -38,7 +38,7 @@ get_friend(#m__friend__get_friend__l2s{}, Player) ->
                         false ->
                             ?FRIEND_STATUS_OFFLINE
                     end,
-                #{chat_list := ChatList} = Friend,
+                #{chat_list := ChatList} = OneFriend,
                 #p_friend{player_show_base = lib_player:get_player_show_base(FriendPlayer),
                           room_id = RoomId,
                           status = Status,
