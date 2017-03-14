@@ -39,7 +39,7 @@ get_player_show_by_rank(Rank, Module) ->
     end.
 
 dump_all_rank_server() ->
-    [dump_rank_server(Module) || Module <- []].
+    [dump_rank_server(Module) || Module <- [langren_rank_srv]].
 
 dump_rank_server(Module) ->
     gen_server:call(Module, dump_rank_server).
@@ -67,16 +67,16 @@ get_max_rank(Module) ->
     Timeout :: non_neg_integer() | infinity.
 %% ====================================================================
 init([Module]) ->
-    % {DBPlayerToRank, DBRankToPlayer} = select_rank_data_from_db(Module),
-    % State = #state{module = Module},
-    % EtsPlayerToRank = get_player_id_to_rank_ets(State),
-    % EtsRankToPlayer = get_rank_to_player_ets(State),
-    %%todo init from db
+    {DBPlayerToRank, DBRankToPlayer} = select_rank_data_from_db(Module),
+    State = #state{module = Module},
+    EtsPlayerToRank = get_player_id_to_rank_ets(Module),
+    EtsRankToPlayer = get_rank_to_player_ets(Module),
+
+    [lib_ets:update(EtsPlayerToRank, PlayerId, Rank) || {PlayerId, Rank} <- DBPlayerToRank],
+    [lib_ets:update(EtsRankToPlayer, Rank, Data) ||  {Rank, Data} <- DBRankToPlayer],
 
     {ok, #state{module = Module}}.
     
-
-
 %% handle_call/3
 %% ====================================================================
 %% @doc <a href="http://www.erlang.org/doc/man/gen_server.html#Module:handle_call-3">gen_server:handle_call/3</a>
@@ -94,6 +94,19 @@ init([Module]) ->
     Timeout :: non_neg_integer() | infinity,
     Reason :: term().
 %% ====================================================================
+
+handle_call(dump_rank_server, _From, State) ->
+    EtsPlayerToRank = get_player_id_to_rank_ets(Module),
+    EtsRankToPlayer = get_rank_to_player_ets(Module),
+    DBPlayerToRank = ets:tab2list(EtsPlayerToRank),
+    DBRankToPlayer = ets:tab2list(EtsRankToPlayer),
+
+    Data = {DBPlayerToRank, DBRankToPlayer},
+    update_rank_data_to_db(Module, Data),
+
+    Reply = ok,
+    {reply, Reply, State};
+
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
@@ -255,9 +268,16 @@ is_need_exchange(Value, ExchangeValue, ExchangeChangeRank, State) ->
     Module = State#state.module,
     ?IF(ExchangeChangeRank < 0, Module:is_lager(Value, ExchangeValue), Module:is_lager(ExchangeValue, Value)).
 
-% select_rank_data_from_db(Module) ->
-%     [].
+select_rank_data_from_db(Module) ->
+    Sql = "select data from rank where rank_name = " ++ atom_to_list(Module),
+    case db:get_one(Sql) of
+        null ->
+            [];
+        Data ->
+            binary_to_term(Data)
+    end.
 
-% update_rank_data_to_db() ->
-%     [].
-
+update_rank_data_to_db(Module, Data) ->
+    Sql = 
+        db:make_replace_sql(rank, ["rank_name", "data"], [[Module, term_to_binary(Data)]]),
+    db:execute(Sql).
