@@ -36,7 +36,13 @@ gemerate_match_wait_id() ->
 
 init_player_id() ->
     Sql = db:make_select_sql(player, ["max(id)"], [], [], []),
-    MaxPlayerId = db:get_one(Sql),
+    MaxPlayerId = 
+        case db:get_one(Sql) of
+            null ->
+                0;
+            DBData ->
+                DBData
+        end,
     lib_ets:update(?ETS_GLOBAL_COUNTER, player, MaxPlayerId).
 
 init_room_id() ->
