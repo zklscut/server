@@ -1,7 +1,27 @@
 -module(game_pb).
 
 -export([encode/1, encode/2, decode/2,
-	 encode_m__rank__get_rank__s2l/1,
+	 encode_m__friend__remove_friend__s2l/1,
+	 decode_m__friend__remove_friend__s2l/1,
+	 encode_m__friend__add_friend__s2l/1,
+	 decode_m__friend__add_friend__s2l/1,
+	 encode_m__friend__get_chat_list__s2l/1,
+	 decode_m__friend__get_chat_list__s2l/1,
+	 encode_m__friend__get_chat_list__l2s/1,
+	 decode_m__friend__get_chat_list__l2s/1,
+	 encode_m__friend__private_chat__s2l/1,
+	 decode_m__friend__private_chat__s2l/1,
+	 encode_m__friend__private_chat__l2s/1,
+	 decode_m__friend__private_chat__l2s/1,
+	 encode_m__friend__remove_friend__l2s/1,
+	 decode_m__friend__remove_friend__l2s/1,
+	 encode_m__friend__add_friend__l2s/1,
+	 decode_m__friend__add_friend__l2s/1,
+	 encode_m__friend__get_friend__s2l/1,
+	 decode_m__friend__get_friend__s2l/1,
+	 encode_m__friend__get_friend__l2s/1,
+	 decode_m__friend__get_friend__l2s/1, encode_p_friend/1,
+	 decode_p_friend/1, encode_m__rank__get_rank__s2l/1,
 	 decode_m__rank__get_rank__s2l/1,
 	 encode_m__rank__get_rank__l2s/1,
 	 decode_m__rank__get_rank__l2s/1, encode_p_rank/1,
@@ -22,6 +42,8 @@
 	 decode_m__match__start_match__l2s/1,
 	 encode_m__resource__push__s2l/1,
 	 decode_m__resource__push__s2l/1,
+	 encode_m__fight__update_duty__s2l/1,
+	 decode_m__fight__update_duty__s2l/1,
 	 encode_m__fight__leave__s2l/1,
 	 decode_m__fight__leave__s2l/1,
 	 encode_m__fight__over_info__s2l/1,
@@ -132,6 +154,8 @@
 	 decode_p_room/1, encode_p_fight/1, decode_p_fight/1,
 	 encode_m__room__get_list__l2s/1,
 	 decode_m__room__get_list__l2s/1,
+	 encode_m__player__kick__s2l/1,
+	 decode_m__player__kick__s2l/1,
 	 encode_m__player__change_name__s2l/1,
 	 decode_m__player__change_name__s2l/1,
 	 encode_m__player__change_name__l2s/1,
@@ -158,6 +182,36 @@
 	 decode_m__account__login__l2s/1, encode_p_resource/1,
 	 decode_p_resource/1, encode_p_player_show_base/1,
 	 decode_p_player_show_base/1]).
+
+-record(m__friend__remove_friend__s2l,
+	{msg_id, remove_friend}).
+
+-record(m__friend__add_friend__s2l, {msg_id, friend}).
+
+-record(m__friend__get_chat_list__s2l,
+	{msg_id, chat_list}).
+
+-record(m__friend__get_chat_list__l2s,
+	{msg_id, friend_id}).
+
+-record(m__friend__private_chat__s2l, {msg_id, chat}).
+
+-record(m__friend__private_chat__l2s,
+	{msg_id, chat, target_id}).
+
+-record(m__friend__remove_friend__l2s,
+	{msg_id, remove_friend}).
+
+-record(m__friend__add_friend__l2s,
+	{msg_id, add_friend}).
+
+-record(m__friend__get_friend__s2l,
+	{msg_id, friend_list}).
+
+-record(m__friend__get_friend__l2s, {msg_id}).
+
+-record(p_friend,
+	{player_show_base, status, room_id, last_chat}).
 
 -record(m__rank__get_rank__s2l,
 	{msg_id, rank_type, start_rank, end_rank, rank_list}).
@@ -186,6 +240,9 @@
 
 -record(m__resource__push__s2l,
 	{msg_id, resource_id, num, action_id}).
+
+-record(m__fight__update_duty__s2l,
+	{msg_id, pre_duty, cur_duty}).
 
 -record(m__fight__leave__s2l, {msg_id, leave_list}).
 
@@ -319,7 +376,7 @@
 
 -record(m__room__rand_enter__l2s, {msg_id}).
 
--record(m__room__leave_room__s2l, {msg_id}).
+-record(m__room__leave_room__s2l, {msg_id, result}).
 
 -record(m__room__leave_room__l2s, {msg_id}).
 
@@ -343,6 +400,8 @@
 	{room_name, duty_list, player_info_list}).
 
 -record(m__room__get_list__l2s, {msg_id}).
+
+-record(m__player__kick__s2l, {msg_id, kick_reason}).
 
 -record(m__player__change_name__s2l,
 	{msg_id, name, result}).
@@ -380,6 +439,50 @@
 
 encode(Record) ->
     encode(erlang:element(1, Record), Record).
+
+encode_m__friend__remove_friend__s2l(Record)
+    when is_record(Record, m__friend__remove_friend__s2l) ->
+    encode(m__friend__remove_friend__s2l, Record).
+
+encode_m__friend__add_friend__s2l(Record)
+    when is_record(Record, m__friend__add_friend__s2l) ->
+    encode(m__friend__add_friend__s2l, Record).
+
+encode_m__friend__get_chat_list__s2l(Record)
+    when is_record(Record, m__friend__get_chat_list__s2l) ->
+    encode(m__friend__get_chat_list__s2l, Record).
+
+encode_m__friend__get_chat_list__l2s(Record)
+    when is_record(Record, m__friend__get_chat_list__l2s) ->
+    encode(m__friend__get_chat_list__l2s, Record).
+
+encode_m__friend__private_chat__s2l(Record)
+    when is_record(Record, m__friend__private_chat__s2l) ->
+    encode(m__friend__private_chat__s2l, Record).
+
+encode_m__friend__private_chat__l2s(Record)
+    when is_record(Record, m__friend__private_chat__l2s) ->
+    encode(m__friend__private_chat__l2s, Record).
+
+encode_m__friend__remove_friend__l2s(Record)
+    when is_record(Record, m__friend__remove_friend__l2s) ->
+    encode(m__friend__remove_friend__l2s, Record).
+
+encode_m__friend__add_friend__l2s(Record)
+    when is_record(Record, m__friend__add_friend__l2s) ->
+    encode(m__friend__add_friend__l2s, Record).
+
+encode_m__friend__get_friend__s2l(Record)
+    when is_record(Record, m__friend__get_friend__s2l) ->
+    encode(m__friend__get_friend__s2l, Record).
+
+encode_m__friend__get_friend__l2s(Record)
+    when is_record(Record, m__friend__get_friend__l2s) ->
+    encode(m__friend__get_friend__l2s, Record).
+
+encode_p_friend(Record)
+    when is_record(Record, p_friend) ->
+    encode(p_friend, Record).
 
 encode_m__rank__get_rank__s2l(Record)
     when is_record(Record, m__rank__get_rank__s2l) ->
@@ -425,6 +528,10 @@ encode_m__match__start_match__l2s(Record)
 encode_m__resource__push__s2l(Record)
     when is_record(Record, m__resource__push__s2l) ->
     encode(m__resource__push__s2l, Record).
+
+encode_m__fight__update_duty__s2l(Record)
+    when is_record(Record, m__fight__update_duty__s2l) ->
+    encode(m__fight__update_duty__s2l, Record).
 
 encode_m__fight__leave__s2l(Record)
     when is_record(Record, m__fight__leave__s2l) ->
@@ -671,6 +778,10 @@ encode_m__room__get_list__l2s(Record)
     when is_record(Record, m__room__get_list__l2s) ->
     encode(m__room__get_list__l2s, Record).
 
+encode_m__player__kick__s2l(Record)
+    when is_record(Record, m__player__kick__s2l) ->
+    encode(m__player__kick__s2l, Record).
+
 encode_m__player__change_name__s2l(Record)
     when is_record(Record, m__player__change_name__s2l) ->
     encode(m__player__change_name__s2l, Record).
@@ -877,6 +988,15 @@ encode(m__player__change_name__s2l, _Record) ->
 			   with_default(_Record#m__player__change_name__s2l.result,
 					none),
 			   int32, [])]);
+encode(m__player__kick__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__player__kick__s2l.msg_id,
+					12010),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__player__kick__s2l.kick_reason,
+					none),
+			   int32, [])]);
 encode(m__room__get_list__l2s, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__room__get_list__l2s.msg_id,
@@ -983,6 +1103,10 @@ encode(m__room__leave_room__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__room__leave_room__s2l.msg_id,
 					13008),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__room__leave_room__s2l.result,
+					none),
 			   int32, [])]);
 encode(m__room__rand_enter__l2s, _Record) ->
     iolist_to_binary([pack(1, required,
@@ -1636,6 +1760,19 @@ encode(m__fight__leave__s2l, _Record) ->
 			   with_default(_Record#m__fight__leave__s2l.leave_list,
 					none),
 			   int32, [])]);
+encode(m__fight__update_duty__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__update_duty__s2l.msg_id,
+					15026),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__fight__update_duty__s2l.pre_duty,
+					none),
+			   int32, []),
+		      pack(3, required,
+			   with_default(_Record#m__fight__update_duty__s2l.cur_duty,
+					none),
+			   int32, [])]);
 encode(m__resource__push__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__resource__push__s2l.msg_id,
@@ -1766,7 +1903,111 @@ encode(m__rank__get_rank__s2l, _Record) ->
 		      pack(5, repeated,
 			   with_default(_Record#m__rank__get_rank__s2l.rank_list,
 					none),
-			   p_rank, [])]).
+			   p_rank, [])]);
+encode(p_friend, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#p_friend.player_show_base,
+					none),
+			   p_player_show_base, []),
+		      pack(2, required,
+			   with_default(_Record#p_friend.status, none), int32,
+			   []),
+		      pack(3, required,
+			   with_default(_Record#p_friend.room_id, none), int32,
+			   []),
+		      pack(4, required,
+			   with_default(_Record#p_friend.last_chat, none),
+			   p_chat, [])]);
+encode(m__friend__get_friend__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__friend__get_friend__l2s.msg_id,
+					19001),
+			   int32, [])]);
+encode(m__friend__get_friend__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__friend__get_friend__s2l.msg_id,
+					19002),
+			   int32, []),
+		      pack(2, repeated,
+			   with_default(_Record#m__friend__get_friend__s2l.friend_list,
+					none),
+			   p_friend, [])]);
+encode(m__friend__add_friend__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__friend__add_friend__l2s.msg_id,
+					19003),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__friend__add_friend__l2s.add_friend,
+					none),
+			   int32, [])]);
+encode(m__friend__remove_friend__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__friend__remove_friend__l2s.msg_id,
+					19005),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__friend__remove_friend__l2s.remove_friend,
+					none),
+			   int32, [])]);
+encode(m__friend__private_chat__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__friend__private_chat__l2s.msg_id,
+					19007),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__friend__private_chat__l2s.chat,
+					none),
+			   p_chat, []),
+		      pack(3, required,
+			   with_default(_Record#m__friend__private_chat__l2s.target_id,
+					none),
+			   uint32, [])]);
+encode(m__friend__private_chat__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__friend__private_chat__s2l.msg_id,
+					19008),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__friend__private_chat__s2l.chat,
+					none),
+			   p_chat, [])]);
+encode(m__friend__get_chat_list__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__friend__get_chat_list__l2s.msg_id,
+					19009),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__friend__get_chat_list__l2s.friend_id,
+					none),
+			   uint32, [])]);
+encode(m__friend__get_chat_list__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__friend__get_chat_list__s2l.msg_id,
+					19010),
+			   int32, []),
+		      pack(2, repeated,
+			   with_default(_Record#m__friend__get_chat_list__s2l.chat_list,
+					none),
+			   p_chat, [])]);
+encode(m__friend__add_friend__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__friend__add_friend__s2l.msg_id,
+					19011),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__friend__add_friend__s2l.friend,
+					none),
+			   p_friend, [])]);
+encode(m__friend__remove_friend__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__friend__remove_friend__s2l.msg_id,
+					19012),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__friend__remove_friend__s2l.remove_friend,
+					none),
+			   int32, [])]).
 
 with_default(undefined, none) -> undefined;
 with_default(undefined, Default) -> Default;
@@ -1786,6 +2027,38 @@ pack(FNum, _, Data, _, _) when is_tuple(Data) ->
     protobuffs:encode(FNum, encode(RecName, Data), bytes);
 pack(FNum, _, Data, Type, _) ->
     protobuffs:encode(FNum, Data, Type).
+
+decode_m__friend__remove_friend__s2l(Bytes) ->
+    decode(m__friend__remove_friend__s2l, Bytes).
+
+decode_m__friend__add_friend__s2l(Bytes) ->
+    decode(m__friend__add_friend__s2l, Bytes).
+
+decode_m__friend__get_chat_list__s2l(Bytes) ->
+    decode(m__friend__get_chat_list__s2l, Bytes).
+
+decode_m__friend__get_chat_list__l2s(Bytes) ->
+    decode(m__friend__get_chat_list__l2s, Bytes).
+
+decode_m__friend__private_chat__s2l(Bytes) ->
+    decode(m__friend__private_chat__s2l, Bytes).
+
+decode_m__friend__private_chat__l2s(Bytes) ->
+    decode(m__friend__private_chat__l2s, Bytes).
+
+decode_m__friend__remove_friend__l2s(Bytes) ->
+    decode(m__friend__remove_friend__l2s, Bytes).
+
+decode_m__friend__add_friend__l2s(Bytes) ->
+    decode(m__friend__add_friend__l2s, Bytes).
+
+decode_m__friend__get_friend__s2l(Bytes) ->
+    decode(m__friend__get_friend__s2l, Bytes).
+
+decode_m__friend__get_friend__l2s(Bytes) ->
+    decode(m__friend__get_friend__l2s, Bytes).
+
+decode_p_friend(Bytes) -> decode(p_friend, Bytes).
 
 decode_m__rank__get_rank__s2l(Bytes) ->
     decode(m__rank__get_rank__s2l, Bytes).
@@ -1818,6 +2091,9 @@ decode_m__match__start_match__l2s(Bytes) ->
 
 decode_m__resource__push__s2l(Bytes) ->
     decode(m__resource__push__s2l, Bytes).
+
+decode_m__fight__update_duty__s2l(Bytes) ->
+    decode(m__fight__update_duty__s2l, Bytes).
 
 decode_m__fight__leave__s2l(Bytes) ->
     decode(m__fight__leave__s2l, Bytes).
@@ -1994,6 +2270,9 @@ decode_p_fight(Bytes) -> decode(p_fight, Bytes).
 decode_m__room__get_list__l2s(Bytes) ->
     decode(m__room__get_list__l2s, Bytes).
 
+decode_m__player__kick__s2l(Bytes) ->
+    decode(m__player__kick__s2l, Bytes).
+
 decode_m__player__change_name__s2l(Bytes) ->
     decode(m__player__change_name__s2l, Bytes).
 
@@ -2110,6 +2389,11 @@ decode(m__player__change_name__s2l, Bytes) ->
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__player__change_name__s2l, Decoded);
+decode(m__player__kick__s2l, Bytes) ->
+    Types = [{2, kick_reason, int32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__player__kick__s2l, Decoded);
 decode(m__room__get_list__l2s, Bytes) ->
     Types = [{1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
@@ -2164,7 +2448,8 @@ decode(m__room__leave_room__l2s, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__leave_room__l2s, Decoded);
 decode(m__room__leave_room__s2l, Bytes) ->
-    Types = [{1, msg_id, int32, []}],
+    Types = [{2, result, int32, []},
+	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__leave_room__s2l, Decoded);
 decode(m__room__rand_enter__l2s, Bytes) ->
@@ -2450,6 +2735,11 @@ decode(m__fight__leave__s2l, Bytes) ->
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__leave__s2l, Decoded);
+decode(m__fight__update_duty__s2l, Bytes) ->
+    Types = [{3, cur_duty, int32, []},
+	     {2, pre_duty, int32, []}, {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__update_duty__s2l, Decoded);
 decode(m__resource__push__s2l, Bytes) ->
     Types = [{4, action_id, int32, []}, {3, num, int32, []},
 	     {2, resource_id, int32, []}, {1, msg_id, int32, []}],
@@ -2508,7 +2798,63 @@ decode(m__rank__get_rank__s2l, Bytes) ->
 	     {4, end_rank, int32, []}, {3, start_rank, int32, []},
 	     {2, rank_type, int32, []}, {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
-    to_record(m__rank__get_rank__s2l, Decoded).
+    to_record(m__rank__get_rank__s2l, Decoded);
+decode(p_friend, Bytes) ->
+    Types = [{4, last_chat, p_chat, [is_record]},
+	     {3, room_id, int32, []}, {2, status, int32, []},
+	     {1, player_show_base, p_player_show_base, [is_record]}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(p_friend, Decoded);
+decode(m__friend__get_friend__l2s, Bytes) ->
+    Types = [{1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__friend__get_friend__l2s, Decoded);
+decode(m__friend__get_friend__s2l, Bytes) ->
+    Types = [{2, friend_list, p_friend,
+	      [is_record, repeated]},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__friend__get_friend__s2l, Decoded);
+decode(m__friend__add_friend__l2s, Bytes) ->
+    Types = [{2, add_friend, int32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__friend__add_friend__l2s, Decoded);
+decode(m__friend__remove_friend__l2s, Bytes) ->
+    Types = [{2, remove_friend, int32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__friend__remove_friend__l2s, Decoded);
+decode(m__friend__private_chat__l2s, Bytes) ->
+    Types = [{3, target_id, uint32, []},
+	     {2, chat, p_chat, [is_record]}, {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__friend__private_chat__l2s, Decoded);
+decode(m__friend__private_chat__s2l, Bytes) ->
+    Types = [{2, chat, p_chat, [is_record]},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__friend__private_chat__s2l, Decoded);
+decode(m__friend__get_chat_list__l2s, Bytes) ->
+    Types = [{2, friend_id, uint32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__friend__get_chat_list__l2s, Decoded);
+decode(m__friend__get_chat_list__s2l, Bytes) ->
+    Types = [{2, chat_list, p_chat, [is_record, repeated]},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__friend__get_chat_list__s2l, Decoded);
+decode(m__friend__add_friend__s2l, Bytes) ->
+    Types = [{2, friend, p_friend, [is_record]},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__friend__add_friend__s2l, Decoded);
+decode(m__friend__remove_friend__s2l, Bytes) ->
+    Types = [{2, remove_friend, int32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__friend__remove_friend__s2l, Decoded).
 
 decode(<<>>, _, Acc) -> Acc;
 decode(<<Bytes/binary>>, Types, Acc) ->
@@ -2651,6 +2997,13 @@ to_record(m__player__change_name__s2l, DecodedTuples) ->
 					 Record, Name, Val)
 		end,
 		#m__player__change_name__s2l{}, DecodedTuples);
+to_record(m__player__kick__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__player__kick__s2l),
+					 Record, Name, Val)
+		end,
+		#m__player__kick__s2l{}, DecodedTuples);
 to_record(m__room__get_list__l2s, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields,
@@ -3079,6 +3432,13 @@ to_record(m__fight__leave__s2l, DecodedTuples) ->
 					 Record, Name, Val)
 		end,
 		#m__fight__leave__s2l{}, DecodedTuples);
+to_record(m__fight__update_duty__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__update_duty__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__update_duty__s2l{}, DecodedTuples);
 to_record(m__resource__push__s2l, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields,
@@ -3156,7 +3516,89 @@ to_record(m__rank__get_rank__s2l, DecodedTuples) ->
 						     m__rank__get_rank__s2l),
 					 Record, Name, Val)
 		end,
-		#m__rank__get_rank__s2l{}, DecodedTuples).
+		#m__rank__get_rank__s2l{}, DecodedTuples);
+to_record(p_friend, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields, p_friend), Record,
+					 Name, Val)
+		end,
+		#p_friend{}, DecodedTuples);
+to_record(m__friend__get_friend__l2s, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__friend__get_friend__l2s),
+					 Record, Name, Val)
+		end,
+		#m__friend__get_friend__l2s{}, DecodedTuples);
+to_record(m__friend__get_friend__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__friend__get_friend__s2l),
+					 Record, Name, Val)
+		end,
+		#m__friend__get_friend__s2l{}, DecodedTuples);
+to_record(m__friend__add_friend__l2s, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__friend__add_friend__l2s),
+					 Record, Name, Val)
+		end,
+		#m__friend__add_friend__l2s{}, DecodedTuples);
+to_record(m__friend__remove_friend__l2s,
+	  DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__friend__remove_friend__l2s),
+					 Record, Name, Val)
+		end,
+		#m__friend__remove_friend__l2s{}, DecodedTuples);
+to_record(m__friend__private_chat__l2s,
+	  DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__friend__private_chat__l2s),
+					 Record, Name, Val)
+		end,
+		#m__friend__private_chat__l2s{}, DecodedTuples);
+to_record(m__friend__private_chat__s2l,
+	  DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__friend__private_chat__s2l),
+					 Record, Name, Val)
+		end,
+		#m__friend__private_chat__s2l{}, DecodedTuples);
+to_record(m__friend__get_chat_list__l2s,
+	  DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__friend__get_chat_list__l2s),
+					 Record, Name, Val)
+		end,
+		#m__friend__get_chat_list__l2s{}, DecodedTuples);
+to_record(m__friend__get_chat_list__s2l,
+	  DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__friend__get_chat_list__s2l),
+					 Record, Name, Val)
+		end,
+		#m__friend__get_chat_list__s2l{}, DecodedTuples);
+to_record(m__friend__add_friend__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__friend__add_friend__s2l),
+					 Record, Name, Val)
+		end,
+		#m__friend__add_friend__s2l{}, DecodedTuples);
+to_record(m__friend__remove_friend__s2l,
+	  DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__friend__remove_friend__s2l),
+					 Record, Name, Val)
+		end,
+		#m__friend__remove_friend__s2l{}, DecodedTuples).
 
 set_record_field(Fields, Record, Field, Value) ->
     Index = list_index(Field, Fields),
