@@ -34,7 +34,8 @@ add_friend(#m__friend__add_friend__l2s{add_friend = AddFriend}, Player) ->
     FriendData = get_friend_data(Player),
     ?ASSERT(length(maps:keys(FriendData)) < ?MAX_FRIEND, ?FRIEND_TOO_MUCH),
     NewFriendData = maps:put(AddFriend, #{chat_list => []}, FriendData),
-    net_send:send(#m__friend__add_friend__s2l(friend = get_friend_info(AddFriend, NewFriendData)), Player),
+    net_send:send(#m__friend__add_friend__s2l{friend = 
+                get_friend_info(AddFriend, NewFriendData)}, Player),
     {save, update_friend_data(NewFriendData, Player)}.
 
 remove_friend(#m__friend__remove_friend__l2s{remove_friend = RemoveFriend}, Player) ->
