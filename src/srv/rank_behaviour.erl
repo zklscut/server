@@ -269,7 +269,7 @@ is_need_exchange(Value, ExchangeValue, ExchangeChangeRank, State) ->
     ?IF(ExchangeChangeRank < 0, Module:is_lager(Value, ExchangeValue), Module:is_lager(ExchangeValue, Value)).
 
 select_rank_data_from_db(Module) ->
-    Sql = "select data from rank where rank_name = " ++ atom_to_list(Module),
+    Sql = "select data from rank where rank_name = '" ++ atom_to_list(Module) ++ "'",
     case db:get_one(Sql) of
         null ->
             [];
