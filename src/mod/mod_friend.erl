@@ -61,7 +61,7 @@ private_chat(#m__friend__private_chat__l2s{chat = InitPChat,
     NewFriendData = maps:put(TargetId, NewOneFriend, FriendData),
 
     Send = #m__friend__private_chat__s2l{chat = PChat,
-                target_info = lib_player:get_player_show_base(Player)},
+                target_info = lib_player:get_player_show_base(TargetId)},
     net_send:send(Send, Player),
     net_send:send(Send, TargetId),
 
