@@ -60,8 +60,13 @@ private_chat(#m__friend__private_chat__l2s{chat = InitPChat,
     NewOneFriend = maps:put(chat_list, NewChatList, OneFriend),
     NewFriendData = maps:put(TargetId, NewOneFriend, FriendData),
 
-    global_op_srv:player_op(TargetId, {?MODULE, notice_private_chat, 
-        [lib_player:get_player_id(Player), PChat]}),
+    Send = #m__friend__private_chat__s2l{chat = PChat,
+                target_info = lib_player:get_player_show_base(Player)},
+    net_send:send(Send, Player),
+    net_send:send(Send, TargetId),
+
+    % global_op_srv:player_op(TargetId, {?MODULE, notice_private_chat, 
+    %     [lib_player:get_player_id(Player), PChat]}),
     {save, update_friend_data(NewFriendData, Player)}.
 
 notice_private_chat(SpeakId, PChat, Player) ->
