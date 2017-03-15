@@ -84,8 +84,8 @@ notice_private_chat(SpeakId, PChat, Player) ->
     NewOneFriend = maps:put(chat_list, NewChatList, OneFriend),
     NewFriendData = maps:put(SpeakId, NewOneFriend, FriendData),
 
-    Send = #m__friend__private_chat__s2l{chat = PChat},
-    net_send:send(Send, Player),
+    % Send = #m__friend__private_chat__s2l{chat = PChat},
+    % net_send:send(Send, Player),
     {save, update_friend_data(NewFriendData, Player)}.
 
 get_chat_list(#m__friend__get_chat_list__l2s{friend_id = FriendId}, Player) ->
