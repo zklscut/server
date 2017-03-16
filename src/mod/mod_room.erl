@@ -258,7 +258,7 @@ get_not_full_simple_room()->
                 case IsSimple andalso (length(maps:get(player_list, CurRoom)) < maps:get(max_player_num, CurRoom)) of
                     true->
                         throw(CurRoom);
-                    _
+                    _->
                         Ignore
                 end
             end,
