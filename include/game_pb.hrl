@@ -75,6 +75,8 @@
 -record(m__fight__over_info__s2l, {msg_id=15024, winner, duty_list, dead_list}).
 -record(m__fight__leave__s2l, {msg_id=15025, leave_list}).
 -record(m__fight__update_duty__s2l, {msg_id=15026, pre_duty, cur_duty}).
+-record(m__fight__random_duty__s2l, {msg_id=15027, duty_list}).
+-record(m__fight__select_duty__s2l, {msg_id=15028, result}).
 -record(m__resource__push__s2l, {msg_id=16001, resource_id, num, action_id}).
 -record(m__match__start_match__l2s, {msg_id=17001, player_list}).
 -record(m__match__end_match__l2s, {msg_id=17002}).
@@ -86,13 +88,13 @@
 -record(p_rank, {player_show_base, rank, value}).
 -record(m__rank__get_rank__l2s, {msg_id=18001, rank_type, start_rank, end_rank}).
 -record(m__rank__get_rank__s2l, {msg_id=18002, rank_type, start_rank, end_rank, rank_list}).
--record(p_friend, {player_show_base, status, room_id, last_chat}).
+-record(p_friend, {player_show_base, status, room_id}).
 -record(m__friend__get_friend__l2s, {msg_id=19001}).
 -record(m__friend__get_friend__s2l, {msg_id=19002, friend_list}).
 -record(m__friend__add_friend__l2s, {msg_id=19003, add_friend}).
 -record(m__friend__remove_friend__l2s, {msg_id=19005, remove_friend}).
 -record(m__friend__private_chat__l2s, {msg_id=19007, chat, target_id}).
--record(m__friend__private_chat__s2l, {msg_id=19008, chat}).
+-record(m__friend__private_chat__s2l, {msg_id=19008, target_info, chat}).
 -record(m__friend__get_chat_list__l2s, {msg_id=19009, friend_id}).
 -record(m__friend__get_chat_list__s2l, {msg_id=19010, chat_list}).
 -record(m__friend__add_friend__s2l, {msg_id=19011, friend}).
