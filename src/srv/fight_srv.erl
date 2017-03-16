@@ -170,7 +170,7 @@ state_select_card({player_op, PlayerId, ?OP_SELECT_DUTY, [Duty]}, State)->
                     lib_fight:send_to_seat(#m__fight__select_duty__s2l{result = 2}, SeatId, State),
                     State;
                 _->
-                    lib_fight:do_rnd_select_duty_op(SeatId, Duty, State),
+                    lib_fight:do_rnd_select_duty_op(SeatId, Duty, State)
             end
     end,
     SeatList = lib_fight:get_all_seat(NewState),
