@@ -8,7 +8,7 @@
 
 -export([
             enter_room/2, 
-            create_room/4, 
+            create_room/5, 
             leave_room/1, 
             want_chat/1, 
             end_chat/1,
