@@ -33,8 +33,8 @@ start_link() ->
 enter_room(RoomId, Player) ->
     gen_server:cast(?MODULE, {enter_room, RoomId, lib_player:get_player_id(Player)}).
 
-create_room(MaxPlayerNum, RoomName, DutyList, Player) ->
-    gen_server:cast(?MODULE, {create_room, MaxPlayerNum, RoomName, DutyList, Player}).
+create_room(MaxPlayerNum, RoomName, DutyList, IsSimple, Player) ->
+    gen_server:cast(?MODULE, {create_room, MaxPlayerNum, RoomName, DutyList, IsSimple, Player}).
 
 leave_room(Player) ->
     RoomId = maps:get(room_id, Player, 0),
@@ -151,7 +151,7 @@ handle_cast_inner({enter_room, RoomId, PlayerId}, State) ->
     lager:info("enter_room7"),
     {noreply, State};
 
-handle_cast_inner({create_room, MaxPlayerNum, RoomName, DutyList, Player}, State) ->
+handle_cast_inner({create_room, MaxPlayerNum, RoomName, DutyList, IsSimple, Player}, State) ->
     PlayerId = lib_player:get_player_id(Player),
     RoomId = global_id_srv:generate_room_id(),
     Room = ?MROOM#{room_id => RoomId,
@@ -160,6 +160,7 @@ handle_cast_inner({create_room, MaxPlayerNum, RoomName, DutyList, Player}, State
                    max_player_num => MaxPlayerNum,
                    room_name => RoomName,
                    room_status => 0,
+                   is_simple => IsSimple,
                    duty_list => DutyList},
     lib_room:update_room(RoomId, Room),
     % NewRoomAfterReady = do_ready(RoomId, PlayerId),

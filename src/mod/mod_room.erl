@@ -60,7 +60,7 @@ enter_simple_room(#m__room__enter_simple_room__l2s{}, Player)->
     Room = get_not_full_simple_room(),
     case Room of
         undefined->
-            room_srv:create_room(length(?ROOM_SIMPLE_DUTY_LIST), "test", ?ROOM_SIMPLE_DUTY_LIST, Player);
+            room_srv:create_room(length(?ROOM_SIMPLE_DUTY_LIST), "test", ?ROOM_SIMPLE_DUTY_LIST, true, Player);
         _->
             room_srv:enter_room(maps:get(room_id, Room), Player)
     end,
@@ -83,7 +83,7 @@ create_room(#m__room__create_room__l2s{max_player_num = MaxPlayerNum,
                                        room_name = RoomName,
                                        duty_list = DutyList}, Player) ->
     lib_room:assert_not_have_room(Player),
-    room_srv:create_room(MaxPlayerNum, RoomName, DutyList, Player),
+    room_srv:create_room(MaxPlayerNum, RoomName, DutyList, false, Player),
     {ok, Player}.
 
 handle_create_room(Room, Player) ->
