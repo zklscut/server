@@ -62,6 +62,7 @@
 -include("fight.hrl").
 -include("game_pb.hrl").
 -include("resource.hrl").
+-include("log.hrl").
 
 %% ====================================================================
 %% API functions
@@ -88,7 +89,7 @@ init(RoomId, PlayerList, DutyList, Name, State) ->
 notice_rnd_select_duty(SeatId, State)->
     RandList = util:rand_in_list(maps:get(rand_duty_list, State), 3),
     SeatRndInfo = maps:get(seat_rnd_info, State),
-    SeatRndInfoNew =  maps:put(SeatId, RandList, SeatRnd),
+    SeatRndInfoNew =  maps:put(SeatId, RandList, SeatRndInfo),
     StateNew = maps:put(seat_rnd_info, SeatRndInfoNew, State),
     Send = #m__fight__random_duty__s2l{duty_list = RandList},
     send_to_seat(Send, SeatId, StateNew),
