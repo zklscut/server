@@ -63,7 +63,8 @@ enter_simple_room(#m__room__enter_simple_room__l2s{}, Player)->
             room_srv:create_room(length(?ROOM_SIMPLE_DUTY_LIST), "test", ?ROOM_SIMPLE_DUTY_LIST, Player);
         _->
             room_srv:enter_room(maps:get(room_id, Room), Player)
-    end.
+    end,
+    {ok, Player}.
 
 handle_enter_room(Room, Player) ->
     #{player_list := PlayerList,
