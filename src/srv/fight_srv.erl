@@ -192,7 +192,7 @@ state_select_card(op_over, State)->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     send_event_inner(start),
     notice_duty(State),
-    {next_state, state_daozei, State};
+    {next_state, state_daozei, State}.
 
 %% ====================================================================
 %% state_daozei
