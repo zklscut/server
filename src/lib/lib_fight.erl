@@ -84,7 +84,7 @@ init(RoomId, PlayerList, DutyList, Name, State) ->
         end,
     RndDutyList = lists:foldl(RandDutyFun, [], DutyList),
     StateAfterRandDuty = maps:put(rand_duty_list, RndDutyList, StateAfterName),
-    StateAfterName#{player_num := length(StateAfterRandDuty)}.
+    StateAfterRandDuty#{player_num := length(DutyList)}.
 
 notice_rnd_select_duty(SeatId, State)->
     RandList = util:rand_in_list(maps:get(rand_duty_list, State), 3),
