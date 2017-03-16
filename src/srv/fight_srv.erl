@@ -140,7 +140,7 @@ state_select_card(start, State)->
 
 state_select_card(wait_op, State)->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_SELECT_DUTY)),
+    start_fight_fsm_event_timer(?TIMER_TIMEOUT, lib_fight:get_op_wait(?OP_SELECT_DUTY, undefined, State)),
     SeatList = lib_fight:get_all_seat(State),
     DutySelectFun = fun(CurSeatId, CurState)->   
                         case CurSeatId =/= 0 of
@@ -574,7 +574,7 @@ state_someone_die(start, State) ->
             TimeTick = util:rand(4000, 10000),
             notice_game_status_change(state_someone_die, [?OP_SKILL_D_DELAY], StateAfterDieOp),
             send_event_inner(op_over, TimeTick),
-            SendDelayTick = #m__fight__op_timetick__s2l{timetick = b_fight_op_wait:get(?OP_SKILL_D_DELAY)},
+            SendDelayTick = #m__fight__op_timetick__s2l{timetick = lib_fight:get_op_wait(?OP_SKILL_D_DELAY, undefined, StateAfterOp)},
             lib_fight:send_to_all_player(SendDelayTick, StateAfterDieOp),
             {state_someone_die, maps:put(skill_d_delay, 1, StateAfterDieOp)};
         skip->
@@ -1459,11 +1459,11 @@ notice_player_op(Op, SeatList, State) ->
 
 notice_player_op(Op, AttachData, SeatList, State) ->
     lager:info("notice_player_op ~p", [Op]),
-    WaitTime = b_fight_op_wait:get(Op),
+    WaitTime = lib_fight:get_op_wait(Op, SeatList, State),
     UseWaitTime = 
     case lib_fight:is_offline_all(SeatList, State) of
         true->
-            b_fight_op_wait:get(?OP_SKILL_OFFLINE);
+            lib_fight:get_op_wait(?OP_SKILL_OFFLINE, undefined, State);
         _->
             WaitTime
     end,
@@ -1596,13 +1596,13 @@ wait_op_list_all_offline_players_timeout(WaitOpList, State)->
                     [];
                 StartTime->
                     %%如果剩下的是离线玩家并且总共操作时间超过10秒，直接跳过
-                    case (util:get_micro_time() - StartTime) > b_fight_op_wait:get(?OP_SKILL_OFFLINE) of
+                    case (util:get_micro_time() - StartTime) > lib_fight:get_op_wait(?OP_SKILL_OFFLINE, undefined, State) of
                         true->
                             [];
                         _->
                             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
                             start_fight_fsm_event_timer(?TIMER_TIMEOUT, 
-                                b_fight_op_wait:get(?OP_SKILL_OFFLINE) - (util:get_micro_time() - StartTime)),
+                                lib_fight:get_op_wait(?OP_SKILL_OFFLINE, undefined, State) - (util:get_micro_time() - StartTime)),
                             WaitOpList
                     end
             end;
@@ -1623,10 +1623,10 @@ player_online_offline_wait_op_time_update(SeatId, State)->
                 true->
                     %离线玩家总共等待10秒,并且只等待一次
                     TotalLeft = NormalDuration - (util:get_micro_time() - StartTime),
-                    case TotalLeft > b_fight_op_wait:get(?OP_SKILL_OFFLINE) of
+                    case TotalLeft > lib_fight:get_op_wait(?OP_SKILL_OFFLINE, undefined, State) of
                         true->
                             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-                            start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_SKILL_OFFLINE)),
+                            start_fight_fsm_event_timer(?TIMER_TIMEOUT, lib_fight:get_op_wait(?OP_SKILL_OFFLINE, undefined, State)),
                             State;
                         _->
                             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),

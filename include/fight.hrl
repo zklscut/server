@@ -77,6 +77,7 @@
 -define(DIE_TYPE_LOVER, 7).
 
 -define(MFIGHT, #{room_id => 0,
+                  fight_mod => 0, %%战斗模型0:正常模式,屠边 1:简单模式,屠城
                   room_name => "",%%房间名称
                   duty_list => [],%%职责列表
                   rand_duty_list => [], %%随机职责列表

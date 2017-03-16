@@ -57,6 +57,7 @@
          lover_die_judge/2,
          get_lover_kill/1,
          set_skill_die_list/2,
+         get_op_wait/3,
          get_max_luck_seat/2]).
 
 -include("fight.hrl").
@@ -85,8 +86,21 @@ init(RoomId, PlayerList, DutyList, Name, State) ->
                     end,
     RndDutyList = lists:foldl(RandDutyFun, [], DutyList),
     StateAfterRandDuty = maps:put(rand_duty_list, RndDutyList, StateAfterName),
-    StateAfterRandDuty#{player_num := length(DutyList)}.
+    StateAfterMod = init_mod(RoomId, State),
+    StateAfterMod#{player_num := length(DutyList)}.
 
+init_mod(RoomId, State)->
+    case lib_room:get_room(RoomId) of
+        Room->
+            case maps:get(is_simple, Room) of
+                true->
+                    maps:put(fight_mod, 1, State);
+                _->
+                    State
+            end
+        _->
+            State
+    end.
 notice_rnd_select_duty(SeatId, State)->
     RandList = util:rand_in_list(maps:get(rand_duty_list, State), 3),
     SeatRndInfo = maps:get(seat_rnd_info, State),
@@ -1164,4 +1178,21 @@ do_set_die_list(State) ->
             StateAfterSafeDay
     end,
     maps:put(die, lists:usort(DieAfterLover), StateAfterBaichi).
+
+get_op_wait(Op, SeatList, State)->
+    ExtraTime = 
+    case SeatList of
+        undefined->
+            0;
+        _->
+            0
+    end,
+    {NormOPWait, SimpleOpWait} = b_fight_op_wait:get(Op),
+    case maps:get(fight_mod, State) of
+        1->
+            ExtraTime + SimpleOpWait;
+        _->
+            ExtraTime + NormOPWait
+    end.
+
 
