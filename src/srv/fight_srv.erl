@@ -12,7 +12,9 @@
         terminate/3, 
         code_change/4]).
 
--export([state_daozei/2,
+-export([
+         state_select_card/2,
+         state_daozei/2,
          state_qiubite/2,
          state_hunxueer/2,
          state_shouwei/2,
