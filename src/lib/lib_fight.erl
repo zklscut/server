@@ -123,7 +123,7 @@ do_rnd_select_duty_op(SeatId, SelectDuty, State)->
                     %%交换两个位置的牌
                     OwnDuty = get_duty_by_seat(SeatId, State),
                     StateAfterOwnDutyUpdate = update_duty(SeatId, OwnDuty, SelectDuty, State),
-                    update_duty(ExchangeSeatId, SelectDuty, OwnDuty, StateAfterOwnDutyUpdate),
+                    update_duty(ExchangeSeatId, SelectDuty, OwnDuty, StateAfterOwnDutyUpdate)
             end,
             maps:put(duty_select_seat_list, DutySelectSeatList ++ [SeatId], StateAfterExchange);
         _->
