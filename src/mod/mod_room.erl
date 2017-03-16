@@ -55,7 +55,7 @@ enter_room(#m__room__enter_room__l2s{room_id = RoomId}, Player) ->
     end,
     {ok, Player}.
 
-enter_simple_room(#m__room__enter_simple_room__l2s{}, Player)
+enter_simple_room(#m__room__enter_simple_room__l2s{}, Player)->
     Room = get_not_full_simple_room(),
     case Room of
         undefined->
