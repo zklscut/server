@@ -4,6 +4,8 @@
 
 -module(lib_fight).
 -export([init/5,
+         notice_rnd_select_duty/2,
+         do_rnd_select_duty_op/3,
          send_to_all_player/2,
          send_to_all_player/3,
          send_to_seat/3,
@@ -72,7 +74,63 @@ init(RoomId, PlayerList, DutyList, Name, State) ->
     StateAfterDutyList = maps:put(duty_list, DutyList, State3),
     StateAfterPlayerList = maps:put(player_list, PlayerList, StateAfterDutyList),
     StateAfterName = maps:put(room_name, Name, StateAfterPlayerList),
-    StateAfterName#{player_num := length(DutyList)}.
+    RandDutyFun = fun(CurDuty, CurList)->   
+        case (CurDuty =/= ?DUTY_PINGMIN) andalso (not lists:member(CurDuty, CurList)) of
+            true->
+                CurList ++ [CurDuty];
+            _->
+                CurList
+        end,
+    RndDutyList = lists:foldl(RandDutyFun, [], DutyList),
+    StateAfterRandDuty = maps:put(rand_duty_list, RndDutyList, StateAfterName),
+    StateAfterName#{player_num := length(StateAfterRandDuty)}.
+
+notice_rnd_select_duty(SeatId, State)->
+    RandList = util:rand_in_list(maps:get(rand_duty_list, State), 3),
+    SeatRndInfo = maps:get(seat_rnd_info, State),
+    SeatRndInfoNew =  maps:put(SeatId, RandList, SeatRnd),
+    StateNew = maps:put(seat_rnd_info, SeatRndInfoNew, State),
+    Send = #m__fight__random_duty__s2l{duty_list = RandList},
+    send_to_seat(Send, SeatId, StateNew),
+    StateNew.
+
+do_rnd_select_duty_op(SeatId, SelectDuty, State)->
+    SeatList = lib_fight:get_all_seat(State),
+    DutySelectSeatList = maps:get(duty_select_seat_list, State),
+    SeatSelectFun = fun(CurSeat, CurList)->
+                    CurDuty = get_duty_by_seat(CurSeat, State),
+                    case (CurDuty == SelectDuty) andalso (not lists:member(CurSeat, DutySelectSeatList)) of
+                        true->
+                            CurList ++ [CurSeat];
+                        _->
+                            CurList
+                end,
+    DesSeatList = lists:foldl(SeatSelectFun, [], SeatList), 
+    StateAfterOp =
+    case length(DesSeatList) > 0 of
+        true->
+            mod_player:handle_decrease(?RESOURCE_DIAMOND, ?SELECT_DUTY_CAST, ?LOG_ACTION_FIGHT, 
+                            lib_fight:get_player_id_by_seat(SeatId, State)),
+            lib_fight:send_to_seat(#m__fight__select_duty__s2l{result = 0}, SeatId, State),
+            ExchangeSeatId = util:rand_in_list(DesSeatList),
+            StateAfterExchange = 
+            case SeatId == ExchangeSeatId of 
+                true->
+                    %%如果自己本来就随机到这个牌，直接通知成功
+                    State;
+                _->
+                    %%交换两个位置的牌
+                    OwnDuty = get_duty_by_seat(SeatId, State),
+                    StateAfterOwnDutyUpdate = update_duty(SeatId, OwnDuty, SelectDuty, State),
+                    update_duty(ExchangeSeatId, SelectDuty, OwnDuty, StateAfterOwnDutyUpdate),
+            end,
+            maps:put(duty_select_seat_list, DutySelectSeatList ++ [SeatId], StateAfterExchange);
+        _->
+            %%通知手速慢了
+            lib_fight:send_to_seat(#m__fight__select_duty__s2l{result = 3}, SeatId, State),
+            State
+    end,    
+    StateAfterOp.
 
 get_p_fight(State)->
     PFight = #p_fight{

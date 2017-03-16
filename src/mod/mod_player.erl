@@ -13,6 +13,10 @@
          handle_consume_gift_local/2,
          handle_receive_gift/2,
          handle_receive_gift_local/2,
+         handle_decrease/4,
+         handle_decrease_local/4,
+         handle_increase/4,
+         handle_increase_local/4,
          change_name/2,
          get_extra_coin/4,
          get_fight_coin/3,
@@ -59,6 +63,20 @@ handle_fight_result_local(DutyId, IsWin, IsMvp, IsCarry, CoinAdd, ExpAdd, Player
     PlayerAfterMvp = increase_fight_mvp(IsMvp, PlayerAfterWinRate),
     PlayerAfterCarry = increase_fight_carry(IsCarry, PlayerAfterMvp),
     {save, PlayerAfterCarry}.
+
+handle_decrease(ResourceId, Num, LogAction, PlayerId) ->
+    global_op_srv:player_op(PlayerId, {?MODULE, handle_decrease_local, [ResourceId, Num, LogAction]}).
+
+handle_decrease_local(ResourceId, Num, LogAction, Player) -> 
+    PlayerAfterResource = mod_resource:decrease(ResourceId, Num, LogAction, Player),
+    {save, PlayerAfterResource}.
+
+handle_increase(ResourceId, Num, LogAction, PlayerId) ->
+    global_op_srv:player_op(PlayerId, {?MODULE, handle_increase_local, [ResourceId, Num, LogAction]}).
+
+handle_increase_local(ResourceId, Num, LogAction, Player) -> 
+    PlayerAfterResource = mod_resource:increase(ResourceId, Num, LogAction, Player),
+    {save, PlayerAfterResource}.
 
 handle_consume_gift(GiftId, PlayerId) ->
   global_op_srv:player_op(PlayerId, {?MODULE, handle_consume_gift_local, [GiftId]}).

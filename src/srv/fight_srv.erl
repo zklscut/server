@@ -126,10 +126,71 @@ init([RoomId, PlayerList, DutyList, Name, State]) ->
     lib_room:update_room_status(RoomId, 1, 0, 1, 0),
     NewState = lib_fight:init(RoomId, PlayerList, DutyList, Name, State),
     % NewStateAfterTest = ?IF(?TEST, fight_test_no_send(init, State), NewState),
-    notice_duty(NewState),
+    % notice_duty(NewState),
     notice_game_status_change(start, NewState),
     send_event_inner(start, b_fight_state_wait:get(start)),
-    {ok, state_daozei, NewState}.
+    {ok, state_select_card, NewState}.
+
+state_select_card(start, State)->
+    notice_game_status_change(state_select_card, [?OP_SELECT_DUTY], State),
+    send_event_inner(wait_op),
+    {next_state, state_select_card, State};
+
+state_select_card(wait_op, State)->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_SELECT_DUTY)),
+    SeatList = lib_fight:get_all_seat(State),
+    DutySelectFun = fun(CurSeatId, CurState)->   
+        case CurSeatId =/= 0 of
+            true->
+                lib_fight:notice_rnd_select_duty(CurSeatId, CurState);
+            _->
+                CurState
+        end,
+    StateNew = lists:foldl(DutySelectFun, State, SeatList),
+    {next_state, state_select_card, StateNew};
+
+state_select_card({player_op, PlayerId, ?OP_SELECT_DUTY, [Duty]}, State)->
+    %%首先判断是否已经操作过
+    SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
+    DutySelectSeatList = maps:get(duty_select_seat_list, State),
+    NewState = 
+    case lists:member(SeatId, DutySelectSeatList) of
+        true->
+            %%提示已经操作过
+            lib_fight:send_to_seat(#m__fight__select_duty__s2l{result = 1}, SeatId, State),
+            State;
+        _->
+            case DiamondNun < ?SELECT_DUTY_CAST of
+                true->
+                    %%提示金币不够
+                    lib_fight:send_to_seat(#m__fight__select_duty__s2l{result = 2}, SeatId, State),
+                    State;
+                _->
+                    lib_fight:do_rnd_select_duty_op(SeatId, Duty, State),
+            end
+    end,
+    SeatList = lib_fight:get_all_seat(NewState),
+    DutySelectSeatList1 = maps:get(duty_select_seat_list, NewState),
+    case length(SeatList) == length(DutySelectSeatList1) of
+        true->
+            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+            send_event_inner(op_over);
+        _->
+            ignore
+    end,
+    {next_state, state_select_card, NewState};
+
+state_select_card(timeout, State)->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    send_event_inner(op_over),
+    {next_state, state_select_card, State};
+
+state_select_card(op_over, State)->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    send_event_inner(start),
+    notice_duty(State),
+    {next_state, state_daozei, State};
 
 %% ====================================================================
 %% state_daozei
@@ -1943,7 +2004,9 @@ get_next_game_state(GameState) ->
         state_night ->
             state_shouwei;
         state_lapiao_fayan->
-            state_toupiao_mvp
+            state_toupiao_mvp;
+        state_select_card->
+            state_daozei
     end.
 
 get_state_legal_op(GameState) ->
@@ -1993,7 +2056,9 @@ get_state_legal_op(GameState) ->
         state_toupiao_mvp ->
             [?OP_TOUPIAO_MVP];
         state_toupiao_carry ->
-            [?OP_TOUPIAO_CARRY]
+            [?OP_TOUPIAO_CARRY];
+        state_select_card->
+            [?OP_SELECT_DUTY]
     end.
 
 get_status_id(GameState) ->
@@ -2047,7 +2112,9 @@ get_status_id(GameState) ->
         state_toupiao_carry ->
             23;
         state_fight_over ->
-            24
+            24;
+        state_select_card ->
+            25
     end.
 
 fight_test_no_send(StateName, State) ->

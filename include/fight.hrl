@@ -38,6 +38,7 @@
 -define(OP_TOUPIAO_MVP, 1012). %%投票mvp
 -define(OP_TOUPIAO_CARRY, 1013). %%投票carry
 -define(OP_SKILL_OFFLINE, 1014). %%离线玩家操作时长
+-define(OP_SELECT_DUTY, 1015).%%选择角色
 
 -define(FAYAN_OP_LIST, [?OP_FAYAN, ?OP_PART_FAYAN, ?OP_DEATH_FAYAN, ?OP_QUZHU_FAYAN, ?OP_LAPIAO_FAYAN]).
 
@@ -59,6 +60,8 @@
 
 -define(TIMER_TIMEOUT, timeout).
 
+-define(SELECT_DUTY_CAST, 10).%%选牌消耗
+
 -define(JINXXUAN_TIMER_TIMEOUT, jingxuan_timeout).
 
 -define(NVWU_NONE, 0).
@@ -76,6 +79,9 @@
 -define(MFIGHT, #{room_id => 0,
                   room_name => "",%%房间名称
                   duty_list => [],%%职责列表
+                  rand_duty_list => [], %%随机职责列表
+                  seat_rnd_info => #{},  %%座位随机列表
+                  duty_select_seat_list => [],%%已经选择了角色的座位列表
                   player_list => [], %%玩家列表
                   seat_player_map => #{},%% #{seat_id, player_id}
                   player_seat_map => #{},%% #{player_id, seat_id}
