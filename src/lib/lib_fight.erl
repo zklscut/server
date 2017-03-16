@@ -76,12 +76,13 @@ init(RoomId, PlayerList, DutyList, Name, State) ->
     StateAfterPlayerList = maps:put(player_list, PlayerList, StateAfterDutyList),
     StateAfterName = maps:put(room_name, Name, StateAfterPlayerList),
     RandDutyFun = fun(CurDuty, CurList)->   
-        case (CurDuty =/= ?DUTY_PINGMIN) andalso (not lists:member(CurDuty, CurList)) of
-            true->
-                CurList ++ [CurDuty];
-            _->
-                CurList
-        end,
+                        case (CurDuty =/= ?DUTY_PINGMIN) andalso (not lists:member(CurDuty, CurList)) of
+                            true->
+                                CurList ++ [CurDuty];
+                            _->
+                                CurList
+                        end
+                    end,
     RndDutyList = lists:foldl(RandDutyFun, [], DutyList),
     StateAfterRandDuty = maps:put(rand_duty_list, RndDutyList, StateAfterName),
     StateAfterRandDuty#{player_num := length(DutyList)}.
@@ -99,13 +100,14 @@ do_rnd_select_duty_op(SeatId, SelectDuty, State)->
     SeatList = lib_fight:get_all_seat(State),
     DutySelectSeatList = maps:get(duty_select_seat_list, State),
     SeatSelectFun = fun(CurSeat, CurList)->
-                    CurDuty = get_duty_by_seat(CurSeat, State),
-                    case (CurDuty == SelectDuty) andalso (not lists:member(CurSeat, DutySelectSeatList)) of
-                        true->
-                            CurList ++ [CurSeat];
-                        _->
-                            CurList
-                end,
+                        CurDuty = get_duty_by_seat(CurSeat, State),
+                        case (CurDuty == SelectDuty) andalso (not lists:member(CurSeat, DutySelectSeatList)) of
+                            true->
+                                CurList ++ [CurSeat];
+                            _->
+                                CurList
+                        end
+                    end,
     DesSeatList = lists:foldl(SeatSelectFun, [], SeatList), 
     StateAfterOp =
     case length(DesSeatList) > 0 of

@@ -143,12 +143,13 @@ state_select_card(wait_op, State)->
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_SELECT_DUTY)),
     SeatList = lib_fight:get_all_seat(State),
     DutySelectFun = fun(CurSeatId, CurState)->   
-        case CurSeatId =/= 0 of
-            true->
-                lib_fight:notice_rnd_select_duty(CurSeatId, CurState);
-            _->
-                CurState
-        end,
+                        case CurSeatId =/= 0 of
+                            true->
+                                lib_fight:notice_rnd_select_duty(CurSeatId, CurState);
+                            _->
+                                CurState
+                        end
+                    end,
     StateNew = lists:foldl(DutySelectFun, State, SeatList),
     {next_state, state_select_card, StateNew};
 
