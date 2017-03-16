@@ -97,7 +97,7 @@ init_mod(RoomId, State)->
                     maps:put(fight_mod, 1, State);
                 _->
                     State
-            end
+            end;
         _->
             State
     end.
