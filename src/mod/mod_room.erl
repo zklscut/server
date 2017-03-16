@@ -29,6 +29,7 @@
 -include("ets.hrl").
 -include("errcode.hrl").
 -include("resource.hrl").
+-include("room.hrl").
 
 %% ====================================================================
 %% API functions
