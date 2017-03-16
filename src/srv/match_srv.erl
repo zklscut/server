@@ -161,8 +161,6 @@ handle_cast_inner({enter_match, PlayerId, _WaitId}, State) ->
              case NewWaitPlayerList of
                 [] ->
                     %%战斗开始从队列中移除
-
-                    lager:info("start fight ++++++++++++++++++++"),
                     
                     NewPlayerInfo = do_remove_player_info(PlayerInfo, StartPlayerList),
                     NewWaitList = maps:remove(WaitId, WaitList),

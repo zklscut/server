@@ -40,6 +40,8 @@ get_list(#m__room__get_list__l2s{}, Player) ->
     net_send:send(Return, Player),
     {ok, Player}.
 
+
+
 enter_room(#m__room__enter_room__l2s{room_id = RoomId}, Player) ->
     lib_room:assert_not_have_room(Player),
     lib_room:assert_room_exist(RoomId),
@@ -50,8 +52,16 @@ enter_room(#m__room__enter_room__l2s{room_id = RoomId}, Player) ->
         _->
             room_srv:enter_room(RoomId, Player)
     end,
-    
     {ok, Player}.
+
+enter_simple_room(#m__room__enter_simple_room__l2s{}, Player)
+    Room = get_not_full_simple_room(),
+    case Room of
+        undefined->
+            room_srv:create_room(length(?ROOM_SIMPLE_DUTY_LIST), "test", ?ROOM_SIMPLE_DUTY_LIST, Player);
+        _->
+            room_srv:enter_room(maps:get(room_id, Room), Player)
+    end.
 
 handle_enter_room(Room, Player) ->
     #{player_list := PlayerList,
@@ -239,6 +249,27 @@ cancle_ready(#m__room__cancle_ready__l2s{}, Player) ->
 %%%====================================================================
 %%% Internal functions
 %%%====================================================================
+
+get_not_full_simple_room()->
+    RoomList = ets:tab2list(?ETS_ROOM),
+    Func = fun({_,CurRoom}, Ignore)->
+                IsSimple = maps:get(is_simple, CurRoom),
+                case IsSimple andalso (length(maps:get(player_list, CurRoom)) < maps:get(max_player_num, CurRoom)) of
+                    true->
+                        throw(CurRoom);
+                    _
+                        Ignore
+                end
+            end,
+    try
+        lists:foldl(Func, 1, RoomList),
+        undefined
+    catch
+        throw:Room ->
+            Room;
+        _:_ ->
+            undefined
+    end.
 
 conver_to_p_room(#{room_id := RoomId,
                    owner := Owner,
