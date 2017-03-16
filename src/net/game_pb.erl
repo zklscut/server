@@ -42,6 +42,10 @@
 	 decode_m__match__start_match__l2s/1,
 	 encode_m__resource__push__s2l/1,
 	 decode_m__resource__push__s2l/1,
+	 encode_m__fight__select_duty__s2l/1,
+	 decode_m__fight__select_duty__s2l/1,
+	 encode_m__fight__random_duty__s2l/1,
+	 decode_m__fight__random_duty__s2l/1,
 	 encode_m__fight__update_duty__s2l/1,
 	 decode_m__fight__update_duty__s2l/1,
 	 encode_m__fight__leave__s2l/1,
@@ -194,7 +198,8 @@
 -record(m__friend__get_chat_list__l2s,
 	{msg_id, friend_id}).
 
--record(m__friend__private_chat__s2l, {msg_id, chat}).
+-record(m__friend__private_chat__s2l,
+	{msg_id, target_info, chat}).
 
 -record(m__friend__private_chat__l2s,
 	{msg_id, chat, target_id}).
@@ -210,8 +215,7 @@
 
 -record(m__friend__get_friend__l2s, {msg_id}).
 
--record(p_friend,
-	{player_show_base, status, room_id, last_chat}).
+-record(p_friend, {player_show_base, status, room_id}).
 
 -record(m__rank__get_rank__s2l,
 	{msg_id, rank_type, start_rank, end_rank, rank_list}).
@@ -240,6 +244,11 @@
 
 -record(m__resource__push__s2l,
 	{msg_id, resource_id, num, action_id}).
+
+-record(m__fight__select_duty__s2l, {msg_id, result}).
+
+-record(m__fight__random_duty__s2l,
+	{msg_id, duty_list}).
 
 -record(m__fight__update_duty__s2l,
 	{msg_id, pre_duty, cur_duty}).
@@ -528,6 +537,14 @@ encode_m__match__start_match__l2s(Record)
 encode_m__resource__push__s2l(Record)
     when is_record(Record, m__resource__push__s2l) ->
     encode(m__resource__push__s2l, Record).
+
+encode_m__fight__select_duty__s2l(Record)
+    when is_record(Record, m__fight__select_duty__s2l) ->
+    encode(m__fight__select_duty__s2l, Record).
+
+encode_m__fight__random_duty__s2l(Record)
+    when is_record(Record, m__fight__random_duty__s2l) ->
+    encode(m__fight__random_duty__s2l, Record).
 
 encode_m__fight__update_duty__s2l(Record)
     when is_record(Record, m__fight__update_duty__s2l) ->
@@ -1773,6 +1790,24 @@ encode(m__fight__update_duty__s2l, _Record) ->
 			   with_default(_Record#m__fight__update_duty__s2l.cur_duty,
 					none),
 			   int32, [])]);
+encode(m__fight__random_duty__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__random_duty__s2l.msg_id,
+					15027),
+			   int32, []),
+		      pack(2, repeated,
+			   with_default(_Record#m__fight__random_duty__s2l.duty_list,
+					none),
+			   int32, [])]);
+encode(m__fight__select_duty__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__select_duty__s2l.msg_id,
+					15028),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__fight__select_duty__s2l.result,
+					none),
+			   int32, [])]);
 encode(m__resource__push__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__resource__push__s2l.msg_id,
@@ -1914,10 +1949,7 @@ encode(p_friend, _Record) ->
 			   []),
 		      pack(3, required,
 			   with_default(_Record#p_friend.room_id, none), int32,
-			   []),
-		      pack(4, required,
-			   with_default(_Record#p_friend.last_chat, none),
-			   p_chat, [])]);
+			   [])]);
 encode(m__friend__get_friend__l2s, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__friend__get_friend__l2s.msg_id,
@@ -1969,6 +2001,10 @@ encode(m__friend__private_chat__s2l, _Record) ->
 					19008),
 			   int32, []),
 		      pack(2, required,
+			   with_default(_Record#m__friend__private_chat__s2l.target_info,
+					none),
+			   p_player_show_base, []),
+		      pack(3, required,
 			   with_default(_Record#m__friend__private_chat__s2l.chat,
 					none),
 			   p_chat, [])]);
@@ -2091,6 +2127,12 @@ decode_m__match__start_match__l2s(Bytes) ->
 
 decode_m__resource__push__s2l(Bytes) ->
     decode(m__resource__push__s2l, Bytes).
+
+decode_m__fight__select_duty__s2l(Bytes) ->
+    decode(m__fight__select_duty__s2l, Bytes).
+
+decode_m__fight__random_duty__s2l(Bytes) ->
+    decode(m__fight__random_duty__s2l, Bytes).
 
 decode_m__fight__update_duty__s2l(Bytes) ->
     decode(m__fight__update_duty__s2l, Bytes).
@@ -2740,6 +2782,16 @@ decode(m__fight__update_duty__s2l, Bytes) ->
 	     {2, pre_duty, int32, []}, {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__update_duty__s2l, Decoded);
+decode(m__fight__random_duty__s2l, Bytes) ->
+    Types = [{2, duty_list, int32, [repeated]},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__random_duty__s2l, Decoded);
+decode(m__fight__select_duty__s2l, Bytes) ->
+    Types = [{2, result, int32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__select_duty__s2l, Decoded);
 decode(m__resource__push__s2l, Bytes) ->
     Types = [{4, action_id, int32, []}, {3, num, int32, []},
 	     {2, resource_id, int32, []}, {1, msg_id, int32, []}],
@@ -2800,8 +2852,8 @@ decode(m__rank__get_rank__s2l, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__rank__get_rank__s2l, Decoded);
 decode(p_friend, Bytes) ->
-    Types = [{4, last_chat, p_chat, [is_record]},
-	     {3, room_id, int32, []}, {2, status, int32, []},
+    Types = [{3, room_id, int32, []},
+	     {2, status, int32, []},
 	     {1, player_show_base, p_player_show_base, [is_record]}],
     Decoded = decode(Bytes, Types, []),
     to_record(p_friend, Decoded);
@@ -2831,7 +2883,8 @@ decode(m__friend__private_chat__l2s, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__friend__private_chat__l2s, Decoded);
 decode(m__friend__private_chat__s2l, Bytes) ->
-    Types = [{2, chat, p_chat, [is_record]},
+    Types = [{3, chat, p_chat, [is_record]},
+	     {2, target_info, p_player_show_base, [is_record]},
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__friend__private_chat__s2l, Decoded);
@@ -3439,6 +3492,20 @@ to_record(m__fight__update_duty__s2l, DecodedTuples) ->
 					 Record, Name, Val)
 		end,
 		#m__fight__update_duty__s2l{}, DecodedTuples);
+to_record(m__fight__random_duty__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__random_duty__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__random_duty__s2l{}, DecodedTuples);
+to_record(m__fight__select_duty__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__select_duty__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__select_duty__s2l{}, DecodedTuples);
 to_record(m__resource__push__s2l, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields,
