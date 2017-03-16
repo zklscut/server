@@ -5,6 +5,7 @@
 -module(mod_room).
 -export([get_list/2,
          enter_room/2,
+         enter_simple_room/2,
          handle_enter_room/2,
          create_room/2,
          handle_create_room/2,
