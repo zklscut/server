@@ -27,7 +27,7 @@ offline_match(PlayerId)->
 
 cancel_match(PlayerId, MatchMode)->
     MatchSrv = get_mode_match_srv(MatchMode),
-    MatchSrv:cancel_match(PlayerId, 0).
+    MatchSrv:cancel_match(PlayerId).
 
 start_match(PlayerList, Rank, MatchMode)->
     MatchSrv = get_mode_match_srv(MatchMode),
