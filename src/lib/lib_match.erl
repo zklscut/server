@@ -34,7 +34,9 @@ start_match(PlayerList, Rank, MatchMode)->
     MatchSrv:start_match(PlayerList, Rank).
 
 enter_match(PlayerId, WaitId, MatchMode)->
+    lager:info("enter_match:~p", [MatchMode]),
     MatchSrv = get_mode_match_srv(MatchMode),
+    lager:info("enter_match1:~p", [MatchSrv]),
     MatchSrv:enter_match(PlayerId, WaitId).
 
 
