@@ -43,6 +43,7 @@
 -record(m__room__notice_all_ready__s2l, {msg_id=13026}).
 -record(m__room__login_not_in_room__s2l, {msg_id=13027}).
 -record(m__room__enter_fail__s2l, {msg_id=13028}).
+-record(m__room__enter_simple_room__l2s, {msg_id=13029}).
 -record(p_chat, {player_show_base, voice, content, length, compress, chat_type, room_id, msg_type}).
 -record(m__chat__public_speak__l2s, {msg_id=14001, chat}).
 -record(m__chat__public_speak__s2l, {msg_id=14002, chat}).
@@ -78,12 +79,12 @@
 -record(m__fight__random_duty__s2l, {msg_id=15027, duty_list}).
 -record(m__fight__select_duty__s2l, {msg_id=15028, result}).
 -record(m__resource__push__s2l, {msg_id=16001, resource_id, num, action_id}).
--record(m__match__start_match__l2s, {msg_id=17001, player_list}).
--record(m__match__end_match__l2s, {msg_id=17002}).
+-record(m__match__start_match__l2s, {msg_id=17001, mode, player_list}).
+-record(m__match__end_match__l2s, {msg_id=17002, mode}).
 -record(m__match__end_match__s2l, {msg_id=17003}).
--record(m__match__again_match__s2l, {msg_id=17004, is_again}).
--record(m__match__notice_enter_match__s2l, {msg_id=17005, wait_id, wait_list}).
--record(m__match__enter_match__l2s, {msg_id=17006, wait_id}).
+-record(m__match__again_match__s2l, {msg_id=17004, mode, is_again}).
+-record(m__match__notice_enter_match__s2l, {msg_id=17005, wait_id, mode, wait_list}).
+-record(m__match__enter_match__l2s, {msg_id=17006, mode, wait_id}).
 -record(m__match__enter_match_list__s2l, {msg_id=17007, wait_id, ready_list, wait_list}).
 -record(p_rank, {player_show_base, rank, value}).
 -record(m__rank__get_rank__l2s, {msg_id=18001, rank_type, start_rank, end_rank}).
