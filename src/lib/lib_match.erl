@@ -46,8 +46,12 @@ get_mode_match_srv(MatchMode)->
     case MatchMode of
         0->
             match_srv;
+        1->
+            match_bailang_srv;
+        2->
+            match_qiubite_srv;
         _->
-            match_srv
+            match_srv;
     end.
 
 do_start_match(PlayerList, Rank, MatchData)->

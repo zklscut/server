@@ -2,7 +2,7 @@
 %% @doc match_srv.
 %% 2016
 
--module(match_srv).
+-module(match_qiubite_srv).
 -behaviour(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
@@ -178,8 +178,8 @@ code_change(_OldVsn, State, _Extra) ->
 get_match_data() ->
     case lib_ets:get(?ETS_MATCH, 0) of
         undefined ->
-            ?MATCH_DATA#{match_type => 0,
-                         duty_template => 0
+            ?MATCH_DATA#{match_type => 2,
+                         duty_template => 2
                         };
         MatchData ->
             MatchData
