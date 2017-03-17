@@ -176,7 +176,7 @@ code_change(_OldVsn, State, _Extra) ->
 %% ====================================================================
 
 get_match_data() ->
-    case lib_ets:get(?ETS_MATCH, 0) of
+    case lib_ets:get(?ETS_MATCH, 2) of
         undefined ->
             ?MATCH_DATA#{match_type => 2,
                          duty_template => 2
