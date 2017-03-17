@@ -88,7 +88,7 @@ init(RoomId, PlayerList, DutyList, Name, State) ->
                     end,
     RndDutyList = lists:foldl(RandDutyFun, [], DutyList),
     StateAfterRandDuty = maps:put(rand_duty_list, RndDutyList, StateAfterName),
-    StateAfterMod = init_mod(RoomId, State),
+    StateAfterMod = init_mod(RoomId, StateAfterRandDuty),
     StateAfterMod#{player_num := length(DutyList)}.
 
 init_mod(RoomId, State)->
@@ -100,7 +100,7 @@ init_mod(RoomId, State)->
                 _->
                     State
             end;
-        _->
+        undefined->
             State
     end.
 notice_rnd_select_duty(SeatId, State)->
