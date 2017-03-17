@@ -400,7 +400,15 @@ state_day(over, State)->
             true ->
                 state_fight_over;
             false ->
-                get_next_game_state(state_day)
+                case maps:get(fight_mod, State) of
+                    0->
+                        get_next_game_state(state_day);
+                    1->
+                        state_night_result;
+                    _->
+                        get_next_game_state(state_day);
+                end
+                
         end,
     send_event_inner(start),
     {next_state, NextState, State}.
@@ -854,7 +862,7 @@ state_toupiao(op_over, State) ->
     {IsDraw, TouPiaoResult, MaxSelectList, NewState} = lib_fight:do_toupiao_op(State),
     Quzhu = maps:get(quzhu, NewState),
     notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, NewState),
-    case IsDraw of
+    case IsDraw andalso lib_fight:is_twice_toupiao(NewState) of
         true ->
             send_event_inner(start, b_fight_state_over_wait:get(state_toupiao)),
             {next_state, state_fayan, maps:put(fayan_turn, MaxSelectList, NewState)};
@@ -963,6 +971,7 @@ state_fight_over(start, State) ->
                         {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, NewState))], 
     %%todo:通知战斗信息
     %%send_fight_result(Winner, VictoryParty, NewState),
+
     notice_game_status_change(state_fight_over, NewState),
     Send = #m__fight__over_info__s2l{duty_list = DutyList, winner = Winner, 
                                                 dead_list = maps:get(out_seat_list, NewState)},
@@ -972,7 +981,14 @@ state_fight_over(start, State) ->
     StateAfterCarry = maps:put(carry_party, lib_fight:get_all_seat(StateAfterMvp) -- Winner, StateAfterMvp),
     StateAfterFayanTurn = maps:put(fayan_turn, lib_fight:get_all_seat(StateAfterCarry), StateAfterCarry),
     StateAfterWinner = maps:put(winner, Winner, StateAfterFayanTurn),
-    {next_state, state_lapiao_fayan, StateAfterWinner}.
+    NextState =
+    case lib_fight:is_need_mvp(StateAfterWinner) of
+        true->
+            state_lapiao_fayan;
+        _->
+            state_game_over
+    end,
+    {next_state, NextState, StateAfterWinner}.
 
 
 %%拉票发言环节

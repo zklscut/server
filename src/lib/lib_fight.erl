@@ -58,7 +58,9 @@
          get_lover_kill/1,
          set_skill_die_list/2,
          get_op_wait/3,
-         get_max_luck_seat/2]).
+         get_max_luck_seat/2,
+         is_twice_toupiao/1,
+         is_need_mvp/1]).
 
 -include("fight.hrl").
 -include("game_pb.hrl").
@@ -1193,6 +1195,27 @@ get_op_wait(Op, SeatList, State)->
             ExtraTime + SimpleOpWait;
         _->
             ExtraTime + NormOPWait
+    end.
+
+%%是否两轮投票
+is_twice_toupiao(State)->
+    case maps:get(fight_mod, State) of
+        0->
+            true;
+        1->
+            false;
+        _->
+            true
+    end.
+
+is_need_mvp(State)->
+    case maps:get(fight_mod, State) of
+        0->
+            true;
+        1->
+            false;
+        _->
+            true
     end.
 
 
