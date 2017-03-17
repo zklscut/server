@@ -406,9 +406,8 @@ state_day(over, State)->
                     1->
                         state_night_result;
                     _->
-                        get_next_game_state(state_day);
+                        get_next_game_state(state_day)
                 end
-                
         end,
     send_event_inner(start),
     {next_state, NextState, State}.
