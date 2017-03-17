@@ -21,6 +21,8 @@ start(_, _) ->
     start_global_op_process(),
     start_cache_store_server(),
     start_match_process(),
+    start_match_bailang_process(),
+    start_match_qiubite_process(),
     start_langren_rank_server(),
     start_nvwu_rank_server(),
     start_yuyanjia_rank_server(),
@@ -75,6 +77,16 @@ start_match_process() ->
     supervisor:start_child(game_supervisor,
                            {match_srv, {match_srv, start_link,[]},
                             transient, infinity, worker, [match_srv]}).    
+
+start_match_bailang_process() ->
+    supervisor:start_child(game_supervisor,
+                           {match_bailang_srv, {match_bailang_srv, start_link,[]},
+                            transient, infinity, worker, [match_bailang_srv]}).
+
+start_match_qiubite_process() ->
+    supervisor:start_child(game_supervisor,
+                           {match_qiubite_srv, {match_qiubite_srv, start_link,[]},
+                            transient, infinity, worker, [match_qiubite_srv]}).
 
 start_cache_store_server() ->
     cache_store_bhv:start_link(cache_store_player, 10000).
