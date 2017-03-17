@@ -3,6 +3,8 @@
 
 -define(MATCH_DATA, #{
                       last_match_time => 0,
+                      match_type => 0,
+                      duty_template => 9,
                       wait_list => #{}, %%WaitId = {}
                       player_info => #{}, %%PlayerId = {MatchPlayerId, WaitId}
                       match_list => [] %%[{MatchPlayerId, PlayerList, Rank, IsWait},.....]

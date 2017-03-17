@@ -57,7 +57,7 @@ do_start_match(PlayerList, Rank, MatchData)->
       } = MatchData,
     MatchPlayerId = hd(PlayerList),
     NewMatchList = MatchList ++ [{MatchPlayerId, PlayerList, Rank, length(PlayerList)}],
-    NewPlayerInfo = do_init_player_info(PlayerInfo, PlayerList),
+    NewPlayerInfo = do_init_player_info(PlayerInfo, PlayerList, maps:get(match_type, MatchData)),
     NewMatchData = MatchData#{
                               match_list := NewMatchList,
                               player_info := NewPlayerInfo
@@ -138,7 +138,7 @@ do_time_tick(MatchData)->
                 true ->
                     lager:info("do_time_out"),
                     do_time_out(maps:remove(WaitId, CurWaitList), 
-                            CurMatchList, CurPlayerInfo, WaitPlayerList, FitList);
+                            CurMatchList, CurPlayerInfo, WaitPlayerList, FitList, maps:get(match_type, MatchData));
                 false ->
                     {CurWaitList, CurMatchList, CurPlayerInfo}
             end
@@ -226,6 +226,7 @@ do_start_fight(MatchData) ->
                                               },
                     update_match_data(NewMatchData),
                     Send = #m__match__notice_enter_match__s2l{
+                                                                mode = maps:get(match_type, NewMatchData),
                                                                 wait_id = WaitId,
                                                                 wait_list = [lib_player:get_player_show_base(WaitPlayerId)||WaitPlayerId<-StartPlayerList]
                                                             },
@@ -253,18 +254,18 @@ do_remove_player_info(PlayerInfo, PlayerList)->
         end,
     lists:foldl(RomoveFun, PlayerInfo, PlayerList).
 
-do_init_player_info(PlayerInfo, PlayerList)->
+do_init_player_info(PlayerInfo, PlayerList, MatchType)->
     MatchPlayerId = hd(PlayerList),
     SetFun = 
         fun(PlayerId, CurPlayerInfo)->
             %%通知玩家排队中
-            Send = #m__match__again_match__s2l{is_again = 0},
+            Send = #m__match__again_match__s2l{is_again = 0, mode = MatchType},
             mod_match:send_to_player(Send, PlayerId),
             maps:put(PlayerId, {MatchPlayerId, 0}, CurPlayerInfo)
         end,
     lists:foldl(SetFun, PlayerInfo, PlayerList).
 
-do_reset_player_info(PlayerInfo, PlayerList)->
+do_reset_player_info(PlayerInfo, PlayerList, MatchType)->
     ResetFun = 
         fun(PlayerId, CurPlayerInfo)->
             case maps:get(PlayerId, CurPlayerInfo, undefined) of
@@ -272,7 +273,7 @@ do_reset_player_info(PlayerInfo, PlayerList)->
                     CurPlayerInfo;
                 {WaitMatchPlayerId, _}->
                     %%通知玩家重新排队中
-                    Send = #m__match__again_match__s2l{is_again=1},
+                    Send = #m__match__again_match__s2l{is_again=1, mode = MatchType},
                     mod_match:send_to_player(Send, PlayerId),
                     maps:put(PlayerId, {WaitMatchPlayerId, 0}, CurPlayerInfo)
             end
@@ -287,7 +288,7 @@ do_set_player_info_wait(PlayerInfo, PlayerList, WaitId)->
         end,
     lists:foldl(SetFun, PlayerInfo, PlayerList).
 
-do_time_out(WaitList, MatchList, PlayerInfo, WaitPlayerList, FitList)->
+do_time_out(WaitList, MatchList, PlayerInfo, WaitPlayerList, FitList, MatchType)->
     lager:info("do_time_out---~p", [{WaitList,MatchList,PlayerInfo,WaitPlayerList,FitList}]),
     TmpFun = 
         fun({_CurPlayerId, CurPlayerList, _CurRank, _CurNum}, {CurWaitList, CurMatchList, CurPlayerInfo})->
@@ -300,7 +301,7 @@ do_time_out(WaitList, MatchList, PlayerInfo, WaitPlayerList, FitList)->
                                 do_remove_player_info(CurPlayerInfo, CurPlayerList)};
                 false->
                     %%其他玩家没有准备则退回队列，继续准备
-                    {CurWaitList, CurMatchList, do_reset_player_info(CurPlayerInfo, CurPlayerList)}
+                    {CurWaitList, CurMatchList, do_reset_player_info(CurPlayerInfo, CurPlayerList, MatchType)}
             end           
         end,
     lists:foldl(TmpFun, {WaitList, MatchList, PlayerInfo}, FitList).
@@ -334,7 +335,7 @@ do_cancel_match(PlayerId, MatchData)->
                 _->
                     WaitPlayerList = maps:get(player_list, WaitMatch),
                     %%通知玩家状态更新，设置非组队等待的标志
-                    do_reset_player_info(NewPlayerInfo, WaitPlayerList)
+                    do_reset_player_info(NewPlayerInfo, WaitPlayerList, maps:get(match_type, MatchData))
             end,    
 
             %%如果玩家已经在等待中，删除等待    
