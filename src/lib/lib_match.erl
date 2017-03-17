@@ -10,8 +10,8 @@
          do_cancel_match/2,
          offline_match/1,
          cancel_match/2,
-         start_match/2,
-         enter_match/2
+         start_match/3,
+         enter_match/3
         ]).
 
 -include("ets.hrl").
