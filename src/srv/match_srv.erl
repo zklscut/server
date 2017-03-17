@@ -104,7 +104,7 @@ handle_cast(Cast, State) ->
 
 handle_cast_inner({start_match, PlayerList, Rank}, State) ->
     MatchData = get_match_data(),
-    lib_match:do_start_match(PlayerList, MatchData),
+    lib_match:do_start_match(PlayerList, Rank, MatchData),
     % #{
     %   match_list := MatchList,
     %   player_info:= PlayerInfo
