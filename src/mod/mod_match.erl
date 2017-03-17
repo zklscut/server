@@ -28,9 +28,9 @@ end_match(#m__match__end_match__l2s{mode = MatchMode}, Player) ->
     lib_match:cancel_match(lib_player:get_player_id(Player), MatchMode),
     {ok, Player}.
 
-enter_match(#m__match__enter_match__l2s{wait_id = WaitId}, Player) ->
+enter_match(#m__match__enter_match__l2s{wait_id = WaitId, mode=MatchMode}, Player) ->
     % match_srv:enter_match(lib_player:get_player_id(Player), WaitId),
-    lib_match:enter_match(lib_player:get_player_id(Player), WaitId),
+    lib_match:enter_match(lib_player:get_player_id(Player), WaitId, MatchMode),
     {ok, Player}.
 
 send_to_player_list(Send, PlayerList) ->
