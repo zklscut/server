@@ -46,7 +46,7 @@ get_mode_match_srv(MatchMode)->
         0->
             match_srv;
         _->
-            match_srv;
+            match_srv
     end.
 
 do_start_match(PlayerList, Rank, MatchData)->
