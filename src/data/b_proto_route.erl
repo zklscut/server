@@ -41,6 +41,7 @@ get(13025) -> {m__room__cancle_ready__l2s, mod_room, cancle_ready};
 get(13026) -> {m__room__notice_all_ready__s2l, mod_room, notice_all_ready}; 
 get(13027) -> {m__room__login_not_in_room__s2l, mod_room, login_not_in_room}; 
 get(13028) -> {m__room__enter_fail__s2l, mod_room, enter_fail}; 
+get(13029) -> {m__room__enter_simple_room__l2s, mod_room, enter_simple_room}; 
 get(14001) -> {m__chat__public_speak__l2s, mod_chat, public_speak}; 
 get(14002) -> {m__chat__public_speak__s2l, mod_chat, public_speak}; 
 get(15001) -> {m__fight__game_state_change__s2l, mod_fight, game_state_change}; 
