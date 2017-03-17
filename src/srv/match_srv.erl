@@ -124,7 +124,7 @@ handle_cast_inner({start_match, PlayerList, Rank}, State) ->
 handle_cast_inner({cancle_match, PlayerId}, State) ->
     MatchData = get_match_data(),
     % update_match_data(do_cancel_match(PlayerId, MatchData)),
-    lib_match:do_cancel_match(PlayerId, MatchData)
+    lib_match:do_cancel_match(PlayerId, MatchData),
     {noreply, State};    
 
 handle_cast_inner({enter_match, PlayerId, _WaitId}, State) ->
