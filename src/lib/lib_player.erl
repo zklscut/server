@@ -33,7 +33,8 @@ handle_after_login(#{id := PlayerId} = Player) ->
 
 handle_after_logout(#{id := PlayerId} = Player) ->
     lib_ets:delete(?ETS_PLAYER_PID, PlayerId),
-    match_srv:offline_match(PlayerId),
+    % match_srv:offline_match(PlayerId),
+    lib_match:offline_match(PlayerId),
     fight_srv:player_offline(Player),
     case is_in_fight(Player) of
         true->

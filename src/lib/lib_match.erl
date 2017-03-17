@@ -6,7 +6,11 @@
 -export([do_start_match/3,
          do_enter_match/2,
          do_time_tick/1,
-         do_cancel_match/2
+         do_cancel_match/2,
+         offline_match/1,
+         cancel_match/2,
+         start_match/2,
+         enter_match/2
         ]).
 
 -include("ets.hrl").
@@ -17,11 +21,33 @@
 %% API functions
 %% ====================================================================
 
+offline_match(PlayerId)->
+    match_srv:offline_match(PlayerId).
+
+cancel_match(PlayerId, MatchMode)->
+    MatchSrv = get_mode_match_srv(MatchMode),
+    MatchSrv:cancel_match(PlayerList, 0).
+
+start_match(PlayerList, Rank, MatchMode)->
+    MatchSrv = get_mode_match_srv(MatchMode),
+    MatchSrv:start_match(PlayerList, 0).
+
+enter_match(PlayerId, WaitId)->
+    MatchSrv = get_mode_match_srv(MatchMode),
+    MatchSrv:enter_match(PlayerId, WaitId).
 
 
 %% ====================================================================
 %% INNER functions
 %% ====================================================================
+
+get_mode_match_srv(MatchMode)->
+    case MatchMode of
+        0->
+            match_srv;
+        _->
+            match_srv;
+    end.
 
 do_start_match(PlayerList, Rank, MatchData)->
     #{
@@ -61,8 +87,8 @@ do_enter_match(PlayerId, MatchData)->
                 wait_player_list := WaitPlayerList,
                 player_list := StartPlayerList} = WaitMatch,
              NewWaitPlayerList = WaitPlayerList -- [PlayerId],
-            ReadyPlayerList =  StartPlayerList -- NewWaitPlayerList,
-            Send = #m__match__enter_match_list__s2l{
+             ReadyPlayerList =  StartPlayerList -- NewWaitPlayerList,
+             Send = #m__match__enter_match_list__s2l{
                     wait_id = WaitId,
                     ready_list = [lib_player:get_player_show_base(ReadyPlayerId)||ReadyPlayerId<-ReadyPlayerList],
                     wait_list = [lib_player:get_player_show_base(WaitPlayerId)||WaitPlayerId<-NewWaitPlayerList]
@@ -85,7 +111,7 @@ do_enter_match(PlayerId, MatchData)->
                     update_match_data(MatchData#{player_info := NewPlayerInfo,
                                                     wait_list := NewWaitList,
                                                     match_list := NewMatchList}),
-                    fight_srv:start_link(0, StartPlayerList, b_duty:get(?MATCH_NEED_PLAYER_NUM), "abc");
+                    fight_srv:start_link(0, StartPlayerList, b_duty:get(maps:get(duty_template, MatchData)), "abc");
                 _ ->
                     NewWaitMatch = WaitMatch#{wait_player_list := NewWaitPlayerList},
                     NewWaitList = maps:put(WaitId, NewWaitMatch, WaitList),
