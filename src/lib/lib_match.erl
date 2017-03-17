@@ -3,7 +3,8 @@
 %% 2016
 
 -module(lib_match).
--export([do_start_match/3,
+-export([
+         do_start_match/3,
          do_enter_match/2,
          do_time_tick/1,
          do_cancel_match/2,
@@ -26,7 +27,7 @@ offline_match(PlayerId)->
 
 cancel_match(PlayerId, MatchMode)->
     MatchSrv = get_mode_match_srv(MatchMode),
-    MatchSrv:cancel_match(PlayerList, 0).
+    MatchSrv:cancel_match(PlayerId, 0).
 
 start_match(PlayerList, Rank, MatchMode)->
     MatchSrv = get_mode_match_srv(MatchMode),
