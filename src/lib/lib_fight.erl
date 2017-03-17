@@ -93,15 +93,15 @@ init(RoomId, PlayerList, DutyList, Name, State) ->
 
 init_mod(RoomId, State)->
     case lib_room:get_room(RoomId) of
+        undefined->
+            State;
         Room->
             case maps:get(is_simple, Room) of
                 true->
                     maps:put(fight_mod, 1, State);
                 _->
                     State
-            end;
-        undefined->
-            State
+            end
     end.
 notice_rnd_select_duty(SeatId, State)->
     RandList = util:rand_in_list(maps:get(rand_duty_list, State), 3),
