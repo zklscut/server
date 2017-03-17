@@ -33,7 +33,7 @@ start_match(PlayerList, Rank, MatchMode)->
     MatchSrv = get_mode_match_srv(MatchMode),
     MatchSrv:start_match(PlayerList, 0).
 
-enter_match(PlayerId, WaitId)->
+enter_match(PlayerId, WaitId, MatchMode)->
     MatchSrv = get_mode_match_srv(MatchMode),
     MatchSrv:enter_match(PlayerId, WaitId).
 
