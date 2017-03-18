@@ -54,9 +54,9 @@ add_diamond(#m__player__add_diamond__l2s{}, Player) ->
 
   {save, NewPlayer}.
 
-upload_head(#m__player__upload_head__l2s{img_head = ImgHead}, Player)->
+upload_head(#m__player__upload_head__l2s{img_data = ImgData}, Player)->
   PlayerData = maps:get(data, Player),
-  NewPlayerData = maps:put(head_data, ImgHead, PlayerData),
+  NewPlayerData = maps:put(head_data, ImgData, PlayerData),
   NewPlayer = maps:put(data, NewPlayerData, Player),
   Send = #m__player__upload_head__s2l{result = 0},
   net_send:send(Send, NewPlayer),
