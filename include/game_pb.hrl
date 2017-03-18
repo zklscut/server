@@ -14,6 +14,10 @@
 -record(m__player__change_name__l2s, {msg_id=12008, name}).
 -record(m__player__change_name__s2l, {msg_id=12009, name, result}).
 -record(m__player__kick__s2l, {msg_id=12010, kick_reason}).
+-record(m__player__upload_head__l2s, {msg_id=12011, img_data}).
+-record(m__player__upload_head__s2l, {msg_id=12012, result}).
+-record(m__player__get_head__l2s, {msg_id=12013, player_id}).
+-record(m__player__get_head__s2l, {msg_id=12014, player_id, img_data}).
 -record(m__room__get_list__l2s, {msg_id=13001}).
 -record(p_fight, {room_name, duty_list, player_info_list}).
 -record(p_room, {room_id, cur_player_num, max_player_num, owner, room_name, room_status, duty_list, ready_list}).
