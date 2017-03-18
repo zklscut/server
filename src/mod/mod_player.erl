@@ -51,7 +51,23 @@ add_coin(#m__player__add_coin__l2s{}, Player) ->
 
 add_diamond(#m__player__add_diamond__l2s{}, Player) ->
   NewPlayer = mod_resource:increase(?RESOURCE_DIAMOND, 500000, ?LOG_ACTION_FIGHT, Player),
+
   {save, NewPlayer}.
+
+upload_head(#m__player__upload_head__l2s{img_head = ImgHead}, Player)->
+  PlayerData = maps:get(data, Player),
+  NewPlayerData = maps:put(head_data, ImgHead, PlayerData),
+  NewPlayer = maps:put(data, NewPlayerData, Player),
+  Send = #m__player__upload_head__s2l{result = 0},
+  net_send:send(Send, NewPlayer),
+  {save, NewPlayer}.
+
+get_head(#m__player__get_head__l2s{player_id = PlayerId}, Player)->
+  Send = #m__player__get_head__s2l{player_id = PlayerId, 
+          img_data = maps:get(head_data, maps:get(data, Player), <<>>)
+          }
+  net_send:send(Send, Player),
+  {ok, Player}.
 
 handle_fight_result(DutyId, IsWin, IsMvp, IsCarry, CoinAdd, ExpAdd, PlayerId) ->
     global_op_srv:player_op(PlayerId, {?MODULE, handle_fight_result_local, [DutyId, IsWin, IsMvp, IsCarry, CoinAdd, ExpAdd]}).

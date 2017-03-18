@@ -3,6 +3,7 @@
 
 -define(PLAYER_DATA, #{resource => #{},
                        win_rate_list => #{},
+                       head_data => <<>>,
                        change_name_cnt => 0}).
 
 -endif.
