@@ -7,6 +7,8 @@
          other_info/2,
          add_coin/2,
          add_diamond/2,
+         upload_head/2,
+         get_head/2,
          handle_fight_result/7,
          handle_fight_result_local/7,
          handle_consume_gift/2,
