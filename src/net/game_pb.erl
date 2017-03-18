@@ -161,6 +161,14 @@
 	 decode_p_room/1, encode_p_fight/1, decode_p_fight/1,
 	 encode_m__room__get_list__l2s/1,
 	 decode_m__room__get_list__l2s/1,
+	 encode_m__player__get_head__s2l/1,
+	 decode_m__player__get_head__s2l/1,
+	 encode_m__player__get_head__l2s/1,
+	 decode_m__player__get_head__l2s/1,
+	 encode_m__player__upload_head__s2l/1,
+	 decode_m__player__upload_head__s2l/1,
+	 encode_m__player__upload_head__l2s/1,
+	 decode_m__player__upload_head__l2s/1,
 	 encode_m__player__kick__s2l/1,
 	 decode_m__player__kick__s2l/1,
 	 encode_m__player__change_name__s2l/1,
@@ -416,6 +424,16 @@
 	{room_name, duty_list, player_info_list}).
 
 -record(m__room__get_list__l2s, {msg_id}).
+
+-record(m__player__get_head__s2l,
+	{msg_id, player_id, img_data}).
+
+-record(m__player__get_head__l2s, {msg_id, player_id}).
+
+-record(m__player__upload_head__s2l, {msg_id, result}).
+
+-record(m__player__upload_head__l2s,
+	{msg_id, img_data}).
 
 -record(m__player__kick__s2l, {msg_id, kick_reason}).
 
@@ -807,6 +825,22 @@ encode_m__room__get_list__l2s(Record)
     when is_record(Record, m__room__get_list__l2s) ->
     encode(m__room__get_list__l2s, Record).
 
+encode_m__player__get_head__s2l(Record)
+    when is_record(Record, m__player__get_head__s2l) ->
+    encode(m__player__get_head__s2l, Record).
+
+encode_m__player__get_head__l2s(Record)
+    when is_record(Record, m__player__get_head__l2s) ->
+    encode(m__player__get_head__l2s, Record).
+
+encode_m__player__upload_head__s2l(Record)
+    when is_record(Record, m__player__upload_head__s2l) ->
+    encode(m__player__upload_head__s2l, Record).
+
+encode_m__player__upload_head__l2s(Record)
+    when is_record(Record, m__player__upload_head__l2s) ->
+    encode(m__player__upload_head__l2s, Record).
+
 encode_m__player__kick__s2l(Record)
     when is_record(Record, m__player__kick__s2l) ->
     encode(m__player__kick__s2l, Record).
@@ -1026,6 +1060,46 @@ encode(m__player__kick__s2l, _Record) ->
 			   with_default(_Record#m__player__kick__s2l.kick_reason,
 					none),
 			   int32, [])]);
+encode(m__player__upload_head__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__player__upload_head__l2s.msg_id,
+					12011),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__player__upload_head__l2s.img_data,
+					none),
+			   bytes, [])]);
+encode(m__player__upload_head__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__player__upload_head__s2l.msg_id,
+					12012),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__player__upload_head__s2l.result,
+					none),
+			   int32, [])]);
+encode(m__player__get_head__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__player__get_head__l2s.msg_id,
+					12013),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__player__get_head__l2s.player_id,
+					none),
+			   uint32, [])]);
+encode(m__player__get_head__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__player__get_head__s2l.msg_id,
+					12014),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__player__get_head__s2l.player_id,
+					none),
+			   uint32, []),
+		      pack(3, required,
+			   with_default(_Record#m__player__get_head__s2l.img_data,
+					none),
+			   bytes, [])]);
 encode(m__room__get_list__l2s, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__room__get_list__l2s.msg_id,
@@ -2352,6 +2426,18 @@ decode_p_fight(Bytes) -> decode(p_fight, Bytes).
 decode_m__room__get_list__l2s(Bytes) ->
     decode(m__room__get_list__l2s, Bytes).
 
+decode_m__player__get_head__s2l(Bytes) ->
+    decode(m__player__get_head__s2l, Bytes).
+
+decode_m__player__get_head__l2s(Bytes) ->
+    decode(m__player__get_head__l2s, Bytes).
+
+decode_m__player__upload_head__s2l(Bytes) ->
+    decode(m__player__upload_head__s2l, Bytes).
+
+decode_m__player__upload_head__l2s(Bytes) ->
+    decode(m__player__upload_head__l2s, Bytes).
+
 decode_m__player__kick__s2l(Bytes) ->
     decode(m__player__kick__s2l, Bytes).
 
@@ -2476,6 +2562,26 @@ decode(m__player__kick__s2l, Bytes) ->
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__player__kick__s2l, Decoded);
+decode(m__player__upload_head__l2s, Bytes) ->
+    Types = [{2, img_data, bytes, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__player__upload_head__l2s, Decoded);
+decode(m__player__upload_head__s2l, Bytes) ->
+    Types = [{2, result, int32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__player__upload_head__s2l, Decoded);
+decode(m__player__get_head__l2s, Bytes) ->
+    Types = [{2, player_id, uint32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__player__get_head__l2s, Decoded);
+decode(m__player__get_head__s2l, Bytes) ->
+    Types = [{3, img_data, bytes, []},
+	     {2, player_id, uint32, []}, {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__player__get_head__s2l, Decoded);
 decode(m__room__get_list__l2s, Bytes) ->
     Types = [{1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
@@ -3102,6 +3208,34 @@ to_record(m__player__kick__s2l, DecodedTuples) ->
 					 Record, Name, Val)
 		end,
 		#m__player__kick__s2l{}, DecodedTuples);
+to_record(m__player__upload_head__l2s, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__player__upload_head__l2s),
+					 Record, Name, Val)
+		end,
+		#m__player__upload_head__l2s{}, DecodedTuples);
+to_record(m__player__upload_head__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__player__upload_head__s2l),
+					 Record, Name, Val)
+		end,
+		#m__player__upload_head__s2l{}, DecodedTuples);
+to_record(m__player__get_head__l2s, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__player__get_head__l2s),
+					 Record, Name, Val)
+		end,
+		#m__player__get_head__l2s{}, DecodedTuples);
+to_record(m__player__get_head__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__player__get_head__s2l),
+					 Record, Name, Val)
+		end,
+		#m__player__get_head__s2l{}, DecodedTuples);
 to_record(m__room__get_list__l2s, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields,
