@@ -60,7 +60,11 @@ login_change_socket(Pid, Socket) ->
     Timeout :: non_neg_integer() | infinity.
 %% ====================================================================
 init([Socket]) ->
-    {ok, #{socket => Socket}}.
+    {ok, #{socket => Socket,
+           is_buff_data => 0,
+           buff_data => <<>>,
+           buff_data_length => 0,
+           buff_total_length => 0}}.
 
 
 %% handle_call/3
@@ -152,10 +156,39 @@ handle_cast_inner({login_change_socket, Socket}, #{socket := PreSocket} = State)
 handle_info({tcp_closed, _}, State) ->
     {stop, logout, State};
 
-handle_info({tcp, _Port, <<PreData:24, Len:16, ProtoId:16, ProtoData/binary>>}, State) ->
+handle_info({tcp, _Port, TcpData}, State) ->
+    #{is_buff_data := IsBuffData,
+      buff_data_length := BuffDataLength,
+      buff_total_length := BuffTotalLength,
+      buff_data := BuffData} = State,
+    
+    NewState = 
+        case IsBuffData of
+            1 ->
+                ReceiveBuffLength = erlang:byte_size(TcpData),
+                NewBuffDataLength = (ReceiveBuffLength + BuffDataLength),
+                NewBuffData = <<BuffData/binary, TcpData/binary>>,
+                case NewBuffDataLength >= BuffTotalLength of
+                    true ->
+                        do_recevie_over(NewBuffData, State);
+                    false ->
+                        State#{buff_data_length := NewBuffDataLength,
+                               buff_data := NewBuffData}
+                end;
+            0 ->
+                <<_PreData:24, Len:16, _ProtoId:16, ProtoData/binary>>} = TcpData,
+                ReceiveBuffLength = erlang:byte_size(ProtoData),
+                case ReceiveBuffLength >= Len of
+                    true ->
+                        do_recevie_over(TcpData, State);
+                    false ->
+                        State#{is_buff_data := true,
+                               buff_data_length := ReceiveBuffLength,
+                               buff_total_length := Len,
+                               buff_data := TcpData}
+                end
+        end,
     % lager:info("receive bianry ~p", [{PreData, Len, ProtoId, ProtoData}]),
-    {Op, NewState} = do_proto(ProtoId, ProtoData, State),
-    do_cache_op(Op, NewState),
     active_socket_inner(maps:get(socket, State)),
     {noreply, NewState};
 
@@ -224,5 +257,13 @@ do_proto(ProtoId, ProtoData, State) ->
             {ok, State}
     end.
 
+do_recevie_over(Data, State) ->
+    <<_PreData:24, _Len:16, ProtoId:16, ProtoData/binary>>} = TcpData,
+    {Op, NewState} = do_proto(ProtoId, ProtoData, State),
+    do_cache_op(Op, NewState),
+    NewState#{is_buff_data => 0,
+              buff_data => <<>>,
+              buff_data_length => 0,
+              buff_total_length => 0}.
 
 
