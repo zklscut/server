@@ -39,6 +39,7 @@
 -define(OP_TOUPIAO_CARRY, 1013). %%投票carry
 -define(OP_SKILL_OFFLINE, 1014). %%离线玩家操作时长
 -define(OP_SELECT_DUTY, 1015).%%选择角色
+-define(OP_LANGREN_SELECT, 1016).%%狼人挑选对象
 
 -define(FAYAN_OP_LIST, [?OP_FAYAN, ?OP_PART_FAYAN, ?OP_DEATH_FAYAN, ?OP_QUZHU_FAYAN, ?OP_LAPIAO_FAYAN]).
 
