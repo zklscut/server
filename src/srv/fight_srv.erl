@@ -1349,7 +1349,7 @@ notice_duty(State) ->
     lists:foreach(FunNotice, maps:keys(SeatDutyMap)),
     LangRenList = lib_fight:get_duty_seat(?DUTY_LANGREN, State),
     SendLangRenList = #m__fight__notice_langren__s2l{langren_list=LangRenList},
-    [lib_fight:send_to_seat(SendLangRenList, LangRenSeatId, State) | LangRenSeatId<-LangRenList].
+    [lib_fight:send_to_seat(SendLangRenList, LangRenSeatId, State) || LangRenSeatId<-LangRenList].
 
 do_duty_state_start(Duty, GameState, State) ->
     SeatIdList = lib_fight:get_duty_seat(Duty, State),
