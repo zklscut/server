@@ -1457,6 +1457,9 @@ do_receive_fayan(PlayerId, Chat, State) ->
             net_send:send_errcode(ErrCode, PlayerId)
     end.       
 
+notice_player_op(?DUTY_LANGREN, SeatList, State) ->
+    notice_player_op(?DUTY_LANGREN, lib_fight:get_alive_seat_list(State), SeatList, State);
+
 notice_player_op(?DUTY_DAOZEI, SeatList, State) ->
     notice_player_op(?DUTY_DAOZEI, maps:get(daozei, State), SeatList, State);
 
