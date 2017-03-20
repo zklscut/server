@@ -581,7 +581,9 @@ state_someone_die(start, State) ->
             TimeTick = util:rand(4000, 10000),
             notice_game_status_change(state_someone_die, [?OP_SKILL_D_DELAY], StateAfterDieOp),
             send_event_inner(op_over, TimeTick),
-            SendDelayTick = #m__fight__op_timetick__s2l{timetick = lib_fight:get_op_wait(?OP_SKILL_D_DELAY, undefined, StateAfterDieOp)},
+            SendDelayTick = #m__fight__op_timetick__s2l{
+                                                        wait_op = ?OP_SKILL_D_DELAY,
+                                                        timetick = lib_fight:get_op_wait(?OP_SKILL_D_DELAY, undefined, StateAfterDieOp)},
             lib_fight:send_to_all_player(SendDelayTick, StateAfterDieOp),
             {state_someone_die, maps:put(skill_d_delay, 1, StateAfterDieOp)};
         skip->
@@ -1494,10 +1496,8 @@ notice_player_op(Op, AttachData, SeatList, State) ->
     lists:foreach(FunNotice, SeatList),
     case WaitTime == 0 of
         true->
-            lager:info("notice_player_op1"),
             State;
         _->
-            lager:info("notice_player_op2"),
             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
             start_fight_fsm_event_timer(?TIMER_TIMEOUT, UseWaitTime),
             StateAfterAttackData = maps:put(wait_op_attack_data, AttachData, State),
@@ -1507,13 +1507,11 @@ notice_player_op(Op, AttachData, SeatList, State) ->
             StateAfterStart = maps:put(op_timer_start, util:get_micro_time(), StateAfterNormalDuration),
             case lists:member(Op, ?FAYAN_OP_LIST) of
                 true->
-                    lager:info("notice_player_op3"),
-                    UseWaitTimeSend = #m__fight__op_timetick__s2l{timetick = UseWaitTime},
+                    UseWaitTimeSend = #m__fight__op_timetick__s2l{wait_op = Op,timetick = UseWaitTime},
                     lib_fight:send_to_all_player(UseWaitTimeSend, StateAfterStart),
                     maps:put(op_timer_use_dur, UseWaitTime, StateAfterStart);
                 _->
-                    lager:info("notice_player_op4"),
-                    NormalWaitTimeSend = #m__fight__op_timetick__s2l{timetick = WaitTime},
+                    NormalWaitTimeSend = #m__fight__op_timetick__s2l{wait_op = Op,timetick = WaitTime},
                     lib_fight:send_to_all_player(NormalWaitTimeSend, StateAfterStart),
                     maps:put(op_timer_use_dur, WaitTime, StateAfterStart)
             end
@@ -1634,6 +1632,7 @@ player_online_offline_wait_op_time_update(SeatId, State)->
     UseDuration = maps:get(op_timer_use_dur, State),
     StartTime = maps:get(op_timer_start, State),
     WaitOpList = maps:get(wait_op_list, State),
+    WaitOp = maps:get(wait_op, State),
     case (undefined =/= StartTime) andalso ([] =/= WaitOpList)
                                      andalso lists:member(SeatId, WaitOpList) of
         true->
@@ -1665,7 +1664,7 @@ player_online_offline_wait_op_time_update(SeatId, State)->
                                     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
                                     start_fight_fsm_event_timer(?TIMER_TIMEOUT, WaitTime),
                                     %%通知更新倒计时
-                                    UseWaitTimeSend = #m__fight__op_timetick__s2l{timetick = WaitTime},
+                                    UseWaitTimeSend = #m__fight__op_timetick__s2l{wait_op = WaitOp, timetick = WaitTime},
                                     lib_fight:send_to_all_player(UseWaitTimeSend, State),
                                     maps:put(op_timer_use_dur, NormalDuration, State)
                             end 
