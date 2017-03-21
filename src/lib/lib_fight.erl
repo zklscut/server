@@ -108,7 +108,8 @@ notice_rnd_select_duty(SeatId, State)->
     SeatRndInfo = maps:get(seat_rnd_info, State),
     SeatRndInfoNew =  maps:put(SeatId, RandList, SeatRndInfo),
     StateNew = maps:put(seat_rnd_info, SeatRndInfoNew, State),
-    Send = #m__fight__random_duty__s2l{duty_list = RandList},
+    Send = #m__fight__random_duty__s2l{duty_list = RandList, 
+    left_time = lib_fight:get_op_wait(?OP_SELECT_DUTY, undefined, StateNew)},
     send_to_seat(Send, SeatId, StateNew),
     StateNew.
 
