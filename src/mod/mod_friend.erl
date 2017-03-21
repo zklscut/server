@@ -125,7 +125,7 @@ get_friend_info(FriendId, FriendData)->
             false ->
                 ?FRIEND_STATUS_OFFLINE
         end,
-    #{chat_list := ChatList} = OneFriend,
+    #{chat_list := _ChatList} = OneFriend,
     #p_friend{player_show_base = lib_player:get_player_show_base(FriendPlayer),
               room_id = RoomId,
               status = Status
