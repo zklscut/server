@@ -83,6 +83,8 @@
                   duty_list => [],%%职责列表
                   rand_duty_list => [], %%随机职责列表
                   seat_rnd_info => #{},  %%座位随机列表
+                  duty_select_over => 0, %%选择身份是否结束
+                  duty_select_start_time => 0,
                   duty_select_seat_list => [],%%已经选择了角色的座位列表
                   player_list => [], %%玩家列表
                   seat_player_map => #{},%% #{seat_id, player_id}

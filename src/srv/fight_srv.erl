@@ -128,7 +128,7 @@ init([RoomId, PlayerList, DutyList, Name, State]) ->
     lib_room:update_room_status(RoomId, 1, 0, 1, 0),
     NewState = lib_fight:init(RoomId, PlayerList, DutyList, Name, State),
     % NewStateAfterTest = ?IF(?TEST, fight_test_no_send(init, State), NewState),
-    % notice_duty(NewState),
+    notice_duty(NewState),
     notice_game_status_change(start, NewState),
     send_event_inner(start, b_fight_state_wait:get(start)),
     {ok, state_select_card, NewState}.
@@ -139,6 +139,7 @@ state_select_card(start, State)->
     {next_state, state_select_card, State};
 
 state_select_card(wait_op, State)->
+
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, lib_fight:get_op_wait(?OP_SELECT_DUTY, undefined, State)),
     SeatList = lib_fight:get_all_seat(State),
@@ -151,6 +152,7 @@ state_select_card(wait_op, State)->
                         end
                     end,
     StateNew = lists:foldl(DutySelectFun, State, SeatList),
+    StateAfterStartTime = maps:put(duty_select_start_time, util:get_micro_time(), StateNew),
     {next_state, state_select_card, StateNew};
 
 state_select_card({player_op, PlayerId, ?OP_SELECT_DUTY, [Duty]}, State)->
@@ -195,7 +197,8 @@ state_select_card(op_over, State)->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     send_event_inner(start),
     notice_duty(State),
-    {next_state, state_daozei, State}.
+    NewState = maps:put(duty_select_over, 1, State),
+    {next_state, state_daozei, NewState}.
 
 %% ====================================================================
 %% state_daozei
@@ -1211,7 +1214,21 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     OpStartTime = maps:get(op_timer_start, NewState),
     lager:info("player_online ~p", [OpStartTime]),
     OpUseTime = maps:get(op_timer_use_dur, NewState),
-    
+
+    DutySelectOver = maps:get(duty_select_over, NewState),
+    DutySelectStartTime = maps:get(duty_select_start_time, NewState),
+    DutySelectTotalTime = lib_fight:get_op_wait(?OP_SELECT_DUTY, undefined, NewState),
+    SeatRndInfo = maps:get(seat_rnd_info, NewState),
+    OwnRndInfo = maps:get(SeatId, SeatRndInfo, []),
+    DutySelectLastTime = util:get_micro_time() - DutySelectStartTime,
+    DutySelectLeftTime = 
+    case DutySelectStartTime > 0 andalso (DutySelectTotalTime - DutySelectLastTime) > 0 of
+        true->
+            DutySelectTotalTime - DutySelectLastTime;
+        _->
+            0
+    end,
+
     {AttachData1, AttachData2} = get_online_attach_data(SeatId, DutyId, NewState),
     Send = #m__fight__online__s2l{duty = DutyId,
                                   fight_info = lib_fight:get_p_fight(NewState),
@@ -1233,7 +1250,10 @@ handle_event({player_online, PlayerId}, StateName, State) ->
                                                       op = CurOp} || {CurSeatId, CurOp} <- FlopList],
                                   winner = Winner,
                                   duty_list = get_online_duty_data(Winner, NewState),
-                                  parting_jingzhang = PartingJingZhang -- ExitJingZhang
+                                  parting_jingzhang = PartingJingZhang -- ExitJingZhang,
+                                  duty_select_over = DutySelectOver,
+                                  duty_select_time = DutySelectLeftTime,
+                                  duty_select_info = OwnRndInfo
                                   },
     net_send:send(Send, PlayerId),
 
