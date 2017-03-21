@@ -165,7 +165,8 @@ state_select_card({player_op, PlayerId, ?OP_SELECT_DUTY, [Duty]}, State)->
             State;
         _-> 
             DiamondNum = mod_resource:get_num(?RESOURCE_DIAMOND, PlayerId),
-            case DiamondNum < ?SELECT_DUTY_CAST of
+            NeedDiamond = b_duty_select_consume:get(Duty),
+            case DiamondNum < NeedDiamond of
                 true->
                     %%提示金币不够
                     lib_fight:send_to_seat(#m__fight__select_duty__s2l{result = 2}, SeatId, State),

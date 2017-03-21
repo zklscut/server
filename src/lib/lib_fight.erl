@@ -128,7 +128,8 @@ do_rnd_select_duty_op(SeatId, SelectDuty, State)->
     StateAfterOp =
     case length(DesSeatList) > 0 of
         true->
-            mod_player:handle_decrease(?RESOURCE_DIAMOND, ?SELECT_DUTY_CAST, ?LOG_ACTION_FIGHT, 
+            NeedDiamond = b_duty_select_consume:get(SelectDuty),
+            mod_player:handle_decrease(?RESOURCE_DIAMOND, NeedDiamond, ?LOG_ACTION_FIGHT, 
                             lib_fight:get_player_id_by_seat(SeatId, State)),
             lib_fight:send_to_seat(#m__fight__select_duty__s2l{result = 0}, SeatId, State),
             ExchangeSeatId = util:rand_in_list(DesSeatList),
