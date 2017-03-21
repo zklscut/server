@@ -153,7 +153,7 @@ state_select_card(wait_op, State)->
                     end,
     StateNew = lists:foldl(DutySelectFun, State, SeatList),
     StateAfterStartTime = maps:put(duty_select_start_time, util:get_micro_time(), StateNew),
-    {next_state, state_select_card, StateNew};
+    {next_state, state_select_card, StateAfterStartTime};
 
 state_select_card({player_op, PlayerId, ?OP_SELECT_DUTY, [Duty]}, State)->
     %%首先判断是否已经操作过
