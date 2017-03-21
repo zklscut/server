@@ -76,6 +76,7 @@ get(15025) -> {m__fight__leave__s2l, mod_fight, leave};
 get(15026) -> {m__fight__update_duty__s2l, mod_fight, update_duty}; 
 get(15027) -> {m__fight__random_duty__s2l, mod_fight, random_duty}; 
 get(15028) -> {m__fight__select_duty__s2l, mod_fight, select_duty}; 
+get(15029) -> {m__fight__notice_langren__s2l, mod_fight, notice_langren}; 
 get(16001) -> {m__resource__push__s2l, mod_resource, push}; 
 get(17001) -> {m__match__start_match__l2s, mod_match, start_match}; 
 get(17002) -> {m__match__end_match__l2s, mod_match, end_match}; 
