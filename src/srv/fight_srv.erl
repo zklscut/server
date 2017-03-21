@@ -161,7 +161,7 @@ state_select_card({player_op, PlayerId, ?OP_SELECT_DUTY, [Duty]}, State)->
     case lists:member(SeatId, DutySelectSeatList) of
         true->
             %%提示已经操作过
-            lib_fight:send_to_seat(#m__fight__select_duty__s2l{result = 1}, SeatId, State),
+            lib_fight:send_to_seat(#m__fight__select_duty__s2l{result = 1, duty=0}, SeatId, State),
             State;
         _-> 
             DiamondNum = mod_resource:get_num(?RESOURCE_DIAMOND, PlayerId),
@@ -169,7 +169,7 @@ state_select_card({player_op, PlayerId, ?OP_SELECT_DUTY, [Duty]}, State)->
             case DiamondNum < NeedDiamond of
                 true->
                     %%提示金币不够
-                    lib_fight:send_to_seat(#m__fight__select_duty__s2l{result = 2}, SeatId, State),
+                    lib_fight:send_to_seat(#m__fight__select_duty__s2l{result = 2, duty=0}, SeatId, State),
                     State;
                 _->
                     lib_fight:do_rnd_select_duty_op(SeatId, Duty, State)
