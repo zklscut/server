@@ -74,14 +74,15 @@
 -record(p_flop, {seat_id, op}).
 -record(m__fight__online__s2l, {msg_id=15019, duty, game_state, round, die_list, seat_id, attach_data1, attach_data2, offline_list, leave_list, flop_list, winner, wait_op, wait_op_list, wait_op_attach_data, wait_op_tick, jingzhang, lover_list, duty_list, parting_jingzhang, fight_info}).
 -record(m__fight__offline__s2l, {msg_id=15020, offline_list}).
--record(m__fight__op_timetick__s2l, {msg_id=15021, timetick}).
+-record(m__fight__op_timetick__s2l, {msg_id=15021, timetick, wait_op}).
 -record(m__fight__langren_team_speak__s2l, {msg_id=15022, chat}).
 -record(m__fight__shouwei_op__s2l, {msg_id=15023, seat_id}).
 -record(m__fight__over_info__s2l, {msg_id=15024, winner, duty_list, dead_list}).
 -record(m__fight__leave__s2l, {msg_id=15025, leave_list}).
 -record(m__fight__update_duty__s2l, {msg_id=15026, pre_duty, cur_duty}).
 -record(m__fight__random_duty__s2l, {msg_id=15027, duty_list}).
--record(m__fight__select_duty__s2l, {msg_id=15028, result}).
+-record(m__fight__select_duty__s2l, {msg_id=15028, result, duty}).
+-record(m__fight__notice_langren__s2l, {msg_id=15029, langren_list}).
 -record(m__resource__push__s2l, {msg_id=16001, resource_id, num, action_id}).
 -record(m__match__start_match__l2s, {msg_id=17001, mode, player_list}).
 -record(m__match__end_match__l2s, {msg_id=17002, mode}).
