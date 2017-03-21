@@ -131,7 +131,9 @@ do_rnd_select_duty_op(SeatId, SelectDuty, State)->
             NeedDiamond = b_duty_select_consume:get(SelectDuty),
             mod_player:handle_decrease(?RESOURCE_DIAMOND, NeedDiamond, ?LOG_ACTION_FIGHT, 
                             lib_fight:get_player_id_by_seat(SeatId, State)),
-            lib_fight:send_to_seat(#m__fight__select_duty__s2l{result = 0, duty=SelectDuty}, SeatId, State),
+            lib_fight:send_to_seat(#m__fight__select_duty__s2l{result = 0, 
+                                                                seat_id = SeatId,
+                                                                duty=SelectDuty}, SeatId, State),
             ExchangeSeatId = util:rand_in_list(DesSeatList),
             StateAfterExchange = 
             case SeatId == ExchangeSeatId of 
@@ -147,7 +149,7 @@ do_rnd_select_duty_op(SeatId, SelectDuty, State)->
             maps:put(duty_select_seat_list, DutySelectSeatList ++ [SeatId], StateAfterExchange);
         _->
             %%通知手速慢了
-            lib_fight:send_to_seat(#m__fight__select_duty__s2l{result = 3, duty=0}, SeatId, State),
+            lib_fight:send_to_seat(#m__fight__select_duty__s2l{result = 3, duty=0, seat_id = SeatId}, SeatId, State),
             State
     end,    
     StateAfterOp.
