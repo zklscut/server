@@ -193,6 +193,7 @@ decode_value(?TYPE_VARINT, ExpectedType, Bytes) ->
     {typecast(ExpectedType, Value), Rest};
 decode_value(?TYPE_STRING, bytes, Bytes) ->
     {Length, Rest} = decode_varint(Bytes),
+    lager:info("lengh ~p , rest ~p", [Length, erlang:byte_size(Rest)]),
     split_binary(Rest, Length);
 decode_value(?TYPE_STRING, string, Bytes) ->
     {Length, Rest} = decode_varint(Bytes),

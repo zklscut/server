@@ -42,6 +42,8 @@
 	 decode_m__match__start_match__l2s/1,
 	 encode_m__resource__push__s2l/1,
 	 decode_m__resource__push__s2l/1,
+	 encode_m__fight__notice_langren__s2l/1,
+	 decode_m__fight__notice_langren__s2l/1,
 	 encode_m__fight__select_duty__s2l/1,
 	 decode_m__fight__select_duty__s2l/1,
 	 encode_m__fight__random_duty__s2l/1,
@@ -258,7 +260,11 @@
 -record(m__resource__push__s2l,
 	{msg_id, resource_id, num, action_id}).
 
--record(m__fight__select_duty__s2l, {msg_id, result}).
+-record(m__fight__notice_langren__s2l,
+	{msg_id, langren_list}).
+
+-record(m__fight__select_duty__s2l,
+	{msg_id, result, duty}).
 
 -record(m__fight__random_duty__s2l,
 	{msg_id, duty_list}).
@@ -276,7 +282,8 @@
 -record(m__fight__langren_team_speak__s2l,
 	{msg_id, chat}).
 
--record(m__fight__op_timetick__s2l, {msg_id, timetick}).
+-record(m__fight__op_timetick__s2l,
+	{msg_id, timetick, wait_op}).
 
 -record(m__fight__offline__s2l, {msg_id, offline_list}).
 
@@ -562,6 +569,10 @@ encode_m__match__start_match__l2s(Record)
 encode_m__resource__push__s2l(Record)
     when is_record(Record, m__resource__push__s2l) ->
     encode(m__resource__push__s2l, Record).
+
+encode_m__fight__notice_langren__s2l(Record)
+    when is_record(Record, m__fight__notice_langren__s2l) ->
+    encode(m__fight__notice_langren__s2l, Record).
 
 encode_m__fight__select_duty__s2l(Record)
     when is_record(Record, m__fight__select_duty__s2l) ->
@@ -1823,6 +1834,10 @@ encode(m__fight__op_timetick__s2l, _Record) ->
 		      pack(2, required,
 			   with_default(_Record#m__fight__op_timetick__s2l.timetick,
 					none),
+			   int32, []),
+		      pack(3, required,
+			   with_default(_Record#m__fight__op_timetick__s2l.wait_op,
+					none),
 			   int32, [])]);
 encode(m__fight__langren_team_speak__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
@@ -1897,6 +1912,19 @@ encode(m__fight__select_duty__s2l, _Record) ->
 			   int32, []),
 		      pack(2, required,
 			   with_default(_Record#m__fight__select_duty__s2l.result,
+					none),
+			   int32, []),
+		      pack(3, required,
+			   with_default(_Record#m__fight__select_duty__s2l.duty,
+					none),
+			   int32, [])]);
+encode(m__fight__notice_langren__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__notice_langren__s2l.msg_id,
+					15029),
+			   int32, []),
+		      pack(2, repeated,
+			   with_default(_Record#m__fight__notice_langren__s2l.langren_list,
 					none),
 			   int32, [])]);
 encode(m__resource__push__s2l, _Record) ->
@@ -2238,6 +2266,9 @@ decode_m__match__start_match__l2s(Bytes) ->
 
 decode_m__resource__push__s2l(Bytes) ->
     decode(m__resource__push__s2l, Bytes).
+
+decode_m__fight__notice_langren__s2l(Bytes) ->
+    decode(m__fight__notice_langren__s2l, Bytes).
 
 decode_m__fight__select_duty__s2l(Bytes) ->
     decode(m__fight__select_duty__s2l, Bytes).
@@ -2902,8 +2933,8 @@ decode(m__fight__offline__s2l, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__offline__s2l, Decoded);
 decode(m__fight__op_timetick__s2l, Bytes) ->
-    Types = [{2, timetick, int32, []},
-	     {1, msg_id, int32, []}],
+    Types = [{3, wait_op, int32, []},
+	     {2, timetick, int32, []}, {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__op_timetick__s2l, Decoded);
 decode(m__fight__langren_team_speak__s2l, Bytes) ->
@@ -2938,10 +2969,15 @@ decode(m__fight__random_duty__s2l, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__random_duty__s2l, Decoded);
 decode(m__fight__select_duty__s2l, Bytes) ->
-    Types = [{2, result, int32, []},
+    Types = [{3, duty, int32, []}, {2, result, int32, []},
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__select_duty__s2l, Decoded);
+decode(m__fight__notice_langren__s2l, Bytes) ->
+    Types = [{2, langren_list, int32, [repeated]},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__notice_langren__s2l, Decoded);
 decode(m__resource__push__s2l, Bytes) ->
     Types = [{4, action_id, int32, []}, {3, num, int32, []},
 	     {2, resource_id, int32, []}, {1, msg_id, int32, []}],
@@ -3693,6 +3729,14 @@ to_record(m__fight__select_duty__s2l, DecodedTuples) ->
 					 Record, Name, Val)
 		end,
 		#m__fight__select_duty__s2l{}, DecodedTuples);
+to_record(m__fight__notice_langren__s2l,
+	  DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__notice_langren__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__notice_langren__s2l{}, DecodedTuples);
 to_record(m__resource__push__s2l, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields,
