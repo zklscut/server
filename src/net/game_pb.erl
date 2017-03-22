@@ -293,7 +293,8 @@
 	 flop_list, winner, wait_op, wait_op_list,
 	 wait_op_attach_data, wait_op_tick, jingzhang,
 	 lover_list, duty_list, parting_jingzhang, fight_info,
-	 duty_select_over, duty_select_time, duty_select_info}).
+	 duty_select_over, duty_select_time, duty_select_info,
+	 is_night, fight_mode}).
 
 -record(p_flop, {seat_id, op}).
 
@@ -348,7 +349,7 @@
 	{msg_id, op, attach_data}).
 
 -record(m__fight__notice_duty__s2l,
-	{msg_id, duty, seat_id, fight_info}).
+	{msg_id, duty, seat_id, fight_info, fight_mode}).
 
 -record(m__fight__game_state_change__s2l,
 	{msg_id, game_status, attach_data}).
@@ -1471,7 +1472,11 @@ encode(m__fight__notice_duty__s2l, _Record) ->
 		      pack(4, required,
 			   with_default(_Record#m__fight__notice_duty__s2l.fight_info,
 					none),
-			   p_fight, [])]);
+			   p_fight, []),
+		      pack(5, required,
+			   with_default(_Record#m__fight__notice_duty__s2l.fight_mode,
+					none),
+			   int32, [])]);
 encode(m__fight__notice_op__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__fight__notice_op__s2l.msg_id,
@@ -1833,6 +1838,14 @@ encode(m__fight__online__s2l, _Record) ->
 			   int32, []),
 		      pack(24, repeated,
 			   with_default(_Record#m__fight__online__s2l.duty_select_info,
+					none),
+			   int32, []),
+		      pack(25, required,
+			   with_default(_Record#m__fight__online__s2l.is_night,
+					none),
+			   int32, []),
+		      pack(26, required,
+			   with_default(_Record#m__fight__online__s2l.fight_mode,
 					none),
 			   int32, [])]);
 encode(m__fight__offline__s2l, _Record) ->
@@ -2816,7 +2829,8 @@ decode(m__fight__game_state_change__s2l, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__game_state_change__s2l, Decoded);
 decode(m__fight__notice_duty__s2l, Bytes) ->
-    Types = [{4, fight_info, p_fight, [is_record]},
+    Types = [{5, fight_mode, int32, []},
+	     {4, fight_info, p_fight, [is_record]},
 	     {3, seat_id, int32, []}, {2, duty, int32, []},
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
@@ -2932,7 +2946,9 @@ decode(p_flop, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(p_flop, Decoded);
 decode(m__fight__online__s2l, Bytes) ->
-    Types = [{24, duty_select_info, int32, [repeated]},
+    Types = [{26, fight_mode, int32, []},
+	     {25, is_night, int32, []},
+	     {24, duty_select_info, int32, [repeated]},
 	     {23, duty_select_time, int32, []},
 	     {22, duty_select_over, int32, []},
 	     {21, fight_info, p_fight, [is_record]},
