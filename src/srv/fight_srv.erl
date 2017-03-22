@@ -1194,7 +1194,7 @@ handle_event({skill, PlayerId, Op, OpList}, StateName, State) ->
             {next_state, StateName, State} 
     end;
 
-handle_event({player_chat, Chat, PlayerId}, State)->
+handle_event({player_chat, Chat, PlayerId}, StateName, State)->
     lib_fight:do_send_fayan(PlayerId, Chat, State).
 
 handle_event({player_online, PlayerId}, StateName, State) ->
