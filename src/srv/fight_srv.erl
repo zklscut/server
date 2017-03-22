@@ -542,7 +542,7 @@ state_xuanju_jingzhang(timeout, State) ->
 state_xuanju_jingzhang(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     {IsDraw, XuanjuResult, MaxSeatList, NewState} = lib_fight:do_xuanju_jingzhang_op(State),
-    notice_xuanju_jingzhang_result(IsDraw, maps:get(jingzhang, NewState), XuanjuResult, NewState),
+    notice_xuanju_jingzhang_result(IsDraw, maps:get(jingzhang, NewState), XuanjuResult, MaxSeatList, NewState),
     case IsDraw of
         true ->
             send_event_inner(start),
@@ -867,7 +867,7 @@ state_toupiao(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     {IsDraw, TouPiaoResult, MaxSelectList, NewState} = lib_fight:do_toupiao_op(State),
     Quzhu = maps:get(quzhu, NewState),
-    notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, NewState),
+    notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, MaxSelectList, NewState),
     case IsDraw andalso lib_fight:is_twice_toupiao(NewState) of
         true ->
             send_event_inner(start, b_fight_state_over_wait:get(state_toupiao)),
@@ -1054,7 +1054,7 @@ state_toupiao_mvp(op_over, State) ->
     Mvp = maps:get(mvp, NewState),
     case IsDraw of
         true ->
-            notice_state_toupiao_mvp_result(IsDraw, Mvp, TouPiaoResult, NewState),
+            notice_state_toupiao_mvp_result(IsDraw, Mvp, TouPiaoResult, MaxSelectList, NewState),
             StateAfterMvpParty = maps:put(mvp_party, MaxSelectList, NewState),
             send_event_inner(start, b_fight_state_over_wait:get(state_toupiao_mvp)),
             {next_state, state_lapiao_fayan, maps:put(fayan_turn, MaxSelectList, StateAfterMvpParty)};
@@ -1069,7 +1069,7 @@ state_toupiao_mvp(op_over, State) ->
                     %%lib_fight:get_max_luck_seat(maps:get(mvp_party, NewState), NewState)
                     lib_fight:get_max_luck_seat(maps:get(mvp_party, NewState), NewState)
             end,
-            notice_state_toupiao_mvp_result(IsDraw, SelectMvp, TouPiaoResult, NewState),
+            notice_state_toupiao_mvp_result(IsDraw, SelectMvp, TouPiaoResult, MaxSelectList, NewState),
             StateAfterMvp = maps:put(mvp, SelectMvp, NewState),
             send_event_inner(wait_over, b_fight_state_over_wait:get(state_toupiao_mvp)),
             {next_state, state_toupiao_mvp, StateAfterMvp}
@@ -1106,7 +1106,7 @@ state_toupiao_carry(op_over, State) ->
     Carry = maps:get(carry, NewState),
     case IsDraw of
         true ->
-            notice_state_toupiao_carry_result(IsDraw, Carry, TouPiaoResult, NewState),
+            notice_state_toupiao_carry_result(IsDraw, Carry, TouPiaoResult, MaxSelectList, NewState),
             StateAfterMvpParty = maps:put(carry_party, MaxSelectList, NewState),
             send_event_inner(start, b_fight_state_over_wait:get(state_toupiao_carry)),
             {next_state, state_lapiao_fayan, maps:put(fayan_turn, MaxSelectList, StateAfterMvpParty)};
@@ -1121,7 +1121,7 @@ state_toupiao_carry(op_over, State) ->
                     %%lib_fight:get_max_luck_seat(maps:get(mvp_party, NewState), NewState)
                     lib_fight:get_max_luck_seat(maps:get(carry_party, NewState), NewState)
             end,
-            notice_state_toupiao_carry_result(IsDraw, SelectCarry, TouPiaoResult, NewState),
+            notice_state_toupiao_carry_result(IsDraw, SelectCarry, TouPiaoResult, MaxSelectList, NewState),
             StateAfterCarry = maps:put(carry, SelectCarry, NewState),
             send_event_inner(wait_over, b_fight_state_over_wait:get(state_toupiao_carry)),
             {next_state, state_toupiao_carry, StateAfterCarry}
@@ -1724,12 +1724,13 @@ do_remove_wait_op(SeatId, State) ->
 notice_jingxuan_jingzhang(State) ->
     notice_player_op(?OP_PART_JINGZHANG, lib_fight:get_alive_seat_list(State), State).
 
-notice_xuanju_result(XaunJuType, IsDraw, XuanjuSeat, XuanJuResult, State) ->
+notice_xuanju_result(XaunJuType, IsDraw, XuanjuSeat, XuanJuResult, MaxList, State) ->
     PResutList = [#p_xuanju_result{seat_id = SeatId, 
                                    select_list = SelectList} || {SeatId, SelectList} <- XuanJuResult],
     Send = #m__fight__xuanju_result__s2l{xuanju_type = XaunJuType,
                                          result_list = PResutList,
                                          result_id = XuanjuSeat,
+                                         max_list = MaxList,
                                          is_draw = util:conver_bool_to_int(IsDraw)},
     lib_fight:send_to_all_player(Send, State).
 
@@ -1739,8 +1740,8 @@ notice_xuanju_jingzhang(State) ->
     notice_player_op(?OP_XUANJU_JINGZHANG, PartXuanjuList, 
         (lib_fight:get_alive_seat_list(State) -- PartXuanjuList) -- ExitJingZhang, State).
 
-notice_xuanju_jingzhang_result(IsDraw, JingZhang, XuanjuResult, State) ->
-    notice_xuanju_result(?XUANJU_TYPE_JINGZHANG, IsDraw, JingZhang, XuanjuResult, State).
+notice_xuanju_jingzhang_result(IsDraw, JingZhang, XuanjuResult, MaxList, State) ->
+    notice_xuanju_result(?XUANJU_TYPE_JINGZHANG, IsDraw, JingZhang, XuanjuResult, MaxList, State).
 
 notice_toupiao(State) ->
     notice_toupiao([], State).
@@ -1858,14 +1859,14 @@ clear_night_op(State) ->
            safe_day => 1           %%平安日
            }.
 
-notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, State) ->
-    notice_xuanju_result(?XUANJU_TYPE_QUZHU, IsDraw, Quzhu, TouPiaoResult, State).  
+notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, MaxList, State) ->
+    notice_xuanju_result(?XUANJU_TYPE_QUZHU, IsDraw, Quzhu, TouPiaoResult, MaxList, State).  
 
-notice_state_toupiao_mvp_result(IsDraw, Quzhu, TouPiaoResult, State) ->
-    notice_xuanju_result(?XUANJU_TYPE_MVP, IsDraw, Quzhu, TouPiaoResult, State).  
+notice_state_toupiao_mvp_result(IsDraw, Quzhu, TouPiaoResult, MaxList, State) ->
+    notice_xuanju_result(?XUANJU_TYPE_MVP, IsDraw, Quzhu, TouPiaoResult, MaxList, State).  
 
-notice_state_toupiao_carry_result(IsDraw, Quzhu, TouPiaoResult, State) ->
-    notice_xuanju_result(?XUANJU_TYPE_CARRY, IsDraw, Quzhu, TouPiaoResult, State). 
+notice_state_toupiao_carry_result(IsDraw, Quzhu, TouPiaoResult, MaxList, State) ->
+    notice_xuanju_result(?XUANJU_TYPE_CARRY, IsDraw, Quzhu, TouPiaoResult, MaxList, State). 
 
 notice_toupiao_out([0], _) ->
     ignore;
