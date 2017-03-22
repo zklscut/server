@@ -77,7 +77,8 @@ player_speak(Pid, PlayerId, Chat) ->
         undefined->
             ignore;
         _->
-            gen_fsm:send_event(Pid, {player_op, PlayerId, ?OP_FAYAN, [Chat]})
+            % gen_fsm:send_event(Pid, {player_op, PlayerId, ?OP_FAYAN, [Chat]})
+            gen_fsm:send_all_state_event(Pid, {player_chat, Chat, PlayerId})
     end.
 
 player_skill(Pid, PlayerId, Op, OpList) ->
@@ -130,7 +131,7 @@ init([RoomId, PlayerList, DutyList, Name, State]) ->
     % NewStateAfterTest = ?IF(?TEST, fight_test_no_send(init, State), NewState),
     notice_duty(NewState),
     notice_game_status_change(start, NewState),
-    send_event_inner(start, b_fight_state_wait:get(start)),
+    send_event_inner(start),
     {ok, state_select_card, NewState}.
 
 state_select_card(start, State)->
@@ -1192,6 +1193,9 @@ handle_event({skill, PlayerId, Op, OpList}, StateName, State) ->
             net_send:send_errcode(ErrCode, PlayerId),
             {next_state, StateName, State} 
     end;
+
+handle_event({player_chat, Chat, PlayerId}, State)->
+    lib_fight:do_send_fayan(PlayerId, Chat, State).
 
 handle_event({player_online, PlayerId}, StateName, State) ->
     OfflineList = maps:get(offline_list, State),
