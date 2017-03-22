@@ -199,7 +199,10 @@ state_select_card(op_over, State)->
     send_event_inner(start),
     notice_duty(State),
     NewState = maps:put(duty_select_over, 1, State),
-    {next_state, state_night, NewState}.
+    {next_state, state_night, NewState};
+
+state_select_card(_IgnoreOP, State)->
+    {next_state, state_select_card, State}.
 
 %% ====================================================================
 %% state_daozei
@@ -229,7 +232,10 @@ state_daozei(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_daozei_op(State),
     send_event_inner(start),
-    {next_state, get_next_game_state(state_daozei), NewState}.
+    {next_state, get_next_game_state(state_daozei), NewState};
+
+state_daozei(_IgnoreOP, State)->
+    {next_state, state_daozei, State}.
             
 %% ====================================================================
 %% state_qiubite
@@ -258,7 +264,10 @@ state_qiubite(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_qiubite_op(State),
     send_event_inner(start),
-    {next_state, get_next_game_state(state_qiubite), NewState}.
+    {next_state, get_next_game_state(state_qiubite), NewState};
+
+state_qiubite(_IgnoreOP, State)->
+    {next_state, state_qiubite, State}.
 
 %% ====================================================================
 %% state_hunxueer
@@ -282,7 +291,10 @@ state_hunxueer(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_hunxuer_op(State),
     send_event_inner(start),
-    {next_state, get_next_game_state(state_hunxueer), NewState}.
+    {next_state, get_next_game_state(state_hunxueer), NewState};
+
+state_hunxueer(_IgnoreOP, State)->
+    {next_state, state_hunxueer, State}.
 
 %% ====================================================================
 %% state_shouwei
@@ -305,7 +317,10 @@ state_shouwei(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_shouwei_op(State),
     send_event_inner(start),
-    {next_state, get_next_game_state(state_shouwei), NewState}.
+    {next_state, get_next_game_state(state_shouwei), NewState};
+
+state_shouwei(_IgnoreOP, State)->
+    {next_state, state_shouwei, State}.
             
 %% ====================================================================
 %% state_langren
@@ -335,7 +350,10 @@ state_langren(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_langren_op(State),
     send_event_inner(start),
-    {next_state, get_next_game_state(state_langren), NewState}.
+    {next_state, get_next_game_state(state_langren), NewState};
+
+state_langren(_IgnoreOP, State)->
+    {next_state, state_langren, State}.
                  
 %% ====================================================================
 %% state_nvwu
@@ -358,7 +376,10 @@ state_nvwu(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_nvwu_op(State),
     send_event_inner(start),
-    {next_state, get_next_game_state(state_nvwu), NewState}.
+    {next_state, get_next_game_state(state_nvwu), NewState};
+
+state_nvwu(_IgnoreOP, State)->
+    {next_state, state_nvwu, State}.
             
 %% ====================================================================
 %% state_yuyanjia
@@ -388,7 +409,10 @@ state_yuyanjia(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_yuyanjia_op(State),
     send_event_inner(start, b_fight_state_over_wait:get(state_yuyanjia)),
-    {next_state, get_next_game_state(state_yuyanjia), NewState}.
+    {next_state, get_next_game_state(state_yuyanjia), NewState};
+
+state_yuyanjia(_IgnoreOP, State)->
+    {next_state, state_yuyanjia, State}.
 
 %% ====================================================================
 %% state_day
@@ -416,7 +440,10 @@ state_day(over, State)->
                 end
         end,
     send_event_inner(start),
-    {next_state, NextState, State}.
+    {next_state, NextState, State};
+
+state_day(_IgnoreOP, State)->
+    {next_state, state_day, State}.
 
     
 %% ====================================================================
@@ -470,7 +497,10 @@ state_part_jingzhang(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_part_jingzhang_op(State),
     send_event_inner(start),
-    {next_state, get_next_game_state(state_part_jingzhang), NewState}.
+    {next_state, get_next_game_state(state_part_jingzhang), NewState};
+
+state_part_jingzhang(_IgnoreOP, State)->
+    {next_state, state_part_jingzhang, State}.
 
 %% ====================================================================
 %% state_part_fayan
@@ -499,7 +529,10 @@ state_part_fayan(op_over, State) ->
     do_fayan_state_op_over(state_part_fayan, State);
 
 state_part_fayan(_, State) ->
-    {next_state, state_part_fayan, State}.    
+    {next_state, state_part_fayan, State};
+
+state_part_fayan(_IgnoreOP, State)->
+    {next_state, state_part_fayan, State}.
 
 %% ====================================================================
 %% state_xuanju_jingzhang
@@ -551,7 +584,10 @@ state_xuanju_jingzhang(op_over, State) ->
             StateAfterPartingJingZhang = maps:put(parting_jingzhang, [], NewState), 
             send_event_inner(start),
             {next_state, get_next_game_state(state_xuanju_jingzhang), maps:put(do_police_select, 1, StateAfterPartingJingZhang)}
-    end.     
+    end;
+
+state_xuanju_jingzhang(_IgnoreOP, State)->
+    {next_state, state_xuanju_jingzhang, State}.     
 
 %% ====================================================================
 %% state_night_result
@@ -570,7 +606,10 @@ state_night_result(over, State)->
     {next_state, state_someone_die, State};
 
 state_night_result(_, State) ->
-    {next_state, state_night_result,  State}.
+    {next_state, state_night_result,  State};
+
+state_night_result(_IgnoreOP, State)->
+    {next_state, state_night_result, State}.  
 
 %% ====================================================================
 %% state_someone_die
@@ -685,7 +724,10 @@ state_someone_die(op_over, State) ->
             false ->
                 NextState
         end,
-    {next_state, NextStateAfterOver, maps:put(skill_die_list, NewSkillDieList, State)}.
+    {next_state, NextStateAfterOver, maps:put(skill_die_list, NewSkillDieList, State)};
+
+state_someone_die(_IgnoreOP, State)->
+    {next_state, state_someone_die, State}.
 
 %% ====================================================================
 %% state_night_death_fayan
@@ -715,7 +757,10 @@ state_night_death_fayan(timeout, State) ->
     do_fayan_state_timeout(state_night_death_fayan, State);
 
 state_night_death_fayan(op_over, State) ->
-    do_fayan_state_op_over(state_night_death_fayan, State).    
+    do_fayan_state_op_over(state_night_death_fayan, State);
+
+state_night_death_fayan(_IgnoreOP, State)->
+    {next_state, state_night_death_fayan, State}.
 
 %% ====================================================================
 %% state_jingzhang
@@ -757,7 +802,10 @@ state_jingzhang(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_jingzhang_op(State),
     send_event_inner(start, b_fight_state_wait:get(state_jingzhang)),
-    {next_state, get_next_game_state(state_jingzhang), NewState}.
+    {next_state, get_next_game_state(state_jingzhang), NewState};
+
+state_jingzhang(_IgnoreOP, State)->
+    {next_state, state_jingzhang, State}.
 
 %% ====================================================================
 %% state_fayan
@@ -783,8 +831,8 @@ state_fayan(timeout, State) ->
 state_fayan(op_over, State) ->
     do_fayan_state_op_over(state_fayan, State);
     
-state_fayan(_, State) ->
-    {next_state, state_fayan, State}.    
+state_fayan(_IgnoreOP, State)->
+    {next_state, state_fayan, State}.   
 
 %% ====================================================================
 %% state_guipiao
@@ -833,7 +881,10 @@ state_guipiao(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     NewState = lib_fight:do_guipiao_op(State),
     send_event_inner(start),
-    {next_state, get_next_game_state(state_guipiao), NewState}.
+    {next_state, get_next_game_state(state_guipiao), NewState};
+
+state_guipiao(_IgnoreOP, State)->
+    {next_state, state_guipiao, State}.   
 
 %% ====================================================================
 %% state_toupiao
@@ -908,7 +959,10 @@ state_toupiao(wait_over, State)->
         false ->
             state_someone_die
     end,
-    {next_state, NextState, lib_fight:set_skill_die_list(state_toupiao, State)}.
+    {next_state, NextState, lib_fight:set_skill_die_list(state_toupiao, State)};
+
+state_toupiao(_IgnoreOP, State)->
+    {next_state, state_toupiao, State}.  
             
 %% ====================================================================
 %% state_toupiao_death_fayan
@@ -939,7 +993,10 @@ state_toupiao_death_fayan(timeout, State) ->
     do_fayan_state_timeout(state_toupiao_death_fayan, State);
 
 state_toupiao_death_fayan(op_over, State) ->
-    do_fayan_state_op_over(state_toupiao_death_fayan, State).
+    do_fayan_state_op_over(state_toupiao_death_fayan, State);
+
+state_toupiao_death_fayan(_IgnoreOP, State)->
+    {next_state, state_toupiao_death_fayan, State}.  
 
 %% ====================================================================
 %% state_day
@@ -962,9 +1019,10 @@ state_night(start, State) ->
 
 state_night(over, State)->
     send_event_inner(start),
-    {next_state, get_next_game_state(state_night), State}.
+    {next_state, get_next_game_state(state_night), State};
 
-
+state_night(_IgnoreOP, State)->
+    {next_state, state_night, State}.
 
 
 %% ====================================================================
@@ -995,8 +1053,10 @@ state_fight_over(start, State) ->
         _->
             state_game_over
     end,
-    {next_state, NextState, StateAfterWinner}.
+    {next_state, NextState, StateAfterWinner};
 
+state_fight_over(_IgnoreOP, State)->
+    {next_state, state_fight_over, State}.
 
 %%拉票发言环节
 state_lapiao_fayan(start, State) ->
@@ -1017,7 +1077,10 @@ state_lapiao_fayan(timeout, State) ->
     do_fayan_state_timeout(state_lapiao_fayan, State);
 
 state_lapiao_fayan(op_over, State) ->
-    do_fayan_state_op_over(state_lapiao_fayan, State).
+    do_fayan_state_op_over(state_lapiao_fayan, State);
+
+state_lapiao_fayan(_IgnoreOP, State)->
+    {next_state, state_lapiao_fayan, State}.
 
 %%投票mvp
 state_toupiao_mvp(start, State) ->
@@ -1078,7 +1141,10 @@ state_toupiao_mvp(op_over, State) ->
 
 state_toupiao_mvp(wait_over, State)->
     send_event_inner(start),
-    {next_state, state_toupiao_carry, State}.
+    {next_state, state_toupiao_carry, State};
+
+state_toupiao_mvp(_IgnoreOP, State)->
+    {next_state, state_toupiao_mvp, State}.
 
 %%投票mvp
 state_toupiao_carry(start, State) ->
@@ -1130,7 +1196,10 @@ state_toupiao_carry(op_over, State) ->
 
 state_toupiao_carry(wait_over, State)->
     send_event_inner(start),
-    {next_state, state_game_over, State}.
+    {next_state, state_game_over, State};
+
+state_toupiao_carry(_IgnoreOP, State)->
+    {next_state, state_toupiao_carry, State}.
 
 %% ====================================================================
 %% 游戏结束
@@ -1140,7 +1209,10 @@ state_game_over(start, State) ->
     {_, Winner, VictoryParty} = get_fight_result(NewState),
     send_fight_result(Winner, VictoryParty, NewState),
     send_event_inner(start, b_fight_state_wait:get(state_fight_over)),
-    {next_state, state_over, NewState}.
+    {next_state, state_over, NewState};
+
+state_game_over(_IgnoreOP, State)->
+    {next_state, state_game_over, State}.
 
 
 %% ====================================================================
@@ -1154,8 +1226,10 @@ state_over(start, State) ->
     [global_op_srv:player_op(PlayerId, {lib_player, update_fight_pid, [undefined]}) || PlayerId <- PlayerList],
     room_srv:update_room_fight_pid(RoomId, undefined),
     lib_room:update_room_status(RoomId, 0, 0, 0, 0),
-    {stop, normal, State}.
+    {stop, normal, State};
 
+state_over(_IgnoreOP, State)->
+    {next_state, state_over, State}.
 
 state_name(_Event, _From, StateData) ->
     Reply = next_state,
