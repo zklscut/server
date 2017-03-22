@@ -358,7 +358,7 @@ do_cancel_match(PlayerId, MatchData)->
 compute_rank(AStatus, RankA, RankB) ->
     We = 1/(1 + math:pow(10, (RankB - RankA)/400)),
     Score = 
-        case IsAWin of
+        case AStatus of
             win ->
                 1;
             draw ->
