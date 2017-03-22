@@ -528,8 +528,6 @@ state_part_fayan(timeout, State) ->
 state_part_fayan(op_over, State) ->
     do_fayan_state_op_over(state_part_fayan, State);
 
-state_part_fayan(_, State) ->
-    {next_state, state_part_fayan, State};
 
 state_part_fayan(_IgnoreOP, State)->
     {next_state, state_part_fayan, State}.
@@ -605,8 +603,6 @@ state_night_result(over, State)->
     send_event_inner(start),
     {next_state, state_someone_die, State};
 
-state_night_result(_, State) ->
-    {next_state, state_night_result,  State};
 
 state_night_result(_IgnoreOP, State)->
     {next_state, state_night_result, State}.  
