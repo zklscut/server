@@ -1746,6 +1746,7 @@ notice_toupiao(State) ->
     notice_toupiao([], State).
 
 notice_toupiao(_MaxSelectList, State) ->
+    AliveList = lib_fight:get_alive_seat_list(State),
     FaYanTurn = maps:get(fayan_turn, State),
     notice_player_op(?OP_TOUPIAO, FaYanTurn -- maps:get(die, State), ((AliveList -- 
                                                  [maps:get(baichi, State)]) -- maps:get(die, State)), State).
