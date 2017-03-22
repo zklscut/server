@@ -52,7 +52,7 @@
 -record(m__chat__public_speak__l2s, {msg_id=14001, chat}).
 -record(m__chat__public_speak__s2l, {msg_id=14002, chat}).
 -record(m__fight__game_state_change__s2l, {msg_id=15001, game_status, attach_data}).
--record(m__fight__notice_duty__s2l, {msg_id=15002, duty, seat_id, fight_info}).
+-record(m__fight__notice_duty__s2l, {msg_id=15002, duty, seat_id, fight_info, fight_mode}).
 -record(m__fight__notice_op__s2l, {msg_id=15003, op, attach_data}).
 -record(m__fight__notice_op__l2s, {msg_id=15004, op, op_list}).
 -record(m__fight__speak__l2s, {msg_id=15005, chat}).
@@ -72,7 +72,7 @@
 -record(m__fight__notice_skill__s2l, {msg_id=15017, op, op_list, seat_id}).
 -record(m__fight__do_skill__l2s, {msg_id=15018, op, op_list}).
 -record(p_flop, {seat_id, op}).
--record(m__fight__online__s2l, {msg_id=15019, duty, game_state, round, die_list, seat_id, attach_data1, attach_data2, offline_list, leave_list, flop_list, winner, wait_op, wait_op_list, wait_op_attach_data, wait_op_tick, jingzhang, lover_list, duty_list, parting_jingzhang, fight_info, duty_select_over, duty_select_time, duty_select_info}).
+-record(m__fight__online__s2l, {msg_id=15019, duty, game_state, round, die_list, seat_id, attach_data1, attach_data2, offline_list, leave_list, flop_list, winner, wait_op, wait_op_list, wait_op_attach_data, wait_op_tick, jingzhang, lover_list, duty_list, parting_jingzhang, fight_info, duty_select_over, duty_select_time, duty_select_info, is_night, fight_mode}).
 -record(m__fight__offline__s2l, {msg_id=15020, offline_list}).
 -record(m__fight__op_timetick__s2l, {msg_id=15021, timetick, wait_op}).
 -record(m__fight__langren_team_speak__s2l, {msg_id=15022, chat}).
