@@ -118,6 +118,7 @@
                   fayan_turn => [],      %% 发言顺序
                   die => [],             %% 死亡玩家
                   quzhu => 0,            %% 驱逐的玩家
+                  wait_quzhu_list => [],      %%等待被驱逐的玩家列表
                   skill_seat => 0,       %% 发动技能位置
                   baichi => 0,           %% 白痴id
                   lieren_kill => 0,      %% 猎人杀死

@@ -762,7 +762,8 @@ state_jingzhang(op_over, State) ->
 %% state_fayan
 %% ====================================================================
 state_fayan(start, State) ->
-    do_fayan_state_start(maps:get(fayan_turn, State), state_fayan, State);
+    NewState = maps:put(wait_quzhu_list, maps:get(fayan_turn, State), State),
+    do_fayan_state_start(maps:get(fayan_turn, NewState), state_fayan, NewState);
 
 state_fayan(wait_op, State) ->
     do_fayan_state_wait_op(?OP_FAYAN, state_fayan, State);
@@ -1747,8 +1748,8 @@ notice_toupiao(State) ->
 
 notice_toupiao(_MaxSelectList, State) ->
     AliveList = lib_fight:get_alive_seat_list(State),
-    FaYanTurn = maps:get(fayan_turn, State),
-    notice_player_op(?OP_TOUPIAO, FaYanTurn -- maps:get(die, State), ((AliveList -- 
+    WaitQuzhuList = maps:get(wait_quzhu_list, State),
+    notice_player_op(?OP_TOUPIAO, WaitQuzhuList -- maps:get(die, State), ((AliveList -- 
                                                  [maps:get(baichi, State)]) -- maps:get(die, State)), State).
 
 notice_toupiao_mvp(State) ->
