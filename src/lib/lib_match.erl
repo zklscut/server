@@ -356,7 +356,7 @@ do_cancel_match(PlayerId, MatchData)->
     update_match_data(NewMatchData).
 
 compute_rank(AStatus, RankA, RankB) ->
-    We = 1/(1 + math:pow(10, ((Rb-Ra)/400)),
+    We = 1/(1 + math:pow(10, (Rb-Ra)/400)),
     Score = 
         case IsAWin of
             win ->
