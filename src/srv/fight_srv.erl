@@ -1195,7 +1195,8 @@ handle_event({skill, PlayerId, Op, OpList}, StateName, State) ->
     end;
 
 handle_event({player_chat, Chat, PlayerId}, StateName, State)->
-    lib_fight:do_send_fayan(PlayerId, Chat, State).
+    lib_fight:do_send_fayan(PlayerId, Chat, State),
+    {next_state, StateName, State} .
 
 handle_event({player_online, PlayerId}, StateName, State) ->
     OfflineList = maps:get(offline_list, State),
