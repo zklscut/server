@@ -98,7 +98,7 @@
                   wait_op_attack_data => [], %%操作附近数据
                   status => 0,           %% 当前游戏状态
                   game_state =>  0,      %% 第几天晚上
-                  game_round =>  1,      %% 第几轮
+                  game_round =>  0,      %% 第几轮
                   lover => [],           %% 情侣
                   lover_kill => 0,        %% 被链子弄死的玩家
                   shouwei => 0,          %% 守卫的id
