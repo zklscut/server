@@ -264,10 +264,10 @@
 	{msg_id, langren_list}).
 
 -record(m__fight__select_duty__s2l,
-	{msg_id, result, duty}).
+	{msg_id, result, duty, seat_id}).
 
 -record(m__fight__random_duty__s2l,
-	{msg_id, duty_list}).
+	{msg_id, left_time, duty_list}).
 
 -record(m__fight__update_duty__s2l,
 	{msg_id, pre_duty, cur_duty}).
@@ -292,7 +292,8 @@
 	 attach_data1, attach_data2, offline_list, leave_list,
 	 flop_list, winner, wait_op, wait_op_list,
 	 wait_op_attach_data, wait_op_tick, jingzhang,
-	 lover_list, duty_list, parting_jingzhang, fight_info}).
+	 lover_list, duty_list, parting_jingzhang, fight_info,
+	 duty_select_over, duty_select_time, duty_select_info}).
 
 -record(p_flop, {seat_id, op}).
 
@@ -325,7 +326,8 @@
 	{msg_id, die_list}).
 
 -record(m__fight__xuanju_result__s2l,
-	{msg_id, xuanju_type, result_list, is_draw, result_id}).
+	{msg_id, xuanju_type, result_list, is_draw, result_id,
+	 max_list}).
 
 -record(p_xuanju_result, {seat_id, select_list}).
 
@@ -1565,6 +1567,10 @@ encode(m__fight__xuanju_result__s2l, _Record) ->
 		      pack(5, required,
 			   with_default(_Record#m__fight__xuanju_result__s2l.result_id,
 					none),
+			   int32, []),
+		      pack(6, repeated,
+			   with_default(_Record#m__fight__xuanju_result__s2l.max_list,
+					none),
 			   int32, [])]);
 encode(m__fight__night_result__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
@@ -1816,7 +1822,19 @@ encode(m__fight__online__s2l, _Record) ->
 		      pack(21, required,
 			   with_default(_Record#m__fight__online__s2l.fight_info,
 					none),
-			   p_fight, [])]);
+			   p_fight, []),
+		      pack(22, required,
+			   with_default(_Record#m__fight__online__s2l.duty_select_over,
+					none),
+			   int32, []),
+		      pack(23, required,
+			   with_default(_Record#m__fight__online__s2l.duty_select_time,
+					none),
+			   int32, []),
+		      pack(24, repeated,
+			   with_default(_Record#m__fight__online__s2l.duty_select_info,
+					none),
+			   int32, [])]);
 encode(m__fight__offline__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__fight__offline__s2l.msg_id,
@@ -1901,7 +1919,11 @@ encode(m__fight__random_duty__s2l, _Record) ->
 			   with_default(_Record#m__fight__random_duty__s2l.msg_id,
 					15027),
 			   int32, []),
-		      pack(2, repeated,
+		      pack(2, required,
+			   with_default(_Record#m__fight__random_duty__s2l.left_time,
+					none),
+			   int32, []),
+		      pack(3, repeated,
 			   with_default(_Record#m__fight__random_duty__s2l.duty_list,
 					none),
 			   int32, [])]);
@@ -1916,6 +1938,10 @@ encode(m__fight__select_duty__s2l, _Record) ->
 			   int32, []),
 		      pack(3, required,
 			   with_default(_Record#m__fight__select_duty__s2l.duty,
+					none),
+			   int32, []),
+		      pack(4, required,
+			   with_default(_Record#m__fight__select_duty__s2l.seat_id,
 					none),
 			   int32, [])]);
 encode(m__fight__notice_langren__s2l, _Record) ->
@@ -2832,8 +2858,8 @@ decode(p_xuanju_result, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(p_xuanju_result, Decoded);
 decode(m__fight__xuanju_result__s2l, Bytes) ->
-    Types = [{5, result_id, int32, []},
-	     {4, is_draw, int32, []},
+    Types = [{6, max_list, int32, [repeated]},
+	     {5, result_id, int32, []}, {4, is_draw, int32, []},
 	     {3, result_list, p_xuanju_result,
 	      [is_record, repeated]},
 	     {2, xuanju_type, int32, []}, {1, msg_id, int32, []}],
@@ -2906,7 +2932,10 @@ decode(p_flop, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(p_flop, Decoded);
 decode(m__fight__online__s2l, Bytes) ->
-    Types = [{21, fight_info, p_fight, [is_record]},
+    Types = [{24, duty_select_info, int32, [repeated]},
+	     {23, duty_select_time, int32, []},
+	     {22, duty_select_over, int32, []},
+	     {21, fight_info, p_fight, [is_record]},
 	     {20, parting_jingzhang, int32, [repeated]},
 	     {19, duty_list, p_duty, [is_record, repeated]},
 	     {18, lover_list, int32, [repeated]},
@@ -2964,13 +2993,13 @@ decode(m__fight__update_duty__s2l, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__update_duty__s2l, Decoded);
 decode(m__fight__random_duty__s2l, Bytes) ->
-    Types = [{2, duty_list, int32, [repeated]},
-	     {1, msg_id, int32, []}],
+    Types = [{3, duty_list, int32, [repeated]},
+	     {2, left_time, int32, []}, {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__random_duty__s2l, Decoded);
 decode(m__fight__select_duty__s2l, Bytes) ->
-    Types = [{3, duty, int32, []}, {2, result, int32, []},
-	     {1, msg_id, int32, []}],
+    Types = [{4, seat_id, int32, []}, {3, duty, int32, []},
+	     {2, result, int32, []}, {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__select_duty__s2l, Decoded);
 decode(m__fight__notice_langren__s2l, Bytes) ->
