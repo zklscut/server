@@ -1295,6 +1295,7 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     DutySelectStartTime = maps:get(duty_select_start_time, NewState),
     DutySelectTotalTime = lib_fight:get_op_wait(?OP_SELECT_DUTY, undefined, NewState),
     SeatRndInfo = maps:get(seat_rnd_info, NewState),
+    FightMode = maps:get(fight_mod, NewState),
     OwnRndInfo = maps:get(SeatId, SeatRndInfo, []),
     DutySelectLastTime = util:get_micro_time() - DutySelectStartTime,
     DutySelectLeftTime = 
@@ -1330,7 +1331,8 @@ handle_event({player_online, PlayerId}, StateName, State) ->
                                   duty_select_over = DutySelectOver,
                                   duty_select_time = DutySelectLeftTime,
                                   duty_select_info = OwnRndInfo,
-                                  is_night = IsNight
+                                  is_night = IsNight,
+                                  fight_mode = FightMode
                                   },
     net_send:send(Send, PlayerId),
 
@@ -1440,7 +1442,8 @@ notice_duty(State) ->
             Duty = maps:get(SeatId, SeatDutyMap),
             Send = #m__fight__notice_duty__s2l{duty = Duty,
                                                seat_id = SeatId,
-                                               fight_info = FightInfo
+                                               fight_info = FightInfo,
+                                               fight_mode = maps:get(fight_mod, State)
                                                },
             lib_fight:send_to_seat(Send, SeatId, State)
         end,
