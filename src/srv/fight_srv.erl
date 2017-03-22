@@ -1491,6 +1491,12 @@ do_receive_fayan(PlayerId, Chat, State) ->
 notice_player_op(?DUTY_LANGREN, SeatList, State) ->
     notice_player_op(?DUTY_LANGREN, lib_fight:get_alive_seat_list(State), SeatList, State);
 
+notice_player_op(?DUTY_YUYANJIA, SeatList, State) ->
+    AliveSeatList = lib_fight:get_alive_seat_list(State),
+    YuYanJiaOpList = maps:get(yuyanjia_op, State),
+    YuYanJiaOpSeatList = [SeatId || {SeatId, _}<-YuYanJiaOpList],
+    notice_player_op(?DUTY_YUYANJIA, AliveSeatList -- (SeatList ++ YuYanJiaOpSeatList), SeatList, State);
+
 notice_player_op(?DUTY_DAOZEI, SeatList, State) ->
     notice_player_op(?DUTY_DAOZEI, maps:get(daozei, State), SeatList, State);
 
