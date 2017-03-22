@@ -11,7 +11,8 @@
          offline_match/1,
          cancel_match/2,
          start_match/3,
-         enter_match/3
+         enter_match/3,
+         compute_rank/3
         ]).
 
 -include("ets.hrl").
@@ -353,3 +354,16 @@ do_cancel_match(PlayerId, MatchData)->
                         }
     end,
     update_match_data(NewMatchData).
+
+compute_rank(AStatus, RankA, RankB) ->
+    We = 1/(1 + math:pow(10, ((Rb-Ra)/400)),
+    Score = 
+        case IsAWin of
+            win ->
+                1;
+            draw ->
+                0.5;
+            lose ->
+                0
+        end,
+    trunc(RankA + 20 * (Score - We)).
