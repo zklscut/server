@@ -199,7 +199,7 @@ state_select_card(op_over, State)->
     send_event_inner(start),
     notice_duty(State),
     NewState = maps:put(duty_select_over, 1, State),
-    {next_state, state_daozei, NewState}.
+    {next_state, state_night, NewState}.
 
 %% ====================================================================
 %% state_daozei
@@ -954,7 +954,7 @@ state_night(start, State) ->
     %     false ->
     StateAfterClear = clear_night_op(NewState),
     lib_room:update_room_status(maps:get(room_id, StateAfterClear), 1, maps:get(game_round, StateAfterClear), 1, 0),
-    notice_game_status_change(state_night, StateAfterClear),
+    notice_game_status_change(state_night, [maps:get(game_round, StateAfterClear)], StateAfterClear),
     send_event_inner(over, b_fight_state_wait:get(state_night)),
     {next_state, state_night, StateAfterClear};
     % end;
