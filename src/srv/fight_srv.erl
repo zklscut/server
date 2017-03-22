@@ -394,10 +394,11 @@ state_yuyanjia(op_over, State) ->
 %% state_day
 %% ====================================================================
 state_day(start, State) ->
-    lib_room:update_room_status(maps:get(room_id, State), 1, maps:get(game_round, State), 1, 1),
-    notice_game_status_change(state_day, State),
+    % lib_room:update_room_status(maps:get(room_id, State), 1, maps:get(game_round, State), 1, 1),
+    NewState = maps:put(is_night, 0, State),
+    notice_game_status_change(state_day, NewState),
     send_event_inner(over, b_fight_state_wait:get(state_day)),
-    {next_state, state_day, State};
+    {next_state, state_day, NewState};
 
 state_day(over, State)->
     NextState = 
@@ -1219,7 +1220,7 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     OpStartTime = maps:get(op_timer_start, NewState),
     lager:info("player_online ~p", [OpStartTime]),
     OpUseTime = maps:get(op_timer_use_dur, NewState),
-
+    IsNight = maps:get(is_night, NewState),
     DutySelectOver = maps:get(duty_select_over, NewState),
     DutySelectStartTime = maps:get(duty_select_start_time, NewState),
     DutySelectTotalTime = lib_fight:get_op_wait(?OP_SELECT_DUTY, undefined, NewState),
@@ -1258,7 +1259,8 @@ handle_event({player_online, PlayerId}, StateName, State) ->
                                   parting_jingzhang = PartingJingZhang -- ExitJingZhang,
                                   duty_select_over = DutySelectOver,
                                   duty_select_time = DutySelectLeftTime,
-                                  duty_select_info = OwnRndInfo
+                                  duty_select_info = OwnRndInfo,
+                                  is_night = IsNight
                                   },
     net_send:send(Send, PlayerId),
 
@@ -1856,6 +1858,7 @@ clear_night_op(State) ->
            parting_jingzhang => [],
            day_notice_die => [],
            quzhu_op => 0,
+           is_night => 1,
            safe_night => 1,         %%平安夜
            safe_day => 1           %%平安日
            }.
