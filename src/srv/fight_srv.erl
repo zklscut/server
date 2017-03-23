@@ -1285,7 +1285,7 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, NewState),
     DutyId = lib_fight:get_duty_by_seat(SeatId, NewState),
     Round = maps:get(game_round, NewState),
-    GameState = maps:get(game_state, NewState),
+    _GameState = maps:get(game_state, NewState),
     DieList = maps:get(out_seat_list, NewState) ++ maps:get(day_notice_die, NewState),
     JingZhang = maps:get(jingzhang, NewState),
     FlopList = maps:get(flop_list, NewState),
