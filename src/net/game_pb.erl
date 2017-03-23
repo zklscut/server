@@ -42,6 +42,10 @@
 	 decode_m__match__start_match__l2s/1,
 	 encode_m__resource__push__s2l/1,
 	 decode_m__resource__push__s2l/1,
+	 encode_m__fight__forbid_other_speak__s2l/1,
+	 decode_m__fight__forbid_other_speak__s2l/1,
+	 encode_m__fight__forbid_other_speak__l2s/1,
+	 decode_m__fight__forbid_other_speak__l2s/1,
 	 encode_m__fight__notice_langren__s2l/1,
 	 decode_m__fight__notice_langren__s2l/1,
 	 encode_m__fight__select_duty__s2l/1,
@@ -260,6 +264,12 @@
 -record(m__resource__push__s2l,
 	{msg_id, resource_id, num, action_id}).
 
+-record(m__fight__forbid_other_speak__s2l,
+	{msg_id, forbid_info}).
+
+-record(m__fight__forbid_other_speak__l2s,
+	{msg_id, is_forbid}).
+
 -record(m__fight__notice_langren__s2l,
 	{msg_id, langren_list}).
 
@@ -288,13 +298,13 @@
 -record(m__fight__offline__s2l, {msg_id, offline_list}).
 
 -record(m__fight__online__s2l,
-	{msg_id, duty, game_state, round, die_list, seat_id,
+	{msg_id, duty, game_status, round, die_list, seat_id,
 	 attach_data1, attach_data2, offline_list, leave_list,
 	 flop_list, winner, wait_op, wait_op_list,
 	 wait_op_attach_data, wait_op_tick, jingzhang,
 	 lover_list, duty_list, parting_jingzhang, fight_info,
 	 duty_select_over, duty_select_time, duty_select_info,
-	 is_night, fight_mode}).
+	 is_night, fight_mode, speak_forbid_info, game_round}).
 
 -record(p_flop, {seat_id, op}).
 
@@ -340,7 +350,8 @@
 
 -record(m__fight__speak__s2l, {msg_id, chat}).
 
--record(m__fight__speak__l2s, {msg_id, chat}).
+-record(m__fight__speak__l2s,
+	{msg_id, chat, night_langren}).
 
 -record(m__fight__notice_op__l2s,
 	{msg_id, op, op_list}).
@@ -572,6 +583,16 @@ encode_m__match__start_match__l2s(Record)
 encode_m__resource__push__s2l(Record)
     when is_record(Record, m__resource__push__s2l) ->
     encode(m__resource__push__s2l, Record).
+
+encode_m__fight__forbid_other_speak__s2l(Record)
+    when is_record(Record,
+		   m__fight__forbid_other_speak__s2l) ->
+    encode(m__fight__forbid_other_speak__s2l, Record).
+
+encode_m__fight__forbid_other_speak__l2s(Record)
+    when is_record(Record,
+		   m__fight__forbid_other_speak__l2s) ->
+    encode(m__fight__forbid_other_speak__l2s, Record).
 
 encode_m__fight__notice_langren__s2l(Record)
     when is_record(Record, m__fight__notice_langren__s2l) ->
@@ -1511,7 +1532,11 @@ encode(m__fight__speak__l2s, _Record) ->
 		      pack(2, required,
 			   with_default(_Record#m__fight__speak__l2s.chat,
 					none),
-			   p_chat, [])]);
+			   p_chat, []),
+		      pack(3, required,
+			   with_default(_Record#m__fight__speak__l2s.night_langren,
+					none),
+			   int32, [])]);
 encode(m__fight__speak__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__fight__speak__s2l.msg_id,
@@ -1753,7 +1778,7 @@ encode(m__fight__online__s2l, _Record) ->
 					none),
 			   int32, []),
 		      pack(3, required,
-			   with_default(_Record#m__fight__online__s2l.game_state,
+			   with_default(_Record#m__fight__online__s2l.game_status,
 					none),
 			   int32, []),
 		      pack(4, required,
@@ -1846,6 +1871,14 @@ encode(m__fight__online__s2l, _Record) ->
 			   int32, []),
 		      pack(26, required,
 			   with_default(_Record#m__fight__online__s2l.fight_mode,
+					none),
+			   int32, []),
+		      pack(27, repeated,
+			   with_default(_Record#m__fight__online__s2l.speak_forbid_info,
+					none),
+			   int32, []),
+		      pack(28, required,
+			   with_default(_Record#m__fight__online__s2l.game_round,
 					none),
 			   int32, [])]);
 encode(m__fight__offline__s2l, _Record) ->
@@ -1964,6 +1997,24 @@ encode(m__fight__notice_langren__s2l, _Record) ->
 			   int32, []),
 		      pack(2, repeated,
 			   with_default(_Record#m__fight__notice_langren__s2l.langren_list,
+					none),
+			   int32, [])]);
+encode(m__fight__forbid_other_speak__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__forbid_other_speak__l2s.msg_id,
+					15030),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__fight__forbid_other_speak__l2s.is_forbid,
+					none),
+			   int32, [])]);
+encode(m__fight__forbid_other_speak__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__forbid_other_speak__s2l.msg_id,
+					15031),
+			   int32, []),
+		      pack(2, repeated,
+			   with_default(_Record#m__fight__forbid_other_speak__s2l.forbid_info,
 					none),
 			   int32, [])]);
 encode(m__resource__push__s2l, _Record) ->
@@ -2305,6 +2356,12 @@ decode_m__match__start_match__l2s(Bytes) ->
 
 decode_m__resource__push__s2l(Bytes) ->
     decode(m__resource__push__s2l, Bytes).
+
+decode_m__fight__forbid_other_speak__s2l(Bytes) ->
+    decode(m__fight__forbid_other_speak__s2l, Bytes).
+
+decode_m__fight__forbid_other_speak__l2s(Bytes) ->
+    decode(m__fight__forbid_other_speak__l2s, Bytes).
 
 decode_m__fight__notice_langren__s2l(Bytes) ->
     decode(m__fight__notice_langren__s2l, Bytes).
@@ -2846,8 +2903,8 @@ decode(m__fight__notice_op__l2s, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__notice_op__l2s, Decoded);
 decode(m__fight__speak__l2s, Bytes) ->
-    Types = [{2, chat, p_chat, [is_record]},
-	     {1, msg_id, int32, []}],
+    Types = [{3, night_langren, int32, []},
+	     {2, chat, p_chat, [is_record]}, {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__speak__l2s, Decoded);
 decode(m__fight__speak__s2l, Bytes) ->
@@ -2946,8 +3003,9 @@ decode(p_flop, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(p_flop, Decoded);
 decode(m__fight__online__s2l, Bytes) ->
-    Types = [{26, fight_mode, int32, []},
-	     {25, is_night, int32, []},
+    Types = [{28, game_round, int32, []},
+	     {27, speak_forbid_info, int32, [repeated]},
+	     {26, fight_mode, int32, []}, {25, is_night, int32, []},
 	     {24, duty_select_info, int32, [repeated]},
 	     {23, duty_select_time, int32, []},
 	     {22, duty_select_over, int32, []},
@@ -2968,7 +3026,7 @@ decode(m__fight__online__s2l, Bytes) ->
 	     {7, attach_data1, int32, [repeated]},
 	     {6, seat_id, int32, []},
 	     {5, die_list, int32, [repeated]}, {4, round, int32, []},
-	     {3, game_state, int32, []}, {2, duty, int32, []},
+	     {3, game_status, int32, []}, {2, duty, int32, []},
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__online__s2l, Decoded);
@@ -3023,6 +3081,16 @@ decode(m__fight__notice_langren__s2l, Bytes) ->
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__notice_langren__s2l, Decoded);
+decode(m__fight__forbid_other_speak__l2s, Bytes) ->
+    Types = [{2, is_forbid, int32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__forbid_other_speak__l2s, Decoded);
+decode(m__fight__forbid_other_speak__s2l, Bytes) ->
+    Types = [{2, forbid_info, int32, [repeated]},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__forbid_other_speak__s2l, Decoded);
 decode(m__resource__push__s2l, Bytes) ->
     Types = [{4, action_id, int32, []}, {3, num, int32, []},
 	     {2, resource_id, int32, []}, {1, msg_id, int32, []}],
@@ -3782,6 +3850,22 @@ to_record(m__fight__notice_langren__s2l,
 					 Record, Name, Val)
 		end,
 		#m__fight__notice_langren__s2l{}, DecodedTuples);
+to_record(m__fight__forbid_other_speak__l2s,
+	  DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__forbid_other_speak__l2s),
+					 Record, Name, Val)
+		end,
+		#m__fight__forbid_other_speak__l2s{}, DecodedTuples);
+to_record(m__fight__forbid_other_speak__s2l,
+	  DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__forbid_other_speak__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__forbid_other_speak__s2l{}, DecodedTuples);
 to_record(m__resource__push__s2l, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields,
