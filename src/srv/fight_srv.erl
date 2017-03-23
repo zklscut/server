@@ -54,7 +54,7 @@
 -export([start_link/4,
          player_op/4,
          player_skill/4,
-         player_speak/3,
+         player_speak/4,
          print_state/1,
          player_online/1,
          player_offline/1,
