@@ -540,7 +540,6 @@ get_langren_dync_data(State) ->
                 CurAllOpData ++ [OpSeat, hd(OpData)]
         end,
     AllOpData = lists:foldl(Fun, [], LastOpData),
-    Send = 
     FunAllSame = 
         fun({_OpSeat, CurOpData}, CurAllSameOpData) ->
                 case (length(CurAllSameOpData) > 0) andalso (hd(CurOpData) == hd(CurAllSameOpData)) of
