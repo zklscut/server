@@ -536,12 +536,14 @@ get_langren_dync_data(State) ->
     LangRenList = get_duty_seat(?DUTY_LANGREN, State),
     LastOpData = get_last_op(State),
     Fun = 
-        fun({OpSeat, OpData}, CurAllOpData) ->
+        fun(OpSeat, CurAllOpData) ->
+                OpData = maps:get(OpSeat, LastOpData),
                 CurAllOpData ++ [OpSeat, hd(OpData)]
         end,
-    AllOpData = lists:foldl(Fun, [], LastOpData),
+    AllOpData = lists:foldl(Fun, [], maps:keys(LastOpData)),
     FunAllSame = 
-        fun({_OpSeat, CurOpData}, CurAllSameOpData) ->
+        fun(CurOpSeat, CurAllSameOpData) ->
+                CurOpData = maps:get(CurOpSeat, LastOpData),
                 case (length(CurAllSameOpData) > 0) andalso (hd(CurOpData) == hd(CurAllSameOpData)) of
                     false->
                         CurAllSameOpData ++ [hd(CurOpData)];
@@ -549,7 +551,7 @@ get_langren_dync_data(State) ->
                         CurAllSameOpData
                 end
         end,
-    AllSameOpData = lists:foldl(FunAllSame, [], LastOpData),   
+    AllSameOpData = lists:foldl(FunAllSame, [],  maps:keys(LastOpData)),   
     {(length(AllSameOpData) == 1) andalso (length(AllOpData) == (2 * length(LangRenList))), AllOpData}.
 
 do_yuyanjia_op(State) ->
