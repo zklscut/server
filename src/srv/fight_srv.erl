@@ -1386,7 +1386,7 @@ handle_event({forbid_other_speak, Forbid, PlayerId}, StateName, State) ->
     {next_state, StateName, maps:put(forbid_speak_data, ForbidInfo, State)};
 
 handle_event({chat_input, IsExpression, Content, PlayerId}, StateName, State) ->
-    Send = #m__fight__forbid_other_speak__s2l{is_expression=IsExpression,
+    Send = #m__fight__chat_input__s2l{is_expression=IsExpression,
                                                 player_id = PlayerId,
                                                 content = Content
                                                 },
