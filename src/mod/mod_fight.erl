@@ -6,6 +6,7 @@
 -export([notice_op/2,
 		 speak/2,
      forbid_other_speak/2,
+     chat_input/2,
          do_skill/2]).
 
 -include("game_pb.hrl").
