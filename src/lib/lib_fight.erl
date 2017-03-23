@@ -12,6 +12,7 @@
          is_active_in_fight/2,
          is_offline_all/2,
          get_p_fight/1,
+         get_langren_dync_data/1,
          get_player_id_by_seat/2,
          get_seat_id_by_player_id/2,
          get_duty_by_seat/2,
@@ -35,7 +36,6 @@
          do_fayan_op/1,
          do_send_fayan/3,
          do_send_fayan/4,
-         do_send_langren_team_fayan/4,
          do_guipiao_op/1,
          do_toupiao_op/1,
          do_toupiao_mvp_op/1,
@@ -528,9 +528,30 @@ do_langren_op(State) ->
         end,
     StateAfterLangren = maps:put(langren, KillSeat, State),
     StateAfterUpdateDie = do_set_die_list(StateAfterLangren),
-
     %%白痴翻牌的情况下是不是被杀
     clear_last_op(StateAfterUpdateDie). 
+
+%%获取狼人动态操作状态
+get_langren_dync_data(State) ->
+    LangRenList = get_duty_seat(?DUTY_LANGREN, State),
+    LastOpData = get_last_op(State),
+    Fun = 
+        fun({OpSeat, OpData}, CurAllOpData) ->
+                CurAllOpData ++ [OpSeat, hd(OpData)]
+        end,
+    AllOpData = lists:foldl(Fun, [], LastOpData),
+    
+    FunAllSame = 
+        fun({_OpSeat, CurOpData}, CurAllSameOpData) ->
+                case (length(CurAllSameOpData) > 0) andalso (hd(CurOpData) == hd(CurAllSameOpData)) of
+                    false->
+                        CurAllSameOpData ++ [hd(CurOpData)]
+                    _->
+                        CurAllSameOpData
+                end
+        end,
+    AllSameOpData = lists:foldl(FunAllSame, [], LastOpData),   
+    {(length(AllSameOpData) == 1) andalso (length(AllOpData) == (2 * length(LangRenList))), AllOpData}.
 
 do_yuyanjia_op(State) ->
     LastOpData = get_last_op(State),
@@ -630,11 +651,6 @@ do_send_fayan(PlayerId, Chat, NightLangren, State) ->
             [send_to_seat(Send, SeatId, State) || SeatId <- LangRenList, SeatId =/= PlayerSeatId]
     end.
 
-
-do_send_langren_team_fayan(PlayerId, Chat, SeatList, State) ->
-    Player = lib_player:get_player(PlayerId),
-    Send = #m__fight__langren_team_speak__s2l{chat = mod_chat:get_p_chat(Chat, Player)},
-    [send_to_seat(Send, SeatId, State) || SeatId<--SeatList].
 
 do_guipiao_op(State) ->
     LastOpData = get_last_op(State),

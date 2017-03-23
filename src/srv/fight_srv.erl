@@ -52,7 +52,7 @@
 %% API functions
 %% ====================================================================
 -export([start_link/4,
-         player_op/4,
+         player_op/5,
          player_skill/4,
          player_speak/4,
          chat_input/5,
@@ -66,12 +66,12 @@
 start_link(RoomId, PlayerList, DutyList, Name) ->
     gen_fsm:start(?MODULE, [RoomId, PlayerList, DutyList, Name, ?MFIGHT], []).
 
-player_op(Pid, PlayerId, Op, OpList) ->
+player_op(Pid, PlayerId, Op, OpList, Confirm) ->
     case Pid of
         undefined->
             ignore;
         _->
-            gen_fsm:send_event(Pid, {player_op, PlayerId, Op, OpList})
+            gen_fsm:send_event(Pid, {player_op, PlayerId, Op, OpList, Confirm})
     end.
 
 player_speak(Pid, PlayerId, Chat, NightLangren) ->
@@ -79,7 +79,6 @@ player_speak(Pid, PlayerId, Chat, NightLangren) ->
         undefined->
             ignore;
         _->
-            % gen_fsm:send_event(Pid, {player_op, PlayerId, ?OP_FAYAN, [Chat]})
             gen_fsm:send_all_state_event(Pid, {player_chat, Chat, NightLangren, PlayerId})
     end.
 
@@ -174,7 +173,7 @@ state_select_card(wait_op, State)->
     StateAfterStartTime = maps:put(duty_select_start_time, util:get_micro_time(), StateNew),
     {next_state, state_select_card, StateAfterStartTime};
 
-state_select_card({player_op, PlayerId, ?OP_SELECT_DUTY, [Duty]}, State)->
+state_select_card({player_op, PlayerId, ?OP_SELECT_DUTY, [Duty], Confirm}, State)->
     %%首先判断是否已经操作过
     SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
     DutySelectSeatList = maps:get(duty_select_seat_list, State),
@@ -232,8 +231,8 @@ state_daozei(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_DAOZEI, State),
     {next_state, state_daozei, NewState};
 
-state_daozei({player_op, PlayerId, Op, OpList}, State) ->
-    do_receive_player_op(PlayerId, Op, OpList, state_daozei, State);
+state_daozei({player_op, PlayerId, Op, OpList, Confirm}, State) ->
+    do_receive_player_op(PlayerId, Op, OpList, Confirm, state_daozei, State);
 
 state_daozei(timeout, State) ->
     DaozeiList = maps:get(daozei, State),
@@ -265,10 +264,10 @@ state_qiubite(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_QIUBITE, State),
     {next_state, state_qiubite, NewState};
 
-state_qiubite({player_op, PlayerId, Op, [LoverA,LoverB]}, State) ->
-    do_receive_player_op(PlayerId, Op, [LoverA,LoverB], state_qiubite, State);
+state_qiubite({player_op, PlayerId, Op, [LoverA,LoverB]}, Confirm, State) ->
+    do_receive_player_op(PlayerId, Op, [LoverA,LoverB], Confirm, state_qiubite, State);
 
-state_qiubite({player_op, _PlayerId, _Op, _OpList}, State) ->
+state_qiubite({player_op, _PlayerId, _Op, _OpList, _Confirm}, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     send_event_inner(timeout),
     {next_state, state_qiubite, State};
@@ -297,8 +296,8 @@ state_hunxueer(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_HUNXUEER, State),
     {next_state, state_hunxueer, NewState};
 
-state_hunxueer({player_op, PlayerId, Op, OpList}, State) ->
-    do_receive_player_op(PlayerId, Op, OpList, state_hunxueer, State);
+state_hunxueer({player_op, PlayerId, Op, OpList, Confirm}, State) ->
+    do_receive_player_op(PlayerId, Op, OpList, Confirm, state_hunxueer, State);
 
 state_hunxueer(timeout, State) ->
     RandTarger = util:rand_in_list(lib_fight:get_alive_seat_list(State) -- 
@@ -324,8 +323,8 @@ state_shouwei(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_SHOUWEI, State),
     {next_state, state_shouwei, NewState};
 
-state_shouwei({player_op, PlayerId, Op, OpList}, State) ->
-    do_receive_player_op(PlayerId, Op, OpList, state_shouwei, State);
+state_shouwei({player_op, PlayerId, Op, OpList, Confirm}, State) ->
+    do_receive_player_op(PlayerId, Op, OpList, Confirm, state_shouwei, State);
 
 state_shouwei(timeout, State) ->
     TimeOutOp = [0],
@@ -350,14 +349,8 @@ state_langren(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_LANGREN, State),
     {next_state, state_langren, NewState};
 
-state_langren({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
-    %%发给狼队友
-    LangRenList = lib_fight:get_duty_seat(?DUTY_LANGREN, false, State),
-    lib_fight:do_send_langren_team_fayan(PlayerId, Chat, LangRenList, State),
-    {next_state, state_langren, State};
-
-state_langren({player_op, PlayerId, Op, OpList}, State) ->
-    do_receive_player_op(PlayerId, Op, OpList, state_langren, State);
+state_langren({player_op, PlayerId, Op, OpList, Confirm}, State) ->
+    do_receive_player_langren_op(PlayerId, Op, OpList, Confirm, state_langren, State);
 
 state_langren(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -383,8 +376,8 @@ state_nvwu(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_NVWU, State),
     {next_state, state_nvwu, NewState};
 
-state_nvwu({player_op, PlayerId, Op, OpList}, State) ->
-    do_receive_player_op(PlayerId, Op, OpList, state_nvwu, State);
+state_nvwu({player_op, PlayerId, Op, OpList, Confirm}, State) ->
+    do_receive_player_op(PlayerId, Op, OpList, Confirm, state_nvwu, State);
 
 state_nvwu(timeout, State) ->
     Op = [0, 0],
@@ -415,8 +408,8 @@ state_yuyanjia(wait_op, State) ->
     NewState = do_duty_state_wait_op(?DUTY_YUYANJIA, State),
     {next_state, state_yuyanjia, NewState};
 
-state_yuyanjia({player_op, PlayerId, Op, OpList}, State) ->
-    do_receive_player_op(PlayerId, Op, OpList, state_yuyanjia, State);
+state_yuyanjia({player_op, PlayerId, Op, OpList, Confirm}, State) ->
+    do_receive_player_op(PlayerId, Op, OpList, Confirm, state_yuyanjia, State);
 
 state_yuyanjia(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -503,8 +496,8 @@ state_part_jingzhang(wait_op, State) ->
     StateAfterWait = do_set_wait_op(?OP_PART_JINGZHANG, lib_fight:get_alive_seat_list(StateAfterNotice), StateAfterNotice),
     {next_state, state_part_jingzhang, StateAfterWait};
 
-state_part_jingzhang({player_op, PlayerId, Op, OpList}, State) ->
-    do_receive_player_op(PlayerId, Op, OpList, state_part_jingzhang, State);
+state_part_jingzhang({player_op, PlayerId, Op, OpList, Confirm}, State) ->
+    do_receive_player_op(PlayerId, Op, OpList, Confirm, state_part_jingzhang, State);
 
 state_part_jingzhang(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -532,13 +525,10 @@ state_part_fayan(start, State) ->
 state_part_fayan(wait_op, State) ->
     do_fayan_state_wait_op(?OP_PART_FAYAN, state_part_fayan, State);
 
-state_part_fayan({player_op, PlayerId, Op, [0]}, State) ->
+state_part_fayan({player_op, PlayerId, Op, [0], Confirm}, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    do_receive_player_op(PlayerId, Op, [0], state_part_fayan, State);
+    do_receive_player_op(PlayerId, Op, [0], Confirm, state_part_fayan, State);
 
-state_part_fayan({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
-    do_receive_fayan(PlayerId, Chat, State),
-    {next_state, state_part_fayan, State};
 
 state_part_fayan(timeout, State) ->
     do_fayan_state_timeout(state_part_fayan, State);
@@ -580,8 +570,8 @@ state_xuanju_jingzhang(wait_op, State) ->
 
     {next_state, state_xuanju_jingzhang, StateAfterWait};    
     
-state_xuanju_jingzhang({player_op, PlayerId, Op, OpList}, State) ->
-    do_receive_player_op(PlayerId, Op, OpList, state_xuanju_jingzhang, State);
+state_xuanju_jingzhang({player_op, PlayerId, Op, OpList, Confirm}, State) ->
+    do_receive_player_op(PlayerId, Op, OpList, Confirm, state_xuanju_jingzhang, State);
 
 state_xuanju_jingzhang(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -695,7 +685,7 @@ state_someone_die(timeout, State) ->
     send_event_inner(op_over),
     {next_state, state_someone_die, NewState};
 
-state_someone_die({player_op, PlayerId, Op, OpList}, State) ->
+state_someone_die({player_op, PlayerId, Op, OpList, Confirm}, State) ->
     try 
         assert_die_skill_legal(PlayerId, Op, OpList, State),
         NewState = lib_fight:do_skill(PlayerId, Op, OpList, State),
@@ -759,13 +749,10 @@ state_night_death_fayan(start, State) ->
 state_night_death_fayan(wait_op, State) ->
     do_fayan_state_wait_op(?OP_DEATH_FAYAN, state_night_death_fayan, State);
 
-state_night_death_fayan({player_op, PlayerId, Op, [0]}, State) ->
+state_night_death_fayan({player_op, PlayerId, Op, [0], Confirm}, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    do_receive_player_op(PlayerId, Op, [0], state_night_death_fayan, State);
+    do_receive_player_op(PlayerId, Op, [0], Confirm, state_night_death_fayan, State);
 
-state_night_death_fayan({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
-    do_receive_fayan(PlayerId, Chat, State),
-    {next_state, state_night_death_fayan, State};
 
 state_night_death_fayan(timeout, State) ->
     do_fayan_state_timeout(state_night_death_fayan, State);
@@ -804,8 +791,8 @@ state_jingzhang(wait_op, State) ->
     StateAfterWait = do_set_wait_op(?OP_JINGZHANG_ZHIDING, [JingZhang], StateAfterOp),
     {next_state, state_jingzhang, StateAfterWait}; 
 
-state_jingzhang({player_op, PlayerId, Op, OpList}, State) ->
-    do_receive_player_op(PlayerId, Op, OpList, state_jingzhang, State);
+state_jingzhang({player_op, PlayerId, Op, OpList, Confirm}, State) ->
+    do_receive_player_op(PlayerId, Op, OpList, Confirm, state_jingzhang, State);
 
 state_jingzhang(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -831,13 +818,9 @@ state_fayan(start, State) ->
 state_fayan(wait_op, State) ->
     do_fayan_state_wait_op(?OP_FAYAN, state_fayan, State);
 
-state_fayan({player_op, PlayerId, Op, [0]}, State) ->
+state_fayan({player_op, PlayerId, Op, [0], Confirm}, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    do_receive_player_op(PlayerId, Op, [0], state_fayan, State);
-
-state_fayan({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
-    do_receive_fayan(PlayerId, Chat, State),
-    {next_state, state_fayan, State};
+    do_receive_player_op(PlayerId, Op, [0], Confirm, state_fayan, State);
 
 state_fayan(timeout, State) ->
     do_fayan_state_timeout(state_fayan, State);
@@ -883,8 +866,8 @@ state_guipiao(wait_op, State) ->
     StateAfterWait = do_set_wait_op(?OP_GUIPIAO, [JingZhang], StateAfterOp),
     {next_state, state_guipiao, StateAfterWait}; 
 
-state_guipiao({player_op, PlayerId, Op, OpList}, State) ->
-    do_receive_player_op(PlayerId, Op, OpList, state_guipiao, State);
+state_guipiao({player_op, PlayerId, Op, OpList, Confirm}, State) ->
+    do_receive_player_op(PlayerId, Op, OpList, Confirm, state_guipiao, State);
 
 state_guipiao(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -921,8 +904,8 @@ state_toupiao(wait_op, State) ->
     StateAfterWait = do_set_wait_op(?OP_TOUPIAO, WaitList, StateAfterNotice),
     {next_state, state_toupiao, StateAfterWait};    
     
-state_toupiao({player_op, PlayerId, Op, OpList}, State) ->
-    do_receive_player_op(PlayerId, Op, OpList, state_toupiao, State);
+state_toupiao({player_op, PlayerId, Op, OpList, Confirm}, State) ->
+    do_receive_player_op(PlayerId, Op, OpList, Confirm, state_toupiao, State);
 
 state_toupiao(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -995,13 +978,10 @@ state_toupiao_death_fayan(start, State) ->
 state_toupiao_death_fayan(wait_op, State) ->
     do_fayan_state_wait_op(?OP_QUZHU_FAYAN, state_toupiao_death_fayan, State);
 
-state_toupiao_death_fayan({player_op, PlayerId, Op, [0]}, State) ->
+state_toupiao_death_fayan({player_op, PlayerId, Op, [0], Confirm}, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    do_receive_player_op(PlayerId, Op, [0], state_toupiao_death_fayan, State);
+    do_receive_player_op(PlayerId, Op, [0], Confirm, state_toupiao_death_fayan, State);
 
-state_toupiao_death_fayan({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
-    do_receive_fayan(PlayerId, Chat, State),
-    {next_state, state_toupiao_death_fayan, State};
 
 state_toupiao_death_fayan(timeout, State) ->
     do_fayan_state_timeout(state_toupiao_death_fayan, State);
@@ -1079,13 +1059,9 @@ state_lapiao_fayan(start, State) ->
 state_lapiao_fayan(wait_op, State) ->
     do_fayan_state_wait_op(?OP_LAPIAO_FAYAN, state_lapiao_fayan, State);
 
-state_lapiao_fayan({player_op, PlayerId, Op, [0]}, State) ->
+state_lapiao_fayan({player_op, PlayerId, Op, [0], Confirm}, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    do_receive_player_op(PlayerId, Op, [0], state_lapiao_fayan, State);
-
-state_lapiao_fayan({player_op, PlayerId, ?OP_FAYAN, [Chat]}, State) ->
-    do_receive_fayan(PlayerId, Chat, State),
-    {next_state, state_lapiao_fayan, State};
+    do_receive_player_op(PlayerId, Op, [0], Confirm, state_lapiao_fayan, State);
 
 state_lapiao_fayan(timeout, State) ->
     do_fayan_state_timeout(state_lapiao_fayan, State);
@@ -1118,8 +1094,8 @@ state_toupiao_mvp(wait_op, State) ->
     StateAfterWait = do_set_wait_op(?OP_TOUPIAO_MVP, WaitList, StateAfterNotice),
     {next_state, state_toupiao_mvp, StateAfterWait};    
     
-state_toupiao_mvp({player_op, PlayerId, Op, OpList}, State) ->
-    do_receive_player_op(PlayerId, Op, OpList, state_toupiao_mvp, State);
+state_toupiao_mvp({player_op, PlayerId, Op, OpList, Confirm}, State) ->
+    do_receive_player_op(PlayerId, Op, OpList, Confirm, state_toupiao_mvp, State);
 
 state_toupiao_mvp(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -1173,8 +1149,8 @@ state_toupiao_carry(wait_op, State) ->
     StateAfterWait = do_set_wait_op(?OP_TOUPIAO_CARRY, WaitList, StateAfterNotice),
     {next_state, state_toupiao_carry, StateAfterWait};    
     
-state_toupiao_carry({player_op, PlayerId, Op, OpList}, State) ->
-    do_receive_player_op(PlayerId, Op, OpList, state_toupiao_carry, State);
+state_toupiao_carry({player_op, PlayerId, Op, OpList, Confirm}, State) ->
+    do_receive_player_op(PlayerId, Op, OpList, Confirm, state_toupiao_carry, State);
 
 state_toupiao_carry(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -1528,18 +1504,18 @@ do_duty_op_timeout(OpList, StateName, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     SeatId = hd(maps:get(wait_op_list, State)),
     StateAfterLogOp = do_log_op(SeatId, OpList, State),
-    {_, StateAfterWaitOp} = do_remove_wait_op(SeatId, StateAfterLogOp),
+    {_, StateAfterWaitOp} = do_remove_wait_op(SeatId, 1, StateAfterLogOp),
     send_event_inner(op_over),
     {next_state, StateName, StateAfterWaitOp}.
 
-do_receive_player_op(PlayerId, Op, OpList, StateName, State) ->
+do_receive_player_op(PlayerId, Op, OpList, Confirm, StateName, State) ->
     try
         assert_op_in_wait(PlayerId, State),
         assert_op_legal(Op, StateName),
         assert_op_fit(Op, OpList, State),
         SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
         StateAfterLogOp = do_log_op(SeatId, OpList, State),
-        {IsWaitOver, StateAfterWaitOp} = do_remove_wait_op(SeatId, StateAfterLogOp),
+        {IsWaitOver, StateAfterWaitOp} = do_remove_wait_op(SeatId, Confirm, StateAfterLogOp),
         case IsWaitOver of
             true ->
                 send_event_inner(op_over);
@@ -1551,7 +1527,32 @@ do_receive_player_op(PlayerId, Op, OpList, StateName, State) ->
         throw:ErrCode ->
             net_send:send_errcode(ErrCode, PlayerId),
             {next_state, StateName, State}
-    end.    
+    end.   
+
+do_receive_player_langren_op(PlayerId, Op, OpList, Confirm, StateName, State) ->
+    try
+        assert_op_in_wait(PlayerId, State),
+        assert_op_legal(Op, StateName),
+        assert_op_fit(Op, OpList, State),
+        SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
+        StateAfterLogOp = do_log_op(SeatId, OpList, State),
+        {IsWaitOver, StateAfterWaitOp} = do_remove_wait_op(SeatId, Confirm, StateAfterLogOp),
+        {AllSame, AllOpData} = lib_fight:get_langren_dync_data(StateAfterWaitOp),
+        LangRenList = lib_fight:get_duty_seat(?DUTY_LANGREN, StateAfterWaitOp),
+        Send = #m__fight__dync_langren_op_data__s2l{op_data = AllOpData},
+        [lib_fight:send_to_seat(Send, LangRenSeatId, StateAfterWaitOp) || LangRenSeatId<-LangRenList],
+        case IsWaitOver orelse AllSame of
+            true ->
+                send_event_inner(op_over);
+            false ->
+                ignore
+        end,
+        {next_state, StateName, StateAfterWaitOp}
+    catch 
+        throw:ErrCode ->
+            net_send:send_errcode(ErrCode, PlayerId),
+            {next_state, StateName, State}
+    end.  
 
 do_fayan_state_start(InitFayanList, StateName, State) ->
     FayanList = [SeatId || SeatId <- InitFayanList, SeatId =/= 0],
@@ -1573,7 +1574,6 @@ do_fayan_state_start(InitFayanList, StateName, State) ->
     end.
 
 do_fayan_state_wait_op(Op, StateName, State) ->
-    % start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_FAYAN)),
     Fayan = hd(maps:get(fayan_turn, State)),
     notice_start_fayan(Fayan, State),
     StateAfterOp = notice_player_op(Op, [Fayan], State),
@@ -1620,7 +1620,20 @@ notice_player_op(?DUTY_DAOZEI, SeatList, State) ->
     notice_player_op(?DUTY_DAOZEI, maps:get(daozei, State), SeatList, State);
 
 notice_player_op(?DUTY_SHOUWEI, SeatList, State) ->
-    notice_player_op(?DUTY_SHOUWEI, [maps:get(shouwei, State)], SeatList, State);
+    AliveSeatList = lib_fight:get_alive_seat_list(State),
+    notice_player_op(?DUTY_SHOUWEI, AliveSeatList -- [maps:get(shouwei, State)], SeatList, State);
+
+notice_player_op(?DUTY_QIUBITE, SeatList, State) ->
+    AliveSeatList = lib_fight:get_alive_seat_list(State),
+    notice_player_op(?DUTY_QIUBITE, AliveSeatList -- SeatList, SeatList, State);
+
+notice_player_op(?DUTY_HUNXUEER, SeatList, State) ->
+    AliveSeatList = lib_fight:get_alive_seat_list(State),
+    notice_player_op(?DUTY_HUNXUEER, AliveSeatList -- SeatList, SeatList, State);
+
+notice_player_op(?DUTY_LIEREN, SeatList, State) ->
+    AliveSeatList = lib_fight:get_alive_seat_list(State),
+    notice_player_op(?DUTY_LIEREN, AliveSeatList -- SeatList, SeatList, State);
 
 notice_player_op(?DUTY_NVWU, SeatList, State) ->
     notice_player_op(?DUTY_NVWU, [lists:sum(maps:get(nvwu_left, State))] ++ [maps:get(langren, State)], SeatList, State);
@@ -1752,7 +1765,6 @@ get_skill_next_state(Op, StateName, State) ->
     end.
 
 do_log_op(SeatId, OpList, State) ->
-    lager:info("do_log_op ~p", [{SeatId, OpList}]),
     LastOpData = maps:get(last_op_data, State),
     NewLastOpData = maps:put(SeatId, OpList, LastOpData),
     maps:put(last_op_data, NewLastOpData, State).
@@ -1828,9 +1840,16 @@ player_online_offline_wait_op_time_update(SeatId, State)->
             State
     end.
 
-do_remove_wait_op(SeatId, State) ->
+do_remove_wait_op(SeatId, Confirm, State) ->
     WaitOpList = maps:get(wait_op_list, State),
-    NewWaitOpList = wait_op_list_all_offline_players_timeout(WaitOpList -- [SeatId], State),
+    WaipOpListAfterConfirm = 
+        case Confirm of
+            0->
+                WaitOpList;
+            _->
+                WaitOpList -- [SeatId]
+        end,
+    NewWaitOpList = wait_op_list_all_offline_players_timeout(WaipOpListAfterConfirm, State),
     NewState = 
     case NewWaitOpList of
         []->
