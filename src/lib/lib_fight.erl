@@ -623,6 +623,7 @@ do_send_fayan(PlayerId, Chat, NightLangren, State) ->
         0->
             do_send_fayan(PlayerId, Chat, State);
         _->
+            Player = lib_player:get_player(PlayerId),
             Send = #m__fight__speak__s2l{chat = mod_chat:get_p_chat(Chat, Player)},
             PlayerSeatId = get_seat_id_by_player_id(PlayerId, State),
             LangRenList = get_duty_seat(?DUTY_LANGREN, false, State),
