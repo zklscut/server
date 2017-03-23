@@ -1396,8 +1396,6 @@ handle_event({chat_input, IsExpression, Content, NightLangren, PlayerId}, StateN
         0->
             lib_fight:send_to_all_player(Send, State);
         _->
-            Player = lib_player:get_player(PlayerId),
-            PlayerSeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
             LangRenList = lib_fight:get_duty_seat(?DUTY_LANGREN, false, State),
             [lib_fight:send_to_seat(Send, SeatId, State) || SeatId <- LangRenList]
     end,
