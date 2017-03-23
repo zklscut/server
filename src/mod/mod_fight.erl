@@ -37,7 +37,7 @@ forbid_other_speak(#m__fight__forbid_other_speak__l2s{is_forbid = Forbid}, Playe
         lib_player:get_player_id(Player), Forbid),
     {ok, Player}.
 
-chat_input(#m__fight__chat_input__s2l{is_expression = IsExpression,
+chat_input(#m__fight__chat_input__l2s{is_expression = IsExpression,
                                       content = Content,
                                       night_langren = NightLangren}, Player) ->
     fight_srv:chat_input(lib_player:get_fight_pid(Player), 
