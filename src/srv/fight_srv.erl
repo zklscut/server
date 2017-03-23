@@ -128,6 +128,14 @@ forbid_other_speak(Pid, PlayerId, Forbid)->
             gen_fsm:send_all_state_event(Pid, {forbid_other_speak, Forbid, PlayerId})
     end.
 
+chat_input(Pid, PlayerId, IsExpression, Content)->
+    case Pid of
+        undefined ->
+            ignore;
+        Pid ->
+            gen_fsm:send_all_state_event(Pid, {chat_input, IsExpression, Content, PlayerId})
+    end.
+
 %% ================`===================================================
 %% Behavioural functions
 %% ====================================================================
@@ -1376,6 +1384,15 @@ handle_event({forbid_other_speak, Forbid, PlayerId}, StateName, State) ->
     Send = #m__fight__forbid_other_speak__s2l{forbid_info=ForbidInfo},
     lib_fight:send_to_all_player(Send, State),
     {next_state, StateName, maps:put(forbid_speak_data, ForbidInfo, State)};
+
+handle_event({chat_input, IsExpression, Content, PlayerId}, StateName, State) ->
+    Send = #m__fight__forbid_other_speak__s2l{is_expression=IsExpression,
+                                                player_id = PlayerId,
+                                                content = Content
+                                                },
+    lib_fight:send_to_all_player(Send, State),
+    {next_state, StateName, State};
+
 
 handle_event({player_leave, PlayerId}, StateName, State) ->
     SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
