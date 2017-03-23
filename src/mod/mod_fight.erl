@@ -30,6 +30,11 @@ do_skill(#m__fight__do_skill__l2s{op = Op,
         lib_player:get_player_id(Player), Op, OpList),
     {ok, Player}.
 
+forbid_other_speak(#m__fight__forbid_other_speak__l2s{is_forbid = Forbid}, Player)->
+    fight_srv:forbid_other_speak(lib_player:get_fight_pid(Player), 
+        lib_player:get_player_id(Player), Forbid),
+    {ok, Player}.
+
 %%%====================================================================
 %%% Internal functions
 %%%====================================================================

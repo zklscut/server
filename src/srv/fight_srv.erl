@@ -58,7 +58,8 @@
          print_state/1,
          player_online/1,
          player_offline/1,
-         player_leave/2
+         player_leave/2,
+         forbid_other_speak/3
          ]).
 
 start_link(RoomId, PlayerList, DutyList, Name) ->
@@ -117,6 +118,14 @@ player_leave(Pid, PlayerId) ->
         Pid ->
             lager:info("player_leave defined"),
             gen_fsm:send_all_state_event(Pid, {player_leave, PlayerId})
+    end.
+
+forbid_other_speak(Pid, PlayerId, Forbid)->
+    case Pid of
+        undefined ->
+            ignore;
+        Pid ->
+            gen_fsm:send_all_state_event(Pid, {forbid_other_speak, Forbid, PlayerId})
     end.
 
 %% ================`===================================================
@@ -1310,7 +1319,7 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     Send = #m__fight__online__s2l{duty = DutyId,
                                   fight_info = lib_fight:get_p_fight(NewState),
                                   seat_id = SeatId,
-                                  game_state =GameState,
+                                  game_status = get_status_id(StateName),
                                   round = Round,
                                   wait_op = WaitOp,
                                   wait_op_list = WaitOpList,
@@ -1332,6 +1341,8 @@ handle_event({player_online, PlayerId}, StateName, State) ->
                                   duty_select_time = DutySelectLeftTime,
                                   duty_select_info = OwnRndInfo,
                                   is_night = IsNight,
+                                  speak_forbid_info = maps:get(forbid_speak_data, NewState),
+                                  game_round = maps:get(game_round, NewState),
                                   fight_mode = FightMode
                                   },
     net_send:send(Send, PlayerId),
@@ -1357,6 +1368,14 @@ handle_event({player_offline, PlayerId}, StateName, State) ->
     lib_fight:send_to_all_player(Send, NewState),
     StateAfterTimeUpdate = player_online_offline_wait_op_time_update(SeatId, NewState),
     {next_state, StateName, StateAfterTimeUpdate};
+
+handle_event({forbid_other_speak, Forbid, PlayerId}, StateName, State) ->
+    SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
+    GameGround = maps:get(game_round, State),
+    ForbidInfo = [get_status_id(StateName), GameGround, SeatId, Forbid],
+    Send = #m__fight__forbid_other_speak__s2l{forbid_info=ForbidInfo},
+    lib_fight:send_to_all_player(Send, State),
+    {next_state, StateName, maps:put(forbid_speak_data, ForbidInfo, State)};
 
 handle_event({player_leave, PlayerId}, StateName, State) ->
     SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
