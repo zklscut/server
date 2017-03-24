@@ -1009,6 +1009,14 @@ state_night(start, State) ->
 
 state_night(over, State)->
     send_event_inner(start),
+    GameRound = maps:get(game_round, State),
+    NextState = 
+        case GameRound == 1 of
+            true->
+                state_daozei;
+            false
+                get_next_game_state(state_night)
+        end,
     {next_state, get_next_game_state(state_night), State};
 
 state_night(_IgnoreOP, State)->
