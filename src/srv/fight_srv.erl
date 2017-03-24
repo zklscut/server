@@ -1672,9 +1672,13 @@ do_duty_op_timeout(OpList, StateName, State) ->
 
 do_receive_player_op(PlayerId, Op, OpList, Confirm, StateName, State) ->
     try
+        lager:info("do_receive_player_op1"),
         assert_op_in_wait(PlayerId, State),
+        lager:info("do_receive_player_op2"),
         assert_op_legal(Op, StateName),
+        lager:info("do_receive_player_op3"),
         assert_op_fit(Op, OpList, State),
+        lager:info("do_receive_player_op4"),
         SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
         StateAfterLogOp = do_log_op(SeatId, OpList, State),
         {IsWaitOver, StateAfterWaitOp} = do_remove_wait_op(SeatId, Confirm, StateAfterLogOp),
