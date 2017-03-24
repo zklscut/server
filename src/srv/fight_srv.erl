@@ -268,8 +268,38 @@ state_daozei(wait_op, State) ->
     StateAfterPreCommon = notice_player_op(?OP_PRE_COMMON, AttackDataHunxueer, OpSeatList, State),
     {next_state, state_daozei, StateAfterPreCommon};
 
-state_daozei({player_op, PlayerId, Op, OpList, Confirm}, State) ->
-    do_receive_player_op(PlayerId, Op, OpList, Confirm, state_daozei, State);
+state_daozei({player_op, PlayerId, ?DUTY_DAOZEI, OpList, Confirm}, State) ->
+    {PreState, StateName, CurState} = do_receive_player_op(PlayerId, ?DUTY_DAOZEI, OpList, Confirm, state_daozei, State),
+    NewState =
+    case Confirm of
+        1->
+            lib_fight:do_daozei_op(CurState);
+        _->
+            CurState
+    end,
+    {PreState, StateName, NewState};
+
+state_daozei({player_op, PlayerId, ?DUTY_QIUBITE, OpList, Confirm}, State) ->
+    {PreState, StateName, CurState} = do_receive_player_op(PlayerId, ?DUTY_QIUBITE, OpList, Confirm, state_daozei, State),
+    NewState =
+    case Confirm of
+        1->
+            lib_fight:do_qiubite_op(CurState);
+        _->
+            CurState
+    end,
+    {PreState, StateName, NewState};
+
+state_daozei({player_op, PlayerId, ?DUTY_HUNXUEER, OpList, Confirm}, State) ->
+    {PreState, StateName, CurState} = do_receive_player_op(PlayerId, ?DUTY_HUNXUEER, OpList, Confirm, state_daozei, State),
+    NewState =
+    case Confirm of
+        1->
+            lib_fight:do_hunxuer_op(CurState);
+        _->
+            CurState
+    end,
+    {PreState, StateName, NewState};
 
 state_daozei(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
@@ -278,11 +308,29 @@ state_daozei(timeout, State) ->
 
 state_daozei(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    StateAfterDaozei = lib_fight:do_daozei_op(State),
-    StateAfterQiubite = lib_fight:do_qiubite_op(StateAfterDaozei),
-    StateAfterHunxueer = lib_fight:do_hunxuer_op(StateAfterQiubite),
+    StateAfterDaozei = 
+        case maps:get(duty_daozei_op, State) of
+            1->
+                State;
+            _->
+                lib_fight:do_daozei_op(State)
+        end,
+    StateAfterQiubite = 
+        case maps:get(duty_qiubite_op, StateAfterDaozei) of
+            1->
+                StateAfterDaozei;
+            _->
+                lib_fight:do_qiubite_op(StateAfterDaozei)
+        end,
+    StateAfterHunxueer = 
+        case maps:get(duty_hunxuer_op, StateAfterQiubite) of
+            1->
+                StateAfterQiubite;
+            _->
+                lib_fight:do_hunxuer_op(StateAfterQiubite)
+        end,
     send_event_inner(start),
-    {next_state, get_next_game_state(state_daozei), StateAfterHunxueer};
+    {next_state, get_next_game_state(state_daozei), lib_fight:clear_last_op(StateAfterHunxueer)};
 
 state_daozei(_IgnoreOP, State)->
     {next_state, state_daozei, State}.
@@ -350,24 +398,94 @@ state_hunxueer(_IgnoreOP, State)->
 %% state_shouwei
 %% ====================================================================
 state_shouwei(start, State) ->
-    do_duty_state_start(?DUTY_SHOUWEI, state_shouwei, State);
+    % do_duty_state_start(?DUTY_SHOUWEI, state_shouwei, State);
+    send_event_inner(wait_op),
+    {next_state, state_shouwei, State};
 
 state_shouwei(wait_op, State) ->
-    NewState = do_duty_state_wait_op(?DUTY_SHOUWEI, State),
-    {next_state, state_shouwei, NewState};
+    LangRenSeatList = lib_fight:get_duty_seat(?DUTY_LANGREN, State),
+    ShouWeiSeatList = lib_fight:get_duty_seat(?DUTY_SHOUWEI, State),
+    YuyanjiaSeatList = lib_fight:get_duty_seat(?DUTY_YUYANJIA, State),
 
-state_shouwei({player_op, PlayerId, Op, OpList, Confirm}, State) ->
-    do_receive_player_op(PlayerId, Op, OpList, Confirm, state_shouwei, State);
+    AttachDataLangren = [20] ++ lib_fight:get_alive_seat_list(State),
+    AttachDataShouWei =
+    case ShouWeiSeatList of
+        []->
+            AttachDataLangren;
+        _->
+            [21] ++ (lib_fight:get_alive_seat_list(State) -- [maps:get(shouwei, State)])
+    end,
+    AttachDataYuyanjia = 
+        case YuyanjiaSeatList of
+            []->
+                AttachDataShouWei;
+            _->
+                YuYanJiaOpList = maps:get(yuyanjia_op, State),
+                YuYanJiaOpSeatList = [SeatId || {SeatId, _}<-YuYanJiaOpList],
+                [22] ++ (lib_fight:get_alive_seat_list(State) -- (YuyanjiaSeatList ++ YuYanJiaOpSeatList))
+        end,
+    OpSeatList = (LangRenSeatList ++ ShouWeiSeatList) ++ YuyanjiaSeatList,
+    StateAfterNormalCommon = notice_player_op(?OP_NORMAL_COMMON, AttachDataYuyanjia, OpSeatList, State),    
+    {next_state, state_shouwei, StateAfterNormalCommon};
+
+state_shouwei({player_op, PlayerId, ?DUTY_LANGREN, OpList, Confirm}, State) ->
+    do_receive_player_langren_op(PlayerId, ?DUTY_LANGREN, OpList, Confirm, state_shouwei, State);
+
+state_shouwei({player_op, PlayerId, ?DUTY_SHOUWEI, OpList, Confirm}, State) ->
+    {PreState, StateName, CurState} = do_receive_player_op(PlayerId, ?DUTY_SHOUWEI, 
+                                                                OpList, Confirm, state_daozei, State),
+    NewState =
+    case Confirm of
+        1->
+            lib_fight:do_shouwei_op(CurState);
+        _->
+            CurState
+    end,
+    {PreState, StateName, NewState};
+
+state_shouwei({player_op, PlayerId, ?DUTY_YUYANJIA, OpList, Confirm}, State) ->
+    {PreState, StateName, CurState} = do_receive_player_op(PlayerId, ?DUTY_YUYANJIA, 
+                                                                OpList, Confirm, state_daozei, State),
+    NewState =
+    case Confirm of
+        1->
+            lib_fight:do_yuyanjia_op(CurState);
+        _->
+            CurState
+    end,
+    {PreState, StateName, NewState};
 
 state_shouwei(timeout, State) ->
-    TimeOutOp = [0],
-    do_duty_op_timeout(TimeOutOp, state_shouwei, State);
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    send_event_inner(op_over),
+    {next_state, state_shouwei, State};
 
 state_shouwei(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    NewState = lib_fight:do_shouwei_op(State),
+    StateAfterShouWei = 
+        case maps:get(duty_shouwei, State) of
+            1->
+                State;
+            _->
+                lib_fight:do_shouwei_op(State)
+        end,
+    StateAfterYuyanjia = 
+        case maps:get(duty_yuyanjia_op, StateAfterShouWei) of
+            1->
+                StateAfterShouWei;
+            _->
+                lib_fight:do_yuyanjia_op(StateAfterShouWei)
+        end,
+    StateAfterLangren = 
+        case maps:get(duty_langren_op, StateAfterYuyanjia) of
+            1->
+                StateAfterYuyanjia;
+            _->
+                lib_fight:do_langren_op(StateAfterYuyanjia)
+        end,
+    StateAfterClearOpData = lib_fight:clear_last_op(StateAfterLangren),   
     send_event_inner(start),
-    {next_state, get_next_game_state(state_shouwei), NewState};
+    {next_state, get_next_game_state(state_shouwei), lib_fight:do_set_die_list(StateAfterClearOpData)};
 
 state_shouwei(_IgnoreOP, State)->
     {next_state, state_shouwei, State}.
@@ -398,33 +516,8 @@ state_langren(op_over, State) ->
 
 state_langren(_IgnoreOP, State)->
     {next_state, state_langren, State}.
-                 
-%% ====================================================================
-%% state_nvwu
-%% ====================================================================
-state_nvwu(start, State) ->
-    do_duty_state_start(?DUTY_NVWU, state_nvwu, State);
+    
 
-state_nvwu(wait_op, State) ->
-    NewState = do_duty_state_wait_op(?DUTY_NVWU, State),
-    {next_state, state_nvwu, NewState};
-
-state_nvwu({player_op, PlayerId, Op, OpList, Confirm}, State) ->
-    do_receive_player_op(PlayerId, Op, OpList, Confirm, state_nvwu, State);
-
-state_nvwu(timeout, State) ->
-    Op = [0, 0],
-    do_duty_op_timeout(Op, state_nvwu, State);
-
-state_nvwu(op_over, State) ->
-    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    NewState = lib_fight:do_nvwu_op(State),
-    send_event_inner(start),
-    {next_state, get_next_game_state(state_nvwu), NewState};
-
-state_nvwu(_IgnoreOP, State)->
-    {next_state, state_nvwu, State}.
-            
 %% ====================================================================
 %% state_yuyanjia
 %% ====================================================================
@@ -457,6 +550,35 @@ state_yuyanjia(op_over, State) ->
 
 state_yuyanjia(_IgnoreOP, State)->
     {next_state, state_yuyanjia, State}.
+
+
+%% ====================================================================
+%% state_nvwu
+%% ====================================================================
+state_nvwu(start, State) ->
+    do_duty_state_start(?DUTY_NVWU, state_nvwu, State);
+
+state_nvwu(wait_op, State) ->
+    NewState = do_duty_state_wait_op(?DUTY_NVWU, State),
+    {next_state, state_nvwu, NewState};
+
+state_nvwu({player_op, PlayerId, Op, OpList, Confirm}, State) ->
+    do_receive_player_op(PlayerId, Op, OpList, Confirm, state_nvwu, State);
+
+state_nvwu(timeout, State) ->
+    Op = [0, 0],
+    do_duty_op_timeout(Op, state_nvwu, State);
+
+state_nvwu(op_over, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    NewState = lib_fight:do_nvwu_op(State),
+    send_event_inner(start),
+    {next_state, get_next_game_state(state_nvwu), NewState};
+
+state_nvwu(_IgnoreOP, State)->
+    {next_state, state_nvwu, State}.
+            
+
 
 %% ====================================================================
 %% state_day
@@ -1581,13 +1703,25 @@ do_receive_player_langren_op(PlayerId, Op, OpList, Confirm, StateName, State) ->
         LangRenList = lib_fight:get_duty_seat(?DUTY_LANGREN, StateAfterWaitOp),
         Send = #m__fight__dync_langren_op_data__s2l{op_data = AllOpData},
         [lib_fight:send_to_seat(Send, LangRenSeatId, StateAfterWaitOp) || LangRenSeatId<-LangRenList],
-        case IsWaitOver orelse AllSame of
+        StateAfterLangrenOP =
+        case AllSame of
             true ->
-                send_event_inner(op_over);
-            false ->
+                case maps:get(duty_langren_op, StateAfterWaitOp) of
+                    1->
+                        StateAfterWaitOp;
+                    _->
+                        lib_fight:do_langren_op(StateAfterWaitOp)
+                end;
+            _ ->
+                StateAfterWaitOp
+        end,
+        case IsWaitOver of
+            true->
+                send_event_inner(op_over),;
+            _->
                 ignore
         end,
-        {next_state, StateName, StateAfterWaitOp}
+        {next_state, StateName, StateAfterLangrenOP}
     catch 
         throw:ErrCode ->
             net_send:send_errcode(ErrCode, PlayerId),
@@ -2057,7 +2191,13 @@ clear_night_op(State) ->
            quzhu_op => 0,
            is_night => 1,
            safe_night => 1,         %%平安夜
-           safe_day => 1           %%平安日
+           safe_day => 1,           %%平安日
+           duty_daozei_op => 0,
+           duty_qiubite_op => 0,
+           duty_hunxuer_op => 0,
+           duty_langren_op => 0,
+           duty_yuyanjia_op => 0,
+           duty_shouwei => 0
            }.
 
 notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, MaxList, State) ->
@@ -2230,7 +2370,7 @@ get_next_game_state(GameState) ->
         state_hunxueer ->
             state_shouwei;
         state_shouwei ->
-            state_langren;
+            state_nvwu;
         state_langren ->
             state_nvwu;
         state_nvwu ->
@@ -2276,7 +2416,7 @@ get_state_legal_op(GameState) ->
         state_hunxueer ->
             [?DUTY_HUNXUEER];
         state_shouwei ->
-            [?DUTY_SHOUWEI];
+            [?DUTY_LANGREN, ?OP_NORMAL_COMMON];% [?DUTY_SHOUWEI];
         state_langren ->
             [?DUTY_LANGREN];
         state_nvwu ->

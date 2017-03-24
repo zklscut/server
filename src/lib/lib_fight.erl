@@ -62,6 +62,7 @@
          get_op_wait/3,
          get_max_luck_seat/2,
          is_twice_toupiao/1,
+         do_set_die_list/1,
          is_need_mvp/1]).
 
 -include("fight.hrl").
@@ -512,7 +513,8 @@ do_daozei_op(State) ->
                     Duty
             end,
             StateDaoZeiSeat = maps:put(daozei_seat, SeatId, State),
-            update_duty(SeatId, ?DUTY_DAOZEI, SelectDuty, StateDaoZeiSeat)
+            StateAfterUpdateDuty = update_duty(SeatId, ?DUTY_DAOZEI, SelectDuty, StateDaoZeiSeat),
+            maps:put(duty_daozei_op, 1, StateAfterUpdateDuty)
     end.
 
 get_default_qiubite_op_data(State)->
@@ -534,7 +536,7 @@ do_qiubite_op(State) ->
             end,
             StateAfterLover = maps:put(lover, [Seat1, Seat2], State),
             notice_lover(Seat1, Seat2, SeatId, State),
-            StateAfterLover
+            maps:put(duty_qiubite_op, 1, StateAfterLover)
     end.
 
 get_default_hunxuer_op_data(State)->
@@ -544,7 +546,7 @@ get_default_hunxuer_op_data(State)->
 do_hunxuer_op(State) ->
     case lib_fight:get_duty_seat(?DUTY_HUNXUEER, State) of
         []->
-            clear_last_op(State);
+            State;
         [SeatId]->
             LastOpData = get_last_op(State),
             [SelectSeatId] =
@@ -557,17 +559,21 @@ do_hunxuer_op(State) ->
             StateAfterHunxueer = maps:put(hunxuer, SelectSeatId, State),
             Send = #m__fight__notice_hunxuer__s2l{select_seat = SelectSeatId},
             send_to_seat(Send, SeatId, StateAfterHunxueer),
-            clear_last_op(StateAfterHunxueer)
+            maps:put(duty_hunxuer_op, 1, StateAfterHunxueer)
     end.
 
 do_shouwei_op(State) ->
-    LastOpData = get_last_op(State),
-    [{OpSeatId, [SeatId]}] = maps:to_list(LastOpData),
-    StateAfterShouWei = maps:put(shouwei, SeatId, State),
-    %%todo:通知守护目标
-    Send = #m__fight__shouwei_op__s2l{seat_id = SeatId},
-    send_to_seat(Send, OpSeatId, StateAfterShouWei),
-    clear_last_op(StateAfterShouWei).
+    case lib_fight:get_duty_seat(?DUTY_SHOUWEI, State) of
+        []->
+            State;
+        [SeatId]->
+            LastOpData = get_last_op(State),
+            [SelectSeatId] = maps:get(SeatId, LastOpData, [0]),
+            StateAfterShouWei = maps:put(shouwei, SelectSeatId, State),
+            Send = #m__fight__shouwei_op__s2l{seat_id = SeatId},
+            send_to_seat(Send, OpSeatId, StateAfterShouWei),
+            maps:put(duty_shouwei, 1, StateAfterShouWei)
+    end.
 
 do_nvwu_op(State) ->
     LastOpData = get_last_op(State),
@@ -585,18 +591,36 @@ do_nvwu_op(State) ->
     clear_last_op(StateAfterNvKill).        
 
 do_langren_op(State) ->
+    LangRenList = get_duty_seat(?DUTY_LANGREN, State),
     LastOpData = get_last_op(State),
+    Fun = 
+        fun(OpSeat, CurLangrenOpData) ->
+                case lists:member(OpSeat, LangRenList) of
+                    true->
+                        maps:put(OpSeat, maps:get(OpSeat, LastOpData), CurLangrenOpData);
+                    _-> 
+                        CurLangrenOpData
+                end
+                
+        end,
+    LangRenOpData = lists:foldl(Fun, #{}, maps:keys(LastOpData)),
+
     KillSeat = 
-        case maps:to_list(LastOpData) of
+        case maps:to_list(LangRenOpData) of
             [] ->
                 0;
             _ ->
-                rand_target_in_op(filter_last_op(LastOpData))
+                rand_target_in_op(filter_last_op(LangRenOpData))
         end,
+
+    Send = #m__fight__langren_op__s2l{seat_id = SeatId},
+    [send_to_seat(Send, OpSeatId, State) || OpSeatId <- LangRenList],
     StateAfterLangren = maps:put(langren, KillSeat, State),
     StateAfterUpdateDie = do_set_die_list(StateAfterLangren),
     %%白痴翻牌的情况下是不是被杀
-    clear_last_op(StateAfterUpdateDie). 
+    maps:put(duty_langren_op, 1, StateAfterUpdateDie).
+    
+
 
 %%获取狼人动态操作状态
 get_langren_dync_data(State) ->
@@ -604,16 +628,27 @@ get_langren_dync_data(State) ->
     LastOpData = get_last_op(State),
     Fun = 
         fun(OpSeat, CurAllOpData) ->
-                OpData = maps:get(OpSeat, LastOpData),
-                CurAllOpData ++ [OpSeat, hd(OpData)]
+                case lists:member(OpSeat, LangRenList) of
+                    true->
+                        OpData = maps:get(OpSeat, LastOpData),
+                        CurAllOpData ++ [OpSeat, hd(OpData)];
+                    _-> 
+                        CurAllOpData
+                end
+                
         end,
     AllOpData = lists:foldl(Fun, [], maps:keys(LastOpData)),
     FunAllSame = 
         fun(CurOpSeat, CurAllSameOpData) ->
-                CurOpData = maps:get(CurOpSeat, LastOpData),
-                case (length(CurAllSameOpData) > 0) andalso (hd(CurOpData) == hd(CurAllSameOpData)) of
-                    false->
-                        CurAllSameOpData ++ [hd(CurOpData)];
+                case lists:member(CurOpSeat, LangRenList) of
+                    true->
+                        CurOpData = maps:get(CurOpSeat, LastOpData),
+                        case (length(CurAllSameOpData) > 0) andalso (hd(CurOpData) == hd(CurAllSameOpData)) of
+                            false->
+                                CurAllSameOpData ++ [hd(CurOpData)];
+                            _->
+                                CurAllSameOpData
+                        end;
                     _->
                         CurAllSameOpData
                 end
@@ -622,25 +657,23 @@ get_langren_dync_data(State) ->
     {(length(AllSameOpData) == 1) andalso (length(AllOpData) == (2 * length(LangRenList))), AllOpData}.
 
 do_yuyanjia_op(State) ->
-    LastOpData = get_last_op(State),
-    case maps:to_list(LastOpData) of
-        [] ->
-            clear_last_op(State);
-        [{SeatId, [SelectSeatId]}]  ->
-            NewState = 
-                case SelectSeatId == 0 of
-                    true ->
-                        State;
-                    false ->    
-                        SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId, State),
-            
-                        Send = #m__fight__notice_yuyanjia_result__s2l{seat_id = SelectSeatId,
+    case lib_fight:get_duty_seat(?DUTY_YUYANJIA, State) of
+        []->
+            State;
+        [SeatId]->
+            LastOpData = get_last_op(State),
+            case maps:get(SeatId, LastOpData, 0) of
+                0->
+                    State;
+                [SelectSeatId]->
+                    SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId, State),
+                    Send = #m__fight__notice_yuyanjia_result__s2l{seat_id = SelectSeatId,
                                                                   duty = SelectDuty},
-                        send_to_seat(Send, SeatId, State),
-                        NewYuyanjia = maps:get(yuyanjia_op, State) ++ [{SelectSeatId, SelectDuty}],
-                        maps:put(yuyanjia_op, NewYuyanjia, State)
-                end,
-            clear_last_op(NewState)
+                    send_to_seat(Send, SeatId, State),
+                    NewYuyanjia = maps:get(yuyanjia_op, State) ++ [{SelectSeatId, SelectDuty}],
+                    StateAfterYuyanjiaOp = maps:put(yuyanjia_op, NewYuyanjia, State),
+                    maps:put(duty_yuyanjia_op, 1, StateAfterYuyanjiaOp).
+            end
     end.
 
 do_part_jingzhang_op(State) ->
