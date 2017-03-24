@@ -657,15 +657,19 @@ get_langren_dync_data(State) ->
     {(length(AllSameOpData) == 1) andalso (length(AllOpData) == (2 * length(LangRenList))), AllOpData}.
 
 do_yuyanjia_op(State) ->
+    lager:info("do_yuyanjia_op1"),
     case lib_fight:get_duty_seat(?DUTY_YUYANJIA, State) of
         []->
+            lager:info("do_yuyanjia_op2"),
             State;
         [SeatId]->
             LastOpData = get_last_op(State),
             case maps:get(SeatId, LastOpData, 0) of
                 0->
+                    lager:info("do_yuyanjia_op3"),
                     State;
                 [SelectSeatId]->
+                    lager:info("do_yuyanjia_op4"),
                     SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId, State),
                     Send = #m__fight__notice_yuyanjia_result__s2l{seat_id = SelectSeatId,
                                                                   duty = SelectDuty},
