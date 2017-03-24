@@ -1717,7 +1717,7 @@ do_receive_player_langren_op(PlayerId, Op, OpList, Confirm, StateName, State) ->
         end,
         case IsWaitOver of
             true->
-                send_event_inner(op_over),;
+                send_event_inner(op_over);
             _->
                 ignore
         end,
