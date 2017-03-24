@@ -413,7 +413,7 @@ state_shouwei(wait_op, State) ->
         []->
             AttachDataLangren;
         _->
-            [21] ++ (lib_fight:get_alive_seat_list(State) -- [maps:get(shouwei, State)])
+            AttachDataLangren ++ ([21] ++ (lib_fight:get_alive_seat_list(State) -- [maps:get(shouwei, State)]))
     end,
     AttachDataYuyanjia = 
         case YuyanjiaSeatList of
@@ -422,7 +422,7 @@ state_shouwei(wait_op, State) ->
             _->
                 YuYanJiaOpList = maps:get(yuyanjia_op, State),
                 YuYanJiaOpSeatList = [SeatId || {SeatId, _}<-YuYanJiaOpList],
-                [22] ++ (lib_fight:get_alive_seat_list(State) -- (YuyanjiaSeatList ++ YuYanJiaOpSeatList))
+                AttachDataShouWei ++ ([22] ++ (lib_fight:get_alive_seat_list(State) -- (YuyanjiaSeatList ++ YuYanJiaOpSeatList)))
         end,
     OpSeatList = (LangRenSeatList ++ ShouWeiSeatList) ++ YuyanjiaSeatList,
     StateAfterNormalCommon = notice_player_op(?OP_NORMAL_COMMON, AttachDataYuyanjia, OpSeatList, State),    
