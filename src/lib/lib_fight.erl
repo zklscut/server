@@ -672,7 +672,7 @@ do_yuyanjia_op(State) ->
                     send_to_seat(Send, SeatId, State),
                     NewYuyanjia = maps:get(yuyanjia_op, State) ++ [{SelectSeatId, SelectDuty}],
                     StateAfterYuyanjiaOp = maps:put(yuyanjia_op, NewYuyanjia, State),
-                    maps:put(duty_yuyanjia_op, 1, StateAfterYuyanjiaOp).
+                    maps:put(duty_yuyanjia_op, 1, StateAfterYuyanjiaOp)
             end
     end.
 
