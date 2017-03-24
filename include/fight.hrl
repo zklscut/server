@@ -81,6 +81,9 @@
 -define(DIE_TYPE_LIEREN, 6).
 -define(DIE_TYPE_LOVER, 7).
 
+-define(FIGHT_MODE_NORMAL, 0).%%正常模式
+-define(FIGHT_MODE_SIMPLE, 1).%%简单模式
+
 -define(MFIGHT, #{room_id => 0,
                   fight_mod => 0, %%战斗模型0:正常模式,屠边 1:简单模式,屠城
                   room_name => "",%%房间名称
