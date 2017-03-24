@@ -570,8 +570,8 @@ do_shouwei_op(State) ->
             LastOpData = get_last_op(State),
             [SelectSeatId] = maps:get(SeatId, LastOpData, [0]),
             StateAfterShouWei = maps:put(shouwei, SelectSeatId, State),
-            Send = #m__fight__shouwei_op__s2l{seat_id = SeatId},
-            send_to_seat(Send, OpSeatId, StateAfterShouWei),
+            Send = #m__fight__shouwei_op__s2l{seat_id = SelectSeatId},
+            send_to_seat(Send, SeatId, StateAfterShouWei),
             maps:put(duty_shouwei, 1, StateAfterShouWei)
     end.
 
