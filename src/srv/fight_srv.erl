@@ -273,7 +273,8 @@ state_daozei({player_op, PlayerId, Op, OpList, Confirm}, State) ->
 
 state_daozei(timeout, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    send_event_inner(op_over);
+    send_event_inner(op_over),
+    {next_state, state_daozei, State};
 
 state_daozei(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
