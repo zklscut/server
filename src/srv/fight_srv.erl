@@ -1014,7 +1014,7 @@ state_night(over, State)->
         case GameRound == 1 of
             true->
                 state_daozei;
-            false
+            false->
                 get_next_game_state(state_night)
         end,
     {next_state, get_next_game_state(state_night), State};
