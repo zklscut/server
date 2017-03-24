@@ -2410,13 +2410,13 @@ get_next_game_state(GameState) ->
 get_state_legal_op(GameState) ->
     case GameState of
         state_daozei ->
-            [?OP_PRE_COMMON];
+            [?DUTY_DAOZEI, ?DUTY_QIUBITE, ?DUTY_HUNXUEER];
         state_qiubite ->
             [?DUTY_QIUBITE];
         state_hunxueer ->
             [?DUTY_HUNXUEER];
         state_shouwei ->
-            [?DUTY_LANGREN, ?OP_NORMAL_COMMON];% [?DUTY_SHOUWEI];
+            [?DUTY_LANGREN, ?DUTY_SHOUWEI, ?DUTY_YUYANJIA];% [?DUTY_SHOUWEI];
         state_langren ->
             [?DUTY_LANGREN];
         state_nvwu ->
