@@ -613,7 +613,7 @@ do_langren_op(State) ->
                 rand_target_in_op(filter_last_op(LangRenOpData))
         end,
 
-    Send = #m__fight__langren_op__s2l{seat_id = SeatId},
+    Send = #m__fight__langren_op__s2l{seat_id = KillSeat},
     [send_to_seat(Send, OpSeatId, State) || OpSeatId <- LangRenList],
     StateAfterLangren = maps:put(langren, KillSeat, State),
     StateAfterUpdateDie = do_set_die_list(StateAfterLangren),
