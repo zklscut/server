@@ -2374,7 +2374,7 @@ get_next_game_state(GameState) ->
         state_langren ->
             state_nvwu;
         state_nvwu ->
-            state_yuyanjia;
+            state_day;
         state_yuyanjia ->
             state_day;
         state_day ->
