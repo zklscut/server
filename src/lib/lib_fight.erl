@@ -525,7 +525,7 @@ do_qiubite_op(State) ->
             State;
         [SeatId]->
             LastOpData = get_last_op(State),
-            {Seat1, Seat2} = 
+            [Seat1, Seat2] = 
             case maps:get(SeatId, LastOpData, undefined) of
                 undefined->
                     get_default_qiubite_op_data(State);
