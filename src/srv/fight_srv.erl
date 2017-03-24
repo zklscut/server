@@ -266,7 +266,7 @@ state_daozei(wait_op, State) ->
     end,
     OpSeatList = (DaozeiSeatList ++ QiubiteSeatList) ++ HunxueerSeatList,
     StateAfterPreCommon = notice_player_op(?OP_PRE_COMMON, AttackDataHunxueer, OpSeatList, State),
-    {next_state, state_daozei, StateAfterPreCommon};
+    {next_state, state_daozei, do_set_wait_op(?OP_PRE_COMMON, OpSeatList, StateAfterPreCommon)};
 
 state_daozei({player_op, PlayerId, ?DUTY_DAOZEI, OpList, Confirm}, State) ->
     {PreState, StateName, CurState} = do_receive_player_op(PlayerId, ?DUTY_DAOZEI, OpList, Confirm, state_daozei, State),
@@ -426,7 +426,7 @@ state_shouwei(wait_op, State) ->
         end,
     OpSeatList = (LangRenSeatList ++ ShouWeiSeatList) ++ YuyanjiaSeatList,
     StateAfterNormalCommon = notice_player_op(?OP_NORMAL_COMMON, AttachDataYuyanjia, OpSeatList, State),    
-    {next_state, state_shouwei, StateAfterNormalCommon};
+    {next_state, state_shouwei, do_set_wait_op(?OP_PRE_COMMON, OpSeatList, StateAfterNormalCommon)};
 
 state_shouwei({player_op, PlayerId, ?DUTY_LANGREN, OpList, Confirm}, State) ->
     do_receive_player_langren_op(PlayerId, ?DUTY_LANGREN, OpList, Confirm, state_shouwei, State);
