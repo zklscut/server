@@ -512,7 +512,7 @@ do_daozei_op(State) ->
                     Duty
             end,
             StateDaoZeiSeat = maps:put(daozei_seat, SeatId, State),
-            update_duty(SeatId, ?DUTY_DAOZEI, SelectDuty, StateDaoZeiSeat),
+            update_duty(SeatId, ?DUTY_DAOZEI, SelectDuty, StateDaoZeiSeat)
     end.
 
 get_default_qiubite_op_data(State)->
