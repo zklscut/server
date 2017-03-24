@@ -18,6 +18,9 @@
 -define(DUTY_TYPE_SPECIAL, 1).  %%特殊身份
 -define(DUTY_TYPE_SHENMIN, 2).  %%神民
 
+%%只有第一晚操作的职责
+-define(DUTY_OP_FIRST_NIGHT, [?DUTY_DAOZEI, ?DUTY_QIUBITE,?DUTY_HUNXUEER]).
+
 -define(DUTY_LIST_SPECIAL, [?DUTY_DAOZEI, ?DUTY_QIUBITE,?DUTY_HUNXUEER]).
 -define(DUTY_LIST_SHENMIN, [?DUTY_NVWU, ?DUTY_YUYANJIA, ?DUTY_LIEREN, ?DUTY_BAICHI, ?DUTY_SHOUWEI]).
 
@@ -32,14 +35,15 @@
 -define(OP_QUZHU, 1006). %%被驱逐
 -define(OP_PART_FAYAN, 1007). %%竞选发言
 -define(OP_GUIPIAO, 1008). %%归票
--define(OP_DEATH_FAYAN, 1009). %%死亡发言
--define(OP_QUZHU_FAYAN, 1010). %%驱逐发言
+-define(OP_DEATH_FAYAN, 1009).  %%死亡发言
+-define(OP_QUZHU_FAYAN, 1010).  %%驱逐发言
 -define(OP_LAPIAO_FAYAN, 1011). %%拉票发言
--define(OP_TOUPIAO_MVP, 1012). %%投票mvp
+-define(OP_TOUPIAO_MVP, 1012).  %%投票mvp
 -define(OP_TOUPIAO_CARRY, 1013). %%投票carry
 -define(OP_SKILL_OFFLINE, 1014). %%离线玩家操作时长
--define(OP_SELECT_DUTY, 1015).%%选择角色
--define(OP_LANGREN_SELECT, 1016).%%狼人挑选对象
+-define(OP_SELECT_DUTY, 1015). %%选择角色
+-define(OP_LANGREN_SELECT, 1016). %%狼人挑选对象
+-define(OP_NIGHT_TICK, 1017). %%天黑操作提示
 
 -define(FAYAN_OP_LIST, [?OP_FAYAN, ?OP_PART_FAYAN, ?OP_DEATH_FAYAN, ?OP_QUZHU_FAYAN, ?OP_LAPIAO_FAYAN]).
 
@@ -103,7 +107,7 @@
                   lover_kill => 0,        %% 被链子弄死的玩家
                   shouwei => 0,          %% 守卫的id
                   nvwu => {0, 0},        %% 女巫操作
-                  nvwu_left => [1, 2],   %% 女巫剩余的药
+                  nvwu_left => [1, 2],   %% 女巫剩余的药[毒药,救药]
                   langren => 0,          %% 狼人击杀的目标
                   bailang => 0,          %% 白狼自爆带走的人
                   hunxuer => 0,          %% 混血儿是否帮狼人
@@ -150,6 +154,7 @@
                   op_timer_normal_dur => 0, %%正常操作持续时间
                   op_timer_use_dur => 0,   %%操作当前持续时间
                   is_night => 0, %%是否晚上
+                  night_start_time => 0, %%晚上开始时间
                   forbid_speak_data => [], %%上次禁麦数据[stateId:游戏状态, game_ground:游戏回合, seat_id:设置对象, isforbid:是否禁麦]
                   day_notice_die => [] %%白天通知了玩家已经死亡的人(断线重连用)
                   }).

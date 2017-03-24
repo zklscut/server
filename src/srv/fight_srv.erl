@@ -997,18 +997,14 @@ state_toupiao_death_fayan(_IgnoreOP, State)->
 %% ====================================================================
 state_night(start, State) ->
     NewState = out_die_player(State),
-    % {IsOver, Winner, VictoryParty} = get_fight_result(NewState),
-    % case IsOver of
-    %     true ->
-    %         send_fight_result(Winner, VictoryParty, NewState),
-    %         send_event_inner(start, b_fight_state_wait:get(state_night)),
-    %         {next_state, state_over, NewState};
-    %     false ->
     StateAfterClear = clear_night_op(NewState),
     lib_room:update_room_status(maps:get(room_id, StateAfterClear), 1, maps:get(game_round, StateAfterClear), 1, 0),
     notice_game_status_change(state_night, [maps:get(game_round, StateAfterClear)], StateAfterClear),
     send_event_inner(over, b_fight_state_wait:get(state_night)),
-    {next_state, state_night, StateAfterClear};
+    NightOpTotalTime = lib_fight:get_night_last_time(StateAfterClear),
+    Send = #m__fight__op_timetick__s2l{timetick = NightOpTotalTime, wait_op = ?OP_NIGHT_TICK},
+    lib_fight:send_to_all_player(Send, State),
+    {next_state, state_night, maps:put(night_start_time, util:get_micro_time(), StateAfterClear)};
     % end;
 
 state_night(over, State)->
@@ -1292,6 +1288,8 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     FightMode = maps:get(fight_mod, NewState),
     OwnRndInfo = maps:get(SeatId, SeatRndInfo, []),
     DutySelectLastTime = util:get_micro_time() - DutySelectStartTime,
+    NightStartTime = maps:get(night_start_time, NewState),
+    
     DutySelectLeftTime = 
     case DutySelectStartTime > 0 andalso (DutySelectTotalTime - DutySelectLastTime) > 0 of
         true->
@@ -1299,7 +1297,13 @@ handle_event({player_online, PlayerId}, StateName, State) ->
         _->
             0
     end,
-
+    NightOpLeftTime = 
+        case IsNight of
+            1->
+                util:get_micro_time() - NightStartTime;
+            _->
+                0
+        end,
     {AttachData1, AttachData2} = get_online_attach_data(SeatId, DutyId, NewState),
     Send = #m__fight__online__s2l{duty = DutyId,
                                   fight_info = lib_fight:get_p_fight(NewState),
@@ -1328,7 +1332,8 @@ handle_event({player_online, PlayerId}, StateName, State) ->
                                   is_night = IsNight,
                                   speak_forbid_info = maps:get(forbid_speak_data, NewState),
                                   game_round = maps:get(game_round, NewState),
-                                  fight_mode = FightMode
+                                  fight_mode = FightMode,
+                                  night_op_left_time = NightOpLeftTime
                                   },
     net_send:send(Send, PlayerId),
 
@@ -1490,12 +1495,6 @@ do_duty_state_start(Duty, GameState, State) ->
     end.
 
 do_duty_state_wait_op(Duty, State) ->
-    % case b_fight_op_wait:get(Duty) of
-    %     0 ->
-    %         ignore;
-    %     WaitTime ->
-    %         start_fight_fsm_event_timer(?TIMER_TIMEOUT, WaitTime)
-    % end,
     SeatIdList = lib_fight:get_duty_seat(Duty, State),
     StateAfterOp = notice_player_op(Duty, SeatIdList, State),
     do_set_wait_op(Duty, SeatIdList, StateAfterOp).
