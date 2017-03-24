@@ -157,7 +157,6 @@ state_select_card(start, State)->
     {next_state, state_select_card, State};
 
 state_select_card(wait_op, State)->
-
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, lib_fight:get_op_wait(?OP_SELECT_DUTY, undefined, State)),
     SeatList = lib_fight:get_all_seat(State),
@@ -225,31 +224,64 @@ state_select_card(_IgnoreOP, State)->
 %% state_daozei
 %% ====================================================================
 state_daozei(start, State) ->
-    do_duty_state_start(?DUTY_DAOZEI, state_daozei, State);
+    DaozeiSeatList = lib_fight:get_duty_seat(?DUTY_DAOZEI, State),
+    QiubiteSeatList = lib_fight:get_duty_seat(?DUTY_QIUBITE, State),
+    HunxueerSeatList = lib_fight:get_duty_seat(?DUTY_HUNXUEER, State),
+    case  (DaozeiSeatList == []) andalso (QiubiteSeatList == []) andalso (HunxueerSeatList == []) of
+        true->
+            send_event_inner(start),
+            {next_state, state_shouwei, State};
+        _->
+            send_event_inner(wait_op),
+            {next_state, state_daozei, State}
+    end;
 
 state_daozei(wait_op, State) ->
-    NewState = do_duty_state_wait_op(?DUTY_DAOZEI, State),
-    {next_state, state_daozei, NewState};
+    DaozeiSeatList = lib_fight:get_duty_seat(?DUTY_DAOZEI, State),
+    QiubiteSeatList = lib_fight:get_duty_seat(?DUTY_QIUBITE, State),
+    HunxueerSeatList = lib_fight:get_duty_seat(?DUTY_HUNXUEER, State),
+    AttackDataDaozei =
+    case DaozeiSeatList of
+        []->
+            [];
+        _->
+            %%盗贼的数据以17开始
+            [17] ++ maps:get(daozei, State)
+    end,
+    AttackDataQiubite =
+    case QiubiteSeatList of
+        []->
+            AttackDataDaozei;
+        _->
+            %%丘比特的数据以18开始
+            AttackDataDaozei ++ ([18] ++ (lib_fight:get_alive_seat_list(State) -- QiubiteSeatList))
+    end,
+    AttackDataHunxueer =
+    case HunxueerSeatList of
+        []->
+            AttackDataQiubite;
+        _->
+            %%混血儿的数据以19开始
+            AttackDataQiubite ++ ([19] ++ (lib_fight:get_alive_seat_list(State) -- HunxueerSeatList))
+    end,
+    OpSeatList = (DaozeiSeatList ++ QiubiteSeatList) ++ HunxueerSeatList,
+    StateAfterPreCommon = notice_player_op(?OP_PRE_COMMON, AttackDataHunxueer, OpSeatList, State),
+    {next_state, state_daozei, StateAfterPreCommon};
 
 state_daozei({player_op, PlayerId, Op, OpList, Confirm}, State) ->
     do_receive_player_op(PlayerId, Op, OpList, Confirm, state_daozei, State);
 
 state_daozei(timeout, State) ->
-    DaozeiList = maps:get(daozei, State),
-    Op = 
-        case lists:member(?DUTY_LANGREN, DaozeiList) of
-            true ->
-                ?DUTY_LANGREN;
-            false ->
-                util:rand_in_list(DaozeiList)
-        end,
-    do_duty_op_timeout([Op], state_daozei, State);
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    send_event_inner(op_over);
 
 state_daozei(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    NewState = lib_fight:do_daozei_op(State),
+    StateAfterDaozei = lib_fight:do_daozei_op(State),
+    StateAfterQiubite = lib_fight:do_qiubite_op(StateAfterDaozei),
+    StateAfterHunxueer = lib_fight:do_hunxuer_op(StateAfterQiubite),
     send_event_inner(start),
-    {next_state, get_next_game_state(state_daozei), NewState};
+    {next_state, get_next_game_state(state_daozei), StateAfterHunxueer};
 
 state_daozei(_IgnoreOP, State)->
     {next_state, state_daozei, State}.
@@ -2191,7 +2223,7 @@ get_online_duty_data(Winner, State)->
 get_next_game_state(GameState) ->
     case GameState of
         state_daozei ->
-            state_qiubite;
+            state_shouwei;
         state_qiubite ->
             state_hunxueer;
         state_hunxueer ->
@@ -2237,7 +2269,7 @@ get_next_game_state(GameState) ->
 get_state_legal_op(GameState) ->
     case GameState of
         state_daozei ->
-            [?DUTY_DAOZEI];
+            [?OP_PRE_COMMON];
         state_qiubite ->
             [?DUTY_QIUBITE];
         state_hunxueer ->

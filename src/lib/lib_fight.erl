@@ -489,19 +489,76 @@ update_duty(SeatId, PreDuty, Duty, State) ->
     State#{duty_seat_map := NewDutySeatMap,
            seat_duty_map := NewSeatDutyMap}.                                  
 
+get_default_daozei_op_data(State)->
+    DaozeiList = maps:get(daozei, State),
+    case lists:member(?DUTY_LANGREN, DaozeiList) of
+        true ->
+            ?DUTY_LANGREN;
+        false ->
+            util:rand_in_list(DaozeiList)
+    end.
+
 do_daozei_op(State) ->
-    LastOpData = get_last_op(State),
-    [{SeatId, [Duty]}] = maps:to_list(LastOpData),
-    StateDaoZeiSeat = maps:put(daozei_seat, SeatId, State),
-    StateAfterDuty = update_duty(SeatId, ?DUTY_DAOZEI, Duty, StateDaoZeiSeat),
-    clear_last_op(StateAfterDuty).
+    case lib_fight:get_duty_seat(?DUTY_DAOZEI, State) of
+        []->
+            State;
+        [SeatId]->
+            LastOpData = get_last_op(State),
+            SelectDuty =
+            case maps:get(SeatId, LastOpData, undefined) of
+                undefined->
+                    get_default_daozei_op_data(State);
+                [Duty]->
+                    Duty
+            end,
+            StateDaoZeiSeat = maps:put(daozei_seat, SeatId, State),
+            update_duty(SeatId, ?DUTY_DAOZEI, SelectDuty, StateDaoZeiSeat),
+    end.
+
+get_default_qiubite_op_data(State)->
+    util:rand_in_list(get_alive_seat_list(State) -- 
+                                  get_duty_seat(?DUTY_QIUBITE, State), 2).
 
 do_qiubite_op(State) ->
-    LastOpData = get_last_op(State),
-    [{SeatId, [Seat1, Seat2]}] = maps:to_list(LastOpData),
-    StateAfterLover = maps:put(lover, [Seat1, Seat2], State),
-    notice_lover(Seat1, Seat2, SeatId, State),
-    clear_last_op(StateAfterLover).
+    case lib_fight:get_duty_seat(?DUTY_QIUBITE, State) of
+        []->
+            State;
+        [SeatId]->
+            LastOpData = get_last_op(State),
+            {Seat1, Seat2} = 
+            case maps:get(SeatId, LastOpData, undefined) of
+                undefined->
+                    get_default_qiubite_op_data(State);
+                SeatList->
+                    SeatList
+            end,
+            StateAfterLover = maps:put(lover, [Seat1, Seat2], State),
+            notice_lover(Seat1, Seat2, SeatId, State),
+            StateAfterLover
+    end.
+
+get_default_hunxuer_op_data(State)->
+    util:rand_in_list(lib_fight:get_alive_seat_list(State) -- 
+                                  lib_fight:get_duty_seat(?DUTY_HUNXUEER, State), 1).
+
+do_hunxuer_op(State) ->
+    case lib_fight:get_duty_seat(?DUTY_HUNXUEER, State) of
+        []->
+            clear_last_op(State);
+        [SeatId]->
+            LastOpData = get_last_op(State),
+            [SelectSeatId] =
+            case maps:get(SeatId, LastOpData, undefined) of
+                undefined->
+                    get_default_hunxuer_op_data(State);
+                OpData->
+                    OpData
+            end,
+            StateAfterHunxueer = maps:put(hunxuer, SelectSeatId, State),
+            Send = #m__fight__notice_hunxuer__s2l{select_seat = SelectSeatId},
+            send_to_seat(Send, SeatId, StateAfterHunxueer),
+            clear_last_op(StateAfterHunxueer)
+    end.
 
 do_shouwei_op(State) ->
     LastOpData = get_last_op(State),
@@ -511,24 +568,6 @@ do_shouwei_op(State) ->
     Send = #m__fight__shouwei_op__s2l{seat_id = SeatId},
     send_to_seat(Send, OpSeatId, StateAfterShouWei),
     clear_last_op(StateAfterShouWei).
-
-do_hunxuer_op(State) ->
-    LastOpData = get_last_op(State),
-    [{SeatId, [SelectSeatId]}] = maps:to_list(LastOpData),
-    % SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId, State),
-    % HunxueerOp =
-    %     case SelectDuty of
-    %         ?DUTY_LANGREN ->
-    %             1;
-    %         _ ->
-    %             0
-    %     end,                
-    StateAfterHunxueer = maps:put(hunxuer, SelectSeatId, State),
-
-    Send = #m__fight__notice_hunxuer__s2l{select_seat = SelectSeatId},
-    send_to_seat(Send, SeatId, State),
-
-    clear_last_op(StateAfterHunxueer).
 
 do_nvwu_op(State) ->
     LastOpData = get_last_op(State),
