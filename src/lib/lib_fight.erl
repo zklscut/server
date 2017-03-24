@@ -173,7 +173,7 @@ get_duty_night_op_time(Duty, State)->
         false->
             0;
          _->
-            case ((1 == game_round) andalso lists:member(Duty, ?DUTY_OP_FIRST_NIGHT)) orelse 
+            case ((1 == GameRound) andalso lists:member(Duty, ?DUTY_OP_FIRST_NIGHT)) orelse 
                                                 (not lists:member(Duty, ?DUTY_OP_FIRST_NIGHT)) of
                 true->
                     get_op_wait(Duty, undefined, State);    
