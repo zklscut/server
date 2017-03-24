@@ -433,7 +433,7 @@ state_shouwei({player_op, PlayerId, ?DUTY_LANGREN, OpList, Confirm}, State) ->
 
 state_shouwei({player_op, PlayerId, ?DUTY_SHOUWEI, OpList, Confirm}, State) ->
     {PreState, StateName, CurState} = do_receive_player_op(PlayerId, ?DUTY_SHOUWEI, 
-                                                                OpList, Confirm, state_daozei, State),
+                                                                OpList, Confirm, state_shouwei, State),
     NewState =
     case Confirm of
         1->
@@ -445,7 +445,7 @@ state_shouwei({player_op, PlayerId, ?DUTY_SHOUWEI, OpList, Confirm}, State) ->
 
 state_shouwei({player_op, PlayerId, ?DUTY_YUYANJIA, OpList, Confirm}, State) ->
     {PreState, StateName, CurState} = do_receive_player_op(PlayerId, ?DUTY_YUYANJIA, 
-                                                                OpList, Confirm, state_daozei, State),
+                                                                OpList, Confirm, state_shouwei, State),
     NewState =
     case Confirm of
         1->
