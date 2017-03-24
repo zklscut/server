@@ -1017,7 +1017,7 @@ state_night(over, State)->
             false->
                 get_next_game_state(state_night)
         end,
-    {next_state, get_next_game_state(state_night), State};
+    {next_state, NextState, State};
 
 state_night(_IgnoreOP, State)->
     {next_state, state_night, State}.
