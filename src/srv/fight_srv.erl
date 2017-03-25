@@ -266,6 +266,7 @@ state_daozei(wait_op, State) ->
     end,
     OpSeatList = (DaozeiSeatList ++ QiubiteSeatList) ++ HunxueerSeatList,
     StateAfterPreCommon = notice_player_op(?OP_PRE_COMMON, AttackDataHunxueer, OpSeatList, State),
+
     {next_state, state_daozei, do_set_wait_op(?OP_PRE_COMMON, OpSeatList, StateAfterPreCommon)};
 
 state_daozei({player_op, PlayerId, ?DUTY_DAOZEI, OpList, Confirm}, State) ->
@@ -1831,13 +1832,6 @@ notice_player_op(Op, AttachData, SeatList, State) ->
         _->
             WaitTime
     end,
-    Send = #m__fight__notice_op__s2l{op = Op,
-                                     attach_data = AttachData},
-    FunNotice = 
-        fun(SeatId) ->
-            lib_fight:send_to_seat(Send, SeatId, State)
-        end,
-    lists:foreach(FunNotice, SeatList),
     case WaitTime == 0 of
         true->
             State;
@@ -1859,7 +1853,14 @@ notice_player_op(Op, AttachData, SeatList, State) ->
                     lib_fight:send_to_all_player(NormalWaitTimeSend, StateAfterStart),
                     maps:put(op_timer_use_dur, WaitTime, StateAfterStart)
             end
-    end.
+    end,
+    Send = #m__fight__notice_op__s2l{op = Op,
+                                     attach_data = AttachData},
+    FunNotice = 
+        fun(SeatId) ->
+            lib_fight:send_to_seat(Send, SeatId, State)
+        end,
+    lists:foreach(FunNotice, SeatList).
 
 do_set_wait_op(Op, SeatIdList, State) ->
     StateAfterOp = maps:put(wait_op, Op, State),
