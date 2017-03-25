@@ -1462,7 +1462,7 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     NightOpLeftTime = 
         case IsNight of
             1->
-                util:get_micro_time() - NightStartTime;
+                lib_fight:get_night_last_time() - (util:get_micro_time() - NightStartTime);
             _->
                 0
         end,

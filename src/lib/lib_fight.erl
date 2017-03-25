@@ -167,12 +167,12 @@ get_p_fight(State)->
     lager:info("get_p_fight~p", [PFight]),
     PFight.
 
-get_duty_night_op_time(Duty, State)->
+get_duty_night_op_time(Duty, CurTime, State)->
     DutyExist = is_duty_exist(Duty, State),
     GameRound = maps:get(game_round, State),
-    case DutyExist of
+    case DutyExist andalso (CurTime == 0) of
         false->
-            0;
+            CurTime;
          _->
             case ((1 == GameRound) andalso lists:member(Duty, ?DUTY_OP_FIRST_NIGHT)) orelse 
                                                 (not lists:member(Duty, ?DUTY_OP_FIRST_NIGHT)) of
@@ -185,14 +185,14 @@ get_duty_night_op_time(Duty, State)->
 
 % 获取晚上操作持续时间
 get_night_last_time(State)->
-    DaoZeiWait = get_duty_night_op_time(?DUTY_DAOZEI, State),
-    QiubiteWait = get_duty_night_op_time(?DUTY_QIUBITE, State) + DaoZeiWait,
-    Hunxuer = get_duty_night_op_time(?DUTY_HUNXUEER, State) + QiubiteWait,
-    ShouWei = get_duty_night_op_time(?DUTY_SHOUWEI, State) + Hunxuer,
-    LangRen = get_duty_night_op_time(?DUTY_LANGREN, State) + ShouWei,
-    NvWu = get_duty_night_op_time(?DUTY_NVWU, State) + LangRen,
-    YuYanJia = get_duty_night_op_time(?DUTY_YUYANJIA, State) + NvWu,
-    YuYanJia.
+    DaoZeiWait = get_duty_night_op_time(?DUTY_DAOZEI, 0, State),
+    QiubiteWait = get_duty_night_op_time(?DUTY_QIUBITE, DaoZeiWait, State),
+    Hunxuer = get_duty_night_op_time(?DUTY_HUNXUEER, QiubiteWait, State),
+    ShouWei = get_duty_night_op_time(?DUTY_SHOUWEI, 0, State),
+    LangRen = get_duty_night_op_time(?DUTY_LANGREN, ShouWei, State),
+    YuYanJia = get_duty_night_op_time(?DUTY_YUYANJIA, LangRen, State),
+    NvWu = get_duty_night_op_time(?DUTY_NVWU, 0, State),
+    Hunxuer + YuYanJia + NvWu.
 
 send_to_all_player(Send, State) ->
     send_to_all_player(Send, State, []).
