@@ -593,7 +593,7 @@ do_nvwu_op(State) ->
             send_to_seat(SaveSend, SeatId, StateAfterUpdateDie),
             StateAfterUpdateDie;
         _ ->
-            QuitSend = #m__fight__nvwu_op__s2l{du_seat_id = 0, save_seat_id = NvWuSave},
+            QuitSend = #m__fight__nvwu_op__s2l{du_seat_id = 0, save_seat_id = 0},
             send_to_seat(QuitSend, SeatId, StateAfterUpdateDie),
             StateAfterUpdateDie
     end,
