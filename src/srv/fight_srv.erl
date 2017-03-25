@@ -2107,7 +2107,7 @@ get_fight_result(State) ->
                         ignore
                 end,
                 case length(LangrenAlive) > length(ShenMinAlive ++ PingMinAlive) of
-                    []->
+                    true->
                         throw({true, AllLangren, 0});
                     _->
                         ignore
