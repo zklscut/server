@@ -577,6 +577,7 @@ do_shouwei_op(State) ->
 
 do_nvwu_op(State) ->
     LastOpData = get_last_op(State),
+    [SeatId] = get_duty_seat(?DUTY_NVWU, State),
     [{_, [SelectSeatId, UseYao]}] = maps:to_list(LastOpData),
     StateAfterNvwu = maps:put(nvwu, {SelectSeatId, UseYao}, State),
     StateAfterDelete = maps:put(nvwu_left, maps:get(nvwu_left, State) -- [UseYao], StateAfterNvwu),
@@ -584,8 +585,16 @@ do_nvwu_op(State) ->
     StateAfterNvKill = 
     case maps:get(nvwu, State) of
         {NvWuKill, ?NVWU_DUYAO} ->
+            KillSend = #m__fight__nvwu_op__s2l{du_seat_id = NvWuKill, save_seat_id = 0},
+            send_to_seat(KillSend, SeatId, StateAfterUpdateDie),
             maps:put(nv_kill, NvWuKill, StateAfterUpdateDie);
+        {NvWuSave, ?NVWU_JIEYAO} ->
+            SaveSend = #m__fight__nvwu_op__s2l{du_seat_id = 0, save_seat_id = NvWuSave},
+            send_to_seat(SaveSend, SeatId, StateAfterUpdateDie),
+            StateAfterUpdateDie;
         _ ->
+            QuitSend = #m__fight__nvwu_op__s2l{du_seat_id = 0, save_seat_id = NvWuSave},
+            send_to_seat(QuitSend, SeatId, StateAfterUpdateDie),
             StateAfterUpdateDie
     end,
     clear_last_op(StateAfterNvKill).        
