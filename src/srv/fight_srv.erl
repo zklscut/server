@@ -1832,6 +1832,7 @@ notice_player_op(Op, AttachData, SeatList, State) ->
         _->
             WaitTime
     end,
+    StateAfterWaitTime =
     case WaitTime == 0 of
         true->
             State;
@@ -1860,7 +1861,8 @@ notice_player_op(Op, AttachData, SeatList, State) ->
         fun(SeatId) ->
             lib_fight:send_to_seat(Send, SeatId, State)
         end,
-    lists:foreach(FunNotice, SeatList).
+    lists:foreach(FunNotice, SeatList),
+    StateAfterWaitTime.
 
 do_set_wait_op(Op, SeatIdList, State) ->
     StateAfterOp = maps:put(wait_op, Op, State),
