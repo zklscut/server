@@ -2113,13 +2113,13 @@ get_fight_result(State) ->
             ?FIGHT_MODE_SIMPLE->
                 case LangrenAlive of
                     []->
-                        throw({true, AllSeat -- AllLangren, 1});
+                        throw({true, AllSeat -- AllLangren, 0});
                     _->
                         ignore
                 end,
                 case length(LangrenAlive) > length(ShenMinAlive ++ PingMinAlive) of
                     true->
-                        throw({true, AllLangren, 0});
+                        throw({true, AllLangren, 1});
                     _->
                         ignore
                 end;
