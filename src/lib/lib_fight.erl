@@ -532,7 +532,12 @@ do_qiubite_op(State) ->
                 undefined->
                     get_default_qiubite_op_data(State);
                 SeatList->
-                    SeatList
+                    case length(SeatList) == 2 of
+                        true->
+                            SeatList;
+                        _->
+                            get_default_qiubite_op_data(State)
+                    end
             end,
             StateAfterLover = maps:put(lover, [Seat1, Seat2], State),
             notice_lover(Seat1, Seat2, SeatId, State),
@@ -553,8 +558,13 @@ do_hunxuer_op(State) ->
             case maps:get(SeatId, LastOpData, undefined) of
                 undefined->
                     get_default_hunxuer_op_data(State);
-                OpData->
-                    OpData
+                [OpSeatId]->
+                    case OpSeatId > 0 of
+                        true->
+                            [OpSeatId];
+                        _->
+                            get_default_hunxuer_op_data(State)
+                    end
             end,
             StateAfterHunxueer = maps:put(hunxuer, SelectSeatId, State),
             Send = #m__fight__notice_hunxuer__s2l{select_seat = SelectSeatId},
@@ -679,13 +689,18 @@ do_yuyanjia_op(State) ->
                     State;
                 [SelectSeatId]->
                     lager:info("do_yuyanjia_op4"),
-                    SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId, State),
-                    Send = #m__fight__notice_yuyanjia_result__s2l{seat_id = SelectSeatId,
-                                                                  duty = SelectDuty},
-                    send_to_seat(Send, SeatId, State),
-                    NewYuyanjia = maps:get(yuyanjia_op, State) ++ [{SelectSeatId, SelectDuty}],
-                    StateAfterYuyanjiaOp = maps:put(yuyanjia_op, NewYuyanjia, State),
-                    maps:put(duty_yuyanjia_op, 1, StateAfterYuyanjiaOp)
+                    case SelectSeatId > 0 of
+                        true->
+                            SelectDuty = lib_fight:get_duty_by_seat(SelectSeatId, State),
+                            Send = #m__fight__notice_yuyanjia_result__s2l{seat_id = SelectSeatId,
+                                                                          duty = SelectDuty},
+                            send_to_seat(Send, SeatId, State),
+                            NewYuyanjia = maps:get(yuyanjia_op, State) ++ [{SelectSeatId, SelectDuty}],
+                            StateAfterYuyanjiaOp = maps:put(yuyanjia_op, NewYuyanjia, State),
+                            maps:put(duty_yuyanjia_op, 1, StateAfterYuyanjiaOp);
+                        _->
+                            State
+                    end
             end
     end.
 
