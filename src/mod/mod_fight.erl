@@ -41,7 +41,7 @@ chat_input(#m__fight__chat_input__l2s{is_expression = IsExpression,
                                       content = Content,
                                       night_langren = NightLangren}, Player) ->
     fight_srv:chat_input(lib_player:get_fight_pid(Player), 
-        lib_player:get_player_id(Player), IsExpression, Content, NightLangren),
+        lib_player:get_player_id(Player), IsExpression, Content, NightLangren, lib_room:get_player_room_id(Player)),
     {ok, Player}.
 
 %%%====================================================================

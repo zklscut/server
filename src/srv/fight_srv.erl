@@ -128,10 +128,21 @@ forbid_other_speak(Pid, PlayerId, Forbid)->
             gen_fsm:send_all_state_event(Pid, {forbid_other_speak, Forbid, PlayerId})
     end.
 
-chat_input(Pid, PlayerId, IsExpression, Content, NightLangren)->
+chat_input(Pid, PlayerId, IsExpression, Content, NightLangren, RoomId)->
     case Pid of
         undefined ->
-            ignore;
+            Room = lib_room:get_room(RoomId),
+            case Room of
+                undefined->
+                    ignore;
+                _->
+                    Send = #m__fight__chat_input__s2l{is_expression=IsExpression,
+                                                player_id = PlayerId,
+                                                night_langren = NightLangren,
+                                                content = Content
+                                                },
+                    mod_room:send_to_room(Send, Room)
+            end;
         Pid ->
             gen_fsm:send_all_state_event(Pid, {chat_input, IsExpression, Content, NightLangren, PlayerId})
     end.
