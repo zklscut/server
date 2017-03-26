@@ -55,7 +55,7 @@
          player_op/5,
          player_skill/4,
          player_speak/4,
-         chat_input/5,
+         chat_input/6,
          print_state/1,
          player_online/1,
          player_offline/1,
