@@ -60,7 +60,7 @@ enter_simple_room(#m__room__enter_simple_room__l2s{}, Player)->
     Room = get_not_full_simple_room(),
     case Room of
         undefined->
-            room_srv:create_room(length(?ROOM_SIMPLE_DUTY_LIST), "test", ?ROOM_SIMPLE_DUTY_LIST, true, Player);
+            room_srv:create_room(length(?ROOM_SIMPLE_DUTY_LIST), "wolfkill", ?ROOM_SIMPLE_DUTY_LIST, true, Player);
         _->
             room_srv:enter_room(maps:get(room_id, Room), Player)
     end,
