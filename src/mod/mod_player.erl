@@ -65,10 +65,11 @@ upload_head(#m__player__upload_head__l2s{p_head = ImgData}, Player)->
   {save, NewPlayer}.
 
 get_head(#m__player__get_head__l2s{player_id = PlayerId}, Player)->
+  TargetPlayer = lib_player:get_player(PlayerId),
   Send = #m__player__get_head__s2l{player_id = PlayerId, 
-          p_head = maps:get(head_data, maps:get(data, Player), <<>>)
+          p_head = maps:get(head_data, maps:get(data, TargetPlayer), <<>>)
           },
-  net_send:send(Send, Player),
+  net_send:send(Send, TargetPlayer),
   {ok, Player}.
 
 handle_fight_result(DutyId, IsWin, IsMvp, IsCarry, CoinAdd, ExpAdd, PlayerId) ->
