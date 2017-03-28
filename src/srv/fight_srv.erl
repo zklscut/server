@@ -2298,7 +2298,8 @@ fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, Stat
                                   level_up_exp = b_exp:get(CurLevel),
                                   next_level_up_exp = b_exp:get(CurLevel + 1),
                                   victory_party = VictoryParty,
-                                  room_id = maps:get(room_id, State)
+                                  room_id = maps:get(room_id, State),
+                                  own_seat_id = ResultSeatId
                                   }, ResultSeatId, State),
     mod_player:handle_fight_result(
                 ResultDutyId, 
@@ -2311,12 +2312,12 @@ fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, Stat
 
 send_fight_result(Winner, VictoryParty, State) ->
     DutyList = [#p_duty{seat_id = SeatId,
-                        duty_id = DutyId} || 
+                        duty_id = DutyId,
+                        player_id = lib_fight:get_player_id_by_seat(SeatId)} || 
                         {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, State))], 
     [fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, State)
                  || {ResultSeatId, ResultDutyId} <- maps:to_list(maps:get(seat_duty_map, State))],
     RoomId = maps:get(room_id, State),
-
     case RoomId > 0 of
         true->
             Room = lib_room:get_room(RoomId),
