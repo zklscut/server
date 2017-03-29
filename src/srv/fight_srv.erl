@@ -2313,7 +2313,7 @@ fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, Stat
 send_fight_result(Winner, VictoryParty, State) ->
     DutyList = [#p_duty{seat_id = SeatId,
                         duty_id = DutyId,
-                        player_id = lib_fight:get_player_id_by_seat(SeatId)} || 
+                        player_id = lib_fight:get_player_id_by_seat(SeatId, State)} || 
                         {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, State))], 
     [fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, State)
                  || {ResultSeatId, ResultDutyId} <- maps:to_list(maps:get(seat_duty_map, State))],
