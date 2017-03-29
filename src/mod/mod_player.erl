@@ -139,8 +139,7 @@ change_name(#m__player__change_name__l2s{name = Name}, Player) ->
 change_sex(#m__player__change_sex__l2s{sex = Sex}, Player) ->
     case Sex == 1 orelse Sex == 2 of
       true->
-        
-      net_send:send(#m__player__change_sex__s2l{}, Player),
+        net_send:send(#m__player__change_sex__s2l{sex = Sex}, Player),
         {save, maps:put(sex, Sex, Player)};
       _->
         {ok, Player}
