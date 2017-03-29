@@ -134,7 +134,15 @@ change_name(#m__player__change_name__l2s{name = Name}, Player) ->
           net_send:send(SendFail, Player),
           {ok, Player}
   end.
-              
+    
+change_sex(#m__player__change_sex__l2s{sex = Sex}, Player) ->
+    case Sex == 1 orelse Sex == 2 of
+      true->
+        
+      net_send:send(#m__player__change_sex__s2l{}, Player),
+        {save, maps:put(sex, Sex, Player)};
+      _->
+        {ok, Player}.          
 %%%====================================================================
 %%% Internal functions
 %%%====================================================================
@@ -286,6 +294,7 @@ get_send_player_info(Player, OtherPlayer) ->
                           grade = 0,
                           month_vip = 0,
                           equip = 0,
+                          sex = maps:get(sex, Player, 0),
                           other_player = OtherPlayer,
                           resource_list = mod_resource:get_p_resource_list(Player),
                           win_rate_list = get_p_fight_rate_list(Player)}.
