@@ -1714,9 +1714,15 @@ do_receive_player_langren_op(PlayerId, Op, OpList, Confirm, StateName, State) ->
         assert_op_fit(Op, OpList, State),
         SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
         StateAfterLogOp = do_log_op(SeatId, OpList, State),
-        {IsWaitOver, StateAfterWaitOp} = do_remove_wait_op(SeatId, Confirm, StateAfterLogOp),
-        {AllSame, AllOpData} = lib_fight:get_langren_dync_data(StateAfterWaitOp),
-        LangRenList = lib_fight:get_duty_seat(?DUTY_LANGREN, StateAfterWaitOp),
+        {AllSame, AllOpData} = lib_fight:get_langren_dync_data(StateAfterLogOp),
+        LangRenList = lib_fight:get_duty_seat(?DUTY_LANGREN, StateAfterLogOp),
+        {IsWaitOver, StateAfterWaitOp} =
+        case AllSame of
+            true->
+                do_remove_wait_op_list(LangRenList, 1, StateAfterLogOp);
+            _->
+                {false, StateAfterLogOp}
+        end,
         Send = #m__fight__dync_langren_op_data__s2l{op_data = AllOpData},
         [lib_fight:send_to_seat(Send, LangRenSeatId, StateAfterWaitOp) || LangRenSeatId<-LangRenList],
         StateAfterLangrenOP =
@@ -2040,6 +2046,25 @@ do_remove_wait_op(SeatId, Confirm, State) ->
                 WaitOpList;
             _->
                 WaitOpList -- [SeatId]
+        end,
+    NewWaitOpList = wait_op_list_all_offline_players_timeout(WaipOpListAfterConfirm, State),
+    NewState = 
+    case NewWaitOpList of
+        []->
+            maps:put(wait_op, 0, State);
+        _->
+            State
+    end,
+    {NewWaitOpList == [], maps:put(wait_op_list, NewWaitOpList, NewState)}.
+
+do_remove_wait_op_list(SeatList, Confirm, State)->
+    WaitOpList = maps:get(wait_op_list, State),
+    WaipOpListAfterConfirm = 
+        case Confirm of
+            0->
+                WaitOpList;
+            _->
+                WaitOpList -- SeatList
         end,
     NewWaitOpList = wait_op_list_all_offline_players_timeout(WaipOpListAfterConfirm, State),
     NewState = 
