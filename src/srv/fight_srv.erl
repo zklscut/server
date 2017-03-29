@@ -277,7 +277,6 @@ state_daozei(wait_op, State) ->
     end,
     OpSeatList = (DaozeiSeatList ++ QiubiteSeatList) ++ HunxueerSeatList,
     StateAfterPreCommon = notice_player_op(?OP_PRE_COMMON, AttackDataHunxueer, OpSeatList, State),
-
     {next_state, state_daozei, do_set_wait_op(?OP_PRE_COMMON, OpSeatList, StateAfterPreCommon)};
 
 state_daozei({player_op, PlayerId, ?DUTY_DAOZEI, OpList, Confirm}, State) ->
@@ -1695,8 +1694,10 @@ do_receive_player_op(PlayerId, Op, OpList, Confirm, StateName, State) ->
         {IsWaitOver, StateAfterWaitOp} = do_remove_wait_op(SeatId, Confirm, StateAfterLogOp),
         case IsWaitOver of
             true ->
+                lager:info("do_receive_player_op5"),
                 send_event_inner(op_over);
             false ->
+                lager:info("do_receive_player_op6"),
                 ignore
         end,
         {next_state, StateName, StateAfterWaitOp}
