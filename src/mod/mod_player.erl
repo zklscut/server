@@ -142,7 +142,8 @@ change_sex(#m__player__change_sex__l2s{sex = Sex}, Player) ->
       net_send:send(#m__player__change_sex__s2l{}, Player),
         {save, maps:put(sex, Sex, Player)};
       _->
-        {ok, Player}.          
+        {ok, Player}
+    end.          
 %%%====================================================================
 %%% Internal functions
 %%%====================================================================
