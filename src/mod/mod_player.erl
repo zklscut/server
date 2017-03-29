@@ -20,6 +20,7 @@
          handle_increase/4,
          handle_increase_local/4,
          change_name/2,
+         change_sex/2,
          get_extra_coin/4,
          get_fight_coin/3,
          get_extra_exp/4,
