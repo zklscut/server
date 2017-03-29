@@ -1707,7 +1707,7 @@ do_receive_player_op(PlayerId, Op, OpList, Confirm, StateName, State) ->
             {next_state, StateName, State}
     end.   
 
-do_receive_player_langren_op(PlayerId, Op, OpList, Confirm, StateName, State) ->
+do_receive_player_langren_op(PlayerId, Op, OpList, _Confirm, StateName, State) ->
     try
         assert_op_in_wait(PlayerId, State),
         assert_op_legal(Op, StateName),
