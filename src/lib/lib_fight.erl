@@ -228,7 +228,7 @@ is_all_alive_player_not_in(State) ->
     AlivePlayerList = lists:foldl(Func, [], AliveList),
     LeavePlayer = maps:get(offline_list, State) ++ maps:get(leave_player, State),
     LeftPlayerList = AlivePlayerList -- LeavePlayer,
-    length(LeftPlayerList) > 0.
+    length(LeftPlayerList) == 0.
 
 % 战斗结束处理
 fight_over_handle(State)->
