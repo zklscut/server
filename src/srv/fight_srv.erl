@@ -1379,7 +1379,6 @@ state_game_over(_IgnoreOP, State)->
 %% ====================================================================
 
 state_over(start, State) ->
-    lager:info("state_over++++++++++++++++++++"),
     RoomId = maps:get(room_id, State),
     PlayerList = maps:get(player_list, State),
     [global_op_srv:player_op(PlayerId, {lib_player, update_fight_pid, [undefined]}) || PlayerId <- PlayerList],
@@ -1393,7 +1392,6 @@ state_over(_IgnoreOP, State)->
 state_name(_Event, _From, StateData) ->
     Reply = next_state,
     {reply, Reply, state_name, StateData}.
-
 
 handle_event({skill, _PlayerId, ?OP_SKILL_END_FIGHT, _OpList}, _StateName, State) ->
     send_event_inner(start),
@@ -1577,7 +1575,18 @@ handle_event({player_leave, PlayerId}, StateName, State) ->
             lib_fight:send_to_all_player(Send, NewState),
             player_online_offline_wait_op_time_update(SeatId, NewState)
     end,
-    {next_state, StateName, StateAfterLeave};
+
+    %%判断活着的人是否都离线
+    NextStateName =
+    case lib_fight:is_all_alive_player_not_in(StateAfterLeave) of
+        true->
+            LeavePlayer = maps:get(offline_list, State),
+            [room_srv:leave_room(lib_player:get_player(PlayerId)) || OffLinePlayerId<-LeavePlayer],
+            lib_fight:send_to_all_player(#m__fight_over_error__s2l{reason = 1}, StateAfterLeave),
+            {stop, normal, StateAfterLeave};
+        _->
+            {next_state, StateName, StateAfterLeave}
+    end;
 
 handle_event(print_state, StateName, StateData) ->
     lager:info("state name ~p", [StateName]),
@@ -1592,6 +1601,7 @@ handle_info(_Info, StateName, StateData) ->
     {next_state, StateName, StateData}.
 
 terminate(_Reason, _StateName, _StatData) ->
+    lager:info("terminate11111111111111111111111"),
     ok.
 
 code_change(_OldVsn, StateName, StateData, _Extra) ->

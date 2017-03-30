@@ -9,6 +9,7 @@
          send_to_all_player/2,
          send_to_all_player/3,
          send_to_seat/3,
+         is_all_alive_player_not_in/1,
          get_night_last_time/1,
          is_active_in_fight/2,
          is_offline_all/2,
@@ -215,15 +216,20 @@ is_active_in_fight(PlayerId, State) ->
     _FightPid = lib_player:get_fight_pid(Player),
     LeavePlayer = maps:get(offline_list, State) ++ maps:get(leave_player, State),
     not lists:member(PlayerId, LeavePlayer).
-    % not ((lists:member(PlayerId, LeavePlayer)) orelse (undefined == FightPid) orelse (FightPid =/= self()).
-    % case lists:member(PlayerId, maps:get(leave_player, State)) of
-    %     true->
-    %         lager:info("is_active_in_fight ~p", [maps:get(leave_player, State)]),
-    %         false;
-    %     _->
-    %         true
-    % end.
-    % not lists:member(PlayerId, maps:get(leave_player, State)).
+
+%%是否活着的人都不在战斗中
+is_all_alive_player_not_in(State) ->
+    AliveList = get_alive_seat_list(State),
+    Func =
+        fun(SeatId, CurPlayerList) ->
+             CurPlayerList ++ [get_player_id_by_seat(SeatId, State)]   
+        end,
+    AlivePlayerList = lists:foldl(Func, [], State),
+    LeavePlayer = maps:get(offline_list, State) ++ maps:get(leave_player, State),
+    LeftPlayerList = AlivePlayerList -- LeavePlayer,
+    length(LeftPlayerList) > 0.
+
+
 
 %判断是否都处于离线状态
 is_offline_all(SeatList, State) ->
