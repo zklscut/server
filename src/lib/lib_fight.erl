@@ -1240,7 +1240,7 @@ count_xuanju_result(OpData, JingZhangSeat) ->
                 true->
                     1.5;
                 _->
-                    1;
+                    1
             end,
             case lists:keyfind(SeatId, 1, CurList) of
                 {_, CurSelectSeat, SelectNum} ->
