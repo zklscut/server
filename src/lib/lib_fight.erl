@@ -236,6 +236,7 @@ fight_over_handle(State)->
     RoomId = maps:get(room_id, State),
     PlayerList = maps:get(player_list, State),
     OffLinePlayer = maps:get(offline_list, State),
+    lager:info("fight_over_handle ~p", [OffLinePlayer]),
     [room_srv:leave_room(lib_player:get_player(OffLinePlayerId)) || OffLinePlayerId<-OffLinePlayer],
     [global_op_srv:player_op(PlayerId, {lib_player, update_fight_pid, [undefined]}) || PlayerId <- PlayerList],
     room_srv:update_room_fight_pid(RoomId, undefined),
