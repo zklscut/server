@@ -1167,7 +1167,7 @@ state_night(start, State) ->
     GameRound = maps:get(game_round, StateAfterClear),
     case GameRound > ?FIGHT_MAX_GAME_ROUND of
         true->
-            lib_fight:send_to_all_player(#m__fight_over_error__s2l{reason = 2}, StateAfterClear),
+            lib_fight:send_to_all_player(#m__fight_over_error__s2l{reason = 2, room_id = maps:get(room_id, StateAfterClear)}, StateAfterClear),
             {next_state, state_over, StateAfterClear};
         _->
             lib_room:update_room_status(maps:get(room_id, StateAfterClear), 1, maps:get(game_round, StateAfterClear), 1, 0),
@@ -1555,7 +1555,9 @@ handle_event({player_offline, PlayerId}, StateName, State) ->
     StateAfterTimeUpdate = player_online_offline_wait_op_time_update(SeatId, NewState),
     case lib_fight:is_all_alive_player_not_in(StateAfterTimeUpdate) of
         true->
-            lib_fight:send_to_all_player(#m__fight_over_error__s2l{reason = 1}, StateAfterTimeUpdate),
+            lib_fight:send_to_all_player(#m__fight_over_error__s2l{reason = 1,
+                                                                    room_id = maps:get(room_id, StateAfterTimeUpdate)
+                                                                    }, StateAfterTimeUpdate),
             {stop, state_over, StateAfterTimeUpdate};
         _->
             {next_state, StateName, StateAfterTimeUpdate}
@@ -1586,7 +1588,9 @@ handle_event({player_leave, PlayerId}, StateName, State) ->
     %%判断活着的人是否都离线
     case lib_fight:is_all_alive_player_not_in(StateAfterLeave) of
         true->
-            lib_fight:send_to_all_player(#m__fight_over_error__s2l{reason = 1}, StateAfterLeave),
+            lib_fight:send_to_all_player(#m__fight_over_error__s2l{reason = 1,
+                                                                    room_id = maps:get(room_id, StateAfterLeave)
+                                                                    }, StateAfterLeave),
             {stop, state_over, StateAfterLeave};
         _->
             {next_state, StateName, StateAfterLeave}
