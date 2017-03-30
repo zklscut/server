@@ -1164,14 +1164,20 @@ state_toupiao_death_fayan(_IgnoreOP, State)->
 state_night(start, State) ->
     NewState = out_die_player(State),
     StateAfterClear = clear_night_op(NewState),
-    lib_room:update_room_status(maps:get(room_id, StateAfterClear), 1, maps:get(game_round, StateAfterClear), 1, 0),
-    notice_game_status_change(state_night, [maps:get(game_round, StateAfterClear)], StateAfterClear),
-    send_event_inner(over, b_fight_state_wait:get(state_night)),
-    NightOpTotalTime = lib_fight:get_night_last_time(StateAfterClear),
-    Send = #m__fight__op_timetick__s2l{timetick = NightOpTotalTime, wait_op = ?OP_NIGHT_TICK},
-    lib_fight:send_to_all_player(Send, State),
-    {next_state, state_night, maps:put(night_start_time, util:get_micro_time(), StateAfterClear)};
-    % end;
+    GameRound = maps:get(game_round, StateAfterClear),
+    case GameRound > ?FIGHT_MAX_GAME_ROUND of
+        true->
+            lib_fight:send_to_all_player(#m__fight_over_error__s2l{reason = 2}, StateAfterClear),
+            {next_state, state_over, StateAfterClear};
+        _->
+            lib_room:update_room_status(maps:get(room_id, StateAfterClear), 1, maps:get(game_round, StateAfterClear), 1, 0),
+            notice_game_status_change(state_night, [maps:get(game_round, StateAfterClear)], StateAfterClear),
+            send_event_inner(over, b_fight_state_wait:get(state_night)),
+            NightOpTotalTime = lib_fight:get_night_last_time(StateAfterClear),
+            Send = #m__fight__op_timetick__s2l{timetick = NightOpTotalTime, wait_op = ?OP_NIGHT_TICK},
+            lib_fight:send_to_all_player(Send, State),
+            {next_state, state_night, maps:put(night_start_time, util:get_micro_time(), StateAfterClear)}
+    end;
 
 state_night(over, State)->
     send_event_inner(start),
