@@ -228,6 +228,7 @@ is_all_alive_player_not_in(State) ->
     AlivePlayerList = lists:foldl(Func, [], AliveList),
     LeavePlayer = maps:get(offline_list, State) ++ maps:get(leave_player, State),
     LeftPlayerList = AlivePlayerList -- LeavePlayer,
+    lager:info("is_all_alive_player_not_in ~p", [{AlivePlayerList, LeavePlayer, LeftPlayerList}]),
     length(LeftPlayerList) == 0.
 
 % 战斗结束处理
