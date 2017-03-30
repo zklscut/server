@@ -249,6 +249,20 @@ cancle_ready(#m__room__cancle_ready__l2s{}, Player) ->
     end,
     {ok, Player}.
 
+get_not_full_normal_room_id_list(#m__room__get_not_full_normal_room_id_list_l2s{}, Player) ->
+    net_send:send(#m__room__get_not_full_normal_room_list_s2l{room_id_list = 
+                                get_not_full_normal_room_id_list_inner()}, Player).
+    {ok, Player}.
+
+get_room_info(#m__room__get_room_info_l2s{room_id = RoomId}, Player)->
+    case lib_room:get_room(RoomId) of
+        undefined->
+            net_send:send(#m__room__get_room_info_fail__s2l{reason = 1}, Player);
+        Room->
+            net_send:send(#m__room__get_room_info__s2l{room_info = conver_to_p_room(Room)}, Player)
+    end,
+    {ok, Player}.
+
 %%%====================================================================
 %%% Internal functions
 %%%====================================================================
@@ -273,6 +287,20 @@ get_not_full_simple_room()->
         _:_ ->
             undefined
     end.
+
+get_not_full_normal_room_id_list_inner()->
+    RoomList = ets:tab2list(?ETS_ROOM),
+    Func = fun({_,CurRoom}, CurList)->
+                IsSimple = maps:get(is_simple, CurRoom),
+                case (not IsSimple) andalso (length(maps:get(player_list, CurRoom)) < 
+                                                        maps:get(max_player_num, CurRoom)) of
+                    true->
+                        CurList ++ [maps:get(room_id, CurRoom)];
+                    _->
+                        CurList
+                end
+            end,
+    lists:foldl(Func, [], RoomList).
 
 conver_to_p_room(#{room_id := RoomId,
                    owner := Owner,

@@ -712,7 +712,7 @@ do_part_jingzhang_op(State) ->
 
 do_xuanju_jingzhang_op(State) ->
     LastOpData = get_last_op(State),
-    {IsDraw, ResultList, MaxSeatList} = count_xuanju_result(LastOpData),
+    {IsDraw, ResultList, MaxSeatList} = count_xuanju_result(LastOpData, undefined),
     DrawCnt = maps:get(xuanju_draw_cnt, State),
     {DrawResult, NewState} = 
         case IsDraw of
@@ -796,7 +796,7 @@ do_guipiao_op(State) ->
 
 do_toupiao_op(State) ->
     LastOpData = get_last_op(State),
-    {IsDraw, ResultList, MaxSeatList} = count_xuanju_result(LastOpData),
+    {IsDraw, ResultList, MaxSeatList} = count_xuanju_result(LastOpData, maps:get(jingzhang, State)),
     DrawCnt = maps:get(xuanju_draw_cnt, State),
     {DrawResult, NewState} = 
         case IsDraw of
@@ -817,7 +817,7 @@ do_toupiao_op(State) ->
 
 do_toupiao_mvp_op(State) ->
     LastOpData = get_last_op(State),
-    {IsDraw, ResultList, MaxSeatList} = count_xuanju_result(LastOpData),
+    {IsDraw, ResultList, MaxSeatList} = count_xuanju_result(LastOpData, undefined),
     DrawCnt = maps:get(mvp_draw_cnt, State),
     {DrawResult, NewState} = 
         case IsDraw of
@@ -839,7 +839,7 @@ do_toupiao_mvp_op(State) ->
 
 do_toupiao_carry_op(State) ->
     LastOpData = get_last_op(State),
-    {IsDraw, ResultList, MaxSeatList} = count_xuanju_result(LastOpData),
+    {IsDraw, ResultList, MaxSeatList} = count_xuanju_result(LastOpData, undefined),
     DrawCnt = maps:get(carry_draw_cnt, State),
     {DrawResult, NewState} = 
         case IsDraw of
@@ -1232,14 +1232,21 @@ notice_lover(Seat1, Seat2, QiubiteSeat, State) ->
     send_to_seat(Send, Seat2, State),
     send_to_seat(Send, QiubiteSeat, State).
     
-count_xuanju_result(OpData) ->
+count_xuanju_result(OpData, JingZhangSeat) ->
     FunCout = 
         fun({SelectSeat, [SeatId]}, CurList) ->
+            VoteNum = 
+            case SelectSeat == JingZhangSeat of
+                true->
+                    1.5;
+                _->
+                    1;
+            end,
             case lists:keyfind(SeatId, 1, CurList) of
                 {_, CurSelectSeat, SelectNum} ->
-                    lists:keyreplace(SeatId, 1, CurList, {SeatId, CurSelectSeat ++ [SelectSeat], SelectNum + 1});
+                    lists:keyreplace(SeatId, 1, CurList, {SeatId, CurSelectSeat ++ [SelectSeat], SelectNum + VoteNum});
                 false ->
-                    [{SeatId, [SelectSeat], 1}] ++ CurList
+                    [{SeatId, [SelectSeat], VoteNum}] ++ CurList
             end
         end,
     CountSelectList = lists:foldl(FunCout, [], maps:to_list(filter_last_op(OpData))),
