@@ -1027,8 +1027,9 @@ state_guipiao(start, State) ->
 
 state_guipiao(wait_op, State) ->
     % start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_GUIPIAO)),
+    AliveList = lib_fight:get_alive_seat_list(State) -- maps:get(die, State),
     JingZhang = maps:get(jingzhang, State),
-    StateAfterOp = notice_player_op(?OP_GUIPIAO, [JingZhang], State),
+    StateAfterOp = notice_player_op(?OP_GUIPIAO, AliveList, [JingZhang], State),
     StateAfterWait = do_set_wait_op(?OP_GUIPIAO, [JingZhang], StateAfterOp),
     {next_state, state_guipiao, StateAfterWait}; 
 
