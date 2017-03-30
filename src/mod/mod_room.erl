@@ -251,12 +251,12 @@ cancle_ready(#m__room__cancle_ready__l2s{}, Player) ->
     end,
     {ok, Player}.
 
-get_not_full_normal_room_id_list(#m__room__get_not_full_normal_room_id_list_l2s{}, Player) ->
-    net_send:send(#m__room__get_not_full_normal_room_list_s2l{room_id_list = 
+get_not_full_normal_room_id_list(#m__room__get_not_full_normal_room_id_list__l2s{}, Player) ->
+    net_send:send(#m__room__get_not_full_normal_room_id_list__s2l{room_id_list = 
                                 get_not_full_normal_room_id_list_inner()}, Player),
     {ok, Player}.
 
-get_room_info(#m__room__get_room_info_l2s{room_id = RoomId}, Player)->
+get_room_info(#m__room__get_room_info__l2s{room_id = RoomId}, Player)->
     case lib_room:get_room(RoomId) of
         undefined->
             net_send:send(#m__room__get_room_info_fail__s2l{reason = 1}, Player);
