@@ -12,6 +12,7 @@
          is_all_alive_player_not_in/1,
          get_night_last_time/1,
          is_active_in_fight/2,
+         fight_over_handle/1,
          is_offline_all/2,
          get_p_fight/1,
          get_langren_dync_data/1,
@@ -229,7 +230,15 @@ is_all_alive_player_not_in(State) ->
     LeftPlayerList = AlivePlayerList -- LeavePlayer,
     length(LeftPlayerList) > 0.
 
-
+% 战斗结束处理
+fight_over_handle(State)->
+    RoomId = maps:get(room_id, State),
+    PlayerList = maps:get(player_list, State),
+    OffLinePlayer = maps:get(offline_list, State),
+    [room_srv:leave_room(lib_player:get_player(OffLinePlayerId)) || OffLinePlayerId<-OffLinePlayer],
+    [global_op_srv:player_op(PlayerId, {lib_player, update_fight_pid, [undefined]}) || PlayerId <- PlayerList],
+    room_srv:update_room_fight_pid(RoomId, undefined),
+    lib_room:update_room_status(RoomId, 0, 0, 0, 0).
 
 %判断是否都处于离线状态
 is_offline_all(SeatList, State) ->

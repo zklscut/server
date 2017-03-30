@@ -1380,11 +1380,7 @@ state_game_over(_IgnoreOP, State)->
 %% ====================================================================
 
 state_over(start, State) ->
-    RoomId = maps:get(room_id, State),
-    PlayerList = maps:get(player_list, State),
-    [global_op_srv:player_op(PlayerId, {lib_player, update_fight_pid, [undefined]}) || PlayerId <- PlayerList],
-    room_srv:update_room_fight_pid(RoomId, undefined),
-    lib_room:update_room_status(RoomId, 0, 0, 0, 0),
+    lib_fight:fight_over_handle(State),
     {stop, normal, State};
 
 state_over(_IgnoreOP, State)->
@@ -1553,9 +1549,8 @@ handle_event({player_offline, PlayerId}, StateName, State) ->
     StateAfterTimeUpdate = player_online_offline_wait_op_time_update(SeatId, NewState),
     case lib_fight:is_all_alive_player_not_in(StateAfterTimeUpdate) of
         true->
-            LeavePlayer = maps:get(offline_list, State),
-            [room_srv:leave_room(lib_player:get_player(OffLinePlayerId)) || OffLinePlayerId<-LeavePlayer],
             lib_fight:send_to_all_player(#m__fight_over_error__s2l{reason = 1}, StateAfterTimeUpdate),
+            lib_fight:fight_over_handle(StateAfterTimeUpdate),
             {stop, normal, StateAfterTimeUpdate};
         _->
             {next_state, StateName, StateAfterTimeUpdate}
@@ -1586,9 +1581,8 @@ handle_event({player_leave, PlayerId}, StateName, State) ->
     %%判断活着的人是否都离线
     case lib_fight:is_all_alive_player_not_in(StateAfterLeave) of
         true->
-            LeavePlayer = maps:get(offline_list, State),
-            [room_srv:leave_room(lib_player:get_player(OffLinePlayerId)) || OffLinePlayerId<-LeavePlayer],
             lib_fight:send_to_all_player(#m__fight_over_error__s2l{reason = 1}, StateAfterLeave),
+            lib_fight:fight_over_handle(StateAfterTimeUpdate),
             {stop, normal, StateAfterLeave};
         _->
             {next_state, StateName, StateAfterLeave}
