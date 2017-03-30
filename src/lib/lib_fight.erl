@@ -220,7 +220,7 @@ is_active_in_fight(PlayerId, State) ->
 
 %%是否活着的人都不在战斗中
 is_all_alive_player_not_in(State) ->
-    AliveList = get_alive_seat_list(State),
+    AliveList = get_alive_seat_list(State) -- maps:get(die, State),
     Func =
         fun(SeatId, CurPlayerList) ->
              CurPlayerList ++ [get_player_id_by_seat(SeatId, State)]   
