@@ -157,7 +157,8 @@ init([RoomId, PlayerList, DutyList, Name, State]) ->
     lib_room:update_room_status(RoomId, 1, 0, 1, 0),
     NewState = lib_fight:init(RoomId, PlayerList, DutyList, Name, State),
     % NewStateAfterTest = ?IF(?TEST, fight_test_no_send(init, State), NewState),
-    notice_duty(NewState),
+    % notice_duty(NewState),
+    notice_duty(),
     notice_game_status_change(start, NewState),
     send_event_inner(start),
     {ok, state_select_card, NewState}.
