@@ -23,6 +23,8 @@
          send_to_player/2,
          ready/2,
          cancle_ready/2,
+         get_not_full_normal_room_id_list/2,
+         get_room_info/2,
          update_chat_list/1
          ]).
 
