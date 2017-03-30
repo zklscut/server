@@ -42,6 +42,8 @@
 	 decode_m__match__start_match__l2s/1,
 	 encode_m__resource__push__s2l/1,
 	 decode_m__resource__push__s2l/1,
+	 encode_m__fight_over_error__s2l/1,
+	 decode_m__fight_over_error__s2l/1,
 	 encode_m__fight__nvwu_op__s2l/1,
 	 decode_m__fight__nvwu_op__s2l/1,
 	 encode_m__fight__langren_op__s2l/1,
@@ -287,6 +289,9 @@
 
 -record(m__resource__push__s2l,
 	{msg_id, resource_id, num, action_id}).
+
+-record(m__fight_over_error__s2l,
+	{msg_id, room_id, reason}).
 
 -record(m__fight__nvwu_op__s2l,
 	{msg_id, du_seat_id, save_seat_id}).
@@ -641,6 +646,10 @@ encode_m__match__start_match__l2s(Record)
 encode_m__resource__push__s2l(Record)
     when is_record(Record, m__resource__push__s2l) ->
     encode(m__resource__push__s2l, Record).
+
+encode_m__fight_over_error__s2l(Record)
+    when is_record(Record, m__fight_over_error__s2l) ->
+    encode(m__fight_over_error__s2l, Record).
 
 encode_m__fight__nvwu_op__s2l(Record)
     when is_record(Record, m__fight__nvwu_op__s2l) ->
@@ -2277,6 +2286,19 @@ encode(m__fight__nvwu_op__s2l, _Record) ->
 			   with_default(_Record#m__fight__nvwu_op__s2l.save_seat_id,
 					none),
 			   int32, [])]);
+encode(m__fight_over_error__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight_over_error__s2l.msg_id,
+					15037),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__fight_over_error__s2l.room_id,
+					none),
+			   int32, []),
+		      pack(3, required,
+			   with_default(_Record#m__fight_over_error__s2l.reason,
+					none),
+			   int32, [])]);
 encode(m__resource__push__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__resource__push__s2l.msg_id,
@@ -2616,6 +2638,9 @@ decode_m__match__start_match__l2s(Bytes) ->
 
 decode_m__resource__push__s2l(Bytes) ->
     decode(m__resource__push__s2l, Bytes).
+
+decode_m__fight_over_error__s2l(Bytes) ->
+    decode(m__fight_over_error__s2l, Bytes).
 
 decode_m__fight__nvwu_op__s2l(Bytes) ->
     decode(m__fight__nvwu_op__s2l, Bytes).
@@ -3457,6 +3482,11 @@ decode(m__fight__nvwu_op__s2l, Bytes) ->
 	     {2, du_seat_id, int32, []}, {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__nvwu_op__s2l, Decoded);
+decode(m__fight_over_error__s2l, Bytes) ->
+    Types = [{3, reason, int32, []},
+	     {2, room_id, int32, []}, {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight_over_error__s2l, Decoded);
 decode(m__resource__push__s2l, Bytes) ->
     Types = [{4, action_id, int32, []}, {3, num, int32, []},
 	     {2, resource_id, int32, []}, {1, msg_id, int32, []}],
@@ -4322,6 +4352,13 @@ to_record(m__fight__nvwu_op__s2l, DecodedTuples) ->
 					 Record, Name, Val)
 		end,
 		#m__fight__nvwu_op__s2l{}, DecodedTuples);
+to_record(m__fight_over_error__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight_over_error__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight_over_error__s2l{}, DecodedTuples);
 to_record(m__resource__push__s2l, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields,
