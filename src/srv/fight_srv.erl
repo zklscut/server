@@ -1386,6 +1386,7 @@ state_game_over(_IgnoreOP, State)->
 %% ====================================================================
 
 state_over(start, State) ->
+    lager:info("state_over11111111111111"),
     lib_fight:fight_over_handle(State),
     {stop, normal, State};
 
