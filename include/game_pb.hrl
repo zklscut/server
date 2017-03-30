@@ -97,6 +97,7 @@
 -record(m__fight__dync_langren_op_data__s2l, {msg_id=15034, op_data}).
 -record(m__fight__langren_op__s2l, {msg_id=15035, seat_id}).
 -record(m__fight__nvwu_op__s2l, {msg_id=15036, du_seat_id, save_seat_id}).
+-record(m__fight_over_error__s2l, {msg_id=15037, room_id, reason}).
 -record(m__resource__push__s2l, {msg_id=16001, resource_id, num, action_id}).
 -record(m__match__start_match__l2s, {msg_id=17001, mode, player_list}).
 -record(m__match__end_match__l2s, {msg_id=17002, mode}).
