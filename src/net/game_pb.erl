@@ -42,6 +42,16 @@
 	 decode_m__match__start_match__l2s/1,
 	 encode_m__resource__push__s2l/1,
 	 decode_m__resource__push__s2l/1,
+	 encode_m__fight__nvwu_op__s2l/1,
+	 decode_m__fight__nvwu_op__s2l/1,
+	 encode_m__fight__langren_op__s2l/1,
+	 decode_m__fight__langren_op__s2l/1,
+	 encode_m__fight__dync_langren_op_data__s2l/1,
+	 decode_m__fight__dync_langren_op_data__s2l/1,
+	 encode_m__fight__chat_input__s2l/1,
+	 decode_m__fight__chat_input__s2l/1,
+	 encode_m__fight__chat_input__l2s/1,
+	 decode_m__fight__chat_input__l2s/1,
 	 encode_m__fight__forbid_other_speak__s2l/1,
 	 decode_m__fight__forbid_other_speak__s2l/1,
 	 encode_m__fight__forbid_other_speak__l2s/1,
@@ -110,6 +120,16 @@
 	 encode_m__chat__public_speak__l2s/1,
 	 decode_m__chat__public_speak__l2s/1, encode_p_chat/1,
 	 decode_p_chat/1,
+	 encode_m__room__get_not_full_normal_room_id_list__s2l/1,
+	 decode_m__room__get_not_full_normal_room_id_list__s2l/1,
+	 encode_m__room__get_not_full_normal_room_id_list__l2s/1,
+	 decode_m__room__get_not_full_normal_room_id_list__l2s/1,
+	 encode_m__room__get_room_info_fail__s2l/1,
+	 decode_m__room__get_room_info_fail__s2l/1,
+	 encode_m__room__get_room_info__s2l/1,
+	 decode_m__room__get_room_info__s2l/1,
+	 encode_m__room__get_room_info__l2s/1,
+	 decode_m__room__get_room_info__l2s/1,
 	 encode_m__room__enter_simple_room__l2s/1,
 	 decode_m__room__enter_simple_room__l2s/1,
 	 encode_m__room__enter_fail__s2l/1,
@@ -167,6 +187,10 @@
 	 decode_p_room/1, encode_p_fight/1, decode_p_fight/1,
 	 encode_m__room__get_list__l2s/1,
 	 decode_m__room__get_list__l2s/1,
+	 encode_m__player__change_sex__s2l/1,
+	 decode_m__player__change_sex__s2l/1,
+	 encode_m__player__change_sex__l2s/1,
+	 decode_m__player__change_sex__l2s/1,
 	 encode_m__player__get_head__s2l/1,
 	 decode_m__player__get_head__s2l/1,
 	 encode_m__player__get_head__l2s/1,
@@ -264,6 +288,21 @@
 -record(m__resource__push__s2l,
 	{msg_id, resource_id, num, action_id}).
 
+-record(m__fight__nvwu_op__s2l,
+	{msg_id, du_seat_id, save_seat_id}).
+
+-record(m__fight__langren_op__s2l, {msg_id, seat_id}).
+
+-record(m__fight__dync_langren_op_data__s2l,
+	{msg_id, op_data}).
+
+-record(m__fight__chat_input__s2l,
+	{msg_id, is_expression, night_langren, player_id,
+	 content}).
+
+-record(m__fight__chat_input__l2s,
+	{msg_id, is_expression, night_langren, content}).
+
 -record(m__fight__forbid_other_speak__s2l,
 	{msg_id, forbid_info}).
 
@@ -304,7 +343,8 @@
 	 wait_op_attach_data, wait_op_tick, jingzhang,
 	 lover_list, duty_list, parting_jingzhang, fight_info,
 	 duty_select_over, duty_select_time, duty_select_info,
-	 is_night, fight_mode, speak_forbid_info, game_round}).
+	 is_night, fight_mode, speak_forbid_info, game_round,
+	 night_op_left_time}).
 
 -record(p_flop, {seat_id, op}).
 
@@ -329,9 +369,9 @@
 	{msg_id, winner, duty_list, lover, hunxuer, daozei, mvp,
 	 carry, coin_add, cur_level, cur_exp, exp_add,
 	 pre_level_up_exp, level_up_exp, next_level_up_exp,
-	 victory_party, room_id}).
+	 victory_party, room_id, own_seat_id}).
 
--record(p_duty, {seat_id, duty_id}).
+-record(p_duty, {seat_id, duty_id, player_id}).
 
 -record(m__fight__night_result__s2l,
 	{msg_id, die_list}).
@@ -354,7 +394,7 @@
 	{msg_id, chat, night_langren}).
 
 -record(m__fight__notice_op__l2s,
-	{msg_id, op, op_list}).
+	{msg_id, op, op_list, confirm}).
 
 -record(m__fight__notice_op__s2l,
 	{msg_id, op, attach_data}).
@@ -372,6 +412,20 @@
 -record(p_chat,
 	{player_show_base, voice, content, length, compress,
 	 chat_type, room_id, msg_type}).
+
+-record(m__room__get_not_full_normal_room_id_list__s2l,
+	{msg_id, room_id_list}).
+
+-record(m__room__get_not_full_normal_room_id_list__l2s,
+	{msg_id}).
+
+-record(m__room__get_room_info_fail__s2l,
+	{msg_id, reason}).
+
+-record(m__room__get_room_info__s2l,
+	{msg_id, room_info}).
+
+-record(m__room__get_room_info__l2s, {msg_id, room_id}).
 
 -record(m__room__enter_simple_room__l2s, {msg_id}).
 
@@ -446,6 +500,10 @@
 
 -record(m__room__get_list__l2s, {msg_id}).
 
+-record(m__player__change_sex__s2l, {msg_id, sex}).
+
+-record(m__player__change_sex__l2s, {msg_id, sex}).
+
 -record(m__player__get_head__s2l,
 	{msg_id, player_id, img_data}).
 
@@ -474,7 +532,7 @@
 
 -record(m__player__info__s2l,
 	{msg_id, player_id, nick_name, grade, month_vip, equip,
-	 resource_list, win_rate_list, other_player}).
+	 resource_list, win_rate_list, other_player, sex}).
 
 -record(p_win_rate, {duty_id, win_cnt, all_cnt}).
 
@@ -583,6 +641,27 @@ encode_m__match__start_match__l2s(Record)
 encode_m__resource__push__s2l(Record)
     when is_record(Record, m__resource__push__s2l) ->
     encode(m__resource__push__s2l, Record).
+
+encode_m__fight__nvwu_op__s2l(Record)
+    when is_record(Record, m__fight__nvwu_op__s2l) ->
+    encode(m__fight__nvwu_op__s2l, Record).
+
+encode_m__fight__langren_op__s2l(Record)
+    when is_record(Record, m__fight__langren_op__s2l) ->
+    encode(m__fight__langren_op__s2l, Record).
+
+encode_m__fight__dync_langren_op_data__s2l(Record)
+    when is_record(Record,
+		   m__fight__dync_langren_op_data__s2l) ->
+    encode(m__fight__dync_langren_op_data__s2l, Record).
+
+encode_m__fight__chat_input__s2l(Record)
+    when is_record(Record, m__fight__chat_input__s2l) ->
+    encode(m__fight__chat_input__s2l, Record).
+
+encode_m__fight__chat_input__l2s(Record)
+    when is_record(Record, m__fight__chat_input__l2s) ->
+    encode(m__fight__chat_input__l2s, Record).
 
 encode_m__fight__forbid_other_speak__s2l(Record)
     when is_record(Record,
@@ -735,6 +814,31 @@ encode_m__chat__public_speak__l2s(Record)
 encode_p_chat(Record) when is_record(Record, p_chat) ->
     encode(p_chat, Record).
 
+encode_m__room__get_not_full_normal_room_id_list__s2l(Record)
+    when is_record(Record,
+		   m__room__get_not_full_normal_room_id_list__s2l) ->
+    encode(m__room__get_not_full_normal_room_id_list__s2l,
+	   Record).
+
+encode_m__room__get_not_full_normal_room_id_list__l2s(Record)
+    when is_record(Record,
+		   m__room__get_not_full_normal_room_id_list__l2s) ->
+    encode(m__room__get_not_full_normal_room_id_list__l2s,
+	   Record).
+
+encode_m__room__get_room_info_fail__s2l(Record)
+    when is_record(Record,
+		   m__room__get_room_info_fail__s2l) ->
+    encode(m__room__get_room_info_fail__s2l, Record).
+
+encode_m__room__get_room_info__s2l(Record)
+    when is_record(Record, m__room__get_room_info__s2l) ->
+    encode(m__room__get_room_info__s2l, Record).
+
+encode_m__room__get_room_info__l2s(Record)
+    when is_record(Record, m__room__get_room_info__l2s) ->
+    encode(m__room__get_room_info__l2s, Record).
+
 encode_m__room__enter_simple_room__l2s(Record)
     when is_record(Record,
 		   m__room__enter_simple_room__l2s) ->
@@ -859,6 +963,14 @@ encode_p_fight(Record)
 encode_m__room__get_list__l2s(Record)
     when is_record(Record, m__room__get_list__l2s) ->
     encode(m__room__get_list__l2s, Record).
+
+encode_m__player__change_sex__s2l(Record)
+    when is_record(Record, m__player__change_sex__s2l) ->
+    encode(m__player__change_sex__s2l, Record).
+
+encode_m__player__change_sex__l2s(Record)
+    when is_record(Record, m__player__change_sex__l2s) ->
+    encode(m__player__change_sex__l2s, Record).
 
 encode_m__player__get_head__s2l(Record)
     when is_record(Record, m__player__get_head__s2l) ->
@@ -1035,6 +1147,9 @@ encode(m__player__info__s2l, _Record) ->
 		      pack(10, required,
 			   with_default(_Record#m__player__info__s2l.other_player,
 					none),
+			   int32, []),
+		      pack(11, required,
+			   with_default(_Record#m__player__info__s2l.sex, none),
 			   int32, [])]);
 encode(m__player__errcode__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
@@ -1135,6 +1250,24 @@ encode(m__player__get_head__s2l, _Record) ->
 			   with_default(_Record#m__player__get_head__s2l.img_data,
 					none),
 			   bytes, [])]);
+encode(m__player__change_sex__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__player__change_sex__l2s.msg_id,
+					12015),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__player__change_sex__l2s.sex,
+					none),
+			   int32, [])]);
+encode(m__player__change_sex__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__player__change_sex__s2l.msg_id,
+					12016),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__player__change_sex__s2l.sex,
+					none),
+			   int32, [])]);
 encode(m__room__get_list__l2s, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__room__get_list__l2s.msg_id,
@@ -1422,6 +1555,49 @@ encode(m__room__enter_simple_room__l2s, _Record) ->
 			   with_default(_Record#m__room__enter_simple_room__l2s.msg_id,
 					13029),
 			   int32, [])]);
+encode(m__room__get_room_info__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__room__get_room_info__l2s.msg_id,
+					13030),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__room__get_room_info__l2s.room_id,
+					none),
+			   int32, [])]);
+encode(m__room__get_room_info__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__room__get_room_info__s2l.msg_id,
+					13031),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__room__get_room_info__s2l.room_info,
+					none),
+			   p_room, [])]);
+encode(m__room__get_room_info_fail__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__room__get_room_info_fail__s2l.msg_id,
+					13032),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__room__get_room_info_fail__s2l.reason,
+					none),
+			   int32, [])]);
+encode(m__room__get_not_full_normal_room_id_list__l2s,
+       _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__room__get_not_full_normal_room_id_list__l2s.msg_id,
+					13033),
+			   int32, [])]);
+encode(m__room__get_not_full_normal_room_id_list__s2l,
+       _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__room__get_not_full_normal_room_id_list__s2l.msg_id,
+					13034),
+			   int32, []),
+		      pack(2, repeated,
+			   with_default(_Record#m__room__get_not_full_normal_room_id_list__s2l.room_id_list,
+					none),
+			   int32, [])]);
 encode(p_chat, _Record) ->
     iolist_to_binary([pack(1, optional,
 			   with_default(_Record#p_chat.player_show_base, none),
@@ -1523,6 +1699,10 @@ encode(m__fight__notice_op__l2s, _Record) ->
 		      pack(3, repeated,
 			   with_default(_Record#m__fight__notice_op__l2s.op_list,
 					none),
+			   int32, []),
+		      pack(4, required,
+			   with_default(_Record#m__fight__notice_op__l2s.confirm,
+					none),
 			   int32, [])]);
 encode(m__fight__speak__l2s, _Record) ->
     iolist_to_binary([pack(1, required,
@@ -1617,6 +1797,9 @@ encode(p_duty, _Record) ->
 			   []),
 		      pack(2, required,
 			   with_default(_Record#p_duty.duty_id, none), int32,
+			   []),
+		      pack(3, required,
+			   with_default(_Record#p_duty.player_id, none), uint32,
 			   [])]);
 encode(m__fight__result__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
@@ -1685,6 +1868,10 @@ encode(m__fight__result__s2l, _Record) ->
 			   int32, []),
 		      pack(17, required,
 			   with_default(_Record#m__fight__result__s2l.room_id,
+					none),
+			   int32, []),
+		      pack(18, required,
+			   with_default(_Record#m__fight__result__s2l.own_seat_id,
 					none),
 			   int32, [])]);
 encode(m__fight__guipiao__s2l, _Record) ->
@@ -1880,6 +2067,10 @@ encode(m__fight__online__s2l, _Record) ->
 		      pack(28, required,
 			   with_default(_Record#m__fight__online__s2l.game_round,
 					none),
+			   int32, []),
+		      pack(29, required,
+			   with_default(_Record#m__fight__online__s2l.night_op_left_time,
+					none),
 			   int32, [])]);
 encode(m__fight__offline__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
@@ -2015,6 +2206,75 @@ encode(m__fight__forbid_other_speak__s2l, _Record) ->
 			   int32, []),
 		      pack(2, repeated,
 			   with_default(_Record#m__fight__forbid_other_speak__s2l.forbid_info,
+					none),
+			   int32, [])]);
+encode(m__fight__chat_input__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__chat_input__l2s.msg_id,
+					15032),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__fight__chat_input__l2s.is_expression,
+					none),
+			   int32, []),
+		      pack(3, required,
+			   with_default(_Record#m__fight__chat_input__l2s.night_langren,
+					none),
+			   int32, []),
+		      pack(4, required,
+			   with_default(_Record#m__fight__chat_input__l2s.content,
+					none),
+			   string, [])]);
+encode(m__fight__chat_input__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__chat_input__s2l.msg_id,
+					15033),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__fight__chat_input__s2l.is_expression,
+					none),
+			   int32, []),
+		      pack(3, required,
+			   with_default(_Record#m__fight__chat_input__s2l.night_langren,
+					none),
+			   int32, []),
+		      pack(4, required,
+			   with_default(_Record#m__fight__chat_input__s2l.player_id,
+					none),
+			   uint32, []),
+		      pack(5, required,
+			   with_default(_Record#m__fight__chat_input__s2l.content,
+					none),
+			   string, [])]);
+encode(m__fight__dync_langren_op_data__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__dync_langren_op_data__s2l.msg_id,
+					15034),
+			   int32, []),
+		      pack(2, repeated,
+			   with_default(_Record#m__fight__dync_langren_op_data__s2l.op_data,
+					none),
+			   int32, [])]);
+encode(m__fight__langren_op__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__langren_op__s2l.msg_id,
+					15035),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__fight__langren_op__s2l.seat_id,
+					none),
+			   int32, [])]);
+encode(m__fight__nvwu_op__s2l, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__fight__nvwu_op__s2l.msg_id,
+					15036),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__fight__nvwu_op__s2l.du_seat_id,
+					none),
+			   int32, []),
+		      pack(3, required,
+			   with_default(_Record#m__fight__nvwu_op__s2l.save_seat_id,
 					none),
 			   int32, [])]);
 encode(m__resource__push__s2l, _Record) ->
@@ -2357,6 +2617,21 @@ decode_m__match__start_match__l2s(Bytes) ->
 decode_m__resource__push__s2l(Bytes) ->
     decode(m__resource__push__s2l, Bytes).
 
+decode_m__fight__nvwu_op__s2l(Bytes) ->
+    decode(m__fight__nvwu_op__s2l, Bytes).
+
+decode_m__fight__langren_op__s2l(Bytes) ->
+    decode(m__fight__langren_op__s2l, Bytes).
+
+decode_m__fight__dync_langren_op_data__s2l(Bytes) ->
+    decode(m__fight__dync_langren_op_data__s2l, Bytes).
+
+decode_m__fight__chat_input__s2l(Bytes) ->
+    decode(m__fight__chat_input__s2l, Bytes).
+
+decode_m__fight__chat_input__l2s(Bytes) ->
+    decode(m__fight__chat_input__l2s, Bytes).
+
 decode_m__fight__forbid_other_speak__s2l(Bytes) ->
     decode(m__fight__forbid_other_speak__s2l, Bytes).
 
@@ -2465,6 +2740,23 @@ decode_m__chat__public_speak__l2s(Bytes) ->
 
 decode_p_chat(Bytes) -> decode(p_chat, Bytes).
 
+decode_m__room__get_not_full_normal_room_id_list__s2l(Bytes) ->
+    decode(m__room__get_not_full_normal_room_id_list__s2l,
+	   Bytes).
+
+decode_m__room__get_not_full_normal_room_id_list__l2s(Bytes) ->
+    decode(m__room__get_not_full_normal_room_id_list__l2s,
+	   Bytes).
+
+decode_m__room__get_room_info_fail__s2l(Bytes) ->
+    decode(m__room__get_room_info_fail__s2l, Bytes).
+
+decode_m__room__get_room_info__s2l(Bytes) ->
+    decode(m__room__get_room_info__s2l, Bytes).
+
+decode_m__room__get_room_info__l2s(Bytes) ->
+    decode(m__room__get_room_info__l2s, Bytes).
+
 decode_m__room__enter_simple_room__l2s(Bytes) ->
     decode(m__room__enter_simple_room__l2s, Bytes).
 
@@ -2552,6 +2844,12 @@ decode_p_fight(Bytes) -> decode(p_fight, Bytes).
 
 decode_m__room__get_list__l2s(Bytes) ->
     decode(m__room__get_list__l2s, Bytes).
+
+decode_m__player__change_sex__s2l(Bytes) ->
+    decode(m__player__change_sex__s2l, Bytes).
+
+decode_m__player__change_sex__l2s(Bytes) ->
+    decode(m__player__change_sex__l2s, Bytes).
 
 decode_m__player__get_head__s2l(Bytes) ->
     decode(m__player__get_head__s2l, Bytes).
@@ -2649,7 +2947,8 @@ decode(p_win_rate, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(p_win_rate, Decoded);
 decode(m__player__info__s2l, Bytes) ->
-    Types = [{10, other_player, int32, []},
+    Types = [{11, sex, int32, []},
+	     {10, other_player, int32, []},
 	     {9, win_rate_list, p_win_rate, [is_record, repeated]},
 	     {8, resource_list, p_resource, [is_record, repeated]},
 	     {6, equip, int32, []}, {5, month_vip, int32, []},
@@ -2709,6 +3008,14 @@ decode(m__player__get_head__s2l, Bytes) ->
 	     {2, player_id, uint32, []}, {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__player__get_head__s2l, Decoded);
+decode(m__player__change_sex__l2s, Bytes) ->
+    Types = [{2, sex, int32, []}, {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__player__change_sex__l2s, Decoded);
+decode(m__player__change_sex__s2l, Bytes) ->
+    Types = [{2, sex, int32, []}, {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__player__change_sex__s2l, Decoded);
 decode(m__room__get_list__l2s, Bytes) ->
     Types = [{1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
@@ -2862,6 +3169,34 @@ decode(m__room__enter_simple_room__l2s, Bytes) ->
     Types = [{1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__enter_simple_room__l2s, Decoded);
+decode(m__room__get_room_info__l2s, Bytes) ->
+    Types = [{2, room_id, int32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__room__get_room_info__l2s, Decoded);
+decode(m__room__get_room_info__s2l, Bytes) ->
+    Types = [{2, room_info, p_room, [is_record]},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__room__get_room_info__s2l, Decoded);
+decode(m__room__get_room_info_fail__s2l, Bytes) ->
+    Types = [{2, reason, int32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__room__get_room_info_fail__s2l, Decoded);
+decode(m__room__get_not_full_normal_room_id_list__l2s,
+       Bytes) ->
+    Types = [{1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__room__get_not_full_normal_room_id_list__l2s,
+	      Decoded);
+decode(m__room__get_not_full_normal_room_id_list__s2l,
+       Bytes) ->
+    Types = [{2, room_id_list, int32, [repeated]},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__room__get_not_full_normal_room_id_list__s2l,
+	      Decoded);
 decode(p_chat, Bytes) ->
     Types = [{8, msg_type, int32, []},
 	     {7, room_id, int32, []}, {6, chat_type, int32, []},
@@ -2898,8 +3233,9 @@ decode(m__fight__notice_op__s2l, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__notice_op__s2l, Decoded);
 decode(m__fight__notice_op__l2s, Bytes) ->
-    Types = [{3, op_list, int32, [repeated]},
-	     {2, op, int32, []}, {1, msg_id, int32, []}],
+    Types = [{4, confirm, int32, []},
+	     {3, op_list, int32, [repeated]}, {2, op, int32, []},
+	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__notice_op__l2s, Decoded);
 decode(m__fight__speak__l2s, Bytes) ->
@@ -2942,12 +3278,13 @@ decode(m__fight__night_result__s2l, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__night_result__s2l, Decoded);
 decode(p_duty, Bytes) ->
-    Types = [{2, duty_id, int32, []},
-	     {1, seat_id, int32, []}],
+    Types = [{3, player_id, uint32, []},
+	     {2, duty_id, int32, []}, {1, seat_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(p_duty, Decoded);
 decode(m__fight__result__s2l, Bytes) ->
-    Types = [{17, room_id, int32, []},
+    Types = [{18, own_seat_id, int32, []},
+	     {17, room_id, int32, []},
 	     {16, victory_party, int32, []},
 	     {15, next_level_up_exp, int32, []},
 	     {14, level_up_exp, int32, []},
@@ -3003,7 +3340,8 @@ decode(p_flop, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(p_flop, Decoded);
 decode(m__fight__online__s2l, Bytes) ->
-    Types = [{28, game_round, int32, []},
+    Types = [{29, night_op_left_time, int32, []},
+	     {28, game_round, int32, []},
 	     {27, speak_forbid_info, int32, [repeated]},
 	     {26, fight_mode, int32, []}, {25, is_night, int32, []},
 	     {24, duty_select_info, int32, [repeated]},
@@ -3091,6 +3429,34 @@ decode(m__fight__forbid_other_speak__s2l, Bytes) ->
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__fight__forbid_other_speak__s2l, Decoded);
+decode(m__fight__chat_input__l2s, Bytes) ->
+    Types = [{4, content, string, []},
+	     {3, night_langren, int32, []},
+	     {2, is_expression, int32, []}, {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__chat_input__l2s, Decoded);
+decode(m__fight__chat_input__s2l, Bytes) ->
+    Types = [{5, content, string, []},
+	     {4, player_id, uint32, []},
+	     {3, night_langren, int32, []},
+	     {2, is_expression, int32, []}, {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__chat_input__s2l, Decoded);
+decode(m__fight__dync_langren_op_data__s2l, Bytes) ->
+    Types = [{2, op_data, int32, [repeated]},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__dync_langren_op_data__s2l, Decoded);
+decode(m__fight__langren_op__s2l, Bytes) ->
+    Types = [{2, seat_id, int32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__langren_op__s2l, Decoded);
+decode(m__fight__nvwu_op__s2l, Bytes) ->
+    Types = [{3, save_seat_id, int32, []},
+	     {2, du_seat_id, int32, []}, {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__fight__nvwu_op__s2l, Decoded);
 decode(m__resource__push__s2l, Bytes) ->
     Types = [{4, action_id, int32, []}, {3, num, int32, []},
 	     {2, resource_id, int32, []}, {1, msg_id, int32, []}],
@@ -3385,6 +3751,20 @@ to_record(m__player__get_head__s2l, DecodedTuples) ->
 					 Record, Name, Val)
 		end,
 		#m__player__get_head__s2l{}, DecodedTuples);
+to_record(m__player__change_sex__l2s, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__player__change_sex__l2s),
+					 Record, Name, Val)
+		end,
+		#m__player__change_sex__l2s{}, DecodedTuples);
+to_record(m__player__change_sex__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__player__change_sex__s2l),
+					 Record, Name, Val)
+		end,
+		#m__player__change_sex__s2l{}, DecodedTuples);
 to_record(m__room__get_list__l2s, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields,
@@ -3601,6 +3981,46 @@ to_record(m__room__enter_simple_room__l2s,
 					 Record, Name, Val)
 		end,
 		#m__room__enter_simple_room__l2s{}, DecodedTuples);
+to_record(m__room__get_room_info__l2s, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__room__get_room_info__l2s),
+					 Record, Name, Val)
+		end,
+		#m__room__get_room_info__l2s{}, DecodedTuples);
+to_record(m__room__get_room_info__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__room__get_room_info__s2l),
+					 Record, Name, Val)
+		end,
+		#m__room__get_room_info__s2l{}, DecodedTuples);
+to_record(m__room__get_room_info_fail__s2l,
+	  DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__room__get_room_info_fail__s2l),
+					 Record, Name, Val)
+		end,
+		#m__room__get_room_info_fail__s2l{}, DecodedTuples);
+to_record(m__room__get_not_full_normal_room_id_list__l2s,
+	  DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__room__get_not_full_normal_room_id_list__l2s),
+					 Record, Name, Val)
+		end,
+		#m__room__get_not_full_normal_room_id_list__l2s{},
+		DecodedTuples);
+to_record(m__room__get_not_full_normal_room_id_list__s2l,
+	  DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__room__get_not_full_normal_room_id_list__s2l),
+					 Record, Name, Val)
+		end,
+		#m__room__get_not_full_normal_room_id_list__s2l{},
+		DecodedTuples);
 to_record(p_chat, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields, p_chat), Record,
@@ -3866,6 +4286,42 @@ to_record(m__fight__forbid_other_speak__s2l,
 					 Record, Name, Val)
 		end,
 		#m__fight__forbid_other_speak__s2l{}, DecodedTuples);
+to_record(m__fight__chat_input__l2s, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__chat_input__l2s),
+					 Record, Name, Val)
+		end,
+		#m__fight__chat_input__l2s{}, DecodedTuples);
+to_record(m__fight__chat_input__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__chat_input__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__chat_input__s2l{}, DecodedTuples);
+to_record(m__fight__dync_langren_op_data__s2l,
+	  DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__dync_langren_op_data__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__dync_langren_op_data__s2l{}, DecodedTuples);
+to_record(m__fight__langren_op__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__langren_op__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__langren_op__s2l{}, DecodedTuples);
+to_record(m__fight__nvwu_op__s2l, DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__fight__nvwu_op__s2l),
+					 Record, Name, Val)
+		end,
+		#m__fight__nvwu_op__s2l{}, DecodedTuples);
 to_record(m__resource__push__s2l, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields,
