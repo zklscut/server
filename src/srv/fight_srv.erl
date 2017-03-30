@@ -1550,8 +1550,7 @@ handle_event({player_offline, PlayerId}, StateName, State) ->
     case lib_fight:is_all_alive_player_not_in(StateAfterTimeUpdate) of
         true->
             lib_fight:send_to_all_player(#m__fight_over_error__s2l{reason = 1}, StateAfterTimeUpdate),
-            lib_fight:fight_over_handle(StateAfterTimeUpdate),
-            {stop, normal, StateAfterTimeUpdate};
+            {stop, state_over, StateAfterTimeUpdate};
         _->
             {next_state, StateName, StateAfterTimeUpdate}
     end;
@@ -1582,8 +1581,7 @@ handle_event({player_leave, PlayerId}, StateName, State) ->
     case lib_fight:is_all_alive_player_not_in(StateAfterLeave) of
         true->
             lib_fight:send_to_all_player(#m__fight_over_error__s2l{reason = 1}, StateAfterLeave),
-            lib_fight:fight_over_handle(StateAfterLeave),
-            {stop, normal, StateAfterLeave};
+            {stop, state_over, StateAfterLeave};
         _->
             {next_state, StateName, StateAfterLeave}
     end;
