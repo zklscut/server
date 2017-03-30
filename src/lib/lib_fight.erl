@@ -225,7 +225,7 @@ is_all_alive_player_not_in(State) ->
         fun(SeatId, CurPlayerList) ->
              CurPlayerList ++ [get_player_id_by_seat(SeatId, State)]   
         end,
-    AlivePlayerList = lists:foldl(Func, [], State),
+    AlivePlayerList = lists:foldl(Func, [], AliveList),
     LeavePlayer = maps:get(offline_list, State) ++ maps:get(leave_player, State),
     LeftPlayerList = AlivePlayerList -- LeavePlayer,
     length(LeftPlayerList) > 0.
