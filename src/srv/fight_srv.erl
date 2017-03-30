@@ -1518,19 +1518,6 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     StateAfterTimeUpdate = player_online_offline_wait_op_time_update(SeatId, NewState),
     {next_state, StateName, StateAfterTimeUpdate};
 
-handle_event({player_offline, PlayerId}, StateName, State) ->
-    OfflineList = maps:get(offline_list, State),
-    NewOfflineList = util:add_element_single(PlayerId, OfflineList),
-    NewState =  maps:put(offline_list, NewOfflineList, State),
-    SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
-    lager:info("player_offline ~p", [length(NewOfflineList)]),
-    Send = #m__fight__offline__s2l{
-                       offline_list = [lib_fight:get_seat_id_by_player_id(OffPlayerId, NewState)||OffPlayerId <- NewOfflineList]  
-                    },
-    lib_fight:send_to_all_player(Send, NewState),
-    StateAfterTimeUpdate = player_online_offline_wait_op_time_update(SeatId, NewState),
-    {next_state, StateName, StateAfterTimeUpdate};
-
 handle_event({forbid_other_speak, Forbid, PlayerId}, StateName, State) ->
     SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
     GameGround = maps:get(game_round, State),
@@ -1554,6 +1541,25 @@ handle_event({chat_input, IsExpression, Content, NightLangren, PlayerId}, StateN
     end,
     {next_state, StateName, State};
 
+handle_event({player_offline, PlayerId}, StateName, State) ->
+    OfflineList = maps:get(offline_list, State),
+    NewOfflineList = util:add_element_single(PlayerId, OfflineList),
+    NewState =  maps:put(offline_list, NewOfflineList, State),
+    SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
+    Send = #m__fight__offline__s2l{
+                       offline_list = [lib_fight:get_seat_id_by_player_id(OffPlayerId, NewState)||OffPlayerId <- NewOfflineList]  
+                    },
+    lib_fight:send_to_all_player(Send, NewState),
+    StateAfterTimeUpdate = player_online_offline_wait_op_time_update(SeatId, NewState),
+    case lib_fight:is_all_alive_player_not_in(StateAfterTimeUpdate) of
+        true->
+            LeavePlayer = maps:get(offline_list, State),
+            [room_srv:leave_room(lib_player:get_player(OffLinePlayerId)) || OffLinePlayerId<-LeavePlayer],
+            lib_fight:send_to_all_player(#m__fight_over_error__s2l{reason = 1}, StateAfterTimeUpdate),
+            {stop, normal, StateAfterTimeUpdate};
+        _->
+            {next_state, StateName, StateAfterTimeUpdate}
+    end;
 
 handle_event({player_leave, PlayerId}, StateName, State) ->
     SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
@@ -1578,11 +1584,10 @@ handle_event({player_leave, PlayerId}, StateName, State) ->
     end,
 
     %%判断活着的人是否都离线
-    NextStateName =
     case lib_fight:is_all_alive_player_not_in(StateAfterLeave) of
         true->
             LeavePlayer = maps:get(offline_list, State),
-            [room_srv:leave_room(lib_player:get_player(PlayerId)) || OffLinePlayerId<-LeavePlayer],
+            [room_srv:leave_room(lib_player:get_player(OffLinePlayerId)) || OffLinePlayerId<-LeavePlayer],
             lib_fight:send_to_all_player(#m__fight_over_error__s2l{reason = 1}, StateAfterLeave),
             {stop, normal, StateAfterLeave};
         _->
