@@ -1285,7 +1285,7 @@ state_toupiao_mvp(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     {IsDraw, TouPiaoResult, MaxSelectList, NewState} = lib_fight:do_toupiao_mvp_op(State),
     Mvp = maps:get(mvp, NewState),
-    lager:info("state_toupiao_mvp~p", [Mvp]),
+    lager:info("state_toupiao_mvp~p", [{Mvp, IsDraw}]),
     case IsDraw of
         true ->
             notice_state_toupiao_mvp_result(IsDraw, Mvp, TouPiaoResult, MaxSelectList, NewState),
