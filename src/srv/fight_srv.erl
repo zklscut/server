@@ -1454,7 +1454,6 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     WaitOpAttackData = maps:get(wait_op_attack_data, NewState),
     ExitJingZhang = maps:get(exit_jingzhang, NewState),
     PartingJingZhang = maps:get(parting_jingzhang, NewState),
-    DoPoliceSelect = maps:get(do_police_select, NewState),
     OpStartTime = maps:get(op_timer_start, NewState),
     OpUseTime = maps:get(op_timer_use_dur, NewState),
     IsNight = maps:get(is_night, NewState),
