@@ -1281,7 +1281,7 @@ count_xuanju_result(OpData, JingZhangSeat) ->
 get_max_luck_seat(SeatList, State)->
     case SeatList of
         [] ->
-            undefined;
+            0;
         _ ->
             PlayerIdList = [get_player_id_by_seat(SeatId, State) || SeatId <- SeatList],
             PlayerLuckList = [{PlayerId, mod_resource:get_num(?RESOURCE_LUCK, PlayerId)} || PlayerId <- PlayerIdList],
