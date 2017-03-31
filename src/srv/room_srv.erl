@@ -298,6 +298,7 @@ code_change(_OldVsn, State, _Extra) ->
 %% ====================================================================
 
 do_ready(RoomId, PlayerId)->
+    lager:info("do_ready1"),
     lib_room:assert_room_exist(RoomId),
     Room = lib_room:get_room(RoomId),
     NewReadyList = util:add_element_single(PlayerId, maps:get(ready_list, Room)),
@@ -308,6 +309,7 @@ do_ready(RoomId, PlayerId)->
     case (length(NewReadyList) == maps:get(max_player_num, Room)) andalso 
                         (length(NewReadyList) == length(maps:get(player_list, Room))) of
         true ->
+            lager:info("do_ready2"),
             Send = #m__room__notice_all_ready__s2l{},
             mod_room:send_to_room(Send, NewRoom),
             erlang:send_after(?ROOM_READY_TIME, self(), {ready_timeout, RoomId}),
@@ -315,6 +317,7 @@ do_ready(RoomId, PlayerId)->
             lib_room:update_room(RoomId, ReadyStartRoom),
             ReadyStartRoom;
         false ->
+            lager:info("do_ready3"),
             NewRoom
     end,
     ReadyRoom.
