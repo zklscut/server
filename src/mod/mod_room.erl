@@ -150,7 +150,6 @@ kick_player(#m__room__kick_player__l2s{kicked_player_id = KickedPlayerId}, Playe
     {ok, Player}.
 
 start_fight(#m__room__start_fight__l2s{}, Player) ->
-    lager:info("start_fight+++++++++++ ~p", [Player]),
     RoomId = lib_room:get_player_room_id(Player),
     PlayerList = lib_room:get_player_room_player_list(Player),
     DutyList = lib_room:get_room_duty_list(RoomId),
@@ -232,14 +231,11 @@ send_to_player(Send, Player) ->
     net_send:send(Send, Player).
 
 ready(#m__room__ready__l2s{}, Player) ->
-    lager:info("ready1111"),
     RoomId = lib_room:get_player_room_id(Player),
     case lib_room:is_in_fight(RoomId) of
         false->
-            lager:info("ready2222"),
             room_srv:ready(RoomId, lib_player:get_player_id(Player));
         _->
-            lager:info("ready33333"),
             ignore
     end,
     {ok, Player}.
