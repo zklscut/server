@@ -256,7 +256,7 @@ get_player_id_by_seat(SeatId, State) ->
     maps:get(SeatId, maps:get(seat_player_map, State)).
 
 get_seat_id_by_player_id(PlayerId, State) ->
-    maps:get(PlayerId, maps:get(player_seat_map, State)).    
+    maps:get(PlayerId, maps:get(player_seat_map, State), 0).    
 
 get_duty_by_seat(SeatId, State) ->
     maps:get(SeatId, maps:get(seat_duty_map, State)).    
@@ -1287,7 +1287,8 @@ get_max_luck_seat(SeatList, State)->
             PlayerLuckList = [{PlayerId, mod_resource:get_num(?RESOURCE_LUCK, PlayerId)} || PlayerId <- PlayerIdList],
             MaxLuck = lists:reverse(lists:keysort(2, PlayerLuckList)),
             MaxLuckPlayerList = [PlayerId || {PlayerId, Luck} <- PlayerLuckList, Luck == MaxLuck],
-            util:rand_in_list(MaxLuckPlayerList)
+            MvpPlayerId = util:rand_in_list(MaxLuckPlayerList),
+            get_seat_id_by_player_id(MvpPlayerId)
     end.
 
 generate_fayan_turn(SeatId, _First, Turn, State) ->
