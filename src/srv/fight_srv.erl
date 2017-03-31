@@ -112,11 +112,9 @@ player_offline(Player) ->
 player_leave(Pid, PlayerId) ->
     case Pid of
         undefined ->
-            lager:info("player_leave undefined"),
             net_send:send(#m__room__leave_room__s2l{result=1}, PlayerId),
             room_srv:leave_room(lib_player:get_player(PlayerId));
         Pid ->
-            lager:info("player_leave defined"),
             gen_fsm:send_all_state_event(Pid, {player_leave, PlayerId})
     end.
 
@@ -171,7 +169,8 @@ state_select_card(start, State)->
 state_select_card(wait_op, State)->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, lib_fight:get_op_wait(?OP_SELECT_DUTY, undefined, State)),
-    SeatList = lib_fight:get_all_seat(State),
+    % SeatList = lib_fight:get_all_seat(State),
+    SeatList = lib_fight:get_all_seat(undefined),
     DutySelectFun = fun(CurSeatId, CurState)->   
                         case CurSeatId =/= 0 of
                             true->
@@ -732,7 +731,6 @@ state_xuanju_jingzhang(wait_op, State) ->
     ExitJingZhang = maps:get(exit_jingzhang, StateAfterNotice),
 
     WaitList = (lib_fight:get_alive_seat_list(StateAfterNotice) -- maps:get(part_jingzhang, StateAfterNotice)) -- ExitJingZhang,
-    lager:info("state_xuanju_jingzhang ~p", [WaitList]),
     StateAfterWait = do_set_wait_op(?OP_XUANJU_JINGZHANG, WaitList, StateAfterNotice),
 
     {next_state, state_xuanju_jingzhang, StateAfterWait};    
@@ -1285,7 +1283,6 @@ state_toupiao_mvp(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     {IsDraw, TouPiaoResult, MaxSelectList, NewState} = lib_fight:do_toupiao_mvp_op(State),
     Mvp = maps:get(mvp, NewState),
-    lager:info("state_toupiao_mvp~p", [{Mvp, IsDraw}]),
     case IsDraw of
         true ->
             notice_state_toupiao_mvp_result(IsDraw, Mvp, TouPiaoResult, MaxSelectList, NewState),
@@ -1303,7 +1300,6 @@ state_toupiao_mvp(op_over, State) ->
                     %%lib_fight:get_max_luck_seat(maps:get(mvp_party, NewState), NewState)
                     lib_fight:get_max_luck_seat(maps:get(mvp_party, NewState), NewState)
             end,
-            lager:info("state_toupiao_mvp SelectMvp ~p", [SelectMvp]),
             notice_state_toupiao_mvp_result(IsDraw, SelectMvp, TouPiaoResult, MaxSelectList, NewState),
             StateAfterMvp = maps:put(mvp, SelectMvp, NewState),
             send_event_inner(wait_over, b_fight_state_over_wait:get(state_toupiao_mvp)),
@@ -1458,8 +1454,8 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     WaitOpAttackData = maps:get(wait_op_attack_data, NewState),
     ExitJingZhang = maps:get(exit_jingzhang, NewState),
     PartingJingZhang = maps:get(parting_jingzhang, NewState),
+    DoPoliceSelect = maps:get(do_police_select, NewState),
     OpStartTime = maps:get(op_timer_start, NewState),
-    lager:info("player_online ~p", [OpStartTime]),
     OpUseTime = maps:get(op_timer_use_dur, NewState),
     IsNight = maps:get(is_night, NewState),
     DutySelectOver = maps:get(duty_select_over, NewState),
@@ -1606,8 +1602,6 @@ handle_event({player_leave, PlayerId}, StateName, State) ->
     end;
 
 handle_event(print_state, StateName, StateData) ->
-    lager:info("state name ~p", [StateName]),
-    lager:info("state data ~p", [StateData]),
     {next_state, StateName, StateData}.
 
 handle_sync_event(_Event, _From, StateName, StateData) ->
@@ -1709,22 +1703,16 @@ do_duty_op_timeout(OpList, StateName, State) ->
 
 do_receive_player_op(PlayerId, Op, OpList, Confirm, StateName, State) ->
     try
-        lager:info("do_receive_player_op1"),
         assert_op_in_wait(PlayerId, State),
-        lager:info("do_receive_player_op2"),
         assert_op_legal(Op, StateName),
-        lager:info("do_receive_player_op3"),
         assert_op_fit(Op, OpList, State),
-        lager:info("do_receive_player_op4"),
         SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
         StateAfterLogOp = do_log_op(SeatId, OpList, State),
         {IsWaitOver, StateAfterWaitOp} = do_remove_wait_op(SeatId, Confirm, StateAfterLogOp),
         case IsWaitOver of
             true ->
-                lager:info("do_receive_player_op5"),
                 send_event_inner(op_over);
             false ->
-                lager:info("do_receive_player_op6"),
                 ignore
         end,
         {next_state, StateName, StateAfterWaitOp}
@@ -1868,7 +1856,6 @@ notice_player_op(Op, SeatList, State) ->
     notice_player_op(Op, SeatList, SeatList, State).
 
 notice_player_op(Op, AttachData, SeatList, State) ->
-    lager:info("notice_player_op ~p", [Op]),
     WaitTime = lib_fight:get_op_wait(Op, SeatList, State),
     UseWaitTime = 
     case lib_fight:is_offline_all(SeatList, State) of
@@ -2107,7 +2094,6 @@ notice_jingxuan_jingzhang(State) ->
     notice_player_op(?OP_PART_JINGZHANG, lib_fight:get_alive_seat_list(State), State).
 
 notice_xuanju_result(XaunJuType, IsDraw, XuanjuSeat, XuanJuResult, MaxList, State) ->
-    lager:info("notice_xuanju_result ~p", [XuanjuSeat]),
     PResutList = [#p_xuanju_result{seat_id = SeatId, 
                                    select_list = SelectList} || {SeatId, SelectList} <- XuanJuResult],
     Send = #m__fight__xuanju_result__s2l{xuanju_type = XaunJuType,
