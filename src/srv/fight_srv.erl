@@ -169,8 +169,8 @@ state_select_card(start, State)->
 state_select_card(wait_op, State)->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     start_fight_fsm_event_timer(?TIMER_TIMEOUT, lib_fight:get_op_wait(?OP_SELECT_DUTY, undefined, State)),
-    % SeatList = lib_fight:get_all_seat(State),
-    SeatList = lib_fight:get_all_seat(undefined),
+    SeatList = lib_fight:get_all_seat(State),
+    % SeatList = lib_fight:get_all_seat(undefined),
     DutySelectFun = fun(CurSeatId, CurState)->   
                         case CurSeatId =/= 0 of
                             true->
