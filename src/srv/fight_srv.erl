@@ -1303,6 +1303,7 @@ state_toupiao_mvp(op_over, State) ->
                     %%lib_fight:get_max_luck_seat(maps:get(mvp_party, NewState), NewState)
                     lib_fight:get_max_luck_seat(maps:get(mvp_party, NewState), NewState)
             end,
+            lager:info("state_toupiao_mvp SelectMvp ~p", [SelectMvp]),
             notice_state_toupiao_mvp_result(IsDraw, SelectMvp, TouPiaoResult, MaxSelectList, NewState),
             StateAfterMvp = maps:put(mvp, SelectMvp, NewState),
             send_event_inner(wait_over, b_fight_state_over_wait:get(state_toupiao_mvp)),
