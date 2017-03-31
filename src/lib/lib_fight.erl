@@ -1285,7 +1285,7 @@ get_max_luck_seat(SeatList, State)->
         _ ->
             PlayerIdList = [get_player_id_by_seat(SeatId, State) || SeatId <- SeatList],
             PlayerLuckList = [{PlayerId, mod_resource:get_num(?RESOURCE_LUCK, PlayerId)} || PlayerId <- PlayerIdList],
-            {_ MaxLuck} = hd(lists:reverse(lists:keysort(2, PlayerLuckList))),
+            {_, MaxLuck} = hd(lists:reverse(lists:keysort(2, PlayerLuckList))),
             MaxLuckPlayerList = [PlayerId || {PlayerId, Luck} <- PlayerLuckList, Luck == MaxLuck],
             lager:info("get_max_luck_seat ~p", [{PlayerLuckList, MaxLuck, MaxLuckPlayerList, SeatList}]),
             MvpPlayerId = util:rand_in_list(MaxLuckPlayerList),
