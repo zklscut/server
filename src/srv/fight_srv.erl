@@ -1205,7 +1205,7 @@ state_fight_over(start, State) ->
     {_, Winner, _VictoryParty} = get_fight_result(NewState),
     DutyList = [#p_duty{seat_id = SeatId,
                         duty_id = DutyId,
-                        player_id = lib_fight:get_player_id_by_seat(SeatId)} || 
+                        player_id = lib_fight:get_player_id_by_seat(SeatId, NewState)} || 
                         {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, NewState))], 
     %%todo:通知战斗信息
     %%send_fight_result(Winner, VictoryParty, NewState),
@@ -2426,7 +2426,7 @@ get_online_duty_data(Winner, State)->
             [];
         _->
             [#p_duty{seat_id = SeatId,
-                        player_id = lib_fight:get_player_id_by_seat(SeatId),
+                        player_id = lib_fight:get_player_id_by_seat(SeatId, State),
                         duty_id = DutyId} || 
                         {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, State))]
     end.
