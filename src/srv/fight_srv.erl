@@ -1374,6 +1374,7 @@ state_toupiao_carry(_IgnoreOP, State)->
 %% 游戏结束
 %% ====================================================================
 state_game_over(start, State) ->
+    lager:info("state_game_over1111111111111111"),
     NewState = out_die_player(State),
     {_, Winner, VictoryParty} = get_fight_result(NewState),
     send_fight_result(Winner, VictoryParty, NewState),
