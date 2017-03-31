@@ -298,13 +298,14 @@ code_change(_OldVsn, State, _Extra) ->
 %% ====================================================================
 
 do_ready(RoomId, PlayerId)->
-    lager:info("do_ready1"),
+    
     lib_room:assert_room_exist(RoomId),
     Room = lib_room:get_room(RoomId),
     NewReadyList = util:add_element_single(PlayerId, maps:get(ready_list, Room)),
     NewRoom = maps:put(ready_list, NewReadyList, Room),
     lib_room:update_room(RoomId, NewRoom),
     mod_room:notice_team_change(NewRoom),
+    lager:info("do_ready1 ~p", [{length(NewReadyList), maps:get(max_player_num, Room), length(maps:get(player_list, Room))}]),
     ReadyRoom = 
     case (length(NewReadyList) == maps:get(max_player_num, Room)) andalso 
                         (length(NewReadyList) == length(maps:get(player_list, Room))) of
