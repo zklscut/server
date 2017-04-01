@@ -1293,12 +1293,11 @@ get_max_luck_seat(SeatList, State)->
 generate_fayan_turn(SeatId, _First, Turn, State) ->
     AllSeat = get_all_seat(State),
     Part = 
-        case maps:get(die, State) of
-            [] ->
-                SeatId;
-            [Die] ->
+        case length(maps:get(die, State)) == 1 of
+            true->
+                [Die] = maps:get(die, State),
                 Die;
-            _ ->
+            _->
                 SeatId
         end,
     InitTurnList = 
@@ -1309,7 +1308,7 @@ generate_fayan_turn(SeatId, _First, Turn, State) ->
                 lists:reverse(lists:sort(AllSeat))
         end,
     {PreList, TailList} = util:part_list(Part, InitTurnList),
-    TurnList = ([Part] ++ TailList ++ PreList) -- [Part],
+    TurnList = (TailList ++ PreList) ++ [Part],
     ((TurnList -- maps:get(die, State)) -- maps:get(out_seat_list, State)) -- [0].
 
 do_set_die_list(State) ->
