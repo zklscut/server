@@ -826,7 +826,7 @@ state_someone_die(wait_op, State) ->
             SkillDieList = maps:get(skill_die_list, State),
             hd(SkillDieList)
     end,
-    AliveSeatList = lib_fight:get_alive_seat_list(StateAfterDieOp),
+    AliveSeatList = lib_fight:get_alive_seat_list(StateAfterDieOp) -- maps:get(die, StateAfterDieOp),
     StateAfterSkillSeat = maps:put(skill_seat, OpSeat, StateAfterDieOp),
     StateAfterOp = notice_player_op(Op, AliveSeatList, [OpSeat], StateAfterSkillSeat),
     {next_state, state_someone_die, maps:put(cur_skill, Op, StateAfterOp)};
