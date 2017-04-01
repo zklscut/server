@@ -1768,7 +1768,7 @@ do_receive_player_langren_op(PlayerId, Op, OpList, Confirm, StateName, State) ->
             _->
                 ignore
         end,
-        {next_state, StateName, StateAfterLangrenOP}
+        {next_state, StateName, StateAfterWaitOp}
     catch 
         throw:ErrCode ->
             net_send:send_errcode(ErrCode, PlayerId),
