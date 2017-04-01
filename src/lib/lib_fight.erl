@@ -932,7 +932,7 @@ do_skill_inner(SeatId, ?OP_SKILL_BAICHI, _, State) ->
 do_skill_inner(SeatId, ?OP_SKILL_LOVER_DIE, _, State) ->
     StateAfterNoticeDie = maps:put(day_notice_die, maps:get(day_notice_die, State) ++ [SeatId], State),
     StateAfterDie = maps:put(die, maps:get(die, StateAfterNoticeDie) ++ [SeatId], StateAfterNoticeDie),
-    lager:info("do_skill_inner2: loveDie ~p", [{maps:get(die, StateAfterLieRen), SeatId}]),
+    lager:info("do_skill_inner2: loveDie ~p", [{maps:get(die, StateAfterDie), SeatId}]),
     StateAfterLover = 
     case SeatId == 0 of
         true->
