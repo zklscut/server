@@ -1729,7 +1729,7 @@ do_receive_player_op(PlayerId, Op, OpList, Confirm, StateName, State) ->
             {next_state, StateName, State}
     end.   
 
-do_receive_player_langren_op(PlayerId, Op, OpList, _Confirm, StateName, State) ->
+do_receive_player_langren_op(PlayerId, Op, OpList, Confirm, StateName, State) ->
     try
         assert_op_in_wait(PlayerId, State),
         assert_op_legal(Op, StateName),
@@ -1738,27 +1738,30 @@ do_receive_player_langren_op(PlayerId, Op, OpList, _Confirm, StateName, State) -
         StateAfterLogOp = do_log_op(SeatId, OpList, State),
         {AllSame, AllOpData} = lib_fight:get_langren_dync_data(StateAfterLogOp),
         LangRenList = lib_fight:get_duty_seat(?DUTY_LANGREN, StateAfterLogOp),
-        {IsWaitOver, StateAfterWaitOp} =
-        case AllSame of
-            true->
-                do_remove_wait_op_list(LangRenList, 1, StateAfterLogOp);
-            _->
-                {false, StateAfterLogOp}
-        end,
+        {IsWaitOver, StateAfterWaitOp} = do_remove_wait_op(SeatId, Confirm, StateAfterLogOp),
+        % {IsWaitOver, StateAfterWaitOp} =
+        % case AllSame of
+        %     true->
+        %         do_remove_wait_op_list(LangRenList, 1, StateAfterLogOp);
+        %     _->
+        %         {false, StateAfterLogOp}
+        % end,
         Send = #m__fight__dync_langren_op_data__s2l{op_data = AllOpData},
         [lib_fight:send_to_seat(Send, LangRenSeatId, StateAfterWaitOp) || LangRenSeatId<-LangRenList],
-        StateAfterLangrenOP =
-        case AllSame of
-            true ->
-                case maps:get(duty_langren_op, StateAfterWaitOp) of
-                    1->
-                        StateAfterWaitOp;
-                    _->
-                        lib_fight:do_langren_op(StateAfterWaitOp)
-                end;
-            _ ->
-                StateAfterWaitOp
-        end,
+
+        % StateAfterLangrenOP =
+        % case AllSame of
+        %     true ->
+        %         case maps:get(duty_langren_op, StateAfterWaitOp) of
+        %             1->
+        %                 StateAfterWaitOp;
+        %             _->
+        %                 lib_fight:do_langren_op(StateAfterWaitOp)
+        %         end;
+        %     _ ->
+        %         StateAfterWaitOp
+        % end,
+
         case IsWaitOver of
             true->
                 send_event_inner(op_over);
