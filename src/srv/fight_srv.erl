@@ -2320,9 +2320,9 @@ fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, Stat
     #{lover := Lover,
       hunxuer := Hunxuer} = State,
     ThirdList = 
-    case lib_fight:is_third_part_win() orelse lib_fight:get_third_part_qiubite_seat() of
+    case lib_fight:is_third_part_win(State) orelse lib_fight:get_third_part_qiubite_seat(State) of
         true->
-            lib_fight:get_third_part_seat();
+            lib_fight:get_third_part_seat(State);
         _->
             []
     end,
