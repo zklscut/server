@@ -932,6 +932,7 @@ do_skill_inner(SeatId, ?OP_SKILL_BAICHI, _, State) ->
 do_skill_inner(SeatId, ?OP_SKILL_LOVER_DIE, _, State) ->
     StateAfterNoticeDie = maps:put(day_notice_die, maps:get(day_notice_die, State) ++ [SeatId], State),
     StateAfterDie = maps:put(die, maps:get(die, StateAfterNoticeDie) ++ [SeatId], StateAfterNoticeDie),
+    lager:info("do_skill_inner2: loveDie ~p", [{maps:get(die, StateAfterLieRen), SeatId}]),
     StateAfterLover = 
     case SeatId == 0 of
         true->
@@ -945,21 +946,25 @@ do_skill_inner(SeatId, ?OP_SKILL_LOVER_DIE, _, State) ->
 
 do_skill_inner(SeatId, ?OP_SKILL_LIEREN, [SelectSeat], State) ->
     StateAfterNoticeDie = maps:put(day_notice_die, maps:get(day_notice_die, State) ++ [SelectSeat], State),
-    lager:info("do_skill_inner1: lieren ~p", [maps:get(die, StateAfterNoticeDie)]),
+    lager:info("do_skill_inner1: lieren ~p", [{maps:get(die, StateAfterNoticeDie), SelectSeat}]),
     StateAfterDie = maps:put(die, maps:get(die, StateAfterNoticeDie) ++ [SelectSeat], StateAfterNoticeDie),
     StateAfterLieRen = maps:put(lieren_kill, SelectSeat, StateAfterDie),
+    lager:info("do_skill_inner2: lieren ~p", [maps:get(die, StateAfterLieRen)]),
     StateAfterFlopLieRen = 
     case SelectSeat == 0 of
         true->
+            lager:info("do_skill_inner1111"),
             StateAfterLieRen;
         false->
+            lager:info("do_skill_inner2222"),
             SkillDieListPre = maps:get(skill_die_list, State),
             StateAfterSetFlop = maps:put(flop_lieren, 1, StateAfterLieRen),
             StateAfterDieList = maps:put(skill_die_list, SkillDieListPre ++ [{?DIE_TYPE_LIEREN, SelectSeat}] , StateAfterSetFlop),
             StateAfterSetFlopList = maps:put(flop_list, maps:get(flop_list, StateAfterDieList) ++ [{SeatId, ?OP_SKILL_LIEREN}], StateAfterDieList),
+            lager:info("do_skill_inner3: lieren ~p", [maps:get(die, StateAfterSetFlopList)]),
             lover_die_judge(SelectSeat, StateAfterSetFlopList)
     end,
-    lager:info("do_skill_inner1: lieren2 ~p", [maps:get(die, StateAfterFlopLieRen)]),
+    lager:info("do_skill_inner1: lieren4 ~p", [maps:get(die, StateAfterFlopLieRen)]),
     check_set_baichi_die(SelectSeat, StateAfterFlopLieRen);
 
 do_skill_inner(SeatId, ?OP_SKILL_BAILANG, [SelectId], State) ->
