@@ -1412,7 +1412,7 @@ handle_event({skill, PlayerId, Op, OpList}, StateName, State) ->
                 throw(?ERROR);
             _->
                 ignore
-        end
+        end,
         assert_skill_legal(SeatId, Op, OpList, StateName, State),
         NewState = lib_fight:do_skill(PlayerId, Op, OpList, State),
         NextState = get_skill_next_state(Op, StateName, State),
