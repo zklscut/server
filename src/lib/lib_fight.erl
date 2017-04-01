@@ -945,6 +945,7 @@ do_skill_inner(SeatId, ?OP_SKILL_LOVER_DIE, _, State) ->
 
 do_skill_inner(SeatId, ?OP_SKILL_LIEREN, [SelectSeat], State) ->
     StateAfterNoticeDie = maps:put(day_notice_die, maps:get(day_notice_die, State) ++ [SelectSeat], State),
+    lager:info("do_skill_inner1: lieren ~p", [maps:get(die, StateAfterNoticeDie)]),
     StateAfterDie = maps:put(die, maps:get(die, StateAfterNoticeDie) ++ [SelectSeat], StateAfterNoticeDie),
     StateAfterLieRen = maps:put(lieren_kill, SelectSeat, StateAfterDie),
     StateAfterFlopLieRen = 
@@ -958,6 +959,7 @@ do_skill_inner(SeatId, ?OP_SKILL_LIEREN, [SelectSeat], State) ->
             StateAfterSetFlopList = maps:put(flop_list, maps:get(flop_list, StateAfterDieList) ++ [{SeatId, ?OP_SKILL_LIEREN}], StateAfterDieList),
             lover_die_judge(SelectSeat, StateAfterSetFlopList)
     end,
+    lager:info("do_skill_inner1: lieren2 ~p", [maps:get(die, StateAfterNoticeDie)]),
     check_set_baichi_die(SelectSeat, StateAfterFlopLieRen);
 
 do_skill_inner(SeatId, ?OP_SKILL_BAILANG, [SelectId], State) ->
@@ -1314,6 +1316,7 @@ generate_fayan_turn(SeatId, _First, Turn, State) ->
     ((TurnList -- maps:get(die, State)) -- maps:get(out_seat_list, State)) -- [0].
 
 do_set_die_list(State) ->
+    lager:info("do_set_die_list111111111111"),
     {NvwuSelect, NvwuOp} = maps:get(nvwu, State),
     LangrenKill = maps:get(langren, State),
     ShowWeiDef = maps:get(shouwei, State),
