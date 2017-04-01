@@ -1405,11 +1405,17 @@ handle_event({skill, _PlayerId, ?OP_SKILL_END_FIGHT, _OpList}, _StateName, State
 
 handle_event({skill, PlayerId, Op, OpList}, StateName, State) ->
     try 
+        AliveList = lib_fight:get_alive_seat_list(State) -- maps:get(die, State),
         SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
+        case lists:member(SeatId, AliveList) of
+            false->
+                throw(?ERROR);
+            _->
+                ignore
+        end
         assert_skill_legal(SeatId, Op, OpList, StateName, State),
         NewState = lib_fight:do_skill(PlayerId, Op, OpList, State),
         NextState = get_skill_next_state(Op, StateName, State),
-        lager:info("handle_event ~p", [[NextState, StateName, OpList, Op]]),
         NextStateAfterOver = 
         case is_over(NewState) of
             true ->
@@ -1957,6 +1963,7 @@ assert_die_skill_legal(PlayerId, _Op, _OpList, State) ->
     end.
 
 assert_skill_legal(_SeatId, _SkillId, _SkillData, _StateName, _State) ->
+
     ok.
 
 get_skill_next_state(Op, StateName, State) ->
