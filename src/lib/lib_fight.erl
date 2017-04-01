@@ -1331,7 +1331,12 @@ do_set_die_list(State) ->
     SaveList = 
         case NvwuOp of
             ?NVWU_JIEYAO ->
-                [ShowWeiDef, NvwuSelect];
+                case ShowWeiDef of
+                    NvwuSelect->
+                        [];
+                    _->
+                        [ShowWeiDef, NvwuSelect]
+                end;
             ?NVWU_DUYAO ->
                 case NvwuSelect == ShowWeiDef of
                     true ->
