@@ -2082,24 +2082,24 @@ do_remove_wait_op(SeatId, Confirm, State) ->
     end,
     {NewWaitOpList == [], maps:put(wait_op_list, NewWaitOpList, NewState)}.
 
-do_remove_wait_op_list(SeatList, Confirm, State)->
-    WaitOpList = maps:get(wait_op_list, State),
-    WaipOpListAfterConfirm = 
-        case Confirm of
-            0->
-                WaitOpList;
-            _->
-                WaitOpList -- SeatList
-        end,
-    NewWaitOpList = wait_op_list_all_offline_players_timeout(WaipOpListAfterConfirm, State),
-    NewState = 
-    case NewWaitOpList of
-        []->
-            maps:put(wait_op, 0, State);
-        _->
-            State
-    end,
-    {NewWaitOpList == [], maps:put(wait_op_list, NewWaitOpList, NewState)}.
+% do_remove_wait_op_list(SeatList, Confirm, State)->
+%     WaitOpList = maps:get(wait_op_list, State),
+%     WaipOpListAfterConfirm = 
+%         case Confirm of
+%             0->
+%                 WaitOpList;
+%             _->
+%                 WaitOpList -- SeatList
+%         end,
+%     NewWaitOpList = wait_op_list_all_offline_players_timeout(WaipOpListAfterConfirm, State),
+%     NewState = 
+%     case NewWaitOpList of
+%         []->
+%             maps:put(wait_op, 0, State);
+%         _->
+%             State
+%     end,
+%     {NewWaitOpList == [], maps:put(wait_op_list, NewWaitOpList, NewState)}.
 
 notice_jingxuan_jingzhang(State) ->
     notice_player_op(?OP_PART_JINGZHANG, lib_fight:get_alive_seat_list(State), State).
