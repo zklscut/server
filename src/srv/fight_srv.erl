@@ -1465,7 +1465,7 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     OwnRndInfo = maps:get(SeatId, SeatRndInfo, []),
     DutySelectLastTime = util:get_micro_time() - DutySelectStartTime,
     NightStartTime = maps:get(night_start_time, NewState),
-    
+    BaiLangList = lib_fight:get_duty_seat(false, ?DUTY_BAILANG, NewState),
     DutySelectLeftTime = 
     case DutySelectStartTime > 0 andalso (DutySelectTotalTime - DutySelectLastTime) > 0 of
         true->
@@ -1509,6 +1509,7 @@ handle_event({player_online, PlayerId}, StateName, State) ->
                                   speak_forbid_info = maps:get(forbid_speak_data, NewState),
                                   game_round = maps:get(game_round, NewState),
                                   fight_mode = FightMode,
+                                  bailang_list = BaiLangList,
                                   night_op_left_time = NightOpLeftTime
                                   },
     net_send:send(Send, PlayerId),
@@ -1666,8 +1667,9 @@ notice_duty(State) ->
             lib_fight:send_to_seat(Send, SeatId, State)
         end,
     lists:foreach(FunNotice, maps:keys(SeatDutyMap)),
-    LangRenList = lib_fight:get_duty_seat(?DUTY_LANGREN, State),
-    SendLangRenList = #m__fight__notice_langren__s2l{langren_list=LangRenList},
+    LangRenList = lib_fight:get_duty_seat(?DUTY_LANGREN, false, State),
+    SendLangRenList = #m__fight__notice_langren__s2l{langren_list=LangRenList, 
+                        bailang_list = lib_fight:get_duty_seat(false, ?DUTY_BAILANG, State)},
     [lib_fight:send_to_seat(SendLangRenList, LangRenSeatId, State) || LangRenSeatId<-LangRenList].
 
 do_duty_state_start(Duty, GameState, State) ->
