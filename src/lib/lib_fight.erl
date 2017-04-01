@@ -890,16 +890,12 @@ lover_die_judge(SeatId, State)->
         [] ->
             State;
         [Lover1, Lover2] ->
-            case SeatId == Lover1 of
-                true->
+            case SeatId of
+                Lover1->
                     do_skill(get_player_id_by_seat(Lover2, State), ?OP_SKILL_LOVER_DIE, [0], State);
-                false->
-                    State
-            end,
-            case SeatId == Lover2 of
-                true->
+                Lover2->
                     do_skill(get_player_id_by_seat(Lover1, State), ?OP_SKILL_LOVER_DIE, [0], State);
-                false->
+                _->
                     State
             end
     end.
