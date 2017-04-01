@@ -1736,7 +1736,7 @@ do_receive_player_langren_op(PlayerId, Op, OpList, Confirm, StateName, State) ->
         assert_op_fit(Op, OpList, State),
         SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
         StateAfterLogOp = do_log_op(SeatId, OpList, State),
-        {AllSame, AllOpData} = lib_fight:get_langren_dync_data(StateAfterLogOp),
+        {_AllSame, AllOpData} = lib_fight:get_langren_dync_data(StateAfterLogOp),
         LangRenList = lib_fight:get_duty_seat(?DUTY_LANGREN, StateAfterLogOp),
         {IsWaitOver, StateAfterWaitOp} = do_remove_wait_op(SeatId, Confirm, StateAfterLogOp),
         % {IsWaitOver, StateAfterWaitOp} =
