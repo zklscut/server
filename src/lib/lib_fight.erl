@@ -297,8 +297,6 @@ is_seat_alive(SeatId, State) ->
             not lists:member(SeatId, DieList)
     end.
 
-%%是否平安日
-
 %获得神名列表
 get_shenmin_seat(State)->
     PlayerNum = maps:get(player_num, State),

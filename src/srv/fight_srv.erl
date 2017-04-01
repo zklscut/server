@@ -2319,6 +2319,13 @@ fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, Stat
     CarrySeat = maps:get(carry, State),
     #{lover := Lover,
       hunxuer := Hunxuer} = State,
+    ThirdList = 
+    case lib_fight:is_third_part_win() orelse lib_fight:get_third_part_qiubite_seat() of
+        true->
+            lib_fight:get_third_part_seat();
+        _->
+            []
+    end,
     ThirdPartyList = lib_fight:get_third_part_seat(State),
     WinCount = get_win_count(ResultSeatId, Winner),
     IsMvp = is_mvp(ResultSeatId, MvpSeat),
@@ -2334,6 +2341,7 @@ fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, Stat
     lib_fight:send_to_seat(#m__fight__result__s2l{
                                   winner = Winner,
                                   lover = Lover,
+                                  third_list = ThirdList,
                                   hunxuer = Hunxuer,
                                   duty_list = DutyList,
                                   daozei = maps:get(daozei_seat, State),
