@@ -758,11 +758,13 @@ do_jingzhang_op(State) ->
         end,
     StateAfterJingzhang = maps:put(jingzhang_op, {First, Turn}, State),
     FayanTurn = generate_fayan_turn(SeatId, First, Turn, State),
+    lager:info("do_jingzhang_op ~p", [{FayanTurn, maps:get(die, State)}]),
     StateAfterFayanTurn = maps:put(fayan_turn, FayanTurn, StateAfterJingzhang),
     clear_last_op(StateAfterFayanTurn).
 
 do_no_jingzhang_op(State) ->
     FayanTurn = generate_fayan_turn(0, 0, ?TURN_DOWN, State),
+    lager:info("do_no_jingzhang_op ~p", [{FayanTurn, maps:get(die, State)}]),
     StateAfterFayanTurn = maps:put(fayan_turn, FayanTurn, State),
     clear_last_op(StateAfterFayanTurn).
 
