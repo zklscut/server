@@ -937,7 +937,7 @@ do_skill_inner(SeatId, ?OP_SKILL_LOVER_DIE, _, State) ->
         true->
             StateAfterDie;
         false->
-            SkillDieListPre = maps:get(skill_die_list, State),
+            SkillDieListPre = maps:get(skill_die_list, StateAfterDie),
             StateAfterDieList = maps:put(skill_die_list, SkillDieListPre ++ [{?DIE_TYPE_LOVER, SeatId}] , StateAfterDie),
             maps:put(lover_kill, SeatId, StateAfterDieList)
     end,
@@ -959,7 +959,7 @@ do_skill_inner(SeatId, ?OP_SKILL_LIEREN, [SelectSeat], State) ->
             StateAfterSetFlopList = maps:put(flop_list, maps:get(flop_list, StateAfterDieList) ++ [{SeatId, ?OP_SKILL_LIEREN}], StateAfterDieList),
             lover_die_judge(SelectSeat, StateAfterSetFlopList)
     end,
-    lager:info("do_skill_inner1: lieren2 ~p", [maps:get(die, StateAfterNoticeDie)]),
+    lager:info("do_skill_inner1: lieren2 ~p", [maps:get(die, StateAfterFlopLieRen)]),
     check_set_baichi_die(SelectSeat, StateAfterFlopLieRen);
 
 do_skill_inner(SeatId, ?OP_SKILL_BAILANG, [SelectId], State) ->
