@@ -1314,15 +1314,20 @@ generate_fayan_turn(SeatId, _First, Turn, State) ->
             _->
                 SeatId
         end,
-    InitTurnList = 
+    {InitTurnList, PartAfterTurn} = 
         case Turn of
             ?TURN_DOWN ->
-                lists:sort(AllSeat);
+                {lists:sort(AllSeat), Part};
             _ ->
-                lists:reverse(lists:sort(AllSeat))
+                case Part of
+                    0->
+                        {lists:reverse(lists:sort(AllSeat)), Part};
+                    _->
+                        {lists:reverse(lists:sort(AllSeat)), (length(AllSeat) - Part) + 1}
+                end
         end,
-    {PreList, TailList} = util:part_list(Part, InitTurnList),
-    TurnList = (TailList ++ PreList) ++ [Part],
+    {PreList, TailList} = util:part_list(PartAfterTurn, InitTurnList),
+    TurnList = TailList ++ PreList,
     ((TurnList -- maps:get(die, State)) -- maps:get(out_seat_list, State)) -- [0].
 
 do_set_die_list(State) ->
