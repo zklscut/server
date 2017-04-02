@@ -2392,7 +2392,7 @@ fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, Stat
                 PlayerId).
 
 send_fight_result(Winner, VictoryParty, State) ->
-    lager:info("send_fight_result:~p", [{maps:get(mvp, State), maps:get(carry, State)}],
+    lager:info("send_fight_result:~p", [{maps:get(mvp, State), maps:get(carry, State)}]),
     DutyList = [#p_duty{seat_id = SeatId,
                         duty_id = DutyId,
                         player_id = lib_fight:get_player_id_by_seat(SeatId, State)} || 
