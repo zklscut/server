@@ -1595,6 +1595,7 @@ handle_event({player_leave, PlayerId}, StateName, State) ->
         _->
             ignore
     end,
+    
     lib_fight:send_to_seat(#m__room__leave_room__s2l{result=1}, SeatId, State),
     room_srv:leave_room(lib_player:get_player(PlayerId)),
     NewLeavePlayerList = maps:get(leave_player, State) ++ [PlayerId],
@@ -1604,7 +1605,7 @@ handle_event({player_leave, PlayerId}, StateName, State) ->
                                                                     ||LeavePlayerId <- NewLeavePlayerList]   
                     },
     lib_fight:send_to_all_player(Send, NewState),
-    player_online_offline_wait_op_time_update(SeatId, NewState)
+    player_online_offline_wait_op_time_update(SeatId, NewState),
     % end,
 
     %%判断活着的人是否都离线
