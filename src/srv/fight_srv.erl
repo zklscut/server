@@ -1576,7 +1576,7 @@ handle_event({player_leave, PlayerId}, StateName, State) ->
     SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
     DieList = maps:get(out_seat_list, State) ++ maps:get(day_notice_die, State),
 
-    StateAfterLeave = 
+    
     % case lists:member(SeatId, DieList) of
     %     false->
     %         lib_fight:send_to_seat(#m__room__leave_room__s2l{result=2}, SeatId, State),
@@ -1595,7 +1595,7 @@ handle_event({player_leave, PlayerId}, StateName, State) ->
         _->
             ignore
     end,
-    
+
     lib_fight:send_to_seat(#m__room__leave_room__s2l{result=1}, SeatId, State),
     room_srv:leave_room(lib_player:get_player(PlayerId)),
     NewLeavePlayerList = maps:get(leave_player, State) ++ [PlayerId],
@@ -1605,7 +1605,7 @@ handle_event({player_leave, PlayerId}, StateName, State) ->
                                                                     ||LeavePlayerId <- NewLeavePlayerList]   
                     },
     lib_fight:send_to_all_player(Send, NewState),
-    player_online_offline_wait_op_time_update(SeatId, NewState),
+    StateAfterLeave =  player_online_offline_wait_op_time_update(SeatId, NewState),
     % end,
 
     %%判断活着的人是否都离线
@@ -2396,8 +2396,10 @@ send_fight_result(Winner, VictoryParty, State) ->
                         duty_id = DutyId,
                         player_id = lib_fight:get_player_id_by_seat(SeatId, State)} || 
                         {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, State))], 
+    LeavePlayerList = maps:get(leave_player, State),
     [fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, State)
                  || {ResultSeatId, ResultDutyId} <- maps:to_list(maps:get(seat_duty_map, State))],
+
     RoomId = maps:get(room_id, State),
     case RoomId > 0 of
         true->
