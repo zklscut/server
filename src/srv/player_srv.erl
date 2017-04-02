@@ -242,6 +242,8 @@ do_proto(ProtoId, ProtoData, State) ->
         case Function of
             heart_beat ->
                 ignore;
+            get_head ->
+                ignore;
             _ ->
                 lager:info("receive proto ~p", [ProtoRecord])
         end,
