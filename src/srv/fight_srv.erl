@@ -1636,7 +1636,7 @@ terminate(_Reason, _StateName, StateData) ->
             lib_fight:send_to_all_player(#m__fight_over_error__s2l{reason = 3,
                                                                     room_id = maps:get(room_id, StateData)
                                                                     }, StateData),
-            lib_fight:fight_over_handle(State);
+            lib_fight:fight_over_handle(StateData);
         _->
             ignore
     end,
