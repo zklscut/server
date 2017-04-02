@@ -1209,9 +1209,7 @@ state_fight_over(start, State) ->
     %%send_fight_result(Winner, VictoryParty, NewState),
 
     notice_game_status_change(state_fight_over, NewState),
-    Send = #m__fight__over_info__s2l{duty_list = DutyList, winner = Winner, 
-                                                dead_list = maps:get(out_seat_list, NewState)},
-    lib_fight:send_to_all_player(Send, NewState),
+    
     send_event_inner(start, b_fight_state_wait:get(state_fight_over)),
     StateAfterMvp = maps:put(mvp_party, Winner, NewState),
     StateAfterCarry = maps:put(carry_party, lib_fight:get_all_seat(StateAfterMvp) -- Winner, StateAfterMvp),
@@ -1220,6 +1218,9 @@ state_fight_over(start, State) ->
     NextState =
     case lib_fight:is_need_mvp(StateAfterWinner) of
         true->
+            Send = #m__fight__over_info__s2l{duty_list = DutyList, winner = Winner, 
+                                                dead_list = maps:get(out_seat_list, StateAfterWinner)},
+            lib_fight:send_to_all_player(Send, StateAfterWinner),
             state_lapiao_fayan;
         _->
             state_game_over
