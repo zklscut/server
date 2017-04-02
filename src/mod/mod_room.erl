@@ -293,8 +293,9 @@ get_not_full_normal_room_id_list_inner()->
     RoomList = ets:tab2list(?ETS_ROOM),
     Func = fun({_,CurRoom}, CurList)->
                 IsSimple = maps:get(is_simple, CurRoom),
-                case (not IsSimple) andalso (length(maps:get(player_list, CurRoom)) < 
-                                                        maps:get(max_player_num, CurRoom)) of
+                RoomId = maps:get(room_id, CurRoom),
+                case (not IsSimple) andalso (not lib_room:is_in_fight(RoomId)) andalso 
+                                (length(maps:get(player_list, CurRoom)) < maps:get(max_player_num, CurRoom)) of
                     true->
                         CurList ++ [maps:get(room_id, CurRoom)];
                     _->

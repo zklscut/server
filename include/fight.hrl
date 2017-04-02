@@ -69,6 +69,10 @@
 
 -define(SELECT_DUTY_CAST, 10).%%选牌消耗
 
+-define(FORCE_LEAVE_SUB_RANK_SCORE, 10).%%强退荣耀值扣除
+
+-define(FORCE_LEAVE_SUB_LUCK, 10).%%强退人气值扣除
+
 -define(JINXXUAN_TIMER_TIMEOUT, jingxuan_timeout).
 
 -define(NVWU_NONE, 0).
@@ -91,6 +95,7 @@
 -define(MFIGHT, #{room_id => 0,
                   fight_mod => 0, %%战斗模型0:正常模式,屠边 1:简单模式,屠城
                   room_name => "",%%房间名称
+                  normal_exit = 0,%%是非正常退出(1:正常退出)
                   duty_list => [],%%职责列表
                   rand_duty_list => [], %%随机职责列表
                   seat_rnd_info => #{},  %%座位随机列表

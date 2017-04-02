@@ -1388,9 +1388,8 @@ state_game_over(_IgnoreOP, State)->
 %% ====================================================================
 
 state_over(start, State) ->
-    lager:info("state_over11111111111111"),
     lib_fight:fight_over_handle(State),
-    {stop, normal, State};
+    {stop, normal, maps:put(normal_exit, 1, State)};
 
 state_over(_IgnoreOP, State)->
     {next_state, state_over, State}.
@@ -1578,22 +1577,35 @@ handle_event({player_leave, PlayerId}, StateName, State) ->
     DieList = maps:get(out_seat_list, State) ++ maps:get(day_notice_die, State),
 
     StateAfterLeave = 
+    % case lists:member(SeatId, DieList) of
+    %     false->
+    %         lib_fight:send_to_seat(#m__room__leave_room__s2l{result=2}, SeatId, State),
+    %         State;
+    %     _->
     case lists:member(SeatId, DieList) of
         false->
-            lib_fight:send_to_seat(#m__room__leave_room__s2l{result=2}, SeatId, State),
-            State;
+            case maps:get(room_id, State) > 0 of
+                true->
+                    % 扣除人气
+                    mod_player:handle_decrease(?RESOURCE_LUCK, ?FORCE_LEAVE_SUB_LUCK, ?LOG_ACTION_FIGHT, PlayerId);
+                _->
+                    % 扣除荣耀值
+                    mod_player:handle_decrease(?RESOURCE_RANK_SCORE, ?FORCE_LEAVE_SUB_RANK_SCORE, ?LOG_ACTION_FIGHT, PlayerId)
+            end;
         _->
-            lib_fight:send_to_seat(#m__room__leave_room__s2l{result=1}, SeatId, State),
-            room_srv:leave_room(lib_player:get_player(PlayerId)),
-            NewLeavePlayerList = maps:get(leave_player, State) ++ [PlayerId],
-            NewState = maps:put(leave_player, NewLeavePlayerList, State),
-            Send = #m__fight__leave__s2l{
-                               leave_list = [lib_fight:get_seat_id_by_player_id(LeavePlayerId, NewState)
-                                                                            ||LeavePlayerId <- NewLeavePlayerList]   
-                            },
-            lib_fight:send_to_all_player(Send, NewState),
-            player_online_offline_wait_op_time_update(SeatId, NewState)
+            ignore
     end,
+    lib_fight:send_to_seat(#m__room__leave_room__s2l{result=1}, SeatId, State),
+    room_srv:leave_room(lib_player:get_player(PlayerId)),
+    NewLeavePlayerList = maps:get(leave_player, State) ++ [PlayerId],
+    NewState = maps:put(leave_player, NewLeavePlayerList, State),
+    Send = #m__fight__leave__s2l{
+                       leave_list = [lib_fight:get_seat_id_by_player_id(LeavePlayerId, NewState)
+                                                                    ||LeavePlayerId <- NewLeavePlayerList]   
+                    },
+    lib_fight:send_to_all_player(Send, NewState),
+    player_online_offline_wait_op_time_update(SeatId, NewState)
+    % end,
 
     %%判断活着的人是否都离线
     case lib_fight:is_all_alive_player_not_in(StateAfterLeave) of
@@ -1617,8 +1629,16 @@ handle_sync_event(_Event, _From, StateName, StateData) ->
 handle_info(_Info, StateName, StateData) ->
     {next_state, StateName, StateData}.
 
-terminate(_Reason, _StateName, _StatData) ->
-    lager:info("terminate11111111111111111111111"),
+terminate(_Reason, _StateName, StateData) ->
+    case maps:get(normal_exit, StateData) of
+        0->
+            lib_fight:send_to_all_player(#m__fight_over_error__s2l{reason = 3,
+                                                                    room_id = maps:get(room_id, StateData)
+                                                                    }, StateData),
+            lib_fight:fight_over_handle(State);
+        _->
+            ignore
+    end,
     ok.
 
 code_change(_OldVsn, StateName, StateData, _Extra) ->

@@ -236,7 +236,6 @@ fight_over_handle(State)->
     RoomId = maps:get(room_id, State),
     PlayerList = maps:get(player_list, State),
     OffLinePlayer = maps:get(offline_list, State),
-    lager:info("fight_over_handle ~p", [OffLinePlayer]),
     [room_srv:leave_room(lib_player:get_player(OffLinePlayerId)) || OffLinePlayerId<-OffLinePlayer],
     [global_op_srv:player_op(PlayerId, {lib_player, update_fight_pid, [undefined]}) || PlayerId <- PlayerList],
     room_srv:update_room_fight_pid(RoomId, undefined),
@@ -526,6 +525,16 @@ do_daozei_op(State) ->
                     get_default_daozei_op_data(State);
                 [Duty]->
                     Duty
+            end,
+            send_to_seat(#m__fight__daozei_op__s2l{duty = SelectDuty}, SeatId, State),
+            case lists:member(SelectDuty, [?DUTY_LANGREN, ?DUTY_BAILANG]) of    
+                true->
+                    LangRenList = get_duty_seat(?DUTY_LANGREN, false, State),
+                    SendLangRenList = #m__fight__notice_langren__s2l{langren_list=LangRenList, 
+                                bailang_list = get_duty_seat(false, ?DUTY_BAILANG, State)},
+                    [send_to_seat(SendLangRenList, LangRenSeatId, State) || LangRenSeatId<-LangRenList];
+                _->
+                    ignore
             end,
             StateDaoZeiSeat = maps:put(daozei_seat, SeatId, State),
             StateAfterUpdateDuty = update_duty(SeatId, ?DUTY_DAOZEI, SelectDuty, StateDaoZeiSeat),
