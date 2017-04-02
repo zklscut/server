@@ -95,7 +95,7 @@
 -define(MFIGHT, #{room_id => 0,
                   fight_mod => 0, %%战斗模型0:正常模式,屠边 1:简单模式,屠城
                   room_name => "",%%房间名称
-                  normal_exit = 0,%%是非正常退出(1:正常退出)
+                  normal_exit => 0,%%是非正常退出(1:正常退出)
                   duty_list => [],%%职责列表
                   rand_duty_list => [], %%随机职责列表
                   seat_rnd_info => #{},  %%座位随机列表
