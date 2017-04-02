@@ -1587,10 +1587,10 @@ handle_event({player_leave, PlayerId}, StateName, State) ->
             case maps:get(room_id, State) > 0 of
                 true->
                     % 扣除人气
-                    mod_player:handle_decrease(?RESOURCE_LUCK, ?FORCE_LEAVE_SUB_LUCK, ?LOG_ACTION_FIGHT, PlayerId);
+                    mod_player:handle_decrease(?RESOURCE_LUCK, ?FORCE_LEAVE_SUB_LUCK, undefined, PlayerId);
                 _->
                     % 扣除荣耀值
-                    mod_player:handle_decrease(?RESOURCE_RANK_SCORE, ?FORCE_LEAVE_SUB_RANK_SCORE, ?LOG_ACTION_FIGHT, PlayerId)
+                    mod_player:handle_decrease(?RESOURCE_RANK_SCORE, ?FORCE_LEAVE_SUB_RANK_SCORE, undefined, PlayerId)
             end;
         _->
             ignore
