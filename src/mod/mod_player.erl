@@ -73,6 +73,20 @@ get_head(#m__player__get_head__l2s{player_id = PlayerId}, Player)->
   net_send:send(Send, Player),
   {ok, Player}.
 
+upload_head_img_name(#m__player__upload_head_img_name__l2s{head_img_name = HeadImgName}, Player)->
+  NewPlayer = maps:put(head_img_name, HeadImgName, Player),
+  net_send:send(#m__player__upload_head_img_name__s2l{}, NewPlayer),
+  {save, NewPlayer}.
+
+
+get_head_img_name(#m__player__get_head_img_name__l2s{player_id = PlayerId}, Player)->
+  TargetPlayer = lib_player:get_player(PlayerId),
+  Send = #m__player__get_head_img_name__s2l{player_id = PlayerId, 
+            head_img_name = maps:get(head_img_name, TargetPlayer, "")
+          },
+  net_send:send(Send, Player),
+  {ok, Player}.
+
 handle_fight_result(DutyId, IsWin, IsMvp, IsCarry, CoinAdd, ExpAdd, PlayerId) ->
     global_op_srv:player_op(PlayerId, {?MODULE, handle_fight_result_local, [DutyId, IsWin, IsMvp, IsCarry, CoinAdd, ExpAdd]}).
 
@@ -296,6 +310,7 @@ get_send_player_info(Player, OtherPlayer) ->
                           month_vip = 0,
                           equip = 0,
                           sex = maps:get(sex, Player, 0),
+                          head_img_name = maps:get(head_img_name, Player, ""),
                           other_player = OtherPlayer,
                           resource_list = mod_resource:get_p_resource_list(Player),
                           win_rate_list = get_p_fight_rate_list(Player)}.
