@@ -24,7 +24,9 @@
          get_extra_coin/4,
          get_fight_coin/3,
          get_extra_exp/4,
-         get_fight_exp/3
+         get_fight_exp/3,
+         upload_head_img_name/2,
+         get_head_img_name/2
          ]).
 
 -include("game_pb.hrl").
