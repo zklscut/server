@@ -62,6 +62,7 @@ get_player_show_base(PlayerId) when is_integer(PlayerId) ->
 get_player_show_base(Player) ->
     PlayerId = maps:get(id, Player),
     #p_player_show_base{player_id = PlayerId,
+                        head_img_name = maps:get(head_img_name, Player, ""),
                         nick_name = maps:get(nick_name, Player)}.
 
 get_player_id(Player) ->
