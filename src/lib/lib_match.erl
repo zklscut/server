@@ -159,8 +159,8 @@ do_time_tick(MatchData)->
     FunTimeOut = 
         fun(WaitId, {CurWaitList, CurMatchList, CurPlayerInfo}) ->
             #{id := WaitId,
-              fit_list := FitList,
-              wait_player_list := WaitPlayerList,
+              % fit_list := FitList,
+              % wait_player_list := WaitPlayerList,
               start_wait_time := StartWaitTime} = maps:get(WaitId, WaitList), 
             case Now - StartWaitTime > ?MATCH_TIMEOUT of
                 true ->
