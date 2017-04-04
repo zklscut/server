@@ -72,6 +72,28 @@ do_start_match(PlayerList, Rank, MatchData)->
     update_match_data(NewMatchData),
     do_start_fight(NewMatchData).
 
+%%超时强制拉入战斗
+force_enter_fight(WaitId, WaitList, MatchList, PlayerInfo)->
+    case maps:get(WaitId, WaitList, undefined) of
+        undefined->
+            {WaitList, MatchList, PlayerInfo};
+        WaitMatch ->
+            #{
+                player_list := StartPlayerList} = WaitMatch,
+            NewPlayerInfo = do_remove_player_info(PlayerInfo, StartPlayerList),
+            NewWaitList = maps:remove(WaitId, WaitList),
+            NewMatchList = 
+                        lists:foldl(
+                        fun(CurPlayerId, CurMatchList) ->
+                            lists:keydelete(CurPlayerId, 1, CurMatchList)
+                        end, 
+                        MatchList, 
+                        StartPlayerList
+                        ),
+            fight_srv:start_link(0, StartPlayerList, b_duty:get(maps:get(duty_template, MatchData)), "abc"),
+            {NewWaitList, NewMatchList, NewPlayerInfo}
+    end.
+
 do_enter_match(PlayerId, MatchData)->
     #{
         player_info := PlayerInfo,
@@ -105,7 +127,6 @@ do_enter_match(PlayerId, MatchData)->
              case NewWaitPlayerList of
                 [] ->
                     %%战斗开始从队列中移除
-                    
                     NewPlayerInfo = do_remove_player_info(PlayerInfo, StartPlayerList),
                     NewWaitList = maps:remove(WaitId, WaitList),
                     NewMatchList = 
@@ -143,9 +164,10 @@ do_time_tick(MatchData)->
               start_wait_time := StartWaitTime} = maps:get(WaitId, WaitList), 
             case Now - StartWaitTime > ?MATCH_TIMEOUT of
                 true ->
-                    lager:info("do_time_out"),
-                    do_time_out(maps:remove(WaitId, CurWaitList), 
-                            CurMatchList, CurPlayerInfo, WaitPlayerList, FitList, maps:get(match_type, MatchData));
+                    %%超时直接拉进战斗
+                    %do_time_out(maps:remove(WaitId, CurWaitList), 
+                     %       CurMatchList, CurPlayerInfo, WaitPlayerList, FitList, maps:get(match_type, MatchData));
+                    force_enter_fight(WaitId, CurWaitList, CurMatchList, CurPlayerInfo)
                 false ->
                     {CurWaitList, CurMatchList, CurPlayerInfo}
             end
@@ -296,7 +318,6 @@ do_set_player_info_wait(PlayerInfo, PlayerList, WaitId)->
     lists:foldl(SetFun, PlayerInfo, PlayerList).
 
 do_time_out(WaitList, MatchList, PlayerInfo, WaitPlayerList, FitList, MatchType)->
-    lager:info("do_time_out---~p", [{WaitList,MatchList,PlayerInfo,WaitPlayerList,FitList}]),
     TmpFun = 
         fun({_CurPlayerId, CurPlayerList, _CurRank, _CurNum}, {CurWaitList, CurMatchList, CurPlayerInfo})->
             case util:is_any_element_same(WaitPlayerList, CurPlayerList) of
