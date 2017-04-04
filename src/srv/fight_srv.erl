@@ -14,6 +14,7 @@
 
 -export([
          state_select_card/2,
+         state_duty_display/2,
          state_daozei/2,
          state_qiubite/2,
          state_hunxueer/2,
