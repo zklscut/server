@@ -74,12 +74,12 @@ player_op(Pid, PlayerId, Op, OpList, Confirm) ->
             gen_fsm:send_event(Pid, {player_op, PlayerId, Op, OpList, Confirm})
     end.
 
-player_speak(Pid, PlayerId, Chat, NightLangren) ->
+player_speak(Pid, PlayerId, Chat, SpeakType) ->
     case Pid of
         undefined->
             ignore;
         _->
-            gen_fsm:send_all_state_event(Pid, {player_chat, Chat, NightLangren, PlayerId})
+            gen_fsm:send_all_state_event(Pid, {player_chat, Chat, SpeakType, PlayerId})
     end.
 
 player_skill(Pid, PlayerId, Op, OpList) ->
@@ -126,7 +126,7 @@ forbid_other_speak(Pid, PlayerId, Forbid)->
             gen_fsm:send_all_state_event(Pid, {forbid_other_speak, Forbid, PlayerId})
     end.
 
-chat_input(Pid, PlayerId, IsExpression, Content, NightLangren, RoomId)->
+chat_input(Pid, PlayerId, IsExpression, Content, ChatType, RoomId)->
     case Pid of
         undefined ->
             Room = lib_room:get_room(RoomId),
@@ -136,13 +136,13 @@ chat_input(Pid, PlayerId, IsExpression, Content, NightLangren, RoomId)->
                 _->
                     Send = #m__fight__chat_input__s2l{is_expression=IsExpression,
                                                 player_id = PlayerId,
-                                                night_langren = NightLangren,
+                                                chat_type = ChatType,
                                                 content = Content
                                                 },
                     mod_room:send_to_room(Send, Room)
             end;
         Pid ->
-            gen_fsm:send_all_state_event(Pid, {chat_input, IsExpression, Content, NightLangren, PlayerId})
+            gen_fsm:send_all_state_event(Pid, {chat_input, IsExpression, Content, ChatType, PlayerId})
     end.
 
 %% ================`===================================================
@@ -1438,8 +1438,8 @@ handle_event({skill, PlayerId, Op, OpList}, StateName, State) ->
             {next_state, StateName, State} 
     end;
 
-handle_event({player_chat, Chat, NightLangren, PlayerId}, StateName, State)->
-    lib_fight:do_send_fayan(PlayerId, Chat, NightLangren, State),
+handle_event({player_chat, Chat, SpeakType, PlayerId}, StateName, State)->
+    lib_fight:do_send_fayan(PlayerId, Chat, SpeakType, State),
     {next_state, StateName, State};
 
 handle_event({player_online, PlayerId}, StateName, State) ->
@@ -1537,18 +1537,23 @@ handle_event({forbid_other_speak, Forbid, PlayerId}, StateName, State) ->
     lib_fight:send_to_all_player(Send, State),
     {next_state, StateName, maps:put(forbid_speak_data, ForbidInfo, State)};
 
-handle_event({chat_input, IsExpression, Content, NightLangren, PlayerId}, StateName, State) ->
+handle_event({chat_input, IsExpression, Content, ChatType, PlayerId}, StateName, State) ->
     Send = #m__fight__chat_input__s2l{is_expression=IsExpression,
                                                 player_id = PlayerId,
-                                                night_langren = NightLangren,
+                                                chat_type = ChatType,
                                                 content = Content
                                                 },
-    case NightLangren of
+    case ChatType of
         0->
             lib_fight:send_to_all_player(Send, State);
-        _->
+        1->
             LangRenList = lib_fight:get_duty_seat(?DUTY_LANGREN, false, State),
-            [lib_fight:send_to_seat(Send, SeatId, State) || SeatId <- LangRenList]
+            [lib_fight:send_to_seat(Send, SeatId, State) || SeatId <- LangRenList];
+        2->
+            DieList = maps:get(out_seat_list, State) ++ maps:get(day_notice_die, State)
+            [lib_fight:send_to_seat(Send, SeatId, State) || SeatId <- DieList];
+        _->
+            ignore
     end,
     {next_state, StateName, State};
 

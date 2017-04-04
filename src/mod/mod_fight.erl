@@ -21,9 +21,9 @@ notice_op(#m__fight__notice_op__l2s{op = Op,
 	       lib_player:get_player_id(Player), Op, OpList, Confirm),
 	{ok, Player}.
 
-speak(#m__fight__speak__l2s{chat = PChat, night_langren = NightLangren}, Player) ->
+speak(#m__fight__speak__l2s{chat = PChat, speak_type = SpeakType}, Player) ->
     fight_srv:player_speak(lib_player:get_fight_pid(Player), 
-        lib_player:get_player_id(Player), PChat, NightLangren),
+        lib_player:get_player_id(Player), PChat, SpeakType),
     {ok, Player}.
 
 do_skill(#m__fight__do_skill__l2s{op = Op,
@@ -39,9 +39,9 @@ forbid_other_speak(#m__fight__forbid_other_speak__l2s{is_forbid = Forbid}, Playe
 
 chat_input(#m__fight__chat_input__l2s{is_expression = IsExpression,
                                       content = Content,
-                                      night_langren = NightLangren}, Player) ->
+                                      chat_type = ChatType}, Player) ->
     fight_srv:chat_input(lib_player:get_fight_pid(Player), 
-        lib_player:get_player_id(Player), IsExpression, Content, NightLangren, lib_room:get_player_room_id(Player)),
+        lib_player:get_player_id(Player), IsExpression, Content, ChatType, lib_room:get_player_room_id(Player)),
     {ok, Player}.
 
 %%%====================================================================
