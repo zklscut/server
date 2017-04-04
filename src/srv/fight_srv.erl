@@ -2451,7 +2451,7 @@ fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, Stat
                     true->
                         CurRank - lib_match:compute_rank(1, CurRank, AverageRank);
                     _->
-                        CurRank - lib_match:compute_rank(0, CurRank, AverageRank);
+                        CurRank - lib_match:compute_rank(0, CurRank, AverageRank)
                 end;
             _->
                 0
@@ -2463,7 +2463,7 @@ fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, Stat
                 true->
                     mod_player:handle_increase(?RESOURCE_RANK_SCORE, RankChange, undefined, PlayerId);
                 false->
-                    mod_player:handle_decrease(?RESOURCE_RANK_SCORE, RankChange, undefined, PlayerId);
+                    mod_player:handle_decrease(?RESOURCE_RANK_SCORE, RankChange, undefined, PlayerId)
             end;
         _->
             ignore
