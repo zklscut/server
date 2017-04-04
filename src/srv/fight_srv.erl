@@ -1729,7 +1729,7 @@ notice_duty(State, DutyValid) ->
     lists:foreach(FunNotice, maps:keys(SeatDutyMap)),
     case DutyValid of
         0->
-            ignore
+            ignore;
         _->
             LangRenList = lib_fight:get_duty_seat(?DUTY_LANGREN, false, State),
             SendLangRenList = #m__fight__notice_langren__s2l{langren_list=LangRenList, 
