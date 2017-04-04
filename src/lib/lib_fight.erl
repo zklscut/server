@@ -94,7 +94,13 @@ init(RoomId, PlayerList, DutyList, Name, State) ->
     RndDutyList = lists:foldl(RandDutyFun, [], DutyList),
     StateAfterRandDuty = maps:put(rand_duty_list, RndDutyList, StateAfterName),
     StateAfterMod = init_mod(RoomId, StateAfterRandDuty),
-    StateAfterMod#{player_num := length(DutyList)}.
+
+    RankSumFunc = fun(PlayerId, CurSum)->   
+                        CurSum + mod_resource:get_num(?RESOURCE_RANK_SCORE, PlayerId)
+                    end,
+    RankSum = lists:foldl(RankSumFunc, 0, PlayerList),
+    StateAfterRankSum = maps:put(average_rank, RankSum / length(PlayerList)),
+    StateAfterRankSum#{player_num := length(DutyList)}.
 
 init_mod(RoomId, State)->
     case lib_room:get_room(RoomId) of
@@ -1066,7 +1072,7 @@ is_need_someone_die_default_delay(State)->
     Quzhu = maps:get(quzhu, State),
     BaiLang = maps:get(bailang, State),
     SkillDDelay = maps:get(skill_d_delay, State),
-    FightMode = maps:get(fight_mod, State),
+    _FightMode = maps:get(fight_mod, State),
     (false) andalso LieRenExist andalso (FlopLieRen == 0) andalso (SkillDDelay == 0) andalso (BaiLang == 0) andalso 
                 (((QuzhuOp == 0) andalso (SafeNight =/= 1)) orelse ((QuzhuOp == 1) andalso (Quzhu =/= 0))).
 

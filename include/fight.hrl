@@ -170,6 +170,7 @@
                   night_start_time => 0, %%晚上开始时间
                   forbid_speak_data => [], %%上次禁麦数据[stateId:游戏状态, game_ground:游戏回合, seat_id:设置对象, isforbid:是否禁麦]
                   day_notice_die => [], %%白天通知了玩家已经死亡的人(断线重连用)
+                  average_rank => 0, %%平均rank分
                   duty_daozei_op => 0,
                   duty_qiubite_op => 0,
                   duty_hunxuer_op => 0,

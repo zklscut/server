@@ -1311,7 +1311,7 @@ state_toupiao_mvp(timeout, State) ->
 
 state_toupiao_mvp(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    {IsDraw, ResultList, MaxSeatList} = lib_fight:do_toupiao_mvp_op(State),
+    {_IsDraw, ResultList, MaxSeatList} = lib_fight:do_toupiao_mvp_op(State),
     Mvp =
     case length(MaxSeatList) of
         0->
@@ -1381,7 +1381,7 @@ state_toupiao_carry(timeout, State) ->
 
 state_toupiao_carry(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-    {IsDraw, ResultList, MaxSeatList} = lib_fight:do_toupiao_carry_op(State),
+    {_IsDraw, ResultList, MaxSeatList} = lib_fight:do_toupiao_carry_op(State),
     Carry =
     case length(MaxSeatList) of
         0->
@@ -2442,6 +2442,33 @@ fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, Stat
     ExpExtraAdd = mod_player:get_extra_exp(WinCount, IsMvp, IsCarry, IsThirdParty),
     ExpAdd = mod_player:get_fight_exp(ResultDutyId, WinCount, IsThirdParty),
     CurExp = mod_resource:get_num(?RESOURCE_EXP, PlayerId),
+    AverageRank = maps:get(average_rank, State),
+    RankChange = 
+        case maps:get(room_id, State) of
+            0->
+                CurRank = mod_resource:get_num(?RESOURCE_RANK_SCORE, PlayerId),
+                case lists:member(ResultSeatId, Winner) of
+                    true->
+                        CurRank - lib_match:compute_rank(1, CurRank, AverageRank);
+                    _->
+                        CurRank - lib_match:compute_rank(0, CurRank, AverageRank);
+                end;
+            _->
+                0
+        end,
+    
+    case RankChange =/= 0 of
+        true->
+            case RankChange > 0 of
+                true->
+                    mod_player:handle_increase(?RESOURCE_RANK_SCORE, RankChange, undefined, PlayerId);
+                false->
+                    mod_player:handle_decrease(?RESOURCE_RANK_SCORE, RankChange, undefined, PlayerId);
+            end;
+        _->
+            ignore
+    end,
+
     lib_fight:send_to_seat(#m__fight__result__s2l{
                                   winner = Winner,
                                   lover = Lover,
@@ -2460,6 +2487,7 @@ fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, Stat
                                   next_level_up_exp = b_exp:get(CurLevel + 1),
                                   victory_party = VictoryParty,
                                   room_id = maps:get(room_id, State),
+                                  rank_add = RankChange,
                                   own_seat_id = ResultSeatId
                                   }, ResultSeatId, State),
     mod_player:handle_fight_result(
