@@ -167,7 +167,7 @@ do_time_tick(MatchData)->
                     %%超时直接拉进战斗
                     %do_time_out(maps:remove(WaitId, CurWaitList), 
                      %       CurMatchList, CurPlayerInfo, WaitPlayerList, FitList, maps:get(match_type, MatchData));
-                    force_enter_fight(WaitId, CurWaitList, CurMatchList, CurPlayerInfo)
+                    force_enter_fight(WaitId, CurWaitList, CurMatchList, CurPlayerInfo);
                 false ->
                     {CurWaitList, CurMatchList, CurPlayerInfo}
             end
