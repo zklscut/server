@@ -1601,6 +1601,7 @@ handle_event({player_offline, PlayerId}, StateName, State) ->
             lib_fight:send_to_all_player(#m__fight_over_error__s2l{reason = 1,
                                                                     room_id = maps:get(room_id, StateAfterTimeUpdate)
                                                                     }, StateAfterTimeUpdate),
+            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
             send_event_inner(start),
             {next_state, state_over, StateAfterTimeUpdate};
         _->
@@ -1649,6 +1650,7 @@ handle_event({player_leave, PlayerId}, StateName, State) ->
             lib_fight:send_to_all_player(#m__fight_over_error__s2l{reason = 1,
                                                                     room_id = maps:get(room_id, StateAfterLeave)
                                                                     }, StateAfterLeave),
+            cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
             send_event_inner(start),
             {next_state, state_over, StateAfterLeave};
         _->
