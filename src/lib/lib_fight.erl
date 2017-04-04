@@ -99,7 +99,7 @@ init(RoomId, PlayerList, DutyList, Name, State) ->
                         CurSum + mod_resource:get_num(?RESOURCE_RANK_SCORE, PlayerId)
                     end,
     RankSum = lists:foldl(RankSumFunc, 0, PlayerList),
-    StateAfterRankSum = maps:put(average_rank, RankSum / length(PlayerList)),
+    StateAfterRankSum = maps:put(average_rank, RankSum / length(PlayerList), StateAfterMod),
     StateAfterRankSum#{player_num := length(DutyList)}.
 
 init_mod(RoomId, State)->
