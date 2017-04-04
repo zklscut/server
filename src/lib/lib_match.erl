@@ -73,7 +73,7 @@ do_start_match(PlayerList, Rank, MatchData)->
     do_start_fight(NewMatchData).
 
 %%超时强制拉入战斗
-force_enter_fight(WaitId, WaitList, MatchList, PlayerInfo)->
+force_enter_fight(WaitId, WaitList, MatchList, PlayerInfo, MatchData)->
     case maps:get(WaitId, WaitList, undefined) of
         undefined->
             {WaitList, MatchList, PlayerInfo};
@@ -167,7 +167,7 @@ do_time_tick(MatchData)->
                     %%超时直接拉进战斗
                     %do_time_out(maps:remove(WaitId, CurWaitList), 
                      %       CurMatchList, CurPlayerInfo, WaitPlayerList, FitList, maps:get(match_type, MatchData));
-                    force_enter_fight(WaitId, CurWaitList, CurMatchList, CurPlayerInfo);
+                    force_enter_fight(WaitId, CurWaitList, CurMatchList, CurPlayerInfo, MatchData);
                 false ->
                     {CurWaitList, CurMatchList, CurPlayerInfo}
             end
