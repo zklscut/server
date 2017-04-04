@@ -46,6 +46,7 @@
 -define(OP_NIGHT_TICK, 1017). %%天黑操作提示
 -define(OP_PRE_COMMON, 1018). %%盗贼丘比特混血儿的公共操作
 -define(OP_NORMAL_COMMON, 1019). %%守卫狼人预言家的公共操作
+-define(OP_DUTY_DIS, 1020). %%身份展示
 
 -define(FAYAN_OP_LIST, [?OP_FAYAN, ?OP_PART_FAYAN, ?OP_DEATH_FAYAN, ?OP_QUZHU_FAYAN, ?OP_LAPIAO_FAYAN]).
 

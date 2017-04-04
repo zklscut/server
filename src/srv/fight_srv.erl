@@ -156,7 +156,7 @@ init([RoomId, PlayerList, DutyList, Name, State]) ->
     NewState = lib_fight:init(RoomId, PlayerList, DutyList, Name, State),
     % NewStateAfterTest = ?IF(?TEST, fight_test_no_send(init, State), NewState),
     % notice_duty(NewState),
-    notice_duty(NewState),
+    notice_duty(NewState, 0),
     notice_game_status_change(start, NewState),
     send_event_inner(start),
     {ok, state_select_card, NewState}.
@@ -224,12 +224,38 @@ state_select_card(timeout, State)->
 state_select_card(op_over, State)->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     send_event_inner(start),
-    notice_duty(State),
+    notice_duty(State, 1),
     NewState = maps:put(duty_select_over, 1, State),
-    {next_state, state_night, NewState};
+    {next_state, state_duty_display, NewState};
 
 state_select_card(_IgnoreOP, State)->
     {next_state, state_select_card, State}.
+
+%%身份展示
+state_duty_display(start, State)->
+    notice_duty(State, 1),
+    notice_game_status_change(state_duty_display, State),
+    send_event_inner(wait_op),
+    {next_state, state_duty_display, State};
+
+state_duty_display(wait_op, State) ->
+    % start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_TOUPIAO)),
+    StateAfterNotice = notice_duty_dis(State),
+    WaitList = lib_fight:get_all_seat(StateAfterNotice),
+    StateAfterWait = do_set_wait_op(?OP_DUTY_DIS, WaitList, StateAfterNotice),
+    {next_state, state_duty_display, StateAfterWait}; 
+
+state_duty_display(timeout, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    send_event_inner(op_over),
+    {next_state, state_duty_display, State};
+
+state_duty_display(op_over, State) ->
+    cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    {next_state, state_daozei, State};
+
+state_duty_display(_IgnoreOP, State)->
+    {next_state, state_duty_display, State}.
 
 %% ====================================================================
 %% state_daozei
@@ -1686,7 +1712,7 @@ cancel_fight_fsm_event_timer(Event) ->
 %% Internal functions
 %% ====================================================================
 
-notice_duty(State) ->
+notice_duty(State, DutyValid) ->
     SeatDutyMap = maps:get(seat_duty_map, State),
     FightInfo = lib_fight:get_p_fight(State),
     FunNotice = 
@@ -1695,15 +1721,22 @@ notice_duty(State) ->
             Send = #m__fight__notice_duty__s2l{duty = Duty,
                                                seat_id = SeatId,
                                                fight_info = FightInfo,
-                                               fight_mode = maps:get(fight_mod, State)
+                                               fight_mode = maps:get(fight_mod, State),
+                                               duty_valid = DutyValid
                                                },
             lib_fight:send_to_seat(Send, SeatId, State)
         end,
     lists:foreach(FunNotice, maps:keys(SeatDutyMap)),
-    LangRenList = lib_fight:get_duty_seat(?DUTY_LANGREN, false, State),
-    SendLangRenList = #m__fight__notice_langren__s2l{langren_list=LangRenList, 
-                        bailang_list = lib_fight:get_duty_seat(false, ?DUTY_BAILANG, State)},
-    [lib_fight:send_to_seat(SendLangRenList, LangRenSeatId, State) || LangRenSeatId<-LangRenList].
+    case DutyValid of
+        0->
+            ignore
+        _->
+            LangRenList = lib_fight:get_duty_seat(?DUTY_LANGREN, false, State),
+            SendLangRenList = #m__fight__notice_langren__s2l{langren_list=LangRenList, 
+                                bailang_list = lib_fight:get_duty_seat(false, ?DUTY_BAILANG, State)},
+            [lib_fight:send_to_seat(SendLangRenList, LangRenSeatId, State) || LangRenSeatId<-LangRenList]
+    end.
+    
 
 do_duty_state_start(Duty, GameState, State) ->
     SeatIdList = lib_fight:get_duty_seat(Duty, State),
@@ -2159,6 +2192,9 @@ notice_toupiao(_MaxSelectList, State) ->
     notice_player_op(?OP_TOUPIAO, WaitQuzhuList -- maps:get(die, State), ((AliveList -- 
                                                  [maps:get(baichi, State)]) -- maps:get(die, State)), State).
 
+notice_duty_dis(State) ->
+    notice_player_op(?OP_DUTY_DIS, [], lib_fight:get_all_seat(State), State).
+
 notice_toupiao_mvp(State) ->
     PartyList = maps:get(mvp_party, State),
     notice_player_op(?OP_TOUPIAO_MVP, PartyList, lib_fight:get_all_seat(State), State).
@@ -2514,6 +2550,8 @@ get_next_game_state(GameState) ->
         state_lapiao_fayan->
             state_toupiao_mvp;
         state_select_card->
+            state_daozei;
+        state_duty_display->
             state_daozei
     end.
 
@@ -2566,7 +2604,9 @@ get_state_legal_op(GameState) ->
         state_toupiao_carry ->
             [?OP_TOUPIAO_CARRY];
         state_select_card->
-            [?OP_SELECT_DUTY]
+            [?OP_SELECT_DUTY];
+        state_duty_display->
+            [?OP_DUTY_DIS]
     end.
 
 get_status_id(GameState) ->
@@ -2622,7 +2662,9 @@ get_status_id(GameState) ->
         state_fight_over ->
             24;
         state_select_card ->
-            25
+            25;
+        state_duty_display ->
+            26
     end.
 
 fight_test_no_send(StateName, State) ->
