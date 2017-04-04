@@ -138,19 +138,23 @@ handle_receive_gift_local(GiftId, Player) ->
   {save, PlayerAfterLuck}.
 
 change_name(#m__player__change_name__l2s{name = Name}, Player) ->
-  ChangeNameCnt = maps:get(change_name_cnt, maps:get(data, Player), 0),
-  case is_change_name_legal(Name) andalso ChangeNameCnt == 0 of
-      true ->
-          NewData = maps:put(change_name_cnt, ChangeNameCnt + 1, maps:get(data, Player)),
           Send = #m__player__change_name__s2l{name = Name, result=0},
           NewPlayer = maps:put(nick_name, Name, Player),
           net_send:send(Send, NewPlayer),
-          {save, maps:put(data, NewData, NewPlayer)};
-      false ->
-          SendFail = #m__player__change_name__s2l{name = Name, result=1},
-          net_send:send(SendFail, Player),
-          {ok, Player}
-  end.
+          {save, NewPlayer};
+  % ChangeNameCnt = maps:get(change_name_cnt, maps:get(data, Player), 0),
+  % case is_change_name_legal(Name) andalso ChangeNameCnt == 0 of
+  %     true ->
+  %         NewData = maps:put(change_name_cnt, ChangeNameCnt + 1, maps:get(data, Player)),
+  %         Send = #m__player__change_name__s2l{name = Name, result=0},
+  %         NewPlayer = maps:put(nick_name, Name, Player),
+  %         net_send:send(Send, NewPlayer),
+  %         {save, maps:put(data, NewData, NewPlayer)};
+  %     false ->
+  %         SendFail = #m__player__change_name__s2l{name = Name, result=1},
+  %         net_send:send(SendFail, Player),
+  %         {ok, Player}
+  % end.
     
 change_sex(#m__player__change_sex__l2s{sex = Sex}, Player) ->
     case Sex == 1 orelse Sex == 2 of
