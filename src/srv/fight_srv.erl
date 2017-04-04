@@ -1550,7 +1550,7 @@ handle_event({chat_input, IsExpression, Content, ChatType, PlayerId}, StateName,
             LangRenList = lib_fight:get_duty_seat(?DUTY_LANGREN, false, State),
             [lib_fight:send_to_seat(Send, SeatId, State) || SeatId <- LangRenList];
         2->
-            DieList = maps:get(out_seat_list, State) ++ maps:get(day_notice_die, State)
+            DieList = maps:get(out_seat_list, State) ++ maps:get(day_notice_die, State),
             [lib_fight:send_to_seat(Send, SeatId, State) || SeatId <- DieList];
         _->
             ignore
