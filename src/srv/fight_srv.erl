@@ -240,18 +240,19 @@ state_duty_display(start, State)->
     {next_state, state_duty_display, State};
 
 state_duty_display(wait_op, State) ->
-    % start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_TOUPIAO)),
     StateAfterNotice = notice_duty_dis(State),
     WaitList = lib_fight:get_all_seat(StateAfterNotice),
     StateAfterWait = do_set_wait_op(?OP_DUTY_DIS, WaitList, StateAfterNotice),
     {next_state, state_duty_display, StateAfterWait}; 
 
 state_duty_display(timeout, State) ->
+    lager:info("state_duty_display111111"),
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     send_event_inner(op_over),
     {next_state, state_duty_display, State};
 
 state_duty_display(op_over, State) ->
+    lager:info("state_duty_display22222"),
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     {next_state, state_daozei, State};
 
@@ -1935,6 +1936,7 @@ notice_player_op(Op, AttachData, SeatList, State) ->
         _->
             WaitTime
     end,
+    lager:info("state_duty_display ~p", [{Op, WaitTime}]),
     StateAfterWaitTime =
     case WaitTime == 0 of
         true->
