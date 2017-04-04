@@ -617,7 +617,7 @@ do_nvwu_op(State) ->
     StateAfterDelete = maps:put(nvwu_left, maps:get(nvwu_left, State) -- [UseYao], StateAfterNvwu),
     StateAfterUpdateDie = do_set_die_list(StateAfterDelete),
     StateAfterNvKill = 
-    case maps:get(nvwu, State) of
+    case maps:get(nvwu, StateAfterUpdateDie) of
         {NvWuKill, ?NVWU_DUYAO} ->
             KillSend = #m__fight__nvwu_op__s2l{du_seat_id = NvWuKill, save_seat_id = 0},
             send_to_seat(KillSend, SeatId, StateAfterUpdateDie),
@@ -851,46 +851,48 @@ do_toupiao_op(State) ->
 
 do_toupiao_mvp_op(State) ->
     LastOpData = get_last_op(State),
-    {IsDraw, ResultList, MaxSeatList} = count_xuanju_result(LastOpData, undefined),
-    DrawCnt = maps:get(mvp_draw_cnt, State),
-    {DrawResult, NewState} = 
-        case IsDraw of
-            false ->
-                {false, State#{mvp_draw_cnt := 0,
-                               mvp := hd(MaxSeatList)}};
-            true ->
-                case DrawCnt > 0 of
-                    true ->
-                        {false, State#{mvp_draw_cnt := 0,
-                                       mvp := 0}};
-                    false ->
-                        {true , State#{mvp_draw_cnt := 1,
-                                       mvp := 0}}
-                end
-        end,
-    {DrawResult, ResultList, MaxSeatList, NewState}.
+    count_xuanju_result(LastOpData, undefined).
+    % {IsDraw, ResultList, MaxSeatList} = count_xuanju_result(LastOpData, undefined).
+    % DrawCnt = maps:get(mvp_draw_cnt, State),
+    % {DrawResult, NewState} = 
+    %     case IsDraw of
+    %         false ->
+    %             {false, State#{mvp_draw_cnt := 0,
+    %                            mvp := hd(MaxSeatList)}};
+    %         true ->
+    %             case DrawCnt > 0 of
+    %                 true ->
+    %                     {false, State#{mvp_draw_cnt := 0,
+    %                                    mvp := 0}};
+    %                 false ->
+    %                     {true , State#{mvp_draw_cnt := 1,
+    %                                    mvp := 0}}
+    %             end
+    %     end,
+    % {DrawResult, ResultList, MaxSeatList, NewState}.
 
 
 do_toupiao_carry_op(State) ->
     LastOpData = get_last_op(State),
-    {IsDraw, ResultList, MaxSeatList} = count_xuanju_result(LastOpData, undefined),
-    DrawCnt = maps:get(carry_draw_cnt, State),
-    {DrawResult, NewState} = 
-        case IsDraw of
-            false ->
-                {false, State#{carry_draw_cnt := 0,
-                               carry := hd(MaxSeatList)}};
-            true ->
-                case DrawCnt > 0 of
-                    true ->
-                        {false, State#{carry_draw_cnt := 0,
-                                       carry := 0}};
-                    false ->
-                        {true , State#{carry_draw_cnt := 1,
-                                       carry := 0}}
-                end
-        end,
-    {DrawResult, ResultList, MaxSeatList, NewState}.        
+    count_xuanju_result(LastOpData, undefined).
+    % {IsDraw, ResultList, MaxSeatList} = count_xuanju_result(LastOpData, undefined).
+    % DrawCnt = maps:get(carry_draw_cnt, State),
+    % {DrawResult, NewState} = 
+    %     case IsDraw of
+    %         false ->
+    %             {false, State#{carry_draw_cnt := 0,
+    %                            carry := hd(MaxSeatList)}};
+    %         true ->
+    %             case DrawCnt > 0 of
+    %                 true ->
+    %                     {false, State#{carry_draw_cnt := 0,
+    %                                    carry := 0}};
+    %                 false ->
+    %                     {true , State#{carry_draw_cnt := 1,
+    %                                    carry := 0}}
+    %             end
+    %     end,
+    % {DrawResult, ResultList, MaxSeatList, NewState}.    
 
 %%设置白痴死亡状态
 check_set_baichi_die(DieSeat, State)->
@@ -1306,8 +1308,8 @@ get_max_luck_seat(SeatList, State)->
             PlayerIdList = [get_player_id_by_seat(SeatId, State) || SeatId <- SeatList],
             PlayerLuckList = [{PlayerId, mod_resource:get_num(?RESOURCE_LUCK, PlayerId)} || PlayerId <- PlayerIdList],
             {_, MaxLuck} = hd(lists:reverse(lists:keysort(2, PlayerLuckList))),
-            MaxLuckPlayerList = [PlayerId || {PlayerId, Luck} <- PlayerLuckList, Luck == MaxLuck],
-            lager:info("get_max_luck_seat ~p", [{PlayerLuckList, MaxLuck, MaxLuckPlayerList, SeatList}]),
+            MaxLuckPlayerList = [PlayerId, State || 
+                                            {PlayerId, Luck} <- PlayerLuckList, Luck == MaxLuck]
             MvpPlayerId = util:rand_in_list(MaxLuckPlayerList),
             get_seat_id_by_player_id(MvpPlayerId, State)
     end.
@@ -1339,7 +1341,6 @@ generate_fayan_turn(SeatId, _First, Turn, State) ->
     ((TurnList -- maps:get(die, State)) -- maps:get(out_seat_list, State)) -- [0].
 
 do_set_die_list(State) ->
-    lager:info("do_set_die_list111111111111"),
     {NvwuSelect, NvwuOp} = maps:get(nvwu, State),
     LangrenKill = maps:get(langren, State),
     ShowWeiDef = maps:get(shouwei, State),
