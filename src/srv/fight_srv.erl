@@ -1499,6 +1499,7 @@ handle_event({player_online, PlayerId}, StateName, State) ->
     FightMode = maps:get(fight_mod, NewState),
     OwnRndInfo = maps:get(SeatId, SeatRndInfo, []),
     DutySelectLastTime = util:get_micro_time() - DutySelectStartTime,
+    DutySelectList = maps:get(duty_select_seat_list, NewState),
     NightStartTime = maps:get(night_start_time, NewState),
     BaiLangList = lib_fight:get_duty_seat(false, ?DUTY_BAILANG, NewState),
     DutySelectLeftTime = 
@@ -1545,7 +1546,8 @@ handle_event({player_online, PlayerId}, StateName, State) ->
                                   game_round = maps:get(game_round, NewState),
                                   fight_mode = FightMode,
                                   bailang_list = BaiLangList,
-                                  night_op_left_time = NightOpLeftTime
+                                  night_op_left_time = NightOpLeftTime,
+                                  duty_select_seat_list = DutySelectList
                                   },
     net_send:send(Send, PlayerId),
 
