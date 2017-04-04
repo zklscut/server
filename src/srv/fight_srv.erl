@@ -1321,8 +1321,8 @@ state_toupiao_mvp(op_over, State) ->
         _->
             lib_fight:get_max_luck_seat(MaxSeatList, State)
     end,
-    StateAfterMvp = maps:put(mvp, MvpList, State),
-    notice_state_toupiao_carry_result(false, 0, ResultList, MvpList, StateAfterMvp),
+    StateAfterMvp = maps:put(mvp, Mvp, State),
+    notice_state_toupiao_mvp_result(false, Mvp, ResultList, MaxSeatList, StateAfterMvp),
     send_event_inner(wait_over, b_fight_state_over_wait:get(state_toupiao_mvp)),
     {next_state, state_toupiao_mvp, StateAfterMvp};
 
@@ -1392,7 +1392,7 @@ state_toupiao_carry(op_over, State) ->
             lib_fight:get_max_luck_seat(MaxSeatList, State)
     end,
     StateAfterCarry = maps:put(carry, Carry, State),
-    notice_state_toupiao_carry_result(false, 0, ResultList, Carry, StateAfterCarry),
+    notice_state_toupiao_carry_result(false, Carry, ResultList, MaxSeatList, StateAfterCarry),
     send_event_inner(wait_over, b_fight_state_over_wait:get(state_toupiao_carry)),
     {next_state, state_toupiao_carry, StateAfterCarry};
 
