@@ -317,22 +317,22 @@ do_set_player_info_wait(PlayerInfo, PlayerList, WaitId)->
         end,
     lists:foldl(SetFun, PlayerInfo, PlayerList).
 
-do_time_out(WaitList, MatchList, PlayerInfo, WaitPlayerList, FitList, MatchType)->
-    TmpFun = 
-        fun({_CurPlayerId, CurPlayerList, _CurRank, _CurNum}, {CurWaitList, CurMatchList, CurPlayerInfo})->
-            case util:is_any_element_same(WaitPlayerList, CurPlayerList) of
-                true->
-                    %%有等待的玩家没有准备，移除队列
-                    {
-                        CurWaitList,
-                        lists:keydelete(hd(CurPlayerList), 1, CurMatchList),
-                                do_remove_player_info(CurPlayerInfo, CurPlayerList)};
-                false->
-                    %%其他玩家没有准备则退回队列，继续准备
-                    {CurWaitList, CurMatchList, do_reset_player_info(CurPlayerInfo, CurPlayerList, MatchType)}
-            end           
-        end,
-    lists:foldl(TmpFun, {WaitList, MatchList, PlayerInfo}, FitList).
+% do_time_out(WaitList, MatchList, PlayerInfo, WaitPlayerList, FitList, MatchType)->
+%     TmpFun = 
+%         fun({_CurPlayerId, CurPlayerList, _CurRank, _CurNum}, {CurWaitList, CurMatchList, CurPlayerInfo})->
+%             case util:is_any_element_same(WaitPlayerList, CurPlayerList) of
+%                 true->
+%                     %%有等待的玩家没有准备，移除队列
+%                     {
+%                         CurWaitList,
+%                         lists:keydelete(hd(CurPlayerList), 1, CurMatchList),
+%                                 do_remove_player_info(CurPlayerInfo, CurPlayerList)};
+%                 false->
+%                     %%其他玩家没有准备则退回队列，继续准备
+%                     {CurWaitList, CurMatchList, do_reset_player_info(CurPlayerInfo, CurPlayerList, MatchType)}
+%             end           
+%         end,
+%     lists:foldl(TmpFun, {WaitList, MatchList, PlayerInfo}, FitList).
 
 do_cancel_match(PlayerId, MatchData)->
     #{
