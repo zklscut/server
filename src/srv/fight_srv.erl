@@ -254,6 +254,7 @@ state_duty_display(timeout, State) ->
 state_duty_display(op_over, State) ->
     lager:info("state_duty_display22222"),
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
+    send_event_inner(start),
     {next_state, state_daozei, State};
 
 state_duty_display(_IgnoreOP, State)->
