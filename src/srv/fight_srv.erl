@@ -1260,7 +1260,8 @@ state_fight_over(start, State) ->
 
     lib_fight:send_to_all_player(#m__fight__end_info__s2l{
             duty_list = DutyList,
-            die_info = [#p_die_info{} || {SeatId, DieType, GameRound, IsNight}<-DieInfo],
+            die_info = [#p_die_info{seat_id = SeatId, die_type = DieType, game_round = GameRound, is_night = IsNight} || 
+                                                    {SeatId, DieType, GameRound, IsNight}<-DieInfo],
             result_type = EndType,
         }, StateAfterWinner),
 
