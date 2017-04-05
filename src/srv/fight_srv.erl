@@ -1131,7 +1131,7 @@ state_toupiao(op_over, State) ->
                         true->
                             StateAfterNoticeDie = maps:put(day_notice_die, maps:get(day_notice_die, StateAfterBaichi) ++ [Quzhu], StateAfterBaichi),
                             notice_toupiao_out([Quzhu], StateAfterNoticeDie),
-                            StateAfterDieInfo = maps:put(die_info, maps:get(die_info) ++ [{SeatId, 
+                            StateAfterDieInfo = maps:put(die_info, maps:get(die_info) ++ [{Quzhu, 
                                 ?DIE_TYPE_BOOM, maps:get(game_round, StateAfterNoticeDie), 
                                 maps:get(is_night, StateAfterNoticeDie)}], StateAfterNoticeDie),
                             lib_fight:lover_die_judge(Quzhu, StateAfterDieInfo);
@@ -1142,7 +1142,7 @@ state_toupiao(op_over, State) ->
                     %%客户端根据通知结果判断是否平安日
                     StateAfterNoticeDie = maps:put(day_notice_die, maps:get(day_notice_die, NewState) ++ [Quzhu], NewState),
                     notice_toupiao_out([Quzhu], StateAfterNoticeDie),
-                    StateAfterDieInfo = maps:put(die_info, maps:get(die_info) ++ [{SeatId, 
+                    StateAfterDieInfo = maps:put(die_info, maps:get(die_info) ++ [{Quzhu, 
                                 ?DIE_TYPE_BOOM, maps:get(game_round, StateAfterNoticeDie), 
                                 maps:get(is_night, StateAfterNoticeDie)}], StateAfterNoticeDie),
                     lib_fight:lover_die_judge(Quzhu, StateAfterDieInfo)
