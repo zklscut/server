@@ -961,7 +961,7 @@ do_skill_inner(SeatId, ?OP_SKILL_LOVER_DIE, _, State) ->
             SkillDieListPre = maps:get(skill_die_list, StateAfterDie),
             StateAfterDieList = maps:put(skill_die_list, SkillDieListPre ++ [{?DIE_TYPE_LOVER, SeatId}] , StateAfterDie),
             StateAfterLoverKill = maps:put(lover_kill, SeatId, StateAfterDieList),
-            maps:put(die_info, maps:get(die_info) ++ [{SeatId, ?DIE_TYPE_LOVER, maps:get(game_round, StateAfterLoverKill), 
+            maps:put(die_info, maps:get(die_info, StateAfterLoverKill) ++ [{SeatId, ?DIE_TYPE_LOVER, maps:get(game_round, StateAfterLoverKill), 
                 maps:get(is_night, StateAfterLoverKill)}], StateAfterLoverKill)
     end,
     check_set_baichi_die(SeatId, StateAfterLover);
@@ -979,7 +979,7 @@ do_skill_inner(SeatId, ?OP_SKILL_LIEREN, [SelectSeat], State) ->
             StateAfterSetFlop = maps:put(flop_lieren, 1, StateAfterLieRen),
             StateAfterDieList = maps:put(skill_die_list, SkillDieListPre ++ [{?DIE_TYPE_LIEREN, SelectSeat}] , StateAfterSetFlop),
             StateAfterSetFlopList = maps:put(flop_list, maps:get(flop_list, StateAfterDieList) ++ [{SeatId, ?OP_SKILL_LIEREN}], StateAfterDieList),
-            StateAfterDieInfo = maps:put(die_info, maps:get(die_info) ++ [{SeatId, ?DIE_TYPE_LIEREN, maps:get(game_round, StateAfterSetFlopList), 
+            StateAfterDieInfo = maps:put(die_info, maps:get(die_info, StateAfterSetFlopList) ++ [{SeatId, ?DIE_TYPE_LIEREN, maps:get(game_round, StateAfterSetFlopList), 
                 maps:get(is_night, StateAfterSetFlopList)}], StateAfterSetFlopList),
             lover_die_judge(SelectSeat, StateAfterDieInfo)
     end,
@@ -997,7 +997,7 @@ do_skill_inner(SeatId, ?OP_SKILL_BAILANG, [SelectId], State) ->
             case SelectId =/= 0 of
                 true->
                     StateAfterDieList = maps:put(skill_die_list,  SkillDieListPre ++ [{?DIE_TYPE_BAILANG, SelectId}], State),
-                    StateAfterDieInfo = maps:put(die_info, maps:get(die_info) ++ [{SeatId, ?DIE_TYPE_BAILANG, maps:get(game_round, StateAfterDieList), 
+                    StateAfterDieInfo = maps:put(die_info, maps:get(die_info, StateAfterDieList) ++ [{SeatId, ?DIE_TYPE_BAILANG, maps:get(game_round, StateAfterDieList), 
                             maps:get(is_night, StateAfterDieList)}], StateAfterDieList),
                     lover_die_judge(SelectId, StateAfterDieInfo);
                 false->
@@ -1009,7 +1009,7 @@ do_skill_inner(SeatId, ?OP_SKILL_BAILANG, [SelectId], State) ->
         true->
             StateAfterBoomDieList = maps:put(skill_die_list,  [{?DIE_TYPE_BOOM, SeatId}] ++ SkillDieListPre , NewState),
             StateAfterSetFlopList = maps:put(flop_list, maps:get(flop_list, StateAfterBoomDieList) ++ [{SeatId, ?OP_SKILL_BAILANG}], StateAfterBoomDieList),
-            StateAfterDieInfoNew = maps:put(die_info, maps:get(die_info) ++ [{SeatId, ?DIE_TYPE_BOOM, maps:get(game_round, StateAfterSetFlopList), 
+            StateAfterDieInfoNew = maps:put(die_info, maps:get(die_info, StateAfterSetFlopList) ++ [{SeatId, ?DIE_TYPE_BOOM, maps:get(game_round, StateAfterSetFlopList), 
                             maps:get(is_night, StateAfterSetFlopList)}], StateAfterSetFlopList),
             lover_die_judge(SeatId, StateAfterDieInfoNew);
         false->
@@ -1026,7 +1026,7 @@ do_skill_inner(SeatId, ?OP_SKILL_LANGREN, _, State) ->
     StateAfterDie = maps:put(die, maps:get(die, StateAfterNoticeDie) ++ [SeatId], StateAfterNoticeDie),
     StateAfterBoom = maps:put(langren_boom, 1, StateAfterDie),
     StateAfterSetFlopList = maps:put(flop_list, maps:get(flop_list, StateAfterBoom) ++ [{SeatId, ?OP_SKILL_LANGREN}], StateAfterBoom),
-    StateAfterDieInfo = maps:put(die_info, maps:get(die_info) ++ [{SeatId, ?DIE_TYPE_BOOM, maps:get(game_round, StateAfterSetFlopList), 
+    StateAfterDieInfo = maps:put(die_info, maps:get(die_info, StateAfterSetFlopList) ++ [{SeatId, ?DIE_TYPE_BOOM, maps:get(game_round, StateAfterSetFlopList), 
                             maps:get(is_night, StateAfterSetFlopList)}], StateAfterSetFlopList),
     lover_die_judge(SeatId, StateAfterDieInfo);
 
