@@ -527,8 +527,12 @@ state_shouwei(op_over, State) ->
         end,
     StateAfterClearOpData = lib_fight:clear_last_op(StateAfterLangren),   
     send_event_inner(start),
-    % {next_state, get_next_game_state(state_shouwei), lib_fight:do_set_die_list(StateAfterClearOpData)};
-    {next_state, get_next_game_state(state_shouwei), StateAfterClearOpData};
+    case lib_fight:is_duty_exist(?DUTY_NVWU, StateAfterLangren) of
+        false->
+            {next_state, get_next_game_state(state_shouwei), lib_fight:do_set_die_list(StateAfterClearOpData)};
+        _->
+            {next_state, get_next_game_state(state_shouwei), StateAfterClearOpData}
+    end;
 
 state_shouwei(_IgnoreOP, State)->
     {next_state, state_shouwei, State}.
