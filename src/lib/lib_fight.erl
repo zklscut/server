@@ -1418,7 +1418,7 @@ do_set_die_list(State) ->
                 NvwuSelect->
                     CurDieInfo ++ [{CurSeatId, ?DIE_TYPE_NVWU, GameRound, IsNight}];
                 _->
-                    CurDieInfo ++ [{CurSeatId, ?DIE_TYPE_LOVER, GameRound, IsNight}];
+                    CurDieInfo ++ [{CurSeatId, ?DIE_TYPE_LOVER, GameRound, IsNight}]
         end,
     DieInfoNew = lists:foldl(FuncDieInfo, DieInfo, DieAfterLover),
     StateAfterDieInfo = maps:put(die_info, DieInfoNew, StateAfterBaichi),
