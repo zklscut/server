@@ -88,6 +88,12 @@
 -define(DIE_TYPE_LIEREN, 6).
 -define(DIE_TYPE_LOVER, 7).
 
+-define(FIGHT_END_TYPE_LANGREN_DIE_ALL, 1). %%狼人死光
+-define(FIGHT_END_TYPE_LANGREN_NUM_BIG, 2). %%狼人数量大于好人
+-define(FIGHT_END_TYPE_THIRD_PART, 3). %%第三方胜利
+-define(FIGHT_END_TYPE_PINGMIN_DIE_ALL, 4). %%平民死光
+-define(FIGHT_END_TYPE_SHENMIN_DIE_ALL, 5). %%神民死光
+
 -define(FIGHT_MODE_NORMAL, 0).%%正常模式
 -define(FIGHT_MODE_SIMPLE, 1).%%简单模式
 
@@ -98,7 +104,7 @@
                   room_name => "",%%房间名称
                   normal_exit => 0,%%是非正常退出(1:正常退出)
                   duty_list => [],%%职责列表
-                  die_info => [], %%死亡信息{}
+                  die_info => [], %%死亡信息{seatid,skillop,game_round,isnight}
                   rand_duty_list => [], %%随机职责列表
                   seat_rnd_info => #{},  %%座位随机列表
                   duty_select_over => 0, %%选择身份是否结束
@@ -116,7 +122,7 @@
                   wait_op_attack_data => [], %%操作附近数据
                   status => 0,           %% 当前游戏状态
                   game_state =>  0,      %% 第几天晚上
-                  game_round =>  0,      %% 第几轮
+                  game_round =>  1,      %% 第几轮
                   lover => [],           %% 情侣
                   lover_kill => 0,        %% 被链子弄死的玩家
                   shouwei => 0,          %% 守卫的id

@@ -86,6 +86,9 @@ get_p_resource_list(Player) ->
 get_init_num(?RESOURCE_LV) ->
     1;
 
+get_init_num(?RESOURCE_RANK_SCORE) ->
+    1200;
+
 get_init_num(_)->
     0.
 
