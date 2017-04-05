@@ -1028,7 +1028,7 @@ do_skill_inner(SeatId, ?OP_SKILL_LANGREN, _, State) ->
     StateAfterSetFlopList = maps:put(flop_list, maps:get(flop_list, StateAfterBoom) ++ [{SeatId, ?OP_SKILL_LANGREN}], StateAfterBoom),
     StateAfterDieInfo = maps:put(die_info, maps:get(die_info) ++ [{SeatId, ?DIE_TYPE_BOOM, maps:get(game_round, StateAfterSetFlopList), 
                             maps:get(is_night, StateAfterSetFlopList)}], StateAfterSetFlopList),
-    lover_die_judge(SeatId, StateAfterSetFlopList);
+    lover_die_judge(SeatId, StateAfterDieInfo);
 
 do_skill_inner(_SeatId, ?OP_SKILL_CHANGE_JINGZHANG, [SelectId], State) ->
     maps:put(jingzhang, SelectId, State);
