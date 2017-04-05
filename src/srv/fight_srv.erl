@@ -2446,9 +2446,9 @@ fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, Stat
                 CurRank = mod_resource:get_num(?RESOURCE_RANK_SCORE, PlayerId),
                 case lists:member(ResultSeatId, Winner) of
                     true->
-                        CurRank - lib_match:compute_rank(win, CurRank, AverageRank);
+                        lib_match:compute_rank(win, CurRank, AverageRank) - CurRank;
                     _->
-                        CurRank - lib_match:compute_rank(lose, CurRank, AverageRank)
+                        lib_match:compute_rank(lose, CurRank, AverageRank) - CurRank
                 end;
             _->
                 0
