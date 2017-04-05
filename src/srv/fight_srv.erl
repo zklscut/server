@@ -2305,19 +2305,7 @@ get_fight_result(State) ->
                 ignore
         end,
 
-        case LangrenAlive of
-            [] ->
-                LangRenQiubite = lib_fight:get_langren_qiubite_seat(State),
-                ThirdPartQiubite = lib_fight:get_third_part_qiubite_seat(State),
-                LangRenHunxuer = lib_fight:get_langren_hunxuer_seat(State),
-                LWinner1 = AllSeat -- AllLangren,
-                LWinner2 = LWinner1 -- LangRenQiubite,
-                LWinner3 = LWinner2 -- ThirdPartQiubite,
-                LWinner4 = LWinner3 -- LangRenHunxuer,
-                throw({true, LWinner4, 0, ?FIGHT_END_TYPE_LANGREN_DIE_ALL});
-            _ ->
-                ignore
-        end,
+        
 
         case lib_fight:is_third_part_win(State) of
             true->
@@ -2336,6 +2324,7 @@ get_fight_result(State) ->
             _ ->
                 ignore
         end,
+        
         case PingMinAlive of
             [] ->
                 LangrenQiubite1 = lib_fight:get_langren_qiubite_seat(State),
@@ -2343,6 +2332,20 @@ get_fight_result(State) ->
                 PWinner1 = AllLangren ++ LangrenQiubite1,
                 PWinner2 = PWinner1 ++ LangRenHunxuer2,
                 throw({true, PWinner2, 1, ?FIGHT_END_TYPE_PINGMIN_DIE_ALL});
+            _ ->
+                ignore
+        end,
+
+        case LangrenAlive of
+            [] ->
+                LangRenQiubite = lib_fight:get_langren_qiubite_seat(State),
+                ThirdPartQiubite = lib_fight:get_third_part_qiubite_seat(State),
+                LangRenHunxuer = lib_fight:get_langren_hunxuer_seat(State),
+                LWinner1 = AllSeat -- AllLangren,
+                LWinner2 = LWinner1 -- LangRenQiubite,
+                LWinner3 = LWinner2 -- ThirdPartQiubite,
+                LWinner4 = LWinner3 -- LangRenHunxuer,
+                throw({true, LWinner4, 0, ?FIGHT_END_TYPE_LANGREN_DIE_ALL});
             _ ->
                 ignore
         end,
