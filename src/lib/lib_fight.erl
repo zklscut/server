@@ -1411,7 +1411,7 @@ do_set_die_list(State) ->
     GameRound = maps:get(game_round, StateAfterBaichi),
     IsNight = maps:get(is_night, StateAfterBaichi),
     FuncDieInfo =
-        fun(CurSeatId, CurDieInfo) ->
+        fun(CurSeatId, CurDieInfo)->
             case CurSeatId of
                 LangrenKill->
                     CurDieInfo ++ [{CurSeatId, ?DIE_TYPE_LANGRNE, GameRound, IsNight}];
@@ -1419,6 +1419,7 @@ do_set_die_list(State) ->
                     CurDieInfo ++ [{CurSeatId, ?DIE_TYPE_NVWU, GameRound, IsNight}];
                 _->
                     CurDieInfo ++ [{CurSeatId, ?DIE_TYPE_LOVER, GameRound, IsNight}]
+            end
         end,
     DieInfoNew = lists:foldl(FuncDieInfo, DieInfo, DieAfterLover),
     StateAfterDieInfo = maps:put(die_info, DieInfoNew, StateAfterBaichi),
