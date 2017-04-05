@@ -98,6 +98,7 @@
                   room_name => "",%%房间名称
                   normal_exit => 0,%%是非正常退出(1:正常退出)
                   duty_list => [],%%职责列表
+                  die_info => [], %%死亡信息{}
                   rand_duty_list => [], %%随机职责列表
                   seat_rnd_info => #{},  %%座位随机列表
                   duty_select_over => 0, %%选择身份是否结束

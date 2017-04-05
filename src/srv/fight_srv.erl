@@ -161,6 +161,10 @@ init([RoomId, PlayerList, DutyList, Name, State]) ->
     notice_duty(NewState, 0),
     notice_game_status_change(start, NewState),
     send_event_inner(start),
+    % NextState = 
+    %     case maps:get(fight_mod, NewState) of
+    %         case 0->
+
     {ok, state_select_card, NewState}.
 
 state_select_card(start, State)->
@@ -1232,6 +1236,7 @@ state_fight_over(start, State) ->
                         duty_id = DutyId,
                         player_id = lib_fight:get_player_id_by_seat(SeatId, NewState)} || 
                         {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, NewState))], 
+
     %%todo:通知战斗信息
     %%send_fight_result(Winner, VictoryParty, NewState),
 
@@ -2493,7 +2498,6 @@ fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, Stat
                 PlayerId).
 
 send_fight_result(Winner, VictoryParty, State) ->
-    lager:info("send_fight_result:~p", [{maps:get(mvp, State), maps:get(carry, State)}]),
     DutyList = [#p_duty{seat_id = SeatId,
                         duty_id = DutyId,
                         player_id = lib_fight:get_player_id_by_seat(SeatId, State)} || 
