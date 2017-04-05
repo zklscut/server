@@ -1262,7 +1262,7 @@ state_fight_over(start, State) ->
             duty_list = DutyList,
             die_info = [#p_die_info{seat_id = SeatId, die_type = DieType, game_round = GameRound, is_night = IsNight} || 
                                                     {SeatId, DieType, GameRound, IsNight}<-DieInfo],
-            result_type = EndType,
+            result_type = EndType
         }, StateAfterWinner),
 
     NextState =
