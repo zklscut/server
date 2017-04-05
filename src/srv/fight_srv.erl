@@ -527,7 +527,8 @@ state_shouwei(op_over, State) ->
         end,
     StateAfterClearOpData = lib_fight:clear_last_op(StateAfterLangren),   
     send_event_inner(start),
-    {next_state, get_next_game_state(state_shouwei), lib_fight:do_set_die_list(StateAfterClearOpData)};
+    % {next_state, get_next_game_state(state_shouwei), lib_fight:do_set_die_list(StateAfterClearOpData)};
+    {next_state, get_next_game_state(state_shouwei), StateAfterClearOpData};
 
 state_shouwei(_IgnoreOP, State)->
     {next_state, state_shouwei, State}.
@@ -628,9 +629,10 @@ state_nvwu(_IgnoreOP, State)->
 state_day(start, State) ->
     % lib_room:update_room_status(maps:get(room_id, State), 1, maps:get(game_round, State), 1, 1),
     NewState = maps:put(is_night, 0, State),
-    notice_game_status_change(state_day, NewState),
+    StateAfterGameRound = maps:put(game_round, maps:get(game_round, NewState) + 1, NewState),
+    notice_game_status_change(state_day, StateAfterGameRound),
     send_event_inner(over, b_fight_state_wait:get(state_day)),
-    {next_state, state_day, NewState};
+    {next_state, state_day, StateAfterGameRound};
 
 state_day(over, State)->
     NextState = 
@@ -660,7 +662,7 @@ state_day(_IgnoreOP, State)->
 state_part_jingzhang(start, State) ->
     GameRound = maps:get(game_round, State),
     case GameRound of
-        1 ->
+        2 ->
             case ?TEST of
                 true ->
                     fight_test(state_part_jingzhang, State);
@@ -669,7 +671,7 @@ state_part_jingzhang(start, State) ->
                     send_event_inner(wait_op, b_fight_state_wait:get(state_part_jingzhang)),
                     {next_state, state_part_jingzhang, State}
             end;
-        2 ->
+        3 ->
             %%如果狼人自爆中断选举过程,第二天可以再次竞选警长,但是参与者按照第一天的算
             DoPoliceSelect = maps:get(do_police_select, State),
             case DoPoliceSelect of
@@ -934,7 +936,8 @@ state_someone_die(_IgnoreOP, State)->
 state_night_death_fayan(start, State) ->
     DieList = maps:get(die, State),
     case maps:get(game_round, State) of
-        1 ->
+        2 ->
+            %%第一天晚上被杀死的才有遗言
             do_fayan_state_start(lists:sort(DieList), state_night_death_fayan, State);
         _ ->
             send_event_inner(start),
@@ -1113,7 +1116,7 @@ state_toupiao(op_over, State) ->
     {IsDraw, TouPiaoResult, MaxSelectList, NewState} = lib_fight:do_toupiao_op(State),
     Quzhu = maps:get(quzhu, NewState),
     notice_state_toupiao_result(IsDraw, Quzhu, TouPiaoResult, MaxSelectList, NewState),
-    case IsDraw andalso lib_fight:is_twice_toupiao(NewState) of
+    case IsDraw of
         true ->
             send_event_inner(start, b_fight_state_over_wait:get(state_toupiao)),
             {next_state, state_fayan, maps:put(fayan_turn, MaxSelectList, NewState)};
@@ -1128,7 +1131,10 @@ state_toupiao(op_over, State) ->
                         true->
                             StateAfterNoticeDie = maps:put(day_notice_die, maps:get(day_notice_die, StateAfterBaichi) ++ [Quzhu], StateAfterBaichi),
                             notice_toupiao_out([Quzhu], StateAfterNoticeDie),
-                            lib_fight:lover_die_judge(Quzhu, StateAfterNoticeDie);
+                            StateAfterDieInfo = maps:put(die_info, maps:get(die_info) ++ [{SeatId, 
+                                ?DIE_TYPE_BOOM, maps:get(game_round, StateAfterNoticeDie), 
+                                maps:get(is_night, StateAfterNoticeDie)}], StateAfterNoticeDie),
+                            lib_fight:lover_die_judge(Quzhu, StateAfterDieInfo);
                         false->
                             StateAfterBaichi
                     end;
@@ -1136,7 +1142,10 @@ state_toupiao(op_over, State) ->
                     %%客户端根据通知结果判断是否平安日
                     StateAfterNoticeDie = maps:put(day_notice_die, maps:get(day_notice_die, NewState) ++ [Quzhu], NewState),
                     notice_toupiao_out([Quzhu], StateAfterNoticeDie),
-                    lib_fight:lover_die_judge(Quzhu, StateAfterNoticeDie)
+                    StateAfterDieInfo = maps:put(die_info, maps:get(die_info) ++ [{SeatId, 
+                                ?DIE_TYPE_BOOM, maps:get(game_round, StateAfterNoticeDie), 
+                                maps:get(is_night, StateAfterNoticeDie)}], StateAfterNoticeDie),
+                    lib_fight:lover_die_judge(Quzhu, StateAfterDieInfo)
             end,
 
             send_event_inner(wait_over, b_fight_state_over_wait:get(state_toupiao)),
@@ -1231,7 +1240,7 @@ state_night(_IgnoreOP, State)->
 %% ====================================================================
 state_fight_over(start, State) ->
     NewState = out_die_player(State),
-    {_, Winner, _VictoryParty} = get_fight_result(NewState),
+    {_, Winner, _VictoryParty, EndType} = get_fight_result(NewState),
     DutyList = [#p_duty{seat_id = SeatId,
                         duty_id = DutyId,
                         player_id = lib_fight:get_player_id_by_seat(SeatId, NewState)} || 
@@ -1247,6 +1256,14 @@ state_fight_over(start, State) ->
     StateAfterCarry = maps:put(carry_party, lib_fight:get_all_seat(StateAfterMvp) -- Winner, StateAfterMvp),
     StateAfterFayanTurn = maps:put(fayan_turn, lib_fight:get_all_seat(StateAfterCarry), StateAfterCarry),
     StateAfterWinner = maps:put(winner, Winner, StateAfterFayanTurn),
+    DieInfo = maps:get(die_info, StateAfterWinner),
+
+    lib_fight:send_to_all_player(#m__fight__end_info__s2l{
+            duty_list = DutyList,
+            die_info = [#p_die_info{} || {SeatId, DieType, GameRound, IsNight}<-DieInfo],
+            result_type = EndType,
+        }, StateAfterWinner),
+
     NextState =
     case lib_fight:is_need_mvp(StateAfterWinner) of
         true->
@@ -1437,7 +1454,7 @@ state_toupiao_carry(_IgnoreOP, State)->
 state_game_over(start, State) ->
     lager:info("state_game_over1111111111111111"),
     NewState = out_die_player(State),
-    {_, Winner, VictoryParty} = get_fight_result(NewState),
+    {_, Winner, VictoryParty, _EndType} = get_fight_result(NewState),
     send_fight_result(Winner, VictoryParty, NewState),
     send_event_inner(start, b_fight_state_wait:get(state_fight_over)),
     {next_state, state_over, NewState};
@@ -2268,17 +2285,17 @@ get_fight_result(State) ->
             ?FIGHT_MODE_SIMPLE->
                 case LangrenAlive of
                     []->
-                        throw({true, AllSeat -- AllLangren, 0});
+                        throw({true, AllSeat -- AllLangren, 0, ?FIGHT_END_TYPE_LANGREN_DIE_ALL});
                     _->
                         ignore
                 end,
                 case length(LangrenAlive) > length(ShenMinAlive ++ PingMinAlive) of
                     true->
-                        throw({true, AllLangren, 1});
+                        throw({true, AllLangren, 1, ?FIGHT_END_TYPE_LANGREN_NUM_BIG});
                     _->
                         ignore
                 end,
-                throw({false, [], 0});
+                throw({false, [], 0, 0});
             _->
                 ignore
         end,
@@ -2292,14 +2309,14 @@ get_fight_result(State) ->
                 LWinner2 = LWinner1 -- LangRenQiubite,
                 LWinner3 = LWinner2 -- ThirdPartQiubite,
                 LWinner4 = LWinner3 -- LangRenHunxuer,
-                throw({true, LWinner4, 0});
+                throw({true, LWinner4, 0, ?FIGHT_END_TYPE_LANGREN_DIE_ALL});
             _ ->
                 ignore
         end,
 
         case lib_fight:is_third_part_win(State) of
             true->
-                throw({true, lib_fight:get_third_part_seat(State), 2});    
+                throw({true, lib_fight:get_third_part_seat(State), 2, ?FIGHT_END_TYPE_THIRD_PART});    
             _->
                 ignore
         end, 
@@ -2310,7 +2327,7 @@ get_fight_result(State) ->
                 LangRenHunxuer1 = lib_fight:get_langren_hunxuer_seat(State),
                 SWinner1 = AllLangren ++ LangrenQiubite,
                 SWinner2 = SWinner1 ++ LangRenHunxuer1,
-                throw({true, SWinner2, 1});
+                throw({true, SWinner2, 1, ?FIGHT_END_TYPE_SHENMIN_DIE_ALL});
             _ ->
                 ignore
         end,
@@ -2320,7 +2337,7 @@ get_fight_result(State) ->
                 LangRenHunxuer2 = lib_fight:get_langren_hunxuer_seat(State),
                 PWinner1 = AllLangren ++ LangrenQiubite1,
                 PWinner2 = PWinner1 ++ LangRenHunxuer2,
-                throw({true, PWinner2, 1});
+                throw({true, PWinner2, 1, ?FIGHT_END_TYPE_PINGMIN_DIE_ALL});
             _ ->
                 ignore
         end,
@@ -2351,7 +2368,7 @@ clear_night_op(State) ->
            die => [],            %% 死亡玩家
            quzhu => 0,           %% 驱逐的玩家
            last_op_data => #{},  %% 上一轮操作的数据, 杀了几号, 投了几号等等}.
-           game_round => maps:get(game_round, State) + 1,
+           % game_round => maps:get(game_round, State) + 1,
            jingzhang => NewJingZhang,
            lieren_kill => 0,
            lover_kill => 0,
@@ -2526,7 +2543,7 @@ notice_stop_fayan(SeatId, State) ->
 
 is_over(State) ->
     NewState = out_die_player(State),
-    {IsOver, _Winner, _VictoryParty} = get_fight_result(NewState),
+    {IsOver, _Winner, _VictoryParty, _EndType} = get_fight_result(NewState),
     IsOver.
 
 get_online_attach_data(_SeatId, ?DUTY_YUYANJIA, State) ->
