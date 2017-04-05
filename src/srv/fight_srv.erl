@@ -47,6 +47,7 @@
 -include("game_pb.hrl").
 -include("function.hrl").
 -include("resource.hrl").
+-include("log.hrl").
 -define(TEST, false).
 
 %% ====================================================================
@@ -2460,10 +2461,10 @@ fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, Stat
             case RankChange > 0 of
                 true->
                     lager:info("RankChange2"),
-                    mod_player:handle_increase(?RESOURCE_RANK_SCORE, RankChange, undefined, PlayerId);
+                    mod_player:handle_increase(?RESOURCE_RANK_SCORE, RankChange, ?LOG_ACTION_FIGHT, PlayerId);
                 false->
                     lager:info("RankChange3"),
-                    mod_player:handle_decrease(?RESOURCE_RANK_SCORE, RankChange, undefined, PlayerId)
+                    mod_player:handle_decrease(?RESOURCE_RANK_SCORE, RankChange, ?LOG_ACTION_FIGHT, PlayerId)
             end;
         _->
             lager:info("RankChange4"),
