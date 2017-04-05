@@ -164,7 +164,13 @@ change_sex(#m__player__change_sex__l2s{sex = Sex}, Player) ->
       _->
         {ok, Player}
     end.  
-            
+
+invite_friends(#m__player__invite_friends__l2s{room_id=RoomId, player_list=PlayerList}, Player)->
+    Send = #m__player__friend_invite__s2l{room_id=RoomId, player_info=lib_player:get_player_show_base(Player)},
+    [net_send:send(Send, PlayerId) || PlayerId<-PlayerList],
+    net_send:send(#m__player__invite_friends__s2l{}, Player),
+    {ok, Player}.
+
 %%%====================================================================
 %%% Internal functions
 %%%====================================================================
@@ -322,6 +328,6 @@ get_send_player_info(Player, OtherPlayer) ->
                           resource_list = mod_resource:get_p_resource_list(Player),
                           win_rate_list = get_p_fight_rate_list(Player)}.
     
-is_change_name_legal(Name) ->
-    Sql = db:make_select_sql(player, ["count(*)"], ["nick_name"], ["="], [Name]),
-    db:get_one(Sql) == 0.
+% is_change_name_legal(Name) ->
+%     Sql = db:make_select_sql(player, ["count(*)"], ["nick_name"], ["="], [Name]),
+%     db:get_one(Sql) == 0.

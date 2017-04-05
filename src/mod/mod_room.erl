@@ -44,8 +44,6 @@ get_list(#m__room__get_list__l2s{}, Player) ->
     net_send:send(Return, Player),
     {ok, Player}.
 
-
-
 enter_room(#m__room__enter_room__l2s{room_id = RoomId}, Player) ->
     lib_room:assert_not_have_room(Player),
     lib_room:assert_room_exist(RoomId),
@@ -85,7 +83,7 @@ create_room(#m__room__create_room__l2s{max_player_num = MaxPlayerNum,
                                        room_name = RoomName,
                                        duty_list = DutyList}, Player) ->
     lib_room:assert_not_have_room(Player),
-    room_srv:create_room(MaxPlayerNum, RoomName, DutyList, false, Player),
+    room_srv:create_room(MaxPlayerNum, "freeroom", DutyList, false, Player),
     {ok, Player}.
 
 handle_create_room(Room, Player) ->

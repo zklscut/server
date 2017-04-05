@@ -225,7 +225,6 @@ state_select_card(timeout, State)->
 state_select_card(op_over, State)->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     send_event_inner(start),
-    notice_duty(State, 1),
     NewState = maps:put(duty_select_over, 1, State),
     {next_state, state_duty_display, NewState};
 
@@ -246,13 +245,11 @@ state_duty_display(wait_op, State) ->
     {next_state, state_duty_display, StateAfterWait}; 
 
 state_duty_display(timeout, State) ->
-    lager:info("state_duty_display111111"),
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     send_event_inner(op_over),
     {next_state, state_duty_display, State};
 
 state_duty_display(op_over, State) ->
-    lager:info("state_duty_display22222"),
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     send_event_inner(start),
     {next_state, state_daozei, State};
