@@ -2457,17 +2457,8 @@ fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, Stat
     
     case RankChange =/= 0 of
         true->
-            lager:info("RankChange1"),
-            case RankChange > 0 of
-                true->
-                    lager:info("RankChange2"),
-                    mod_player:handle_increase(?RESOURCE_RANK_SCORE, RankChange, ?LOG_ACTION_FIGHT, PlayerId);
-                false->
-                    lager:info("RankChange3"),
-                    mod_player:handle_decrease(?RESOURCE_RANK_SCORE, RankChange, ?LOG_ACTION_FIGHT, PlayerId)
-            end;
+            mod_player:handle_increase(?RESOURCE_RANK_SCORE, RankChange, ?LOG_ACTION_FIGHT, PlayerId);
         _->
-            lager:info("RankChange4"),
             ignore
     end,
 
