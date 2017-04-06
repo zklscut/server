@@ -634,7 +634,7 @@ state_day(start, State) ->
     % lib_room:update_room_status(maps:get(room_id, State), 1, maps:get(game_round, State), 1, 1),
     NewState = maps:put(is_night, 0, State),
     StateAfterGameRound = maps:put(game_round, maps:get(game_round, NewState) + 1, NewState),
-    notice_game_status_change(state_day, StateAfterGameRound),
+    notice_game_status_change(state_day, [maps:get(game_round, StateAfterGameRound)], StateAfterGameRound),
     send_event_inner(over, b_fight_state_wait:get(state_day)),
     {next_state, state_day, StateAfterGameRound};
 
