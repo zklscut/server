@@ -527,8 +527,8 @@ state_shouwei(op_over, State) ->
         end,
     StateAfterClearOpData = lib_fight:clear_last_op(StateAfterLangren),   
     send_event_inner(start),
-    case lib_fight:is_duty_exist(?DUTY_NVWU, StateAfterLangren) of
-        false->
+    case lib_fight:get_duty_seat(?DUTY_NVWU, StateAfterLangren) of
+        []->
             {next_state, get_next_game_state(state_shouwei), lib_fight:do_set_die_list(StateAfterClearOpData)};
         _->
             {next_state, get_next_game_state(state_shouwei), StateAfterClearOpData}
