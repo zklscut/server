@@ -257,7 +257,7 @@ state_duty_display(timeout, State) ->
 state_duty_display(op_over, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     send_event_inner(start),
-    {next_state, state_daozei, State};
+    {next_state, state_night, State};
 
 state_duty_display(_IgnoreOP, State)->
     {next_state, state_duty_display, State}.
