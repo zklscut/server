@@ -24,6 +24,9 @@ get(12017) -> {m__player__upload_head_img_name__l2s, mod_player, upload_head_img
 get(12018) -> {m__player__upload_head_img_name__s2l, mod_player, upload_head_img_name}; 
 get(12019) -> {m__player__get_head_img_name__l2s, mod_player, get_head_img_name}; 
 get(12020) -> {m__player__get_head_img_name__s2l, mod_player, get_head_img_name}; 
+get(12021) -> {m__player__invite_friends__l2s, mod_player, invite_friends}; 
+get(12022) -> {m__player__invite_friends__s2l, mod_player, invite_friends}; 
+get(12023) -> {m__player__friend_invite__s2l, mod_player, friend_invite}; 
 get(13001) -> {m__room__get_list__l2s, mod_room, get_list}; 
 get(13002) -> {m__room__get_list__s2l, mod_room, get_list}; 
 get(13003) -> {m__room__enter_room__l2s, mod_room, enter_room}; 
@@ -96,6 +99,7 @@ get(15034) -> {m__fight__dync_langren_op_data__s2l, mod_fight, dync_langren_op_d
 get(15035) -> {m__fight__langren_op__s2l, mod_fight, langren_op}; 
 get(15036) -> {m__fight__nvwu_op__s2l, mod_fight, nvwu_op}; 
 get(15038) -> {m__fight__daozei_op__s2l, mod_fight, daozei_op}; 
+get(15039) -> {m__fight__end_info__s2l, mod_fight, end_info}; 
 get(16001) -> {m__resource__push__s2l, mod_resource, push}; 
 get(17001) -> {m__match__start_match__l2s, mod_match, start_match}; 
 get(17002) -> {m__match__end_match__l2s, mod_match, end_match}; 
