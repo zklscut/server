@@ -182,7 +182,7 @@ handle_info({tcp, _Port, TcpData}, State) ->
                     true ->
                         do_recevie_over(TcpData, State);
                     false ->
-                        State#{is_buff_data := true,
+                        State#{is_buff_data := 1,
                                buff_data_length := ReceiveBuffLength,
                                buff_total_length := Len,
                                buff_data := TcpData}
@@ -231,7 +231,7 @@ code_change(_OldVsn, State, _Extra) ->
 %% ====================================================================
 
 active_socket_inner(Socket) ->
-    ActiveResult = inet:setopts(Socket, [{active, once}]),
+    ActiveResult = inet:setopts(Socket, [{active, once}, {packet_size, 0}]),
     % lager:info("active result ~p", [ActiveResult]),
     ActiveResult.
 
@@ -260,7 +260,7 @@ do_proto(ProtoId, ProtoData, State) ->
     end.
 
 do_recevie_over(Data, State) ->
-    <<_PreData:24, _Len:16, ProtoId:16, ProtoData/binary>>} = TcpData,
+    <<_PreData:24, _Len:16, ProtoId:16, ProtoData/binary>> = Data,
     {Op, NewState} = do_proto(ProtoId, ProtoData, State),
     do_cache_op(Op, NewState),
     NewState#{is_buff_data => 0,
