@@ -176,7 +176,7 @@ handle_info({tcp, _Port, TcpData}, State) ->
                                buff_data := NewBuffData}
                 end;
             0 ->
-                <<_PreData:24, Len:16, _ProtoId:16, ProtoData/binary>>} = TcpData,
+                <<_PreData:24, Len:16, _ProtoId:16, ProtoData/binary>> = TcpData,
                 ReceiveBuffLength = erlang:byte_size(ProtoData),
                 case ReceiveBuffLength >= Len of
                     true ->
