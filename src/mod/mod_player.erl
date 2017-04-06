@@ -26,7 +26,8 @@
          get_extra_exp/4,
          get_fight_exp/3,
          upload_head_img_name/2,
-         get_head_img_name/2
+         get_head_img_name/2,
+         invite_friends/2
          ]).
 
 -include("game_pb.hrl").
