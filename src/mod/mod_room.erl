@@ -48,7 +48,7 @@ enter_room(#m__room__enter_room__l2s{room_id = RoomId}, Player) ->
     lib_room:assert_not_have_room(Player),
     lib_room:assert_room_exist(RoomId),
     Room = lib_room:get_room(RoomId),
-    lib_room:assert_room_not_full(),
+    lib_room:assert_room_not_full(Room),
     % case lib_room:is_room_full(Room) of
     %     true->
     %         send_to_player(#m__room__enter_fail__s2l{}, Player);
