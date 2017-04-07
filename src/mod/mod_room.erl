@@ -53,7 +53,7 @@ enter_room(#m__room__enter_room__l2s{room_id = RoomId}, Player) ->
     %     true->
     %         send_to_player(#m__room__enter_fail__s2l{}, Player);
     %     _->
-    room_srv:enter_room(RoomId, Player)
+    room_srv:enter_room(RoomId, Player),
     % end,
     {ok, Player}.
 
