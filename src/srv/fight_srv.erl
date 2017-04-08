@@ -1136,7 +1136,7 @@ state_toupiao(op_over, State) ->
                             StateAfterNoticeDie = maps:put(day_notice_die, maps:get(day_notice_die, StateAfterBaichi) ++ [Quzhu], StateAfterBaichi),
                             notice_toupiao_out([Quzhu], StateAfterNoticeDie),
                             StateAfterDieInfo = maps:put(die_info, maps:get(die_info, StateAfterNoticeDie) ++ [{Quzhu, 
-                                ?DIE_TYPE_BOOM, maps:get(game_round, StateAfterNoticeDie), 
+                                ?DIE_TYPE_QUZHU, maps:get(game_round, StateAfterNoticeDie), 
                                 maps:get(is_night, StateAfterNoticeDie)}], StateAfterNoticeDie),
                             lib_fight:lover_die_judge(Quzhu, StateAfterDieInfo);
                         false->
@@ -1147,7 +1147,7 @@ state_toupiao(op_over, State) ->
                     StateAfterNoticeDie = maps:put(day_notice_die, maps:get(day_notice_die, NewState) ++ [Quzhu], NewState),
                     notice_toupiao_out([Quzhu], StateAfterNoticeDie),
                     StateAfterDieInfo = maps:put(die_info, maps:get(die_info, StateAfterNoticeDie) ++ [{Quzhu, 
-                                ?DIE_TYPE_BOOM, maps:get(game_round, StateAfterNoticeDie), 
+                                ?DIE_TYPE_QUZHU, maps:get(game_round, StateAfterNoticeDie), 
                                 maps:get(is_night, StateAfterNoticeDie)}], StateAfterNoticeDie),
                     lib_fight:lover_die_judge(Quzhu, StateAfterDieInfo)
             end,
