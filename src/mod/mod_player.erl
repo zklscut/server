@@ -85,8 +85,9 @@ upload_head_img_name(#m__player__upload_head_img_name__l2s{head_img_name = HeadI
 
 get_head_img_name(#m__player__get_head_img_name__l2s{player_id = PlayerId}, Player)->
   TargetPlayer = lib_player:get_player(PlayerId),
+  Data = maps:get(data, TargetPlayer),
   Send = #m__player__get_head_img_name__s2l{player_id = PlayerId, 
-            head_img_name = maps:get(head_img_name, TargetPlayer, "")
+            head_img_name = maps:get(head_img_name, Data, "")
           },
   net_send:send(Send, Player),
   {ok, Player}.
