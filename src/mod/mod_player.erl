@@ -77,9 +77,10 @@ get_head(#m__player__get_head__l2s{player_id = PlayerId}, Player)->
   {ok, Player}.
 
 upload_head_img_name(#m__player__upload_head_img_name__l2s{head_img_name = HeadImgName}, Player)->
-  NewPlayer = maps:put(head_img_name, HeadImgName, Player),
-  net_send:send(#m__player__upload_head_img_name__s2l{}, NewPlayer),
-  {save, NewPlayer}.
+  Data = maps:get(data, Player),
+  NewData = maps:put(head_img_name, HeadImgName, Data),
+  net_send:send(#m__player__upload_head_img_name__s2l{}, Player),
+  {save, maps:put(data, NewData, Player)}.
 
 
 get_head_img_name(#m__player__get_head_img_name__l2s{player_id = PlayerId}, Player)->
@@ -160,8 +161,10 @@ change_name(#m__player__change_name__l2s{name = Name}, Player) ->
 change_sex(#m__player__change_sex__l2s{sex = Sex}, Player) ->
     case Sex == 1 orelse Sex == 2 of
       true->
-        net_send:send(#m__player__change_sex__s2l{sex = Sex}, Player),
-        {save, maps:put(sex, Sex, Player)};
+        Data = maps:get(data, Player),
+        NewData = maps:put(sex, Sex, Data),
+        net_send:send(#m__player__upload_head_img_name__s2l{}, Player),
+        {save, maps:put(data, NewData, Player)}.
       _->
         {ok, Player}
     end.  
@@ -318,13 +321,14 @@ get_p_fight_rate_list(Player) ->
     lists:map(FunConver, maps:keys(WinRateList)).
 
 get_send_player_info(Player, OtherPlayer) ->
+    Data = maps:get(data, Player),
     #m__player__info__s2l{player_id = lib_player:get_player_id(Player),
                           nick_name = maps:get(nick_name, Player),
                           grade = 0,
                           month_vip = 0,
                           equip = 0,
-                          sex = maps:get(sex, Player, 0),
-                          head_img_name = maps:get(head_img_name, Player, ""),
+                          sex = maps:get(sex, Data, 0),
+                          head_img_name = maps:get(head_img_name, Data, ""),
                           other_player = OtherPlayer,
                           resource_list = mod_resource:get_p_resource_list(Player),
                           win_rate_list = get_p_fight_rate_list(Player)}.

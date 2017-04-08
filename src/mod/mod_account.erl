@@ -64,8 +64,6 @@ create_player(AccountName) ->
     CreatePlayer = #{id => PlayerId,
                      account_name => AccountName,
                      nick_name => "",
-                     head_img_name => "",
-                     sex => 0,
                      data => ?PLAYER_DATA},
     lib_player:update_player(CreatePlayer),
     CreatePlayer.
