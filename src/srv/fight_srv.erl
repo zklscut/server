@@ -1493,7 +1493,7 @@ handle_event({skill, PlayerId, Op, OpList}, StateName, State) ->
         SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
         case lists:member(SeatId, AliveList) of
             false->
-                throw(?ERROR);
+                throw(?ERROR_FIGHT_DIE_PLAYER_USE_SKILL);
             _->
                 ignore
         end,
@@ -2038,7 +2038,7 @@ assert_op_in_wait(PlayerId, State) ->
     SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
     case lists:member(SeatId, WaitOpList) of
         false ->
-            throw(?ERROR);
+            throw(?ERROR_FIGHT_PLAYER_OP_NOT_IN_WAIT);
         true ->
             next_state
     end.
@@ -2048,7 +2048,7 @@ assert_op_legal(Op, StateName) ->
         true ->
             ok;
         false ->
-            throw(?ERROR)
+            throw(?ERROR_FIGHT_PLAYER_OP_NOT_ELLEGAL)
     end.
 
 assert_op_fit(?DUTY_NVWU, [_, UseYao], State) ->
@@ -2056,7 +2056,7 @@ assert_op_fit(?DUTY_NVWU, [_, UseYao], State) ->
         true ->
             ok;
         false ->
-            throw(?ERROR)
+            throw(?ERROR_FIGHT_NV_OP)
     end;
 
 assert_op_fit(?OP_XUANJU_JINGZHANG, [SeatId], State) ->
@@ -2065,7 +2065,7 @@ assert_op_fit(?OP_XUANJU_JINGZHANG, [SeatId], State) ->
         true ->
             ok;
         false ->
-            throw(?ERROR)
+            throw(?ERROR_FIGHT_XUANJU_JINGZHANG_OP)
     end;
 
 assert_op_fit(_, _, _) ->
@@ -2076,7 +2076,7 @@ assert_die_skill_legal(PlayerId, _Op, _OpList, State) ->
     SkillDieList = maps:get(skill_die_list, State),
     case SkillDieList of
         [] ->
-            throw(?ERROR);
+            throw(?ERROR_FIGHT_DIE_SKILL_1);
         _ ->
             ok
     end,
@@ -2085,7 +2085,7 @@ assert_die_skill_legal(PlayerId, _Op, _OpList, State) ->
         SeatId ->
             ok;
         _ ->
-            throw(?ERROR)
+            throw(?ERROR_FIGHT_DIE_SKILL_2)
     end.
 
 assert_skill_legal(_SeatId, _SkillId, _SkillData, _StateName, _State) ->

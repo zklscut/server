@@ -52,7 +52,7 @@ assert_not_have_room(Player) ->
         0 ->
             ok;
         _ ->
-            throw(?ERROR)
+            throw(?ERROR_PLAYER_IN_ROOM)
     end.
 
 is_room_full(Room)->
@@ -82,7 +82,7 @@ assert_room_exist(RoomId) ->
 assert_have_room(Player) ->
     case lib_room:get_player_room_id(Player) of
         0 ->
-            throw(?ERROR_PLAYER_IN_ROOM);
+            throw(?ERROR_PLAYER_NOT_IN_ROOM);
         _ ->
             ok
     end.
