@@ -163,8 +163,8 @@ change_sex(#m__player__change_sex__l2s{sex = Sex}, Player) ->
       true->
         Data = maps:get(data, Player),
         NewData = maps:put(sex, Sex, Data),
-        net_send:send(#m__player__upload_head_img_name__s2l{}, Player),
-        {save, maps:put(data, NewData, Player)}.
+        net_send:send(#m__player__change_sex__s2l{sex = Sex}, Player),
+        {save, maps:put(data, NewData, Player)};
       _->
         {ok, Player}
     end.  
