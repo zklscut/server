@@ -10,7 +10,7 @@
                       match_list => [] %%[{MatchPlayerId, PlayerList, Rank, IsWait},.....]
                       }).
 
--define(MATCH_NEED_PLAYER_NUM, 3).
+-define(MATCH_NEED_PLAYER_NUM, 12).
 -define(MATCH_MIN_DIFF_RANK, 400).
 -define(MATCH_TIMETICK, 500).
 -define(MATCH_TIMEOUT, 20000).
