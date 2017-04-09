@@ -165,7 +165,9 @@ init([RoomId, PlayerList, DutyList, Name, State]) ->
     %     case maps:get(fight_mod, NewState) of
     %         case 0->
 
-    {ok, state_duty_display, NewState}.
+    % {ok, state_duty_display, NewState}.
+    {ok, state_select_card, NewState}.
+
 
 state_select_card(start, State)->
     notice_game_status_change(state_select_card, [?OP_SELECT_DUTY], State),
