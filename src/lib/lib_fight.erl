@@ -803,7 +803,7 @@ do_fayan_op(State) ->
 
 do_send_fayan(PlayerId, Chat, State) ->    
     Player = lib_player:get_player(PlayerId),
-    Send = #m__fight__speak__s2l{chat = mod_chat:get_p_chat(Chat, Player)},
+    Send = #m__fight__speak__s2l{chat = mod_chat:get_p_chat(Chat, Player), player_id = PlayerId},
     send_to_all_player(Send, State, [PlayerId]).
 
 do_send_fayan(PlayerId, Chat, SpeakType, State) ->
@@ -812,13 +812,13 @@ do_send_fayan(PlayerId, Chat, SpeakType, State) ->
             do_send_fayan(PlayerId, Chat, State);
         1->
             Player = lib_player:get_player(PlayerId),
-            Send = #m__fight__speak__s2l{chat = mod_chat:get_p_chat(Chat, Player)},
+            Send = #m__fight__speak__s2l{chat = mod_chat:get_p_chat(Chat, Player), player_id = PlayerId},
             PlayerSeatId = get_seat_id_by_player_id(PlayerId, State),
             LangRenList = get_duty_seat(?DUTY_LANGREN, false, State),
             [send_to_seat(Send, SeatId, State) || SeatId <- LangRenList, SeatId =/= PlayerSeatId, SeatId =/= 0];
         2->
             Player = lib_player:get_player(PlayerId),
-            Send = #m__fight__speak__s2l{chat = mod_chat:get_p_chat(Chat, Player)},
+            Send = #m__fight__speak__s2l{chat = mod_chat:get_p_chat(Chat, Player), player_id = PlayerId},
             PlayerSeatId = get_seat_id_by_player_id(PlayerId, State),
             DieList = DieList = maps:get(out_seat_list, State) ++ maps:get(day_notice_die, State),
             [send_to_seat(Send, SeatId, State) || SeatId <- DieList, SeatId =/= PlayerSeatId, SeatId =/= 0];
