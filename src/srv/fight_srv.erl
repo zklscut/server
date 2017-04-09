@@ -1639,7 +1639,7 @@ handle_event({chat_input, IsExpression, Content, ChatType, PlayerId}, StateName,
             [lib_fight:send_to_seat(Send, SeatId, State) || SeatId <- LangRenList];
         2->
             DieList = maps:get(out_seat_list, State) ++ maps:get(day_notice_die, State),
-            [lib_fight:send_to_seat(Send, SeatId, State) || SeatId <- DieList];
+            [lib_fight:send_to_seat(Send, SeatId, State) || SeatId <- DieList, SeatId =/= 0];
         _->
             ignore
     end,

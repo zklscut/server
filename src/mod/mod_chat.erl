@@ -21,11 +21,16 @@ public_speak(#m__chat__public_speak__l2s{chat = Chat}, Player) ->
 	case ChatType of
 		?CHAT_TYPE_ROOM ->
 			RoomId = lib_room:get_player_room_id(Player),
-			ReturnChat = Chat#p_chat{player_show_base = PlayerShowBase,
-									 room_id = RoomId},
-			Return = #m__chat__public_speak__s2l{chat = ReturnChat},
-    		[net_send:send(Return, SendId) || SendId <- lib_room:get_player_room_player_list(Player) -- [PlayerId],
-    			SendId =/= lib_player:get_player_id(Player)];
+            case lib_room:is_in_fight(RoomId) of
+                false->
+        			ReturnChat = Chat#p_chat{player_show_base = PlayerShowBase,
+        									 room_id = RoomId},
+        			Return = #m__chat__public_speak__s2l{chat = ReturnChat},
+            		[net_send:send(Return, SendId) || SendId <- lib_room:get_player_room_player_list(Player) -- [PlayerId],
+            			SendId =/= lib_player:get_player_id(Player)];
+                _->
+                    ignore
+            end;
     	_ ->
     		ignore
     end,

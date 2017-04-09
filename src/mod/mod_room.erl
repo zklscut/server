@@ -200,12 +200,17 @@ want_chat_list(#m__room__want_chat_list__l2s{}, Player)->
     {ok, Player}.
 
 notice_team_change(Room)->
-    #{player_list := PlayerList} = Room,
-    MemberList = [lib_player:get_player_show_base(PlayerId) || PlayerId <- PlayerList],
+    case lib_room:is_in_fight() of
+        false->
+            #{player_list := PlayerList} = Room,
+            MemberList = [lib_player:get_player_show_base(PlayerId) || PlayerId <- PlayerList],
 
-    Send = #m__room__notice_member_change__s2l{room_info = conver_to_p_room(Room),
-                                                 member_list = MemberList},
-    send_to_room(Send, Room).
+            Send = #m__room__notice_member_change__s2l{room_info = conver_to_p_room(Room),
+                                                         member_list = MemberList},
+            send_to_room(Send, Room);
+        _->
+            ignore
+    end.
 
 update_chat_list(Room)->
     [send_chat_list(lib_player:get_player(PlayerId)) || PlayerId <- maps:get(player_list, Room)].

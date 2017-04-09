@@ -210,11 +210,16 @@ send_to_all_player(Send, State, NotSendList) ->
      is_active_in_fight(PlayerId, State) andalso (not lists:member(PlayerId, NotSendList))].
 
 send_to_seat(Send, SeatId, State) ->
-    PlayerId = get_player_id_by_seat(SeatId, State),
-    case is_active_in_fight(PlayerId, State) of
-        true ->
-            net_send:send(Send, PlayerId);
-        false ->
+    case SeatId =/= 0 of
+        true->
+            PlayerId = get_player_id_by_seat(SeatId, State),
+            case is_active_in_fight(PlayerId, State) of
+                true ->
+                    net_send:send(Send, PlayerId);
+                false ->
+                    ignore
+            end;
+        _->
             ignore
     end.
 
