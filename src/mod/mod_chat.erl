@@ -40,7 +40,7 @@ get_p_chat(PChat, Player) ->
     PChat#p_chat{room_id = lib_room:get_player_room_id(Player)}.
                  % player_show_base = lib_player:get_player_show_base(Player)}.
 
-send_system_room_chat(MsgType, Content, RoomId) ->
+send_system_room_chat(_MsgType, _Content, _RoomId) ->
     ignore.
     % PChat = #p_chat{voice = <<>>,
     %                 content = Content,
