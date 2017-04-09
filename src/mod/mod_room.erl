@@ -81,7 +81,7 @@ handle_enter_room(Room, Player) ->
     {save, NewPlayer}.
 
 create_room(#m__room__create_room__l2s{max_player_num = MaxPlayerNum,
-                                       room_name = RoomName,
+                                       room_name = _RoomName,
                                        duty_list = DutyList}, Player) ->
     lib_room:assert_not_have_room(Player),
     room_srv:create_room(MaxPlayerNum, "freeroom", DutyList, false, Player),
@@ -200,7 +200,7 @@ want_chat_list(#m__room__want_chat_list__l2s{}, Player)->
     {ok, Player}.
 
 notice_team_change(Room)->
-    case lib_room:is_in_fight() of
+    case lib_room:is_in_fight(maps:get(room_id, Room)) of
         false->
             #{player_list := PlayerList} = Room,
             MemberList = [lib_player:get_player_show_base(PlayerId) || PlayerId <- PlayerList],
