@@ -462,7 +462,7 @@
 
 -record(m__room__enter_simple_room__l2s, {msg_id}).
 
--record(m__room__enter_fail__s2l, {msg_id}).
+-record(m__room__enter_fail__s2l, {msg_id, result}).
 
 -record(m__room__login_not_in_room__s2l, {msg_id}).
 
@@ -1439,7 +1439,7 @@ encode(m__player__friend_invite__s2l, _Record) ->
 			   with_default(_Record#m__player__friend_invite__s2l.msg_id,
 					12023),
 			   int32, []),
-		      pack(2, repeated,
+		      pack(2, required,
 			   with_default(_Record#m__player__friend_invite__s2l.player_info,
 					none),
 			   p_player_show_base, []),
@@ -1728,6 +1728,10 @@ encode(m__room__enter_fail__s2l, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#m__room__enter_fail__s2l.msg_id,
 					13028),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__room__enter_fail__s2l.result,
+					none),
 			   int32, [])]);
 encode(m__room__enter_simple_room__l2s, _Record) ->
     iolist_to_binary([pack(1, required,
@@ -3336,8 +3340,7 @@ decode(m__player__invite_friends__s2l, Bytes) ->
     to_record(m__player__invite_friends__s2l, Decoded);
 decode(m__player__friend_invite__s2l, Bytes) ->
     Types = [{3, room_id, int32, []},
-	     {2, player_info, p_player_show_base,
-	      [is_record, repeated]},
+	     {2, player_info, p_player_show_base, [is_record]},
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__player__friend_invite__s2l, Decoded);
@@ -3487,7 +3490,8 @@ decode(m__room__login_not_in_room__s2l, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__login_not_in_room__s2l, Decoded);
 decode(m__room__enter_fail__s2l, Bytes) ->
-    Types = [{1, msg_id, int32, []}],
+    Types = [{2, result, int32, []},
+	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__enter_fail__s2l, Decoded);
 decode(m__room__enter_simple_room__l2s, Bytes) ->
