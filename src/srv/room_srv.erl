@@ -140,7 +140,13 @@ handle_cast_inner({enter_room, RoomId, PlayerId}, State) ->
     Room = lib_room:get_room(RoomId),
     lib_room:assert_room_not_full(Room),
     #{player_list := PlayerList} = Room,
-    NewRoom = Room#{player_list := PlayerList ++ [PlayerId]},
+    NewRoom =
+        case lists:member(PlayerId, PlayerList) of
+            true->
+                Room;
+            _->
+                Room#{player_list := PlayerList ++ [PlayerId]}
+        end,
     lib_room:update_room(RoomId, NewRoom),
     global_op_srv:player_op(PlayerId, {mod_room, handle_enter_room, [NewRoom]}),
     mod_room:notice_team_change(NewRoom),
