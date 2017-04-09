@@ -55,7 +55,7 @@
 -record(m__room__cancle_ready__l2s, {msg_id=13025}).
 -record(m__room__notice_all_ready__s2l, {msg_id=13026}).
 -record(m__room__login_not_in_room__s2l, {msg_id=13027}).
--record(m__room__enter_fail__s2l, {msg_id=13028}).
+-record(m__room__enter_fail__s2l, {msg_id=13028, result}).
 -record(m__room__enter_simple_room__l2s, {msg_id=13029}).
 -record(m__room__get_room_info__l2s, {msg_id=13030, room_id}).
 -record(m__room__get_room_info__s2l, {msg_id=13031, room_info}).
