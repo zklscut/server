@@ -1277,7 +1277,7 @@ rand_target_in_op(OpData, State) ->
                 [] ->
                     0;
                 _ ->
-                    case is_duty_exist(?DUTY_QIUBITE, State) and length(RandSeatList) > 1 of
+                    case is_duty_exist(?DUTY_QIUBITE, State) andalso length(RandSeatList) > 1 of
                         true->
                             0;
                         _->
