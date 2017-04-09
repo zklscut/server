@@ -659,7 +659,8 @@ do_langren_op(State) ->
             [] ->
                 0;
             _ ->
-                rand_target_in_op(filter_last_op(LangRenOpData))
+
+                rand_target_in_op(filter_last_op(LangRenOpData), State)
         end,
 
     Send = #m__fight__langren_op__s2l{seat_id = KillSeat},
@@ -841,8 +842,14 @@ do_toupiao_op(State) ->
     {DrawResult, NewState} = 
         case IsDraw and is_twice_toupiao(State) of
             false ->
-                {false, State#{xuanju_draw_cnt := 0,
-                               quzhu := hd(MaxSeatList)}};
+                case length(MaxSeatList) > 1 of
+                    true->
+                        {false, State#{xuanju_draw_cnt := 0,
+                               quzhu := 0}};
+                    _->
+                        {false, State#{xuanju_draw_cnt := 0,
+                               quzhu := hd(MaxSeatList)}}
+                end;
             true ->
                 case DrawCnt > 0 of
                     true ->
@@ -1248,7 +1255,7 @@ clear_last_op(State) ->
     lager:info("clear_last_op"),
     maps:put(last_op_data, #{}, State).
 
-rand_target_in_op(OpData) ->
+rand_target_in_op(OpData, State) ->
     FunCout = 
         fun({_, [SeatId]}, CurList) ->
             case lists:keyfind(SeatId, 1, CurList) of
@@ -1270,7 +1277,17 @@ rand_target_in_op(OpData) ->
                 [] ->
                     0;
                 _ ->
-                    util:rand_in_list(RandSeatList)
+                    case is_duty_exist(?DUTY_QIUBITE, State) and length(RandSeatList) > 1 of
+                        true->
+                            0;
+                        _->
+                            PlayerIdList = [get_player_id_by_seat(SeatId, State) || SeatId <- RandSeatList],
+                            PlayerLuckList = [{PlayerId, mod_resource:get_num(?RESOURCE_RANK_SCORE, PlayerId)} || PlayerId <- PlayerIdList],
+                            {_, MaxLuck} = hd(lists:reverse(lists:keysort(2, PlayerLuckList))),
+                            MaxLuckPlayerList = [PlayerId || {PlayerId, Luck} <- PlayerLuckList, Luck == MaxLuck],
+                            RandPlayerId = util:rand_in_list(MaxLuckPlayerList),
+                            get_seat_id_by_player_id(RandPlayerId, State)
+                    end
             end
     end.
 
