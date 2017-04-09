@@ -244,6 +244,12 @@ do_proto(ProtoId, ProtoData, State) ->
                 ignore;
             get_head ->
                 ignore;
+            public_speak->
+                ignore;
+            speak->
+                ignore;
+            langren_team_speak->
+                ignore;
             _ ->
                 lager:info("receive proto ~p", [ProtoRecord])
         end,
