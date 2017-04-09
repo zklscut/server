@@ -2061,7 +2061,7 @@ assert_op_fit(?DUTY_NVWU, [_, UseYao], State) ->
 
 assert_op_fit(?OP_XUANJU_JINGZHANG, [SeatId], State) ->
     PartList = maps:get(part_jingzhang, State),
-    case SeatId =/= 0 andalso lists:member(SeatId, PartList) of
+    case SeatId == 0 orelse lists:member(SeatId, PartList) of
         true ->
             ok;
         false ->
