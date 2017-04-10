@@ -66,7 +66,8 @@ init([Socket]) ->
            buff_data_length => 0,
            buff_total_length => 0,
            cache_data => <<>>
-           }.
+           }
+    }.
 
 
 %% handle_call/3
