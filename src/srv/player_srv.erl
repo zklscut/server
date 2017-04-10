@@ -64,7 +64,9 @@ init([Socket]) ->
            is_buff_data => 0,
            buff_data => <<>>,
            buff_data_length => 0,
-           buff_total_length => 0}}.
+           buff_total_length => 0},
+           cache_data => <<>>
+           }.
 
 
 %% handle_call/3
@@ -157,11 +159,37 @@ handle_info({tcp_closed, _}, State) ->
     {stop, logout, State};
 
 handle_info({tcp, _Port, TcpData}, State) ->
+
+    
+    
+
     #{is_buff_data := IsBuffData,
       buff_data_length := BuffDataLength,
       buff_total_length := BuffTotalLength,
-      buff_data := BuffData} = State,
+      buff_data := BuffData,
+      cache_data := CacheData
+      } = State,
     
+      % NewCacheData = <<CacheData/bianry, TcpData/binary>>,
+      % NewState =
+      % case erlang:byte_size(TcpData) >= 7 of
+      %   true->
+      %       <<_PreData:24, Len:16, _ProtoId:16, ProtoData/binary>> = NewCacheData,
+      %       ProtoDataLength = erlang:byte_size(ProtoData),
+      %       case ReceiveBuffLength >= Len of
+      %           true ->
+      %               do_recevie_over(TcpData, State);
+      %           false ->
+      %               State#{is_buff_data := 1,
+      %                      buff_data_length := ReceiveBuffLength,
+      %                      buff_total_length := Len,
+      %                      buff_data := TcpData}
+      %       end
+      %   _->
+      %       State
+      % end,
+
+
     NewState = 
         case IsBuffData of
             1 ->
@@ -188,7 +216,7 @@ handle_info({tcp, _Port, TcpData}, State) ->
                                buff_data := TcpData}
                 end
         end,
-    % lager:info("receive bianry ~p", [{PreData, Len, ProtoId, ProtoData}]),
+    lager:info("receive bianry ~p", [{PreData, Len, ProtoId, ProtoData}]),
     active_socket_inner(maps:get(socket, State)),
     {noreply, NewState};
 
@@ -268,7 +296,8 @@ do_proto(ProtoId, ProtoData, State) ->
     end.
 
 do_recevie_over(Data, State) ->
-    <<_PreData:24, _Len:16, ProtoId:16, ProtoData/binary>> = Data,
+    <<_PreData:24, Len:16, ProtoId:16, ProtoData/binary>> = Data,
+    lager:info("do_recevie_over proto ~p", [{ProtoId, Len, erlang:byte_size(ProtoData)}]),
     {Op, NewState} = do_proto(ProtoId, ProtoData, State),
     do_cache_op(Op, NewState),
     NewState#{is_buff_data => 0,
