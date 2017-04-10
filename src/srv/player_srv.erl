@@ -64,9 +64,7 @@ init([Socket]) ->
            is_buff_data => 0,
            buff_data => <<>>,
            buff_data_length => 0,
-           buff_total_length => 0
-           }
-    }.
+           buff_total_length => 0}}.
 
 
 %% handle_call/3
@@ -155,36 +153,28 @@ handle_cast_inner({login_change_socket, Socket}, #{socket := PreSocket} = State)
     Timeout :: non_neg_integer() | infinity.
 %% ====================================================================
 
-handle_info({tcp_closed, _}, State) ->
+handle_info(Info, State) ->
+    try
+        handle_info_inner(Info, State)
+    catch
+        throw:ErrCode ->
+            net_send:send_errcode(ErrCode, State),
+            {noreply, State};
+        What:Error ->
+            lager:error("error what ~p, Error ~p, stack ~p", 
+                [What, Error, erlang:get_stacktrace()]),
+            {noreply, State}        
+    end.
+
+handle_info_inner({tcp_closed, _}, State) ->
     {stop, logout, State};
 
-handle_info({tcp, _Port, TcpData}, State) ->
+handle_info_inner({tcp, _Port, TcpData}, State) ->
     #{is_buff_data := IsBuffData,
       buff_data_length := BuffDataLength,
       buff_total_length := BuffTotalLength,
-      buff_data := BuffData
-      } = State,
+      buff_data := BuffData} = State,
     
-      % NewCacheData = <<CacheData/bianry, TcpData/binary>>,
-      % NewState =
-      % case erlang:byte_size(TcpData) >= 7 of
-      %   true->
-      %       <<_PreData:24, Len:16, _ProtoId:16, ProtoData/binary>> = NewCacheData,
-      %       ProtoDataLength = erlang:byte_size(ProtoData),
-      %       case ReceiveBuffLength >= Len of
-      %           true ->
-      %               do_recevie_over(TcpData, State);
-      %           false ->
-      %               State#{is_buff_data := 1,
-      %                      buff_data_length := ReceiveBuffLength,
-      %                      buff_total_length := Len,
-      %                      buff_data := TcpData}
-      %       end
-      %   _->
-      %       State
-      % end,
-
-
     NewState = 
         case IsBuffData of
             1 ->
@@ -193,29 +183,23 @@ handle_info({tcp, _Port, TcpData}, State) ->
                 NewBuffData = <<BuffData/binary, TcpData/binary>>,
                 case NewBuffDataLength >= BuffTotalLength of
                     true ->
-                        do_recevie_over(NewBuffData, State);
+                        case NewBuffDataLength > BuffTotalLength of
+                            true ->
+                                do_receive_over_long(NewBuffData, BuffTotalLength, State);
+                            false ->
+                                do_recevie_over(NewBuffData, State)
+                        end;
                     false ->
                         State#{buff_data_length := NewBuffDataLength,
                                buff_data := NewBuffData}
                 end;
             0 ->
-                <<_PreData:24, Len:16, _ProtoId:16, ProtoData/binary>> = TcpData,
-                ReceiveBuffLength = erlang:byte_size(ProtoData),
-                case ReceiveBuffLength >= Len of
-                    true ->
-                        do_recevie_over(TcpData, State);
-                    false ->
-                        State#{is_buff_data := 1,
-                               buff_data_length := ReceiveBuffLength,
-                               buff_total_length := Len,
-                               buff_data := TcpData}
-                end
+                do_receive_new(TcpData, State)
         end,
-    % lager:info("receive bianry ~p", [{PreData, Len, ProtoId, ProtoData}]),
     active_socket_inner(maps:get(socket, State)),
     {noreply, NewState};
 
-handle_info(Info, State) ->
+handle_info_inner(Info, State) ->
     lager:error("unhandle info ~p", [Info]),
     active_socket_inner(maps:get(socket, State)),
     {noreply, State}.    
@@ -255,44 +239,26 @@ code_change(_OldVsn, State, _Extra) ->
 
 active_socket_inner(Socket) ->
     ActiveResult = inet:setopts(Socket, [{active, once}, {packet_size, 0}]),
-    % lager:info("active result ~p", [ActiveResult]),
     ActiveResult.
 
 do_proto(ProtoId, ProtoData, State) ->
     try
         {ProtoName, Module, Function} = b_proto_route:get(ProtoId),
         ProtoRecord = game_pb:decode(ProtoName, ProtoData),
-        case Function of
-            heart_beat ->
-                ignore;
-            get_head ->
-                ignore;
-            public_speak->
-                ignore;
-            speak->
-                ignore;
-            langren_team_speak->
-                ignore;
-            _ ->
-                lager:info("receive proto ~p", [ProtoRecord])
-        end,
         apply(Module, Function, [ProtoRecord, State])
     catch
         throw:ThrowError ->
-            % lager:debug("throw error ~p", [ThrowError]),
-            lager:error("proto ThrowError , ThrowError ~p, stack ~p", 
-                    [ThrowError, erlang:get_stacktrace()]),
+            lager:debug("throw error ~p", [ThrowError]),
             net_send:send_errcode(ThrowError, State),
             {ok, State};
         What:Error ->
-            lager:error("proto error what ~p, Error ~p, stack ~p", 
-                    [What, Error, erlang:get_stacktrace()]),
+            lager:error("proto error what ~p, Error ~p, proto data ~p, stack ~p", 
+                    [What, Error, ProtoData, erlang:get_stacktrace()]),
             {ok, State}
     end.
 
 do_recevie_over(Data, State) ->
-    <<_PreData:24, Len:16, ProtoId:16, ProtoData/binary>> = Data,
-    lager:info("do_recevie_over proto ~p", [{ProtoId, Len, erlang:byte_size(ProtoData)}]),
+    <<_PreData:24, _Len:16, ProtoId:16, ProtoData/binary>> = Data,
     {Op, NewState} = do_proto(ProtoId, ProtoData, State),
     do_cache_op(Op, NewState),
     NewState#{is_buff_data => 0,
@@ -301,3 +267,29 @@ do_recevie_over(Data, State) ->
               buff_total_length => 0}.
 
 
+do_receive_new(TcpData, State) when erlang:byte_size(TcpData) < 7 ->
+    State;
+
+do_receive_new(TcpData, State) ->
+    <<_PreData:24, Len:16, _ProtoId:16, ProtoData/binary>> = TcpData,
+    ReceiveBuffLength = erlang:byte_size(ProtoData),
+    case ReceiveBuffLength >= Len of
+        true ->
+            case ReceiveBuffLength > Len of
+                true ->
+                    do_receive_over_long(TcpData, Len, State);
+                false ->
+                    do_recevie_over(TcpData, State)
+            end;
+        false ->
+            State#{is_buff_data := 1,
+                   buff_data_length := ReceiveBuffLength,
+                   buff_total_length := Len,
+                   buff_data := TcpData}
+    end.
+
+do_receive_over_long(Data, ProtoLength, State) ->
+    PreLength = 7 + ProtoLength,
+    {PreProtoData, NewProtoData} = erlang:split_binary(Data, PreLength),
+    StateAfterPreProto = do_recevie_over(PreProtoData, State),
+    do_receive_new(NewProtoData, StateAfterPreProto).

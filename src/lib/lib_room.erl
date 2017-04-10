@@ -52,6 +52,8 @@ assert_not_have_room(Player) ->
         0 ->
             ok;
         _ ->
+            lager:error("assert_not_have_room stack ~p", 
+                    [erlang:get_stacktrace()]),
             throw(?ERROR_PLAYER_IN_ROOM)
     end.
 
@@ -66,6 +68,8 @@ assert_room_not_full(Room) ->
       player_list := PlayerList} = Room,
     case length(PlayerList) >= MaxPlayerNum of
         true ->
+            lager:error("assert_room_not_full stack ~p", 
+                    [erlang:get_stacktrace()]),
             throw(?ERROR_ROOM_FULL);
         false ->
             ok
@@ -74,6 +78,8 @@ assert_room_not_full(Room) ->
 assert_room_exist(RoomId) ->
     case get_room(RoomId) of
         undefined ->
+            lager:error("assert_room_exist stack ~p", 
+                    [erlang:get_stacktrace()]),
             throw(?ERROR_ROOM_NOT_EXIST);
         _ ->
             ok
@@ -82,6 +88,8 @@ assert_room_exist(RoomId) ->
 assert_have_room(Player) ->
     case lib_room:get_player_room_id(Player) of
         0 ->
+            lager:error("assert_have_room stack ~p", 
+                    [erlang:get_stacktrace()]),
             throw(?ERROR_PLAYER_NOT_IN_ROOM);
         _ ->
             ok
