@@ -1861,7 +1861,7 @@ do_receive_player_langren_op(PlayerId, Op, OpList, Confirm, StateName, State) ->
         assert_op_fit(Op, OpList, State),
         SeatId = lib_fight:get_seat_id_by_player_id(PlayerId, State),
         StateAfterLogOp = do_log_op(SeatId, OpList, State),
-        {_AllSame, AllOpData} = lib_fight:get_langren_dync_data(StateAfterLogOp),
+        {AllSame, AllOpData} = lib_fight:get_langren_dync_data(StateAfterLogOp),
         LangRenList = lib_fight:get_duty_seat(?DUTY_LANGREN, StateAfterLogOp),
         {IsWaitOver, StateAfterWaitOp} = do_remove_wait_op(SeatId, Confirm, StateAfterLogOp),
         % {IsWaitOver, StateAfterWaitOp} =
@@ -1874,18 +1874,18 @@ do_receive_player_langren_op(PlayerId, Op, OpList, Confirm, StateName, State) ->
         Send = #m__fight__dync_langren_op_data__s2l{op_data = AllOpData},
         [lib_fight:send_to_seat(Send, LangRenSeatId, StateAfterWaitOp) || LangRenSeatId<-LangRenList],
 
-        % StateAfterLangrenOP =
-        % case AllSame of
-        %     true ->
-        %         case maps:get(duty_langren_op, StateAfterWaitOp) of
-        %             1->
-        %                 StateAfterWaitOp;
-        %             _->
-        %                 lib_fight:do_langren_op(StateAfterWaitOp)
-        %         end;
-        %     _ ->
-        %         StateAfterWaitOp
-        % end,
+        StateAfterLangrenOP =
+        case AllSame of
+            true ->
+                case maps:get(duty_langren_op, StateAfterWaitOp) of
+                    1->
+                        StateAfterWaitOp;
+                    _->
+                        lib_fight:do_langren_op(StateAfterWaitOp)
+                end;
+            _ ->
+                StateAfterWaitOp
+        end,
 
         case IsWaitOver of
             true->
@@ -1893,7 +1893,7 @@ do_receive_player_langren_op(PlayerId, Op, OpList, Confirm, StateName, State) ->
             _->
                 ignore
         end,
-        {next_state, StateName, StateAfterWaitOp}
+        {next_state, StateName, StateAfterLangrenOP}
     catch 
         throw:ErrCode ->
             net_send:send_errcode(ErrCode, PlayerId),
