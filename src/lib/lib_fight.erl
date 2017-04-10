@@ -1369,7 +1369,7 @@ generate_fayan_turn(SeatId, _First, Turn, State) ->
     {PreList, TailList} = util:part_list(PartAfterTurn, InitTurnList),
     TurnList = TailList ++ PreList,
     LeavePlayerList = maps:get(leave_player, State),
-    LeavePlayerSeatList = [get_seat_id_by_player_id(PlayerId, State) || PlayerId <- LeavePlayerList];
+    LeavePlayerSeatList = [get_seat_id_by_player_id(PlayerId, State) || PlayerId <- LeavePlayerList],
     (((TurnList -- maps:get(die, State)) -- maps:get(out_seat_list, State)) -- [0]) -- LeavePlayerSeatList.
 
 do_set_die_list(State) ->
