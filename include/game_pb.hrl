@@ -62,15 +62,15 @@
 -record(m__room__get_room_info_fail__s2l, {msg_id=13032, reason}).
 -record(m__room__get_not_full_normal_room_id_list__l2s, {msg_id=13033}).
 -record(m__room__get_not_full_normal_room_id_list__s2l, {msg_id=13034, room_id_list}).
--record(p_chat, {player_show_base, voice, content, length, compress, chat_type, room_id, msg_type}).
+-record(p_chat, {voice, content, length, compress, chat_type, room_id, msg_type}).
 -record(m__chat__public_speak__l2s, {msg_id=14001, chat}).
--record(m__chat__public_speak__s2l, {msg_id=14002, chat}).
+-record(m__chat__public_speak__s2l, {msg_id=14002, chat, player_id}).
 -record(m__fight__game_state_change__s2l, {msg_id=15001, game_status, attach_data}).
 -record(m__fight__notice_duty__s2l, {msg_id=15002, duty, seat_id, fight_info, fight_mode, duty_valid}).
 -record(m__fight__notice_op__s2l, {msg_id=15003, op, attach_data}).
 -record(m__fight__notice_op__l2s, {msg_id=15004, op, op_list, confirm}).
 -record(m__fight__speak__l2s, {msg_id=15005, chat, speak_type}).
--record(m__fight__speak__s2l, {msg_id=15006, chat}).
+-record(m__fight__speak__s2l, {msg_id=15006, chat, player_id}).
 -record(m__fight__notice_lover__s2l, {msg_id=15007, lover_list}).
 -record(m__fight__notice_yuyanjia_result__s2l, {msg_id=15008, seat_id, duty}).
 -record(p_xuanju_result, {seat_id, select_list}).
@@ -125,7 +125,7 @@
 -record(m__friend__add_friend__l2s, {msg_id=19003, add_friend}).
 -record(m__friend__remove_friend__l2s, {msg_id=19005, remove_friend}).
 -record(m__friend__private_chat__l2s, {msg_id=19007, chat, target_id}).
--record(m__friend__private_chat__s2l, {msg_id=19008, target_info, chat}).
+-record(m__friend__private_chat__s2l, {msg_id=19008, target_info, speak_info, chat}).
 -record(m__friend__get_chat_list__l2s, {msg_id=19009, friend_id}).
 -record(m__friend__get_chat_list__s2l, {msg_id=19010, chat_list}).
 -record(m__friend__add_friend__s2l, {msg_id=19011, friend}).
