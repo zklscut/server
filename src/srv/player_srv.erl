@@ -64,7 +64,7 @@ init([Socket]) ->
            is_buff_data => 0,
            buff_data => <<>>,
            buff_data_length => 0,
-           buff_total_length => 0},
+           buff_total_length => 0,
            cache_data => <<>>
            }.
 
