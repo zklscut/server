@@ -1363,7 +1363,7 @@ generate_fayan_turn(SeatId, _First, Turn, State) ->
                     0->
                         {lists:reverse(lists:sort(AllSeat)), Part};
                     _->
-                        {lists:reverse(lists:sort(AllSeat)), (length(AllSeat) - Part) + 1}
+                        {lists:reverse(lists:sort(AllSeat)), Part}%(length(AllSeat) - Part) + 1}
                 end
         end,
     {PreList, TailList} = util:part_list(PartAfterTurn, InitTurnList),
