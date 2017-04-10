@@ -160,15 +160,11 @@ handle_info({tcp_closed, _}, State) ->
     {stop, logout, State};
 
 handle_info({tcp, _Port, TcpData}, State) ->
-
-    
-    
-
     #{is_buff_data := IsBuffData,
       buff_data_length := BuffDataLength,
       buff_total_length := BuffTotalLength,
       buff_data := BuffData,
-      cache_data := CacheData
+      cache_data := _CacheData
       } = State,
     
       % NewCacheData = <<CacheData/bianry, TcpData/binary>>,
@@ -217,7 +213,7 @@ handle_info({tcp, _Port, TcpData}, State) ->
                                buff_data := TcpData}
                 end
         end,
-    lager:info("receive bianry ~p", [{PreData, Len, ProtoId, ProtoData}]),
+    % lager:info("receive bianry ~p", [{PreData, Len, ProtoId, ProtoData}]),
     active_socket_inner(maps:get(socket, State)),
     {noreply, NewState};
 
@@ -286,8 +282,8 @@ do_proto(ProtoId, ProtoData, State) ->
     catch
         throw:ThrowError ->
             % lager:debug("throw error ~p", [ThrowError]),
-            lager:error("proto error what ~p, ThrowError ~p, stack ~p", 
-                    [What, ThrowError, erlang:get_stacktrace()]),
+            lager:error("proto ThrowError , ThrowError ~p, stack ~p", 
+                    [ThrowError, erlang:get_stacktrace()]),
             net_send:send_errcode(ThrowError, State),
             {ok, State};
         What:Error ->
