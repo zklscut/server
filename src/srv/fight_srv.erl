@@ -470,7 +470,8 @@ state_shouwei(wait_op, State) ->
         end,
     OpSeatList = (LangRenSeatList ++ ShouWeiSeatList) ++ YuyanjiaSeatList,
     StateAfterNormalCommon = notice_player_op(?OP_NORMAL_COMMON, AttachDataYuyanjia, OpSeatList, State),    
-    {next_state, state_shouwei, do_set_wait_op(?OP_NORMAL_COMMON, OpSeatList ++ [0], StateAfterNormalCommon)};
+    %%多加狼人作为不及时结束的条件
+    {next_state, state_shouwei, do_set_wait_op(?OP_NORMAL_COMMON, OpSeatList ++ LangRenSeatList, StateAfterNormalCommon)};
 
 state_shouwei({player_op, PlayerId, ?DUTY_LANGREN, OpList, Confirm}, State) ->
     do_receive_player_langren_op(PlayerId, ?DUTY_LANGREN, OpList, Confirm, state_shouwei, State);
