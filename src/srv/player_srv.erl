@@ -256,7 +256,9 @@ do_proto(ProtoId, ProtoData, State) ->
         apply(Module, Function, [ProtoRecord, State])
     catch
         throw:ThrowError ->
-            lager:debug("throw error ~p", [ThrowError]),
+            % lager:debug("throw error ~p", [ThrowError]),
+            lager:error("proto error what ~p, ThrowError ~p, stack ~p", 
+                    [What, ThrowError, erlang:get_stacktrace()]),
             net_send:send_errcode(ThrowError, State),
             {ok, State};
         What:Error ->
