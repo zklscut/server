@@ -64,8 +64,7 @@ init([Socket]) ->
            is_buff_data => 0,
            buff_data => <<>>,
            buff_data_length => 0,
-           buff_total_length => 0,
-           cache_data => <<>>
+           buff_total_length => 0
            }
     }.
 
@@ -163,8 +162,7 @@ handle_info({tcp, _Port, TcpData}, State) ->
     #{is_buff_data := IsBuffData,
       buff_data_length := BuffDataLength,
       buff_total_length := BuffTotalLength,
-      buff_data := BuffData,
-      cache_data := _CacheData
+      buff_data := BuffData
       } = State,
     
       % NewCacheData = <<CacheData/bianry, TcpData/binary>>,
