@@ -153,8 +153,7 @@ handle_cast_inner({enter_room, RoomId, PlayerId}, State) ->
     mod_chat:send_system_room_chat(?SYSTEM_CHAT_ROOM_ENTER, lib_player:get_name(PlayerId), RoomId),
     % NewRoomAfterReady = do_ready(RoomId, PlayerId),
     %%通知正在发言的人
-    notice_chat_info(PlayerId, NewRoom),
-    lager:info("enter_room7"),
+    % notice_chat_info(PlayerId, NewRoom),
     {noreply, State};
 
 handle_cast_inner({create_room, MaxPlayerNum, RoomName, DutyList, IsSimple, Player}, State) ->
@@ -178,7 +177,7 @@ handle_cast_inner({leave_room, RoomId, PlayerId}, State) ->
         true->
             do_player_exit_room(RoomId, PlayerId),
             global_op_srv:player_op(PlayerId, {mod_room, handle_leave_room, []}),
-            do_exit_chat(PlayerId, RoomId),
+            % do_exit_chat(PlayerId, RoomId),
             do_cancel_ready(RoomId, PlayerId);
         _->
             ignore
@@ -186,13 +185,11 @@ handle_cast_inner({leave_room, RoomId, PlayerId}, State) ->
     {noreply, State};
 
 handle_cast_inner({want_chat, RoomId, PlayerId}, State) ->
-    lager:info("want_chat111"),
     case lib_room:is_in_fight(RoomId) of
         false->
-            lager:info("want_chat222"),
-            want_chat_local(RoomId, PlayerId);
+            % want_chat_local(RoomId, PlayerId);
+            ignore;
         _->
-            lager:info("want_chat333"),
             ignore
     end,
     {noreply, State};
@@ -204,7 +201,7 @@ handle_cast_inner({end_chat, RoomId, PlayerId}, State) ->
 handle_cast_inner({kick_player, RoomId, OpName, PlayerId}, State) ->
     do_player_exit_room(RoomId, PlayerId),
     global_op_srv:player_op(PlayerId, {mod_room, handle_kick_player, [OpName]}),
-    do_exit_chat(PlayerId, RoomId),
+    % do_exit_chat(PlayerId, RoomId),
     {noreply, State};
 
 handle_cast_inner({update_room_fight_pid, RoomId, Pid}, State) ->
@@ -213,7 +210,7 @@ handle_cast_inner({update_room_fight_pid, RoomId, Pid}, State) ->
     NewRoom = Room#{fight_pid=>Pid, want_chat_list=>[], ready_list=>[]},
     lib_room:update_room(RoomId, NewRoom),
     mod_room:notice_team_change(NewRoom),
-    mod_room:update_chat_list(NewRoom),
+    % mod_room:update_chat_list(NewRoom),
     {noreply, State};
 
 handle_cast_inner({update_room_status, RoomId, BaseStatus, GameRound, Night, Day}, State)->
@@ -259,7 +256,6 @@ handle_info({ready_timeout, RoomId}, State) ->
                 true ->
                      CurTime = util:get_micro_time(),
                      StartReadyTime = maps:get(ready_start, Room),
-                     lager:info("ready_timeout ~p", [CurTime - StartReadyTime]),
                      case (CurTime - StartReadyTime) >= ?ROOM_READY_TIME of
                         true->
                             lib_room:start_room_fight(RoomId);
