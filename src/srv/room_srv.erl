@@ -195,7 +195,7 @@ handle_cast_inner({want_chat, RoomId, _PlayerId}, State) ->
     {noreply, State};
 
 handle_cast_inner({end_chat, RoomId, PlayerId}, State) ->
-    do_end_chat(RoomId, PlayerId),
+    % do_end_chat(RoomId, PlayerId),
     {noreply, State};
 
 handle_cast_inner({kick_player, RoomId, OpName, PlayerId}, State) ->
@@ -241,7 +241,7 @@ handle_cast_inner({cancle_ready, RoomId, PlayerId}, State) ->
 
 handle_info({chat_timeout, PlayerId, RoomId}, State) ->
     lager:info("chat_timeout111111111111111111"),
-    do_end_chat(RoomId, PlayerId),
+    % do_end_chat(RoomId, PlayerId),
     {noreply, State};
 
 handle_info({ready_timeout, RoomId}, State) ->
