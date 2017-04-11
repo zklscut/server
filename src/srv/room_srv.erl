@@ -194,7 +194,7 @@ handle_cast_inner({want_chat, RoomId, _PlayerId}, State) ->
     end,
     {noreply, State};
 
-handle_cast_inner({end_chat, RoomId, PlayerId}, State) ->
+handle_cast_inner({end_chat, _RoomId, _PlayerId}, State) ->
     % do_end_chat(RoomId, PlayerId),
     {noreply, State};
 
@@ -239,7 +239,7 @@ handle_cast_inner({cancle_ready, RoomId, PlayerId}, State) ->
     Timeout :: non_neg_integer() | infinity.
 %% ====================================================================
 
-handle_info({chat_timeout, PlayerId, RoomId}, State) ->
+handle_info({chat_timeout, _PlayerId, _RoomId}, State) ->
     lager:info("chat_timeout111111111111111111"),
     % do_end_chat(RoomId, PlayerId),
     {noreply, State};
