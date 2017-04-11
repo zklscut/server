@@ -184,7 +184,7 @@ handle_cast_inner({leave_room, RoomId, PlayerId}, State) ->
     end,
     {noreply, State};
 
-handle_cast_inner({want_chat, RoomId, PlayerId}, State) ->
+handle_cast_inner({want_chat, RoomId, _PlayerId}, State) ->
     case lib_room:is_in_fight(RoomId) of
         false->
             % want_chat_local(RoomId, PlayerId);
@@ -357,99 +357,99 @@ do_player_exit_room(RoomId, PlayerId)->
         _:_ ->
             ignore
     end.
-want_chat_local(RoomId, PlayerId)->
-    lib_room:assert_room_exist(RoomId),
-    Room = lib_room:get_room(RoomId),
-    WantChatList = maps:get(want_chat_list, Room),
-    NewWantChatList = util:add_element_single(PlayerId, WantChatList),
-    NewRoom = maps:put(want_chat_list, NewWantChatList, Room),
-    lib_room:update_room(RoomId, NewRoom),
-    mod_room:update_chat_list(NewRoom),
-    case WantChatList of
-        [] ->
-            do_start_chat(PlayerId, NewRoom, RoomId);
-        _ ->
-            ignore
-    end.
+% want_chat_local(RoomId, PlayerId)->
+%     lib_room:assert_room_exist(RoomId),
+%     Room = lib_room:get_room(RoomId),
+%     WantChatList = maps:get(want_chat_list, Room),
+%     NewWantChatList = util:add_element_single(PlayerId, WantChatList),
+%     NewRoom = maps:put(want_chat_list, NewWantChatList, Room),
+%     lib_room:update_room(RoomId, NewRoom),
+%     mod_room:update_chat_list(NewRoom),
+%     case WantChatList of
+%         [] ->
+%             do_start_chat(PlayerId, NewRoom, RoomId);
+%         _ ->
+%             ignore
+%     end.
 
-notice_chat_info(PlayerId, Room)->
-    WantChatList = maps:get(want_chat_list, Room),
-    case WantChatList of
-        []->
-            ignore;
-        _->
-            ChatStartTime = maps:get(chat_start_time, Room),
-            CurTime = util:get_micro_time(),
-            Send = #m__room__notice_chat_info__s2l{
-                                            player_id = hd(WantChatList),
-                                            wait_time = ?ROOM_CHAT_TIME - (CurTime - ChatStartTime)
-                                        },
-            mod_room:send_to_player(Send, PlayerId)
-    end.
+% notice_chat_info(PlayerId, Room)->
+%     WantChatList = maps:get(want_chat_list, Room),
+%     case WantChatList of
+%         []->
+%             ignore;
+%         _->
+%             ChatStartTime = maps:get(chat_start_time, Room),
+%             CurTime = util:get_micro_time(),
+%             Send = #m__room__notice_chat_info__s2l{
+%                                             player_id = hd(WantChatList),
+%                                             wait_time = ?ROOM_CHAT_TIME - (CurTime - ChatStartTime)
+%                                         },
+%             mod_room:send_to_player(Send, PlayerId)
+%     end.
     
 
-do_start_chat(PlayerId, Room, RoomId) ->
-    WantChatList = maps:get(want_chat_list, Room),
-    Send = #m__room__notice_start_chat__s2l{start_id = PlayerId,
-                                            wait_list = WantChatList,
-                                            duration = ?ROOM_CHAT_TIME},
-    mod_room:send_to_room(Send, Room),
-    lib_room:update_room(RoomId, maps:put(chat_start_time, util:get_micro_time(), Room)),
-    erlang:send_after(?ROOM_CHAT_TIME, self(), {chat_timeout, PlayerId, RoomId}).
+% do_start_chat(PlayerId, Room, RoomId) ->
+%     WantChatList = maps:get(want_chat_list, Room),
+%     Send = #m__room__notice_start_chat__s2l{start_id = PlayerId,
+%                                             wait_list = WantChatList,
+%                                             duration = ?ROOM_CHAT_TIME},
+%     mod_room:send_to_room(Send, Room),
+%     lib_room:update_room(RoomId, maps:put(chat_start_time, util:get_micro_time(), Room)),
+%     erlang:send_after(?ROOM_CHAT_TIME, self(), {chat_timeout, PlayerId, RoomId}).
 
-do_exit_chat(PlayerId, RoomId)->
-    lib_room:assert_room_exist(RoomId),
-    Room = lib_room:get_room(RoomId),
-    WantChatList = maps:get(want_chat_list, Room),
-    case WantChatList =/= [] andalso hd(WantChatList) == PlayerId of
-        true ->
-            do_end_chat(RoomId, PlayerId);
-        false ->
-            NewRoom = maps:put(want_chat_list, WantChatList -- [PlayerId], Room),
-            lib_room:update_room(RoomId, NewRoom),
-            mod_room:update_chat_list(NewRoom),
-            case WantChatList of
-                []->
-                    ignore;
-                _->
-                    ChatStartTime = maps:get(chat_start_time, Room),
-                    CurTime = util:get_micro_time(),
-                    Send = #m__room__notice_chat_info__s2l{
-                                            player_id = hd(WantChatList),
-                                            wait_time = ?ROOM_CHAT_TIME - (CurTime - ChatStartTime)
-                                        },
-                    mod_room:send_to_room(Send, Room)
-            end
-    end.
+% do_exit_chat(PlayerId, RoomId)->
+%     lib_room:assert_room_exist(RoomId),
+%     Room = lib_room:get_room(RoomId),
+%     WantChatList = maps:get(want_chat_list, Room),
+%     case WantChatList =/= [] andalso hd(WantChatList) == PlayerId of
+%         true ->
+%             do_end_chat(RoomId, PlayerId);
+%         false ->
+%             NewRoom = maps:put(want_chat_list, WantChatList -- [PlayerId], Room),
+%             lib_room:update_room(RoomId, NewRoom),
+%             mod_room:update_chat_list(NewRoom),
+%             case WantChatList of
+%                 []->
+%                     ignore;
+%                 _->
+%                     ChatStartTime = maps:get(chat_start_time, Room),
+%                     CurTime = util:get_micro_time(),
+%                     Send = #m__room__notice_chat_info__s2l{
+%                                             player_id = hd(WantChatList),
+%                                             wait_time = ?ROOM_CHAT_TIME - (CurTime - ChatStartTime)
+%                                         },
+%                     mod_room:send_to_room(Send, Room)
+%             end
+%     end.
 
-do_end_chat(RoomId, PlayerId) ->
-    try 
-        lib_room:assert_room_exist(RoomId),
-        Room = lib_room:get_room(RoomId),
+% do_end_chat(RoomId, PlayerId) ->
+%     try 
+%         lib_room:assert_room_exist(RoomId),
+%         Room = lib_room:get_room(RoomId),
 
-        WantChatList = maps:get(want_chat_list, Room),
-        case WantChatList =/= [] andalso hd(WantChatList) == PlayerId of
-            true ->
-                ok;
-            false ->
-                Send = #m__room__notice_start_chat__s2l{start_id = 0,wait_list=[], duration = 0},
-                mod_room:send_to_room(Send, Room),
-                throw(ignore)
-        end,
+%         WantChatList = maps:get(want_chat_list, Room),
+%         case WantChatList =/= [] andalso hd(WantChatList) == PlayerId of
+%             true ->
+%                 ok;
+%             false ->
+%                 Send = #m__room__notice_start_chat__s2l{start_id = 0,wait_list=[], duration = 0},
+%                 mod_room:send_to_room(Send, Room),
+%                 throw(ignore)
+%         end,
 
-        NewWantChatList = tl(WantChatList),
-        NewRoom = maps:put(want_chat_list, NewWantChatList, Room),
-        lib_room:update_room(RoomId, NewRoom),
-        mod_room:update_chat_list(NewRoom),
-        case NewWantChatList of
-            [] ->
-                SendEmpty = #m__room__notice_start_chat__s2l{start_id = 0,wait_list=[], duration = 0},
-                mod_room:send_to_room(SendEmpty, Room);
-            _ ->
-                do_start_chat(hd(NewWantChatList), NewRoom, RoomId)
-        end
-    catch
-        _:_ ->
-            ignore
-    end.
+%         NewWantChatList = tl(WantChatList),
+%         NewRoom = maps:put(want_chat_list, NewWantChatList, Room),
+%         lib_room:update_room(RoomId, NewRoom),
+%         mod_room:update_chat_list(NewRoom),
+%         case NewWantChatList of
+%             [] ->
+%                 SendEmpty = #m__room__notice_start_chat__s2l{start_id = 0,wait_list=[], duration = 0},
+%                 mod_room:send_to_room(SendEmpty, Room);
+%             _ ->
+%                 do_start_chat(hd(NewWantChatList), NewRoom, RoomId)
+%         end
+%     catch
+%         _:_ ->
+%             ignore
+%     end.
 
