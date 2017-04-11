@@ -1683,10 +1683,10 @@ handle_event({player_leave, PlayerId}, StateName, State) ->
             case maps:get(room_id, State) > 0 of
                 true->
                     % 扣除人气
-                    mod_player:handle_decrease(?RESOURCE_LUCK, ?FORCE_LEAVE_SUB_LUCK, undefined, PlayerId);
+                    mod_player:handle_decrease(?RESOURCE_LUCK, ?FORCE_LEAVE_SUB_LUCK, ?LOG_ACTION_FIGHT, PlayerId);
                 _->
                     % 扣除荣耀值
-                    mod_player:handle_decrease(?RESOURCE_RANK_SCORE, ?FORCE_LEAVE_SUB_RANK_SCORE, undefined, PlayerId)
+                    mod_player:handle_decrease(?RESOURCE_RANK_SCORE, ?FORCE_LEAVE_SUB_RANK_SCORE, ?LOG_ACTION_FIGHT, PlayerId)
             end;
         _->
             ignore
@@ -1881,7 +1881,7 @@ do_receive_player_langren_op(PlayerId, Op, OpList, Confirm, StateName, State) ->
                     1->
                         StateAfterWaitOp;
                     _->
-                        lib_fight:do_langren_op(StateAfterWaitOp)
+                        StateAfterWaitOp% lib_fight:do_langren_op(StateAfterWaitOp)
                 end;
             _ ->
                 StateAfterWaitOp
