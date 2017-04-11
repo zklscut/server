@@ -1017,7 +1017,8 @@ state_jingzhang(_IgnoreOP, State)->
 %% state_fayan
 %% ====================================================================
 state_fayan(start, State) ->
-    NewState = maps:put(wait_quzhu_list, maps:get(fayan_turn, State), State),
+    AliveList = lib_fight:get_alive_seat_list(State) -- maps:get(die, State),
+    NewState = maps:put(wait_quzhu_list, AliveList, State),
     do_fayan_state_start(maps:get(fayan_turn, NewState), state_fayan, NewState);
 
 state_fayan(wait_op, State) ->
