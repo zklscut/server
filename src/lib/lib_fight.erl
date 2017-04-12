@@ -231,7 +231,7 @@ is_active_in_fight(PlayerId, State) ->
     not lists:member(PlayerId, LeavePlayer).
 
 get_leave_player_seat_list(State) ->
-    [get_seat_id_by_player_id(PlayerId) || PlayerId <- maps:get(leave_player, State)].
+    [get_seat_id_by_player_id(PlayerId, State) || PlayerId <- maps:get(leave_player, State)].
 
 %%是否活着的人都不在战斗中
 is_all_alive_player_not_in(State) ->

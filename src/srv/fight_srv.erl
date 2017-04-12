@@ -735,7 +735,6 @@ state_part_fayan({player_op, PlayerId, Op, [0], Confirm}, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
     do_receive_player_op(PlayerId, Op, [0], Confirm, state_part_fayan, State);
 
-
 state_part_fayan(timeout, State) ->
     do_fayan_state_timeout(state_part_fayan, State);
 
