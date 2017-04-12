@@ -1106,8 +1106,8 @@ state_toupiao(start, State) ->
 state_toupiao(wait_op, State) ->
     % start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_TOUPIAO)),\
     StateAfterNotice = notice_toupiao(State),
-    WaitList = (lib_fight:get_alive_seat_list(StateAfterNotice) -- 
-            [maps:get(baichi, StateAfterNotice)]) -- maps:get(die, StateAfterNotice),
+    WaitList = (((lib_fight:get_alive_seat_list(StateAfterNotice) -- 
+            [maps:get(baichi, StateAfterNotice)]) -- maps:get(die, StateAfterNotice))) -- maps:get(leave_player, StateAfterNotice),
     StateAfterWait = do_set_wait_op(?OP_TOUPIAO, WaitList, StateAfterNotice),
     {next_state, state_toupiao, StateAfterWait};    
     
