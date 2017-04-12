@@ -200,7 +200,7 @@ want_chat_list(#m__room__want_chat_list__l2s{}, Player)->
     {ok, Player}.
 
 notice_team_change(Room)->
-    case false of%lib_room:is_in_fight(maps:get(room_id, Room)) of
+    case lib_room:is_in_fight(maps:get(room_id, Room)) of
         false->
             #{player_list := PlayerList} = Room,
             MemberList = [lib_player:get_player_show_base(PlayerId) || PlayerId <- PlayerList],
