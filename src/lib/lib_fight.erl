@@ -10,6 +10,7 @@
          send_to_all_player/3,
          send_to_seat/3,
          is_all_alive_player_not_in/1,
+         get_leave_player_seat_list/1,
          get_night_last_time/1,
          is_active_in_fight/2,
          fight_over_handle/1,
@@ -228,6 +229,9 @@ is_active_in_fight(PlayerId, State) ->
     _FightPid = lib_player:get_fight_pid(Player),
     LeavePlayer = maps:get(offline_list, State) ++ maps:get(leave_player, State),
     not lists:member(PlayerId, LeavePlayer).
+
+get_leave_player_seat_list(State) ->
+    [get_seat_id_by_player_id(PlayerId) || PlayerId <- maps:get(leave_player, State)].
 
 %%是否活着的人都不在战斗中
 is_all_alive_player_not_in(State) ->
