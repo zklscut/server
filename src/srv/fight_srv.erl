@@ -1259,8 +1259,9 @@ state_fight_over(start, State) ->
     notice_game_status_change(state_fight_over, NewState),
     
     send_event_inner(start, b_fight_state_wait:get(state_fight_over)),
-    StateAfterMvp = maps:put(mvp_party, Winner, NewState),
-    StateAfterCarry = maps:put(carry_party, lib_fight:get_all_seat(StateAfterMvp) -- Winner, StateAfterMvp),
+    StateAfterMvp = maps:put(mvp_party, Winner -- lib_fight:get_leave_player_seat_list(NewState), NewState),
+    StateAfterCarry = maps:put(carry_party, (lib_fight:get_all_seat(StateAfterMvp) -- 
+                                        Winner) -- lib_fight:get_leave_player_seat_list(StateAfterMvp), StateAfterMvp),
     StateAfterFayanTurn = maps:put(fayan_turn, lib_fight:get_all_seat(StateAfterCarry), StateAfterCarry),
     StateAfterWinner = maps:put(winner, Winner, StateAfterFayanTurn),
     DieInfo = maps:get(die_info, StateAfterWinner),
@@ -1325,7 +1326,7 @@ state_toupiao_mvp(start, State) ->
 state_toupiao_mvp(wait_op, State) ->
     % start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_TOUPIAO)),
     StateAfterNotice = notice_toupiao_mvp(State),
-    WaitList = lib_fight:get_all_seat(StateAfterNotice),
+    WaitList = lib_fight:get_all_seat(StateAfterNotice) -- lib_fight:get_leave_player_seat_list(StateAfterNotice),
     StateAfterWait = do_set_wait_op(?OP_TOUPIAO_MVP, WaitList, StateAfterNotice),
     {next_state, state_toupiao_mvp, StateAfterWait};    
     
@@ -1395,7 +1396,7 @@ state_toupiao_carry(start, State) ->
 state_toupiao_carry(wait_op, State) ->
     % start_fight_fsm_event_timer(?TIMER_TIMEOUT, b_fight_op_wait:get(?OP_TOUPIAO)),
     StateAfterNotice = notice_toupiao_carry(State),
-    WaitList = lib_fight:get_all_seat(StateAfterNotice),
+    WaitList = lib_fight:get_all_seat(StateAfterNotice) -- lib_fight:get_leave_player_seat_list(StateAfterNotice),
     StateAfterWait = do_set_wait_op(?OP_TOUPIAO_CARRY, WaitList, StateAfterNotice),
     {next_state, state_toupiao_carry, StateAfterWait};    
     
