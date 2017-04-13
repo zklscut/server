@@ -2177,7 +2177,8 @@ player_online_offline_wait_op_time_update(SeatId, State)->
                         true->
                             %%全部退出直接跳过
                             cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
-                            start_fight_fsm_event_timer(?TIMER_TIMEOUT, 0);
+                            start_fight_fsm_event_timer(?TIMER_TIMEOUT, 0),
+                            State;
                         false->
                             TotalLeft = NormalDuration - (util:get_micro_time() - StartTime),
                             case TotalLeft > lib_fight:get_op_wait(?OP_SKILL_OFFLINE, undefined, State) of
