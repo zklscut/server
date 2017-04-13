@@ -476,7 +476,7 @@ state_shouwei(wait_op, State) ->
             %%狼队要有两个人以上沟通才有意义
             {next_state, state_shouwei, do_set_wait_op(?OP_NORMAL_COMMON, OpSeatList ++ LangRenSeatList, StateAfterNormalCommon)};
         false->
-            {next_state, state_shouwei, do_set_wait_op(?OP_NORMAL_COMMON, OpSeatList, StateAfterNormalCommon)};
+            {next_state, state_shouwei, do_set_wait_op(?OP_NORMAL_COMMON, OpSeatList, StateAfterNormalCommon)}
     end;
 
 state_shouwei({player_op, PlayerId, ?DUTY_LANGREN, OpList, Confirm}, State) ->
