@@ -1931,7 +1931,15 @@ do_fayan_state_wait_op(Op, StateName, State) ->
     notice_start_fayan(Fayan, State),
     StateAfterOp = notice_player_op(Op, [Fayan], State),
     StateAfterWait = do_set_wait_op(Op, [Fayan], StateAfterOp),
-    {next_state, StateName, lib_fight:do_fayan_op(StateAfterWait)}.
+    StateAfterDoFayanOp = lib_fight:do_fayan_op(StateAfterWait),
+    LeaveSeatList = lib_fight:get_leave_player_seat_list(StateAfterDoFayanOp),
+    case lists:member(Fayan, LeaveSeatList) of  
+        true->
+            do_fayan_state_timeout(StateName, StateAfterDoFayanOp);
+        false->
+            {next_state, StateName, StateAfterDoFayanOp}
+    end.
+    
 
 do_fayan_state_timeout(StateName, State) ->
     cancel_fight_fsm_event_timer(?TIMER_TIMEOUT),
