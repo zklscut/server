@@ -15,6 +15,7 @@
          is_active_in_fight/2,
          fight_over_handle/1,
          is_offline_all/2,
+         is_leave_all/2,
          get_p_fight/1,
          get_langren_dync_data/1,
          get_player_id_by_seat/2,
@@ -266,6 +267,16 @@ is_offline_all(SeatList, State) ->
         _->
             lists:all(fun(SeatId)-> lists:member(get_player_id_by_seat(SeatId, State), OfflineList) end, SeatList)
     end.
+
+is_leave_all(SeatList, State) ->
+    LeaveList = maps:get(leave_player, State),
+    case SeatList of
+        []->
+            true;
+        _->
+            lists:all(fun(SeatId)-> lists:member(get_player_id_by_seat(SeatId, State), LeaveList) end, SeatList)
+    end.
+
 
 get_player_id_by_seat(SeatId, State) ->
     maps:get(SeatId, maps:get(seat_player_map, State)).
