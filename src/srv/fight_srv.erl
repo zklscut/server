@@ -471,7 +471,13 @@ state_shouwei(wait_op, State) ->
     OpSeatList = (LangRenSeatList ++ ShouWeiSeatList) ++ YuyanjiaSeatList,
     StateAfterNormalCommon = notice_player_op(?OP_NORMAL_COMMON, AttachDataYuyanjia, OpSeatList, State),    
     %%多加狼人作为不及时结束的条件
-    {next_state, state_shouwei, do_set_wait_op(?OP_NORMAL_COMMON, OpSeatList ++ LangRenSeatList, StateAfterNormalCommon)};
+    case length(LangRenSeatList) > 1 of
+        true->
+            %%狼队要有两个人以上沟通才有意义
+            {next_state, state_shouwei, do_set_wait_op(?OP_NORMAL_COMMON, OpSeatList ++ LangRenSeatList, StateAfterNormalCommon)};
+        false->
+            {next_state, state_shouwei, do_set_wait_op(?OP_NORMAL_COMMON, OpSeatList, StateAfterNormalCommon)};
+    end;
 
 state_shouwei({player_op, PlayerId, ?DUTY_LANGREN, OpList, Confirm}, State) ->
     do_receive_player_langren_op(PlayerId, ?DUTY_LANGREN, OpList, Confirm, state_shouwei, State);
