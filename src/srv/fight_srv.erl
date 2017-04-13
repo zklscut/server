@@ -2543,10 +2543,10 @@ send_fight_result(Winner, VictoryParty, State) ->
                         duty_id = DutyId,
                         player_id = lib_fight:get_player_id_by_seat(SeatId, State)} || 
                         {SeatId, DutyId} <- maps:to_list(maps:get(seat_duty_map, State))], 
-    LeavePlayerList = maps:get(leave_player, State),
+    LeavePlayerSeatList = lib_fight:get_leave_player_seat_list(State),
     [fight_result_op(Winner, VictoryParty, DutyList, ResultSeatId, ResultDutyId, State)
                  || {ResultSeatId, ResultDutyId} <- maps:to_list(maps:get(seat_duty_map, State)),
-                     not lists:member(ResultSeatId, LeavePlayerList)],
+                     not lists:member(ResultSeatId, LeavePlayerSeatList)],
 
     RoomId = maps:get(room_id, State),
     case RoomId > 0 of
