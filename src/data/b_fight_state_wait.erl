@@ -18,7 +18,7 @@ get(state_nvwu)->
 get(state_yuyanjia)->
 	0;
 get(state_day)->
-	5000;
+	0;
 get(state_part_jingzhang)->
 	0;
 get(state_part_fayan)->

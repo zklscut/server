@@ -248,6 +248,7 @@ is_all_alive_player_not_in(State) ->
 
 % 战斗结束处理
 fight_over_handle(State)->
+    lager:info("fight_over_handle"),
     RoomId = maps:get(room_id, State),
     PlayerList = maps:get(player_list, State),
     OffLinePlayer = maps:get(offline_list, State),
