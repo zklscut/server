@@ -1928,15 +1928,17 @@ do_fayan_state_start(InitFayanList, StateName, State) ->
 
 do_fayan_state_wait_op(Op, StateName, State) ->
     Fayan = hd(maps:get(fayan_turn, State)),
-    notice_start_fayan(Fayan, State),
-    StateAfterOp = notice_player_op(Op, [Fayan], State),
-    StateAfterWait = do_set_wait_op(Op, [Fayan], StateAfterOp),
-    StateAfterDoFayanOp = lib_fight:do_fayan_op(StateAfterWait),
-    LeaveSeatList = lib_fight:get_leave_player_seat_list(StateAfterDoFayanOp),
+    LeaveSeatList = lib_fight:get_leave_player_seat_list(State),
     case lists:member(Fayan, LeaveSeatList) of  
         true->
+            StateAfterWait = do_set_wait_op(Op, [Fayan], State),
+            StateAfterDoFayanOp = lib_fight:do_fayan_op(StateAfterWait),
             do_fayan_state_timeout(StateName, StateAfterDoFayanOp);
         false->
+            notice_start_fayan(Fayan, State),
+            StateAfterOp = notice_player_op(Op, [Fayan], State),
+            StateAfterWait = do_set_wait_op(Op, [Fayan], StateAfterOp),
+            StateAfterDoFayanOp = lib_fight:do_fayan_op(StateAfterWait),
             {next_state, StateName, StateAfterDoFayanOp}
     end.
     
