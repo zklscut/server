@@ -200,10 +200,8 @@ want_chat_list(#m__room__want_chat_list__l2s{}, Player)->
     {ok, Player}.
 
 notice_team_change(Room)->
-    lager:info("notice_team_change1"),
     case lib_room:is_in_fight(maps:get(room_id, Room)) of
         false->
-            lager:info("notice_team_change2"),
             #{player_list := PlayerList} = Room,
             MemberList = [lib_player:get_player_show_base(PlayerId) || PlayerId <- PlayerList],
 
@@ -211,7 +209,6 @@ notice_team_change(Room)->
                                                          member_list = MemberList},
             send_to_room(Send, Room);
         _->
-            lager:info("notice_team_change3"),
             ignore
     end.
 

@@ -126,6 +126,11 @@ handle_after_increase(?RESOURCE_MVP, PreNum, NewNum, _, Player) ->
                 lib_player:get_player_id(Player), PreNum, NewNum),
     Player;
 
+handle_after_increase(?RESOURCE_RANK_SCORE, PreNum, NewNum, _, Player) ->
+    rank_behaviour:value_change(rank_rank_srv, 
+                lib_player:get_player_id(Player), PreNum, NewNum),
+    Player;
+
 handle_after_increase(_, _, _, _, Player) ->
     Player.
 
@@ -135,10 +140,14 @@ handle_after_decrease(?RESOURCE_LUCK, PreNum, NewNum, _, Player) ->
     Player;
 
 handle_after_decrease(?RESOURCE_MVP, PreNum, NewNum, _, Player) ->
-    rank_behaviour:value_change(luck_rank_srv, 
+    rank_behaviour:value_change(mvp_rank_srv, 
                 lib_player:get_player_id(Player), PreNum, NewNum),
     Player;
 
+handle_after_decrease(?RESOURCE_RANK_SCORE, PreNum, NewNum, _, Player) ->
+    rank_behaviour:value_change(rank_rank_srv, 
+                lib_player:get_player_id(Player), PreNum, NewNum),
+    Player;
 
 handle_after_decrease(_, _, _, _, Player) ->
     Player.

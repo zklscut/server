@@ -61,19 +61,20 @@ add_diamond(#m__player__add_diamond__l2s{}, Player) ->
   {save, NewPlayer}.
 
 upload_head(#m__player__upload_head__l2s{img_data = ImgData}, Player)->
-  PlayerData = maps:get(data, Player),
-  NewPlayerData = maps:put(head_data, ImgData, PlayerData),
-  NewPlayer = maps:put(data, NewPlayerData, Player),
-  Send = #m__player__upload_head__s2l{result = 0},
-  net_send:send(Send, NewPlayer),
-  {save, NewPlayer}.
+  % PlayerData = maps:get(data, Player),
+  % NewPlayerData = maps:put(head_data, ImgData, PlayerData),
+  % NewPlayer = maps:put(data, NewPlayerData, Player),
+  % Send = #m__player__upload_head__s2l{result = 0},
+  % net_send:send(Send, NewPlayer),
+  % {save, NewPlayer}.
+  {ok, Player}.
 
 get_head(#m__player__get_head__l2s{player_id = PlayerId}, Player)->
-  TargetPlayer = lib_player:get_player(PlayerId),
-  Send = #m__player__get_head__s2l{player_id = PlayerId, 
-          img_data = maps:get(head_data, maps:get(data, TargetPlayer), <<>>)
-          },
-  net_send:send(Send, Player),
+  % TargetPlayer = lib_player:get_player(PlayerId),
+  % Send = #m__player__get_head__s2l{player_id = PlayerId, 
+  %         img_data = maps:get(head_data, maps:get(data, TargetPlayer), <<>>)
+  %         },
+  % net_send:send(Send, Player),
   {ok, Player}.
 
 upload_head_img_name(#m__player__upload_head_img_name__l2s{head_img_name = HeadImgName}, Player)->
