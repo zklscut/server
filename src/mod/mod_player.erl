@@ -60,7 +60,7 @@ add_diamond(#m__player__add_diamond__l2s{}, Player) ->
 
   {save, NewPlayer}.
 
-upload_head(#m__player__upload_head__l2s{img_data = ImgData}, Player)->
+upload_head(#m__player__upload_head__l2s{img_data = _ImgData}, Player)->
   % PlayerData = maps:get(data, Player),
   % NewPlayerData = maps:put(head_data, ImgData, PlayerData),
   % NewPlayer = maps:put(data, NewPlayerData, Player),
@@ -69,7 +69,7 @@ upload_head(#m__player__upload_head__l2s{img_data = ImgData}, Player)->
   % {save, NewPlayer}.
   {ok, Player}.
 
-get_head(#m__player__get_head__l2s{player_id = PlayerId}, Player)->
+get_head(#m__player__get_head__l2s{player_id = _PlayerId}, Player)->
   % TargetPlayer = lib_player:get_player(PlayerId),
   % Send = #m__player__get_head__s2l{player_id = PlayerId, 
   %         img_data = maps:get(head_data, maps:get(data, TargetPlayer), <<>>)
