@@ -1,4 +1,4 @@
--record(p_player_show_base, {player_id, nick_name, head_img_name}).
+-record(p_player_show_base, {player_id, nick_name, head_img_name, gvoice_status}).
 -record(p_resource, {resource_id, num}).
 -record(m__account__login__l2s, {msg_id=10001, account_name}).
 -record(m__account__login__s2l, {msg_id=10002, result}).
@@ -27,6 +27,8 @@
 -record(m__player__invite_friends__l2s, {msg_id=12021, player_list, room_id}).
 -record(m__player__invite_friends__s2l, {msg_id=12022}).
 -record(m__player__friend_invite__s2l, {msg_id=12023, player_info, room_id}).
+-record(m__player__update_player_base_info__s2l, {msg_id=12024, player_info}).
+-record(m__player__update_gvoice_status__l2s, {msg_id=12025, gvoice_status}).
 -record(m__room__get_list__l2s, {msg_id=13001}).
 -record(p_fight, {room_name, duty_list, player_info_list}).
 -record(p_room, {room_id, cur_player_num, max_player_num, owner, room_name, room_status, duty_list, ready_list}).
