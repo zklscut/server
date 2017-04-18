@@ -163,7 +163,7 @@ gvoice_input(Player)->
                     mod_room:send_to_room(Send, Room)
             end;
         FightPid ->
-            gen_fsm:send_all_state_event(Pid, {gvoice_input, PlayerId})
+            gen_fsm:send_all_state_event(FightPid, {gvoice_input, PlayerId})
     end.
 
 %% ================`===================================================
