@@ -63,7 +63,8 @@
          player_online/1,
          player_offline/1,
          player_leave/2,
-         forbid_other_speak/3
+         forbid_other_speak/3,
+         gvoice_input/1
          ]).
 
 start_link(RoomId, PlayerList, DutyList, Name) ->
@@ -1645,7 +1646,7 @@ handle_event({forbid_other_speak, Forbid, PlayerId}, StateName, State) ->
     Send = #m__fight__forbid_other_speak__s2l{forbid_info=ForbidInfo},
     lib_fight:send_to_all_player(Send, State),
     {next_state, StateName, maps:put(forbid_speak_data, ForbidInfo, State)};
-    
+
 
 handle_event({gvoice_input, PlayerId}, StateName, State) ->
     Player = lib_player:get_player(PlayerId),
