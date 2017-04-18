@@ -193,6 +193,10 @@
 	 decode_p_room/1, encode_p_fight/1, decode_p_fight/1,
 	 encode_m__room__get_list__l2s/1,
 	 decode_m__room__get_list__l2s/1,
+	 encode_m__player__update_gvoice_status__l2s/1,
+	 decode_m__player__update_gvoice_status__l2s/1,
+	 encode_m__player__update_player_base_info__s2l/1,
+	 decode_m__player__update_player_base_info__s2l/1,
 	 encode_m__player__friend_invite__s2l/1,
 	 decode_m__player__friend_invite__s2l/1,
 	 encode_m__player__invite_friends__s2l/1,
@@ -535,6 +539,12 @@
 
 -record(m__room__get_list__l2s, {msg_id}).
 
+-record(m__player__update_gvoice_status__l2s,
+	{msg_id, gvoice_status}).
+
+-record(m__player__update_player_base_info__s2l,
+	{msg_id, player_info}).
+
 -record(m__player__friend_invite__s2l,
 	{msg_id, player_info, room_id}).
 
@@ -604,7 +614,7 @@
 -record(p_resource, {resource_id, num}).
 
 -record(p_player_show_base,
-	{player_id, nick_name, head_img_name}).
+	{player_id, nick_name, head_img_name, gvoice_status}).
 
 encode(Record) ->
     encode(erlang:element(1, Record), Record).
@@ -1036,6 +1046,16 @@ encode_m__room__get_list__l2s(Record)
     when is_record(Record, m__room__get_list__l2s) ->
     encode(m__room__get_list__l2s, Record).
 
+encode_m__player__update_gvoice_status__l2s(Record)
+    when is_record(Record,
+		   m__player__update_gvoice_status__l2s) ->
+    encode(m__player__update_gvoice_status__l2s, Record).
+
+encode_m__player__update_player_base_info__s2l(Record)
+    when is_record(Record,
+		   m__player__update_player_base_info__s2l) ->
+    encode(m__player__update_player_base_info__s2l, Record).
+
 encode_m__player__friend_invite__s2l(Record)
     when is_record(Record, m__player__friend_invite__s2l) ->
     encode(m__player__friend_invite__s2l, Record).
@@ -1170,7 +1190,11 @@ encode(p_player_show_base, _Record) ->
 		      pack(3, required,
 			   with_default(_Record#p_player_show_base.head_img_name,
 					none),
-			   string, [])]);
+			   string, []),
+		      pack(4, required,
+			   with_default(_Record#p_player_show_base.gvoice_status,
+					none),
+			   int32, [])]);
 encode(p_resource, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#p_resource.resource_id, none),
@@ -1447,6 +1471,25 @@ encode(m__player__friend_invite__s2l, _Record) ->
 			   p_player_show_base, []),
 		      pack(3, required,
 			   with_default(_Record#m__player__friend_invite__s2l.room_id,
+					none),
+			   int32, [])]);
+encode(m__player__update_player_base_info__s2l,
+       _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__player__update_player_base_info__s2l.msg_id,
+					12024),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__player__update_player_base_info__s2l.player_info,
+					none),
+			   p_player_show_base, [])]);
+encode(m__player__update_gvoice_status__l2s, _Record) ->
+    iolist_to_binary([pack(1, required,
+			   with_default(_Record#m__player__update_gvoice_status__l2s.msg_id,
+					12025),
+			   int32, []),
+		      pack(2, required,
+			   with_default(_Record#m__player__update_gvoice_status__l2s.gvoice_status,
 					none),
 			   int32, [])]);
 encode(m__room__get_list__l2s, _Record) ->
@@ -3126,6 +3169,12 @@ decode_p_fight(Bytes) -> decode(p_fight, Bytes).
 decode_m__room__get_list__l2s(Bytes) ->
     decode(m__room__get_list__l2s, Bytes).
 
+decode_m__player__update_gvoice_status__l2s(Bytes) ->
+    decode(m__player__update_gvoice_status__l2s, Bytes).
+
+decode_m__player__update_player_base_info__s2l(Bytes) ->
+    decode(m__player__update_player_base_info__s2l, Bytes).
+
 decode_m__player__friend_invite__s2l(Bytes) ->
     decode(m__player__friend_invite__s2l, Bytes).
 
@@ -3212,7 +3261,8 @@ decode_p_player_show_base(Bytes) ->
     decode(p_player_show_base, Bytes).
 
 decode(p_player_show_base, Bytes) ->
-    Types = [{3, head_img_name, string, []},
+    Types = [{4, gvoice_status, int32, []},
+	     {3, head_img_name, string, []},
 	     {2, nick_name, string, []}, {1, player_id, uint32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(p_player_show_base, Decoded);
@@ -3355,6 +3405,20 @@ decode(m__player__friend_invite__s2l, Bytes) ->
 	     {1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
     to_record(m__player__friend_invite__s2l, Decoded);
+decode(m__player__update_player_base_info__s2l,
+       Bytes) ->
+    Types = [{2, player_info, p_player_show_base,
+	      [is_record]},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__player__update_player_base_info__s2l,
+	      Decoded);
+decode(m__player__update_gvoice_status__l2s, Bytes) ->
+    Types = [{2, gvoice_status, int32, []},
+	     {1, msg_id, int32, []}],
+    Decoded = decode(Bytes, Types, []),
+    to_record(m__player__update_gvoice_status__l2s,
+	      Decoded);
 decode(m__room__get_list__l2s, Bytes) ->
     Types = [{1, msg_id, int32, []}],
     Decoded = decode(Bytes, Types, []),
@@ -4187,6 +4251,23 @@ to_record(m__player__friend_invite__s2l,
 					 Record, Name, Val)
 		end,
 		#m__player__friend_invite__s2l{}, DecodedTuples);
+to_record(m__player__update_player_base_info__s2l,
+	  DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__player__update_player_base_info__s2l),
+					 Record, Name, Val)
+		end,
+		#m__player__update_player_base_info__s2l{},
+		DecodedTuples);
+to_record(m__player__update_gvoice_status__l2s,
+	  DecodedTuples) ->
+    lists:foldl(fun ({_FNum, Name, Val}, Record) ->
+			set_record_field(record_info(fields,
+						     m__player__update_gvoice_status__l2s),
+					 Record, Name, Val)
+		end,
+		#m__player__update_gvoice_status__l2s{}, DecodedTuples);
 to_record(m__room__get_list__l2s, DecodedTuples) ->
     lists:foldl(fun ({_FNum, Name, Val}, Record) ->
 			set_record_field(record_info(fields,
