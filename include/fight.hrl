@@ -99,6 +99,8 @@
 
 -define(FIGHT_MAX_GAME_ROUND, 10). %最大回合数
 
+
+
 -define(MFIGHT, #{room_id => 0,
                   fight_mod => 0, %%战斗模型0:正常模式,屠边 1:简单模式,屠城
                   room_name => "",%%房间名称
@@ -169,8 +171,9 @@
                   mvp_draw_cnt => 0,     %%mvp重投次数      
                   carry_party =>[],      %%参选carry的人
                   carry_draw_cnt => 0,    %%carry重投次数
-                  speak_id => 0,          %%
-                  op_timer_start => 0,   %%操作开始时间
+                  speak_id => 0,          %%正在说话的人
+                  last_speak_time => 0,   %%上次说话时间
+                  op_timer_start => 0,          %%操作开始时间
                   op_timer_normal_dur => 0, %%正常操作持续时间
                   op_timer_use_dur => 0,   %%操作当前持续时间
                   is_night => 0, %%是否晚上

@@ -48,6 +48,7 @@
 -include("function.hrl").
 -include("resource.hrl").
 -include("log.hrl").
+-include("chat.hrl").
 -define(TEST, false).
 
 %% ====================================================================
@@ -145,6 +146,24 @@ chat_input(Pid, PlayerId, IsExpression, Content, ChatType, RoomId)->
             end;
         Pid ->
             gen_fsm:send_all_state_event(Pid, {chat_input, IsExpression, Content, ChatType, PlayerId})
+    end.
+
+gvoice_input(Player)->
+    FightPid = lib_player:get_fight_pid(Player),
+    PlayerId = lib_player:get_player_id(Player),
+    RoomId = lib_room:get_player_room_id(Player),
+    case FightPid of 
+        undefined->
+            Room = lib_room:get_room(RoomId),
+            case Room of 
+                undefined->
+                    ignore;
+                _->
+                    Send = #m__player__update_player_base_info__s2l{player_info = lib_player:get_player_show_base(Player)},
+                    mod_room:send_to_room(Send, Room)
+            end;
+        FightPid ->
+            gen_fsm:send_all_state_event(Pid, {gvoice_input, PlayerId})
     end.
 
 %% ================`===================================================
@@ -471,13 +490,7 @@ state_shouwei(wait_op, State) ->
     OpSeatList = (LangRenSeatList ++ ShouWeiSeatList) ++ YuyanjiaSeatList,
     StateAfterNormalCommon = notice_player_op(?OP_NORMAL_COMMON, AttachDataYuyanjia, OpSeatList, State),    
     %%多加狼人作为不及时结束的条件
-    case length(LangRenSeatList) > 1 of
-        true->
-            %%狼队要有两个人以上沟通才有意义
-            {next_state, state_shouwei, do_set_wait_op(?OP_NORMAL_COMMON, OpSeatList ++ LangRenSeatList, StateAfterNormalCommon)};
-        false->
-            {next_state, state_shouwei, do_set_wait_op(?OP_NORMAL_COMMON, OpSeatList, StateAfterNormalCommon)}
-    end;
+    {next_state, state_shouwei, do_set_wait_op(?OP_NORMAL_COMMON, OpSeatList ++ LangRenSeatList, StateAfterNormalCommon)};
 
 state_shouwei({player_op, PlayerId, ?DUTY_LANGREN, OpList, Confirm}, State) ->
     do_receive_player_langren_op(PlayerId, ?DUTY_LANGREN, OpList, Confirm, state_shouwei, State);
@@ -1533,8 +1546,8 @@ handle_event({skill, PlayerId, Op, OpList}, StateName, State) ->
     end;
 
 handle_event({player_chat, Chat, SpeakType, PlayerId}, StateName, State)->
-    lib_fight:do_send_fayan(PlayerId, Chat, SpeakType, State),
-    {next_state, StateName, State};
+    StateAfterFayan = lib_fight:do_send_fayan(PlayerId, Chat, SpeakType, State),
+    {next_state, StateName, StateAfterFayan};
 
 handle_event({player_online, PlayerId}, StateName, State) ->
     OfflineList = maps:get(offline_list, State),
@@ -1632,6 +1645,14 @@ handle_event({forbid_other_speak, Forbid, PlayerId}, StateName, State) ->
     Send = #m__fight__forbid_other_speak__s2l{forbid_info=ForbidInfo},
     lib_fight:send_to_all_player(Send, State),
     {next_state, StateName, maps:put(forbid_speak_data, ForbidInfo, State)};
+    
+
+handle_event({gvoice_input, PlayerId}, StateName, State) ->
+    Player = lib_player:get_player(PlayerId),
+    Send = #m__player__update_player_base_info__s2l{player_info = lib_player:get_player_show_base(Player)},
+    lib_fight:send_to_all_player(Send, State),
+    {next_state, StateName, State};
+
 
 handle_event({chat_input, IsExpression, Content, ChatType, PlayerId}, StateName, State) ->
     Send = #m__fight__chat_input__s2l{is_expression=IsExpression,
@@ -2430,6 +2451,8 @@ clear_night_op(State) ->
            is_night => 1,
            safe_night => 1,         %%平安夜
            safe_day => 1,           %%平安日
+           speak_id => 0,          %%正在说话的人
+           last_speak_time => 0,   %%上次说话时间
            duty_daozei_op => 0,
            duty_qiubite_op => 0,
            duty_hunxuer_op => 0,

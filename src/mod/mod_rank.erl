@@ -15,6 +15,7 @@
 get_rank(#m__rank__get_rank__l2s{rank_type = RankType,
                                  start_rank = StartRank,
                                  end_rank = EndRank}, Player) ->
+    
     RankModule = 
         case RankType of
             ?RANK_TYPE_LANGREN ->
@@ -50,6 +51,7 @@ get_rank(#m__rank__get_rank__l2s{rank_type = RankType,
             _ ->
                 langren_rank_srv
         end,
+    lager:info("get_rank ~p", [{RankType, StartRank, EndRank, RankModule}]),
     RankList = [{Rank, rank_behaviour:get_player_show_by_rank(Rank, RankModule)} ||
                  Rank <- lists:seq(StartRank, EndRank)],
     FunConver = 

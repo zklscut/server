@@ -17,10 +17,10 @@
 %% ====================================================================
 
 get_rank_to_player_ets() ->
-    ?ETS_RANK_LAGNREN_RANK_TO_PLAYER.
+    ?ETS_RANK_RANK_RANK_TO_PLAYER.
 
 get_player_id_to_rank_ets() ->
-    ?ETS_RANK_LAGNREN_PLAYER_ID_TO_RANK.
+    ?ETS_RANK_RANK_PLAYER_ID_TO_RANK.
 
 is_lager(Value1, Value2) ->
     Value1 > Value2.

@@ -77,21 +77,7 @@ get_head(#m__player__get_head__l2s{player_id = _PlayerId}, Player)->
   % net_send:send(Send, Player),
   {ok, Player}.
 
-upload_head_img_name(#m__player__upload_head_img_name__l2s{head_img_name = HeadImgName}, Player)->
-  Data = maps:get(data, Player),
-  NewData = maps:put(head_img_name, HeadImgName, Data),
-  net_send:send(#m__player__upload_head_img_name__s2l{}, Player),
-  {save, maps:put(data, NewData, Player)}.
 
-
-get_head_img_name(#m__player__get_head_img_name__l2s{player_id = PlayerId}, Player)->
-  TargetPlayer = lib_player:get_player(PlayerId),
-  Data = maps:get(data, TargetPlayer),
-  Send = #m__player__get_head_img_name__s2l{player_id = PlayerId, 
-            head_img_name = maps:get(head_img_name, Data, "")
-          },
-  net_send:send(Send, Player),
-  {ok, Player}.
 
 handle_fight_result(DutyId, IsWin, IsMvp, IsCarry, CoinAdd, ExpAdd, PlayerId) ->
     global_op_srv:player_op(PlayerId, {?MODULE, handle_fight_result_local, [DutyId, IsWin, IsMvp, IsCarry, CoinAdd, ExpAdd]}).
@@ -141,6 +127,22 @@ handle_receive_gift_local(GiftId, Player) ->
   end,
   {save, PlayerAfterLuck}.
 
+upload_head_img_name(#m__player__upload_head_img_name__l2s{head_img_name = HeadImgName}, Player)->
+  Data = maps:get(data, Player),
+  NewData = maps:put(head_img_name, HeadImgName, Data),
+  net_send:send(#m__player__upload_head_img_name__s2l{}, Player),
+  {save, maps:put(data, NewData, Player)}.
+
+
+get_head_img_name(#m__player__get_head_img_name__l2s{player_id = PlayerId}, Player)->
+  TargetPlayer = lib_player:get_player(PlayerId),
+  Data = maps:get(data, TargetPlayer),
+  Send = #m__player__get_head_img_name__s2l{player_id = PlayerId, 
+            head_img_name = maps:get(head_img_name, Data, "")
+          },
+  net_send:send(Send, Player),
+  {ok, Player}.
+
 change_name(#m__player__change_name__l2s{name = Name}, Player) ->
       Send = #m__player__change_name__s2l{name = Name, result=0},
       NewPlayer = maps:put(nick_name, Name, Player),
@@ -176,6 +178,11 @@ invite_friends(#m__player__invite_friends__l2s{room_id=RoomId, player_list=Playe
     [net_send:send(Send, PlayerId) || PlayerId<-PlayerList],
     net_send:send(#m__player__invite_friends__s2l{}, Player),
     {ok, Player}.
+
+update_gvoice_status(#m__player__update_gvoice_status__l2s{gvoice_status = GVoiceStatus}, Player)->
+    NewPlayer = maps:put(gvoice_status, Player),
+    
+    {save, NewPlayer}
 
 %%%====================================================================
 %%% Internal functions
@@ -335,6 +342,9 @@ get_send_player_info(Player, OtherPlayer) ->
                           resource_list = mod_resource:get_p_resource_list(Player),
                           win_rate_list = get_p_fight_rate_list(Player)}.
     
+
+
+
 % is_change_name_legal(Name) ->
 %     Sql = db:make_select_sql(player, ["count(*)"], ["nick_name"], ["="], [Name]),
 %     db:get_one(Sql) == 0.

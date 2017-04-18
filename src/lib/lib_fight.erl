@@ -73,6 +73,7 @@
 -include("game_pb.hrl").
 -include("resource.hrl").
 -include("log.hrl").
+-include("chat.hrl").
 
 %% ====================================================================
 %% API functions
@@ -818,9 +819,24 @@ do_fayan_op(State) ->
     NewState.
 
 do_send_fayan(PlayerId, Chat, State) ->    
-    Player = lib_player:get_player(PlayerId),
-    Send = #m__fight__speak__s2l{chat = mod_chat:get_p_chat(Chat, Player), player_id = PlayerId},
-    send_to_all_player(Send, State, [PlayerId]).
+    SeatId = get_seat_id_by_player_id(PlayerId, State),
+    CurSpeakId = maps:get(speak_id, State),
+    CurTime = util:get_micro_time(),
+    LastSpeakTime = maps:get(last_speak_time, State),
+    lager:info("do_send_fayan: ~p", [SeatId]),
+    case SeatId == CurSpeakId orelse CurSpeakId == 0 orelse (SeatId =/= CurSpeakId andalso CurSpeakId > 0 
+                andalso (CurTime - LastSpeakTime) > ?MIN_SPEAK_TIME_INTERVAL) of 
+        true->
+            lager:info("do_send_fayan: 1"),
+            Player = lib_player:get_player(PlayerId),
+            Send = #m__fight__speak__s2l{chat = mod_chat:get_p_chat(Chat, Player), player_id = PlayerId},
+            send_to_all_player(Send, State, [PlayerId]), 
+            StateAfterSpeakId = maps:put(speak_id, SeatId, State),
+            maps:put(last_speak_time, CurTime, StateAfterSpeakId);
+        false->
+            lager:info("do_send_fayan: 2"),
+            State
+    end.
 
 do_send_fayan(PlayerId, Chat, SpeakType, State) ->
     case SpeakType of

@@ -16,6 +16,7 @@
             update_room_fight_pid/2,
             update_room_status/5,
             ready/2,
+            player_speak/3,
             cancle_ready/2]).
 
 -include("room.hrl").
@@ -64,6 +65,10 @@ ready(RoomId, PlayerId) ->
 
 cancle_ready(RoomId, PlayerId) ->
     gen_server:cast(?MODULE, {cancle_ready, RoomId, PlayerId}).            
+
+
+player_speak(RoomId, Chat, Player)->
+    gen_server:cast(?MODULE, {player_speak, RoomId, Chat, Player}).          
 
 %% ====================================================================
 %% Behavioural functions
@@ -165,6 +170,8 @@ handle_cast_inner({create_room, MaxPlayerNum, RoomName, DutyList, IsSimple, Play
                    max_player_num => MaxPlayerNum,
                    room_name => RoomName,
                    room_status => 0,
+                   speak_player_id => 0,     %%正在说话的人
+                   last_speak_time => 0,     %%上次说话时间
                    is_simple => IsSimple,
                    duty_list => DutyList},
     lib_room:update_room(RoomId, Room),
@@ -221,6 +228,27 @@ handle_cast_inner({update_room_status, RoomId, BaseStatus, GameRound, Night, Day
 
 handle_cast_inner({ready, RoomId, PlayerId}, State) ->
     do_ready(RoomId, PlayerId),
+    {noreply, State};
+
+handle_cast_inner({player_speak, RoomId, Chat, Player}, State)->
+    lib_room:assert_room_exist(RoomId),
+    Room = lib_room:get_room(RoomId),
+    CurSpeakPlayerId = maps:get(speak_player_id, Room),
+    LastSpeakTime = maps:get(last_speak_time, Room),
+    CurTime = util:get_micro_time(),
+    CurPlayerId = lib_player:get_player_id(Player),
+    case CurPlayerId == CurSpeakPlayerId orelse CurSpeakPlayerId == 0 orelse 
+            (CurPlayerId =/= CurSpeakPlayerId andalso CurSpeakPlayerId > 0 
+                andalso (CurTime - LastSpeakTime) > ?MIN_SPEAK_TIME_INTERVAL) of 
+        true->
+            ReturnChat = Chat#p_chat{room_id = RoomId},
+            Return = #m__chat__public_speak__s2l{chat = ReturnChat, player_id = CurPlayerId},
+            [net_send:send(Return, SendId) || SendId <- lib_room:get_player_room_player_list(Player) -- [CurPlayerId],
+            SendId =/= CurPlayerId],
+            lib_room:update_room(RoomId, Room#{speak_player_id=>CurPlayerId, last_speak_time=>CurTime});
+        false->
+            ignore
+    end,
     {noreply, State};
 
 handle_cast_inner({cancle_ready, RoomId, PlayerId}, State) ->
