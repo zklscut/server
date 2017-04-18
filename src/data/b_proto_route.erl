@@ -27,6 +27,8 @@ get(12020) -> {m__player__get_head_img_name__s2l, mod_player, get_head_img_name}
 get(12021) -> {m__player__invite_friends__l2s, mod_player, invite_friends}; 
 get(12022) -> {m__player__invite_friends__s2l, mod_player, invite_friends}; 
 get(12023) -> {m__player__friend_invite__s2l, mod_player, friend_invite}; 
+get(12024) -> {m__player__update_player_base_info__s2l, mod_player, update_player_base_info}; 
+get(12025) -> {m__player__update_gvoice_status__l2s, mod_player, update_gvoice_status}; 
 get(13001) -> {m__room__get_list__l2s, mod_room, get_list}; 
 get(13002) -> {m__room__get_list__s2l, mod_room, get_list}; 
 get(13003) -> {m__room__enter_room__l2s, mod_room, enter_room}; 
