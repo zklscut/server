@@ -108,7 +108,7 @@ init(RoomId, PlayerList, DutyList, Name, State) ->
 init_mod(RoomId, State)->
     case lib_room:get_room(RoomId) of
         undefined->
-            State;
+            maps:put(gvoice_room_id, global_id_srv:generate_room_id(), State);
         Room->
             case maps:get(is_simple, Room) of
                 true->
@@ -173,6 +173,7 @@ get_p_fight(State)->
     PFight = #p_fight{
         room_name = maps:get(room_name, State),
         duty_list = maps:get(duty_list, State),
+        gvoice_room_id = maps:get(gvoice_room_id, State),
         player_info_list = [lib_player:get_player_show_base(PlayerId) || PlayerId <- maps:get(player_list, State)]
     },
     lager:info("get_p_fight~p", [PFight]),

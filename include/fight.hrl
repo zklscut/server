@@ -186,6 +186,7 @@
                   duty_hunxuer_op => 0,
                   duty_langren_op => 0,
                   duty_yuyanjia_op => 0,
+                  gvoice_room_id => 0,
                   duty_shouwei => 0
                   }).
 
