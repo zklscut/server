@@ -181,9 +181,8 @@ invite_friends(#m__player__invite_friends__l2s{room_id=RoomId, player_list=Playe
     {ok, Player}.
 
 update_gvoice_status(#m__player__update_gvoice_status__l2s{gvoice_status = GVoiceStatus}, Player)->
-    lager:info("update_gvoice_status"),
     NewPlayer = maps:put(gvoice_status, GVoiceStatus, Player),
-    fight_srv:gvoice_input(Player),
+    fight_srv:gvoice_input(NewPlayer),
     {save, NewPlayer}.
 
 %%%====================================================================
