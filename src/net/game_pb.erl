@@ -535,7 +535,8 @@
 	 room_name, room_status, duty_list, ready_list}).
 
 -record(p_fight,
-	{room_name, duty_list, player_info_list}).
+	{room_name, duty_list, player_info_list,
+	 gvoice_room_id}).
 
 -record(m__room__get_list__l2s, {msg_id}).
 
@@ -1506,7 +1507,10 @@ encode(p_fight, _Record) ->
 			   []),
 		      pack(4, repeated,
 			   with_default(_Record#p_fight.player_info_list, none),
-			   p_player_show_base, [])]);
+			   p_player_show_base, []),
+		      pack(5, required,
+			   with_default(_Record#p_fight.gvoice_room_id, none),
+			   int32, [])]);
 encode(p_room, _Record) ->
     iolist_to_binary([pack(1, required,
 			   with_default(_Record#p_room.room_id, none), int32,
@@ -3424,7 +3428,8 @@ decode(m__room__get_list__l2s, Bytes) ->
     Decoded = decode(Bytes, Types, []),
     to_record(m__room__get_list__l2s, Decoded);
 decode(p_fight, Bytes) ->
-    Types = [{4, player_info_list, p_player_show_base,
+    Types = [{5, gvoice_room_id, int32, []},
+	     {4, player_info_list, p_player_show_base,
 	      [is_record, repeated]},
 	     {2, duty_list, int32, [repeated]},
 	     {1, room_name, string, []}],
