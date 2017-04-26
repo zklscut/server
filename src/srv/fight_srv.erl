@@ -150,20 +150,25 @@ chat_input(Pid, PlayerId, IsExpression, Content, ChatType, RoomId)->
     end.
 
 gvoice_input(Player)->
+    lager:info("gvoice_input"),
     FightPid = lib_player:get_fight_pid(Player),
     PlayerId = lib_player:get_player_id(Player),
     RoomId = lib_room:get_player_room_id(Player),
     case FightPid of 
         undefined->
+            lager:info("gvoice_input1"),
             Room = lib_room:get_room(RoomId),
             case Room of 
                 undefined->
+                    lager:info("gvoice_input2"),
                     ignore;
                 _->
+                    lager:info("gvoice_input3"),
                     Send = #m__player__update_player_base_info__s2l{player_info = lib_player:get_player_show_base(Player)},
                     mod_room:send_to_room(Send, Room)
             end;
         FightPid ->
+            lager:info("gvoice_input4"),
             gen_fsm:send_all_state_event(FightPid, {gvoice_input, PlayerId})
     end.
 
