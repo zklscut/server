@@ -30,7 +30,7 @@
 -record(m__player__update_player_base_info__s2l, {msg_id=12024, player_info}).
 -record(m__player__update_gvoice_status__l2s, {msg_id=12025, gvoice_status}).
 -record(m__room__get_list__l2s, {msg_id=13001}).
--record(p_fight, {room_name, duty_list, player_info_list}).
+-record(p_fight, {room_name, duty_list, player_info_list, gvoice_room_id}).
 -record(p_room, {room_id, cur_player_num, max_player_num, owner, room_name, room_status, duty_list, ready_list}).
 -record(m__room__get_list__s2l, {msg_id=13002, room_list}).
 -record(m__room__enter_room__l2s, {msg_id=13003, room_id}).
